@@ -224,4 +224,4 @@ with tab5:
     key_input = st.text_input("Clave API de OpenAI / Gemini:", type="password")
     if st.button("💾 Guardar Clave API"):
         st.session_state['api_key_openai'] = key_input
-        st.success("Clave vinculada con éxito al núcleo de J.A.R.V.I.S.")
+        st.success("Clave vinculada con éxito al núcleo de J.A.R.V.I.S")
