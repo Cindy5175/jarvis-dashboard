@@ -18,25 +18,30 @@ st.set_page_config(
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* Fondo principal y barra lateral en negro absoluto */
-    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"], header, .stAppHeader, div[data-testid="stHeader"] {
+    /* 1. FONDO PRINCIPAL, HEADER Y FOOTER EN NEGRO ABSOLUTO */
+    html, body, .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"],
+    header, .stAppHeader, div[data-testid="stHeader"], footer, [data-testid="stBottom"],
+    [data-testid="stChatInputContainer"], div[data-testid="stForm"] {
         background-color: #080c14 !important;
         color: #00f3ff !important;
     }
-    
-    /* BARRA SUPERIOR E ÍCONOS EN AZUL NEÓN */
-    header *, .stAppHeader *, div[data-testid="stHeader"] *, button[title], [data-testid="stToolbar"] * {
+
+    /* 2. BARRA SUPERIOR (SHARE, ÍCONOS, MENÚS) EN AZUL NEÓN VISIBLE */
+    header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
+    [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
+    header button, header svg, button[title] {
         color: #00f3ff !important;
         fill: #00f3ff !important;
+        stroke: #00f3ff !important;
     }
 
-    /* Todos los textos, títulos, etiquetas e inputs en Azul Neón */
-    h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption {
+    /* 3. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption, i, svg {
         color: #00f3ff !important;
         text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
     }
 
-    /* Botones tácticos con borde e iluminación Neón */
+    /* 4. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
     .stButton>button {
         background-color: #0e1726 !important;
         color: #00f3ff !important;
@@ -52,13 +57,11 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* FRANJA DEL CHAT - FONDO NEGRO Y BORDE NEÓN */
-    footer, [data-testid="stBottom"], [data-testid="stChatInputContainer"] {
-        background-color: #080c14 !important;
-        border: none !important;
-    }
-
-    div[data-testid="stChatInput"], div[data-testid="stChatInput"] > div, div[data-baseweb="base-input"] {
+    /* 5. ELIMINAR CUALQUIER FONDO BLANCO EN LA ENTRADA DEL CHAT */
+    div[data-testid="stChatInput"], 
+    div[data-testid="stChatInput"] > div, 
+    div[data-baseweb="base-input"],
+    div[data-baseweb="input"] {
         background-color: #0b1320 !important;
         border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
@@ -76,7 +79,7 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* Entradas de texto y selectbox */
+    /* 6. ENTRADAS DE TEXTO Y SELECTBOX */
     .stTextInput input, div[data-baseweb="select"] > div {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
@@ -85,7 +88,7 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* Mensajes del Chat e Historial con Bordes Neón */
+    /* 7. MENSAJES DEL CHAT E HISTORIAL CON BORDES NEÓN */
     [data-testid="stChatMessage"] {
         background-color: #0e1726 !important;
         border: 1px solid #00f3ff !important;
@@ -99,7 +102,7 @@ st.markdown("""
         font-size: 1rem !important;
     }
     
-    /* Métricas con brillo neón */
+    /* 8. METRICAS */
     div[data-testid="stMetricValue"] {
         color: #00f3ff !important;
         font-weight: bold !important;
@@ -153,7 +156,6 @@ def obtener_clima_buin():
     except Exception:
         return {}
 
-# OPCIÓN 5: MONITOR SISMOLÓGICO DE CHILE
 @st.cache_data(ttl=300)
 def obtener_ultimo_sismo_chile():
     try:
@@ -210,7 +212,7 @@ with st.sidebar:
 
     st.divider()
 
-    # OPCIÓN 3: SELECTOR DE PERSONALIDAD (MATRIZ DE HUMOR)
+    # SELECTOR DE PERSONALIDAD
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en Buin, Chile.",
@@ -272,7 +274,7 @@ with st.sidebar:
 
     st.divider()
 
-    # OPCIÓN 5: MONITOR SISMOLÓGICO SISMICO CHILE
+    # MONITOR SISMOLÓGICO SISMICO CHILE
     st.subheader("🌍 Telemetría Sísmica CSN")
     ultimo_sismo = obtener_ultimo_sismo_chile()
     if ultimo_sismo:
@@ -373,7 +375,7 @@ if 'chat_history' in st.session_state and len(st.session_state['chat_history']) 
             </script>
         """, height=65)
 
-# OPCIÓN 2: MÓDULO DE DICTADO POR VOZ (MICRÓFONO DIRECTO)
+# MÓDULO DE DICTADO POR VOZ (MICRÓFONO DIRECTO)
 st.components.v1.html("""
     <div style="margin-bottom: 10px; text-align: center;">
         <button id="btn-mic" onclick="comenzarDictado()" style="
@@ -445,7 +447,6 @@ with col_btn2:
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         st.rerun()
 
-# OPCIÓN 4: ORÁCULO TÁCTICO / PREDICCIÓN DÍA
 with col_btn3:
     if st.button("🔮 Oráculo"):
         import random
