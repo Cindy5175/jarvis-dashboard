@@ -13,30 +13,52 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (CSS MEJORADO)
+# ESTILOS VISUALES (CSS DE ALTO CONTRASTE Y VISIBILIDAD)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
+    /* Fondo principal */
     .stApp {
         background-color: #0e1117;
         color: #ffffff;
     }
-    /* Estilo profesional para los botones */
+    
+    /* Botones tácticos */
     .stButton>button {
-        background-color: #1f2937;
-        color: #ffffff;
-        border: 1px solid #374151;
-        border-radius: 8px;
-        width: 100%;
+        background-color: #1f2937 !important;
+        color: #ffffff !important;
+        border: 1px solid #374151 !important;
+        border-radius: 8px !important;
+        width: 100% !important;
     }
     .stButton>button:hover {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #6ee7b7;
+        background-color: #374151 !important;
+        color: #6ee7b7 !important;
+        border-color: #4b5563 !important;
     }
-    /* Contenedor de chat visible */
+
+    /* Caja de entrada de texto (Chat Input) */
+    .stChatInput textarea {
+        color: #ffffff !important;
+        background-color: #1e222d !important;
+    }
     .stChatInputContainer {
-        background-color: #1e222d;
+        background-color: #1e222d !important;
+        border: 1px solid #374151 !important;
+        border-radius: 10px !important;
+    }
+
+    /* Mensajes del Chat e Historial */
+    [data-testid="stChatMessage"] {
+        background-color: #1a202c !important;
+        border: 1px solid #2d3748 !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
+        margin-bottom: 8px !important;
+    }
+    [data-testid="stChatMessage"] p {
+        color: #ffffff !important;
+        font-size: 1rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -224,4 +246,4 @@ with tab5:
     key_input = st.text_input("Clave API de OpenAI / Gemini:", type="password")
     if st.button("💾 Guardar Clave API"):
         st.session_state['api_key_openai'] = key_input
-        st.success("Clave vinculada con éxito al núcleo de J.A.R.V.I.S")
+        st.success("Clave vinculada con éxito al núcleo de J.A.R.V.I.S.")
