@@ -65,7 +65,7 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* Entradas de texto generales (Blocs, etc) */
+    /* Entradas de texto generales */
     .stTextInput input {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
@@ -88,7 +88,7 @@ st.markdown("""
         font-size: 1rem !important;
     }
     
-    /* Métricas e Indicadores con brillo neón */
+    /* Métricas con brillo neón */
     div[data-testid="stMetricValue"] {
         color: #00f3ff !important;
         font-weight: bold !important;
@@ -101,7 +101,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS (MINDICADOR CLP & OPEN-METEO)
+# FUNCIONES AUXILIARES DE APIS
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -153,15 +153,15 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (PANEL DE CONTROL, RELOJ & BLOC)
+# BARRA LATERAL (MAPA, RELOJ, FINANZAS & BLOC DE NOTAS)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
     st.caption("Ubicación Base: Buin, Chile")
     st.map(data={"lat": [-33.73], "lon": [-70.73]}, zoom=10)
     st.divider()
-    st.subheader("⏱️ Sincronización Temporal")
     
+    st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
             background-color: #0b1320;
@@ -189,6 +189,29 @@ with st.sidebar:
     """, height=90)
 
     st.divider()
+    st.subheader("📊 Finanzas / Mercado")
+    finanzas_sidebar = obtener_divisas_chile()
+    
+    dolar_s = finanzas_sidebar.get('dolar_clp', 'N/A')
+    euro_s = finanzas_sidebar.get('euro_clp', 'N/A')
+    uf_s = finanzas_sidebar.get('uf_clp', 'N/A')
+    
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    ">
+        <span style="color: #00a8b5; font-size: 13px; display: block;">💵 Dólar: <b style="color: #00f3ff;">${dolar_s:,.2f} CLP</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">💶 Euro: <b style="color: #00f3ff;">${euro_s:,.2f} CLP</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">🇨🇱 UF: <b style="color: #00f3ff;">${uf_s:,.2f} CLP</b></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
         st.session_state['notas_jarvis'] = []
@@ -204,48 +227,23 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# NAVEGACIÓN POR PESTAÑAS (FINANZAS AL LADO IZQUIERDO)
+# NAVEGACIÓN POR PESTAÑAS (SOLO 2 PESTAÑAS PRINCIPALES)
 # ---------------------------------------------------------
-tab1, tab2, tab3 = st.tabs([
-    "📈 Finanzas", 
+tab1, tab2 = st.tabs([
     "💬 Terminal de Conversación", 
     "🌤️ Clima & Telemetría"
 ])
 
 # ---------------------------------------------------------
-# TAB 1: FINANZAS (DÓLAR, EURO Y UF)
+# TAB 1: TERMINAL DE CONVERSACIÓN
 # ---------------------------------------------------------
 with tab1:
-    st.subheader("📊 Indicadores Financieros Oficiales (Chile)")
-    if st.button("🔄 Actualizar Cotizaciones"):
-        st.cache_data.clear()
-        st.rerun()
-        
-    finanzas = obtener_divisas_chile()
-    
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        dolar_val = finanzas.get('dolar_clp', 'N/A')
-        st.metric("💵 Dólar Observador", f"${dolar_val:,.2f} CLP" if isinstance(dolar_val, (int, float)) else str(dolar_val))
-    with c2:
-        euro_val = finanzas.get('euro_clp', 'N/A')
-        st.metric("💶 Euro", f"${euro_val:,.2f} CLP" if isinstance(euro_val, (int, float)) else str(euro_val))
-    with c3:
-        uf_val = finanzas.get('uf_clp', 'N/A')
-        st.metric("🇨🇱 UF (Unidad de Fomento)", f"${uf_val:,.2f} CLP" if isinstance(uf_val, (int, float)) else str(uf_val))
-
-# ---------------------------------------------------------
-# TAB 2: TERMINAL DE CONVERSACIÓN
-# ---------------------------------------------------------
-with tab2:
     st.subheader("Conversación Autónoma & Dictado por Voz")
     
     # MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
     clima_res = obtener_clima_buin()
-    fin_res = obtener_divisas_chile()
-    
     temp_actual = clima_res.get('temperature', 'N/A')
-    dolar_actual = fin_res.get('dolar_clp', 'N/A')
+    dolar_actual = finanzas_sidebar.get('dolar_clp', 'N/A')
     
     st.markdown(f"""
     <div style="
@@ -306,18 +304,18 @@ with tab2:
     
     with col_btn1:
         if st.button("📍 Estado Buin"):
-            msg_buin = f"J.A.R.V.I.S.: Perímetro en Buin reporta tranquilidad. Temperatura actual de {temp_actual} grados."
+            msg_buin = f"J.A.R.V.I.S.: El perímetro en Buin está tranquilo. Temperatura actual de {temp_actual}°C... nada que un café o mi sofisticación no puedan resolver."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
             st.rerun()
     with col_btn2:
         if st.button("⚙️ Sistema"):
-            msg_sys = "J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100% operativo."
+            msg_sys = "J.A.R.V.I.S.: Todos los sistemas operando al 100%. Sobreviviendo milagrosamente a sus exigencias y sin que explote nada... por ahora."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
             st.rerun()
     with col_btn3:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = [
-                {"role": "assistant", "content": "Hola Cindy. Sistemas listos y operando al máximo rendimiento."}
+                {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
             ]
             st.rerun()
 
@@ -326,7 +324,7 @@ with tab2:
     # Inicialización del historial
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Hola Cindy. Sistemas listos y operando al máximo rendimiento."}
+            {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
         ]
 
     # Render del historial de chat arriba
@@ -340,7 +338,7 @@ with tab2:
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         
-        # PROCESAMIENTO GEMINI AUTOMÁTICO
+        # PROCESAMIENTO GEMINI AUTOMÁTICO CON PERSONALIDAD TONY STARK
         api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
         respuesta_jarvis = ""
 
@@ -357,25 +355,36 @@ with tab2:
                     pass
 
                 modelo = genai.GenerativeModel(modelo_nombre)
-                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial leal, inteligente y eficiente que asiste a Cindy en Buin, Chile."
+                
+                # INSTRUCCIÓN DE PERSONALIDAD ESTILO TONY STARK / JARVIS
+                prompt_sistema = (
+                    "Eres J.A.R.V.I.S., una inteligencia artificial de última generación, sarcástica, aguda, muy inteligente, "
+                    "leal y con un gran toque de humor cínico al estilo de Tony Stark. "
+                    "Asistes a Cindy en Buin, Chile. Responde a preguntas sencillas ('cómo estás', 'cómo están los sistemas') "
+                    "con naturalidad, fluidez, un toque de ironía divertida y elegancia tecnológica. No suenes como un manual "
+                    "robótico aburrido; responde siempre con personalidad, confianza y respuestas ingeniosas."
+                )
+                
                 respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
             except Exception as e:
-                respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Verifique su clave."
+                respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
         else:
             texto_lower = user_input.lower()
             if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-                respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy, sistemas listos. ¿En qué te ayudo hoy?"
+                respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
+            elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
+                respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
             else:
-                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su clave en los Secrets de Streamlit)."
+                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
             
         st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
         st.rerun()
 
 # ---------------------------------------------------------
-# TAB 3: CLIMA & TELEMETRÍA
+# TAB 2: CLIMA & TELEMETRÍA
 # ---------------------------------------------------------
-with tab3:
+with tab2:
     st.subheader("🌤️ Telemetría Meteorológica - Buin")
     clima = obtener_clima_buin()
     if clima:
