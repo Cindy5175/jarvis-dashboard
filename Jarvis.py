@@ -334,7 +334,7 @@ with st.sidebar:
 
     st.divider()
 
-    # NUEVO: PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL (Opción 4)
+    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
@@ -566,65 +566,6 @@ with col_derecha:
                 unsafe_allow_html=True
             )
 
-st.divider()
-
-# MICRÓFONO DIRECTO
-st.components.v1.html("""
-    <div style="margin-bottom: 10px; text-align: center;">
-        <button id="btn-mic" onclick="comenzarDictado()" style="
-            background-color: #0b1320; 
-            color: #00f3ff; 
-            border: 2px solid #00f3ff; 
-            padding: 10px 16px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 13px;
-            width: 100%;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">🎙️ Presionar para Dictar Orden por Voz</button>
-        <p id="mic-status" style="color: #00a8b5; font-size: 11px; margin-top: 4px; font-family: monospace;"></p>
-    </div>
-    <script>
-        function comenzarDictado() {
-            const btn = document.getElementById('btn-mic');
-            const status = document.getElementById('mic-status');
-            
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.textContent = '❌ El dictado por voz no es compatible en este navegador.';
-                return;
-            }
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                btn.style.backgroundColor = '#00f3ff';
-                btn.style.color = '#080c14';
-                status.textContent = '🎙️ Escuchando orden táctica... habla ahora.';
-            };
-            
-            recognition.onresult = function(event) {
-                const textoDictado = event.results[0][0].transcript;
-                status.textContent = '✅ Orden capturada: "' + textoDictado + '". Cópiala en la caja de chat.';
-                btn.style.backgroundColor = '#0b1320';
-                btn.style.color = '#00f3ff';
-            };
-            
-            recognition.onerror = function(event) {
-                status.textContent = '⚠️ Error o sin voz detectada. Intenta nuevamente.';
-                btn.style.backgroundColor = '#0b1320';
-                btn.style.color = '#00f3ff';
-            };
-            
-            recognition.start();
-        }
-    </script>
-""", height=85)
-
 st.markdown("**⚡ Comandos Tácticos Rápidos:**")
 col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
 
@@ -672,7 +613,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES
+# ENTRADA DE MENSAJES (DICTADO POR VOZ DIRECTO VÍA TECLADO DE WINDOWS WIN+H O MÓVIL)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
