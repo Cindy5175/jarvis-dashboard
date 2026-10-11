@@ -203,7 +203,7 @@ with tab1:
             try:
                 genai.configure(api_key=api_key)
                 try:
-                    modelo = genai.GenerativeModel('gemini-2.5-flash')
+                    modelo = genai.GenerativeModel('gemini-3.8-flash')
                 except Exception:
                     modelo = genai.GenerativeModel('gemini-1.5-flash')
 
