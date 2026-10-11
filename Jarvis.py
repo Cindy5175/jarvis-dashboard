@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import requests
+import google.generativeai as genai
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -69,7 +70,6 @@ st.markdown("""
 
 @st.cache_data(ttl=300)
 def obtener_crypto_y_divisas():
-    """Obtiene precios en tiempo real de Crypto y Dólar CLP"""
     datos = {}
     try:
         url_crypto = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd,clp"
@@ -91,7 +91,6 @@ def obtener_crypto_y_divisas():
 
 @st.cache_data(ttl=600)
 def obtener_clima_buin():
-    """Obtiene el clima actual para Buin, Chile"""
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
         resp = requests.get(url, timeout=5).json()
@@ -115,7 +114,6 @@ with st.sidebar:
     st.divider()
     st.subheader("⏱️ Sincronización Temporal")
     
-    # RELOJ DIGITAL EN TIEMPO REAL (HTML + JavaScript)
     st.components.v1.html("""
         <div style="
             background-color: #1e222d;
@@ -197,17 +195,25 @@ with tab1:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
         
-        texto_lower = user_input.lower()
-        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: Saludos operativos, jefa. Los sistemas están activos y listos para cualquier directiva."
-        elif any(w in texto_lower for w in ["clima", "tiempo", "buin"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: Los sensores meteorológicos de Buin operan con normalidad. Consulta la pestaña de Clima para detalles finos."
-        elif any(w in texto_lower for w in ["crypto", "dolar", "precio", "mercado"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: Enlace con CoinGecko y Bancos establecido. Revisa la pestaña 'Mercado & Crypto'."
-        elif st.session_state.get('api_key_openai'):
-            respuesta_jarvis = f"J.A.R.V.I.S. (IA Activa): Orden '{user_input}' procesada con éxito a través del núcleo principal."
+        # PROCESAMIENTO CON GEMINI O RESPUESTA TÁCTICA
+        api_key = st.session_state.get('api_key_gemini')
+        respuesta_jarvis = ""
+
+        if api_key:
+            try:
+                genai.configure(api_key=api_key)
+                modelo = genai.GenerativeModel('gemini-1.5-flash')
+                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico pero leal y eficiente, que asiste a tu creadora Cindy en Buin, Chile."
+                respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
+                respuesta_jarvis = respuesta.text
+            except Exception as e:
+                respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Verifique su clave."
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada y ejecutada en la consola táctica."
+            texto_lower = user_input.lower()
+            if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+                respuesta_jarvis = "J.A.R.V.I.S.: Saludos operativos, jefa. Los sistemas están activos y listos para cualquier directiva."
+            else:
+                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su API Key en la pestaña Configuración)."
             
         st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
         st.chat_message("assistant").write(respuesta_jarvis)
@@ -279,8 +285,8 @@ with tab4:
 # ---------------------------------------------------------
 with tab5:
     st.subheader("⚙️ Configuración del Motor de Inteligencia")
-    st.caption("Conecta una clave de API para activar procesamiento avanzado de lenguaje natural.")
-    key_input = st.text_input("Clave API de OpenAI / Gemini:", type="password")
+    st.caption("Conecta tu clave de API de Google Gemini para activar el núcleo de razonamiento autónomo.")
+    key_input = st.text_input("Clave API de Google Gemini:", type="password", value=st.session_state.get('api_key_gemini', ''))
     if st.button("💾 Guardar Clave API"):
-        st.session_state['api_key_openai'] = key_input
-        st.success("Clave vinculada con éxito al núcleo de J.A.R.V.I.S.")
+        st.session_state['api_key_gemini'] = key_input
+        st.success("Clave de Gemini vinculada con éxito al núcleo de J.A.R.V.I.S.")
