@@ -4,14 +4,7 @@ import requests
 import xml.etree.ElementTree as ET
 import time
 import pandas as pd
-import plotly.express as px
 import google.generativeai as genai
-
-# Librería opcional/estándar para leer texto de archivos subidos
-try:
-    import pypdf
-except ImportError:
-    pypdf = None
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -283,22 +276,15 @@ with st.sidebar:
 
     st.divider()
     
-    # NUEVO MÓDULO: ESCÁNER DE DOCUMENTOS PDF / TEXTO
-    st.subheader("📄 Escáner Táctico de Documentos")
-    archivo_subido = st.file_uploader("Cargar PDF o TXT para análisis:", type=["pdf", "txt"])
+    # MÓDULO: ESCÁNER DE ARCHIVOS DE TEXTO / DOCUMENTOS
+    st.subheader("📄 Escáner Táctico de Texto")
+    archivo_subido = st.file_uploader("Cargar TXT para análisis:", type=["txt", "csv", "md"])
     if archivo_subido is not None:
-        texto_extraido = ""
         try:
-            if archivo_subido.name.endswith(".pdf") and pypdf:
-                reader = pypdf.PdfReader(archivo_subido)
-                for page in reader.pages:
-                    texto_extraido += page.extract_text() or ""
-            else:
-                texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
-            
+            texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
             st.success(f"✅ Documento leído ({len(texto_extraido)} caracteres).")
             if st.button("🔍 Analizar con J.A.R.V.I.S."):
-                prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente documento:\n\n{texto_extraido[:3000]}"
+                prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto:\n\n{texto_extraido[:3000]}"
                 st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
                 
                 api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
@@ -445,17 +431,8 @@ with col_m1:
             df_hist = pd.DataFrame(serie_hist)
             df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
             df_hist = df_hist.sort_values(by='fecha')
-            
-            fig = px.line(df_hist, x='fecha', y='valor', title="Dólar observatorio (CLP)", markers=True)
-            fig.update_traces(line_color='#00f3ff', marker_color='#00f3ff')
-            fig.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#00f3ff',
-                margin=dict(l=10, r=10, t=30, b=10),
-                height=220
-            )
-            st.plotly_chart(fig, use_container_width=True)
+            chart_data = df_hist.set_index('fecha')[['valor']]
+            st.line_chart(chart_data)
         else:
             st.caption("Cargando datos del Banco Central...")
 
