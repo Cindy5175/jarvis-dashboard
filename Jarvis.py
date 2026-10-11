@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (CSS)
+# ESTILOS VISUALES (CSS MEJORADO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -21,12 +21,22 @@ st.markdown("""
         background-color: #0e1117;
         color: #ffffff;
     }
-    .metric-card {
+    /* Estilo profesional para los botones */
+    .stButton>button {
+        background-color: #1f2937;
+        color: #ffffff;
+        border: 1px solid #374151;
+        border-radius: 8px;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #6ee7b7;
+    }
+    /* Contenedor de chat visible */
+    .stChatInputContainer {
         background-color: #1e222d;
-        border-radius: 10px;
-        padding: 15px;
-        border: 1px solid #2e3440;
-        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -39,7 +49,6 @@ st.markdown("""
 def obtener_crypto_y_divisas():
     """Obtiene precios en tiempo real de Crypto y Dólar CLP"""
     datos = {}
-    # Crypto via CoinGecko API pública
     try:
         url_crypto = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd,clp"
         resp = requests.get(url_crypto, timeout=5).json()
@@ -49,7 +58,6 @@ def obtener_crypto_y_divisas():
     except Exception:
         datos['btc_usd'], datos['eth_usd'], datos['usdt_clp'] = "Error", "Error", "Error"
 
-    # Dólar CLP via Mindicador API
     try:
         url_clp = "https://mindicador.cl/api/dolar"
         resp_clp = requests.get(url_clp, timeout=5).json()
@@ -63,7 +71,6 @@ def obtener_crypto_y_divisas():
 def obtener_clima_buin():
     """Obtiene el clima actual para Buin, Chile"""
     try:
-        # Coordenadas aproximadas de Buin, Chile (-33.73, -70.73)
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
         resp = requests.get(url, timeout=5).json()
         return resp.get('current_weather', {})
@@ -74,7 +81,6 @@ def obtener_clima_buin():
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
 st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
-
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
@@ -83,17 +89,14 @@ st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
     st.caption("Ubicación Base: Buin, Chile")
-    
-    # Mapa compacto
     st.map(data={"lat": [-33.73], "lon": [-70.73]}, zoom=10)
-    
     st.divider()
     st.subheader("⏱️ Sincronización Temporal")
     hora_actual = datetime.datetime.now().strftime("%H:%M:%S")
     st.metric(label="Hora Local", value=hora_actual)
 
 # ---------------------------------------------------------
-# NAVEGACIÓN POR PESTAÑAS (MANTIENE LAS ORIGINALES + EXTENSIONES)
+# NAVEGACIÓN POR PESTAÑAS
 # ---------------------------------------------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "💬 Terminal de Conversación", 
@@ -104,11 +107,10 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 # ---------------------------------------------------------
-# TAB 1: TERMINAL DE CONVERSACIÓN (CÓDIGO ORIGINAL INTACTO)
+# TAB 1: TERMINAL DE CONVERSACIÓN
 # ---------------------------------------------------------
 with tab1:
     st.subheader("Conversación Autónoma & Dictado por Voz")
-    
     st.markdown("**⚡ Comandos Tácticos Rápidos:**")
     col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
     
@@ -124,11 +126,10 @@ with tab1:
     with col_btn4:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = []
-            st.experimental_rerun()
+            st.rerun()
 
     st.divider()
 
-    # Historial de Chat
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
             {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
@@ -145,9 +146,8 @@ with tab1:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
         
-        # Respuesta por defecto o con IA si está configurada
         if st.session_state.get('api_key_openai'):
-            respuesta_jarvis = f"J.A.R.V.I.S. (IA Activa): He recibido tu orden '{user_input}'. Procesando con redes neuronales..."
+            respuesta_jarvis = f"J.A.R.V.I.S. (IA Activa): He recibido tu orden '{user_input}'. Procesando..."
         else:
             respuesta_jarvis = f"J.A.R.V.I.S.: Comprendido, orden '{user_input}' registrada en la consola táctica."
             
@@ -155,7 +155,7 @@ with tab1:
         st.chat_message("assistant").write(respuesta_jarvis)
 
 # ---------------------------------------------------------
-# TAB 2: MERCADO & CRYPTO (NUEVO)
+# TAB 2: MERCADO & CRYPTO
 # ---------------------------------------------------------
 with tab2:
     st.subheader("📊 Cotizaciones & Mercado en Tiempo Real")
@@ -163,7 +163,6 @@ with tab2:
         st.cache_data.clear()
         
     finanzas = obtener_crypto_y_divisas()
-    
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.metric("💵 Dólar Observador", f"${finanzas.get('dolar_clp', 'N/A')} CLP")
@@ -178,12 +177,11 @@ with tab2:
         st.metric("₮ USDT / CLP", f"${usdt:,.2f} CLP" if isinstance(usdt, (int, float)) else str(usdt))
 
 # ---------------------------------------------------------
-# TAB 3: CLIMA & TELEMETRÍA (NUEVO)
+# TAB 3: CLIMA & TELEMETRÍA
 # ---------------------------------------------------------
 with tab3:
     st.subheader("🌤️ Telemetría Meteorológica - Buin")
     clima = obtener_clima_buin()
-    
     if clima:
         col_m1, col_m2, col_m3 = st.columns(3)
         with col_m1:
@@ -196,11 +194,10 @@ with tab3:
         st.warning("No se pudo obtener el reporte en vivo de los sensores meteorológicos.")
 
 # ---------------------------------------------------------
-# TAB 4: BLOC & TAREAS (NUEVO)
+# TAB 4: BLOC & TAREAS
 # ---------------------------------------------------------
 with tab4:
     st.subheader("📝 Módulo de Notas Rápidas & Pendientes")
-    
     if 'notas_jarvis' not in st.session_state:
         st.session_state['notas_jarvis'] = []
 
@@ -209,7 +206,7 @@ with tab4:
         if nueva_nota:
             st.session_state['notas_jarvis'].append(nueva_nota)
             st.success("Nota agregada al protocolo.")
-            st.experimental_rerun()
+            st.rerun()
 
     st.markdown("### 📋 Notas Guardadas en Sesión:")
     if st.session_state['notas_jarvis']:
@@ -219,12 +216,11 @@ with tab4:
         st.caption("No hay notas guardadas actualmente.")
 
 # ---------------------------------------------------------
-# TAB 5: CONFIGURACIÓN & IA (NUEVO)
+# TAB 5: CONFIGURACIÓN & IA
 # ---------------------------------------------------------
 with tab5:
     st.subheader("⚙️ Configuración del Motor de Inteligencia")
     st.caption("Conecta una clave de API para activar procesamiento avanzado de lenguaje natural.")
-    
     key_input = st.text_input("Clave API de OpenAI / Gemini:", type="password")
     if st.button("💾 Guardar Clave API"):
         st.session_state['api_key_openai'] = key_input
