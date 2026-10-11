@@ -2,7 +2,16 @@ import streamlit as st
 import datetime
 import requests
 import xml.etree.ElementTree as ET
+import time
+import pandas as pd
+import plotly.express as px
 import google.generativeai as genai
+
+# Librería opcional/estándar para leer texto de archivos subidos
+try:
+    import pypdf
+except ImportError:
+    pypdf = None
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -86,7 +95,7 @@ st.markdown("""
     }
 
     /* 6. ENTRADAS DE TEXTO GENERALES Y SELECTBOX */
-    .stTextInput input, div[data-baseweb="select"] > div {
+    .stTextInput input, div[data-baseweb="select"] > div, [data-testid="stFileUploader"] {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
         border: 1px solid #00f3ff !important;
@@ -117,6 +126,12 @@ st.markdown("""
     div[data-testid="stMetricLabel"] {
         color: #00a8b5 !important;
     }
+    
+    /* BARRAS DE PROGRESO NEÓN */
+    .stProgress > div > div > div > div {
+        background-color: #00f3ff !important;
+        box-shadow: 0 0 10px #00f3ff;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,14 +141,16 @@ st.markdown("""
 
 @st.cache_data(ttl=300)
 def obtener_divisas_chile():
-    datos = {}
+    datos = {'dolar_clp': 0.0, 'euro_clp': 0.0, 'uf_clp': 0.0, 'serie_historica': []}
     try:
         url_dolar = "https://mindicador.cl/api/dolar"
         resp_dolar = requests.get(url_dolar, timeout=5).json()
         serie = resp_dolar.get('serie', [])
-        datos['dolar_clp'] = serie[0]['valor'] if len(serie) > 0 else 0.0
+        if len(serie) > 0:
+            datos['dolar_clp'] = serie[0]['valor']
+            datos['serie_historica'] = serie[:30] # Últimos 30 días
     except Exception:
-        datos['dolar_clp'] = 0.0
+        pass
 
     try:
         url_euro = "https://mindicador.cl/api/euro"
@@ -141,7 +158,7 @@ def obtener_divisas_chile():
         serie_e = resp_euro.get('serie', [])
         datos['euro_clp'] = serie_e[0]['valor'] if len(serie_e) > 0 else 0.0
     except Exception:
-        datos['euro_clp'] = 0.0
+        pass
 
     try:
         url_uf = "https://mindicador.cl/api/uf"
@@ -149,7 +166,7 @@ def obtener_divisas_chile():
         serie_uf = resp_uf.get('serie', [])
         datos['uf_clp'] = serie_uf[0]['valor'] if len(serie_uf) > 0 else 0.0
     except Exception:
-        datos['uf_clp'] = 0.0
+        pass
 
     return datos
 
@@ -190,6 +207,23 @@ def obtener_noticias_tacticas():
     except Exception:
         noticias = [{"titulo": "No se pudieron cargar las noticias en este momento.", "link": "#", "fecha": ""}]
     return noticias
+
+def verificar_ping_red():
+    servidores = {
+        "Google API (Gemini)": "https://generativelanguage.googleapis.com",
+        "Mindicador Chile": "https://mindicador.cl",
+        "Open-Meteo Satélite": "https://api.open-meteo.com"
+    }
+    resultados = {}
+    for nombre, url in servidores.items():
+        t0 = time.time()
+        try:
+            r = requests.get(url, timeout=2)
+            ms = round((time.time() - t0) * 1000)
+            resultados[nombre] = f"🟢 {ms} ms"
+        except Exception:
+            resultados[nombre] = "🔴 Fuera de línea"
+    return resultados
 
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
@@ -240,7 +274,7 @@ with st.sidebar:
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en Buin, Chile.",
-        "GB Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "💂‍♂️ Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
         "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
@@ -249,6 +283,38 @@ with st.sidebar:
 
     st.divider()
     
+    # NUEVO MÓDULO: ESCÁNER DE DOCUMENTOS PDF / TEXTO
+    st.subheader("📄 Escáner Táctico de Documentos")
+    archivo_subido = st.file_uploader("Cargar PDF o TXT para análisis:", type=["pdf", "txt"])
+    if archivo_subido is not None:
+        texto_extraido = ""
+        try:
+            if archivo_subido.name.endswith(".pdf") and pypdf:
+                reader = pypdf.PdfReader(archivo_subido)
+                for page in reader.pages:
+                    texto_extraido += page.extract_text() or ""
+            else:
+                texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
+            
+            st.success(f"✅ Documento leído ({len(texto_extraido)} caracteres).")
+            if st.button("🔍 Analizar con J.A.R.V.I.S."):
+                prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente documento:\n\n{texto_extraido[:3000]}"
+                st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
+                
+                api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+                if api_key:
+                    genai.configure(api_key=api_key)
+                    m = genai.GenerativeModel('gemini-3.8-flash')
+                    res = m.generate_content(f"{prompt_personalidad}\n{prompt_doc}")
+                    st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                else:
+                    st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Lectura completada. Se requiere API Key para la síntesis de inteligencia."})
+                st.rerun()
+        except Exception as e:
+            st.error(f"Error al leer archivo: {str(e)}")
+
+    st.divider()
+
     # FINANZAS
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
@@ -368,8 +434,61 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# MÓDULO NUEVO: MONITOR DE NOTICIAS Y TENDENCIAS TÁCTICAS
+# MÓDULOS TECNOLÓGICOS NUEVOS (PANELES EXPANDIBLES)
 # ---------------------------------------------------------
+col_m1, col_m2 = st.columns(2)
+
+with col_m1:
+    with st.expander("📈 TENDENCIA HISTÓRICA DÓLAR (30 DÍAS)", expanded=False):
+        serie_hist = finanzas_sidebar.get('serie_historica', [])
+        if serie_hist:
+            df_hist = pd.DataFrame(serie_hist)
+            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
+            df_hist = df_hist.sort_values(by='fecha')
+            
+            fig = px.line(df_hist, x='fecha', y='valor', title="Dólar observatorio (CLP)", markers=True)
+            fig.update_traces(line_color='#00f3ff', marker_color='#00f3ff')
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color='#00f3ff',
+                margin=dict(l=10, r=10, t=30, b=10),
+                height=220
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("Cargando datos del Banco Central...")
+
+with col_m2:
+    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
+        pings = verificar_ping_red()
+        for srv, stt in pings.items():
+            st.markdown(f"**{srv}:** `{stt}`")
+
+# MATRIZ DE OBJETIVOS Y METAS
+with st.expander("🎯 MATRIZ DE OBJETIVOS Y PROYECTOS TÁCTICOS", expanded=False):
+    if 'metas_jarvis' not in st.session_state:
+        st.session_state['metas_jarvis'] = [
+            {"meta": "Optimización del núcleo J.A.R.V.I.S. 4.0", "progreso": 100},
+            {"meta": "Auditoría de Fondos y Crypto", "progreso": 75}
+        ]
+    
+    col_n1, col_n2 = st.columns([3, 1])
+    with col_n1:
+        nueva_m = st.text_input("Nuevo proyecto/objetivo:", key="txt_meta")
+    with col_n2:
+        prog_m = st.slider("Avance %", 0, 100, 50, key="sld_meta")
+    
+    if st.button("📌 Agregar Objetivo"):
+        if nueva_m:
+            st.session_state['metas_jarvis'].append({"meta": nueva_m, "progreso": prog_m})
+            st.rerun()
+
+    for idx, item in enumerate(st.session_state['metas_jarvis']):
+        st.markdown(f"**{item['meta']}** - `{item['progreso']}%`")
+        st.progress(item['progreso'] / 100)
+
+# MONITOR DE NOTICIAS
 with st.expander("📰 MONITOR DE NOTICIAS Y TENDENCIAS FINANCIERAS", expanded=False):
     lista_noticias = obtener_noticias_tacticas()
     for item in lista_noticias:
@@ -381,6 +500,8 @@ with st.expander("📰 MONITOR DE NOTICIAS Y TENDENCIAS FINANCIERAS", expanded=F
             f'</div>',
             unsafe_allow_html=True
         )
+
+st.divider()
 
 # SÍNTESIS DE VOZ
 if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
