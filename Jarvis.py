@@ -18,21 +18,23 @@ st.set_page_config(
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* 1. FONDO PRINCIPAL, HEADER Y FOOTER EN NEGRO ABSOLUTO */
+    /* 1. FORZAR NEGRO ABSOLUTO EN TODA LA APLICACIÓN Y CONTENEDORES INFERIORES */
     html, body, .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"],
-    header, .stAppHeader, div[data-testid="stHeader"], footer, [data-testid="stBottom"],
-    [data-testid="stChatInputContainer"], div[data-testid="stForm"] {
+    header, .stAppHeader, div[data-testid="stHeader"], footer, 
+    [data-testid="stBottom"], [data-testid="stBottomBlockContainer"], 
+    [data-testid="stChatInputContainer"], .stMainBlockContainer {
         background-color: #080c14 !important;
         color: #00f3ff !important;
     }
 
-    /* 2. BARRA SUPERIOR (SHARE, ÍCONOS, MENÚS) EN AZUL NEÓN VISIBLE */
+    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR (SHARE E ÍCONOS) */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
-    header button, header svg, button[title] {
+    header button, header svg, button[title], [data-testid="baseButton-header"] {
         color: #00f3ff !important;
         fill: #00f3ff !important;
         stroke: #00f3ff !important;
+        background-color: transparent !important;
     }
 
     /* 3. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
@@ -57,11 +59,13 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* 5. ELIMINAR CUALQUIER FONDO BLANCO EN LA ENTRADA DEL CHAT */
-    div[data-testid="stChatInput"], 
-    div[data-testid="stChatInput"] > div, 
+    /* 5. MATAR EL FONDO BLANCO DE LA CAJA DE CHAT INFERIOR */
+    [data-testid="stChatInput"], 
+    [data-testid="stChatInput"] > div, 
     div[data-baseweb="base-input"],
-    div[data-baseweb="input"] {
+    div[data-baseweb="input"],
+    .stChatFloatingInputContainer,
+    div.stChatFloatingInputContainer {
         background-color: #0b1320 !important;
         border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
@@ -79,7 +83,7 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* 6. ENTRADAS DE TEXTO Y SELECTBOX */
+    /* 6. ENTRADAS DE TEXTO GENERALES Y SELECTBOX */
     .stTextInput input, div[data-baseweb="select"] > div {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
@@ -102,7 +106,7 @@ st.markdown("""
         font-size: 1rem !important;
     }
     
-    /* 8. METRICAS */
+    /* 8. MÉTRICAS */
     div[data-testid="stMetricValue"] {
         color: #00f3ff !important;
         font-weight: bold !important;
@@ -515,7 +519,7 @@ if user_input:
         elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
             respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets di Streamlit)."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
     st.rerun()
