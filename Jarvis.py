@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (ALTO CONTRASTE - ENTRADA Y CHAT BLANCOS)
+# ESTILOS VISUALES (ENTRADA FIJA ABAJO + DISEÑO CLARO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -38,7 +38,7 @@ st.markdown("""
         border-color: #4b5563 !important;
     }
 
-    /* Caja de entrada del chat - Fondo Blanco Brillante y Texto Negro */
+    /* Caja de entrada del chat fija abajo - Fondo Blanco y Texto Negro */
     [data-testid="stChatInput"] {
         background-color: #ffffff !important;
         border: 2px solid #6ee7b7 !important;
@@ -57,13 +57,13 @@ st.markdown("""
         color: #555555 !important;
     }
 
-    /* Contenedor general del Input */
+    /* Contenedor del Chat Input */
     .stChatInputContainer {
         background-color: #ffffff !important;
         border-radius: 12px !important;
     }
 
-    /* Cajas de entrada de texto generales (ej. API Key) */
+    /* Entradas de texto generales (API Key) */
     .stTextInput input {
         color: #000000 !important;
         background-color: #ffffff !important;
@@ -203,18 +203,22 @@ with tab1:
 
     st.divider()
 
+    # Inicializar historial
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
             {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
         ]
 
-    for msg in st.session_state['chat_history']:
-        st.chat_message(msg["role"]).write(msg["content"])
+    # Contenedor para mostrar todo el historial arriba
+    chat_container = st.container()
+    with chat_container:
+        for msg in st.session_state['chat_history']:
+            st.chat_message(msg["role"]).write(msg["content"])
 
+    # La caja para escribir queda al final (Streamlit la ancla abajo)
     user_input = st.chat_input("Escribe una orden para J.A.R.V.I.S...")
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
-        st.chat_message("user").write(user_input)
         
         # PROCESAMIENTO CON GEMINI
         api_key = st.session_state.get('api_key_gemini')
@@ -223,13 +227,14 @@ with tab1:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                
-                # Búsqueda dinámica del modelo disponible para evitar errores 404
+                # Detección inteligente de modelo disponible
                 modelo_nombre = 'gemini-1.5-flash'
                 try:
-                    modelos_disponibles = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                    if modelos_disponibles:
-                        modelo_nombre = modelos_disponibles[0]
+                    models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                    if models:
+                        # Prioriza modelos 'flash' o toma el primero compatible
+                        flash_models = [m for m in models if 'flash' in m]
+                        modelo_nombre = flash_models[0] if flash_models else models[0]
                 except Exception:
                     pass
 
@@ -247,7 +252,7 @@ with tab1:
                 respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su API Key en la pestaña Configuración)."
             
         st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
-        st.chat_message("assistant").write(respuesta_jarvis)
+        st.rerun()
 
 # ---------------------------------------------------------
 # TAB 2: MERCADO & CRYPTO
