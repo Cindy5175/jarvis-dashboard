@@ -18,7 +18,7 @@ st.set_page_config(
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* 1. FORZAR NEGRO ABSOLUTO EN TODA LA APLICACIÓN Y CONTENEDORES INFERIORES */
+    /* 1. FORZAR NEGRO ABSOLUTO EN TODA LA APLICACIÓN Y CONTENEDORES */
     html, body, .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"],
     header, .stAppHeader, div[data-testid="stHeader"], footer, 
     [data-testid="stBottom"], [data-testid="stBottomBlockContainer"], 
@@ -27,7 +27,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR (SHARE E ÍCONOS) */
+    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
     header button, header svg, button[title], [data-testid="baseButton-header"] {
@@ -92,7 +92,7 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* 7. MENSAJES DEL CHAT E HISTORIAL CON BORDES NEÓN */
+    /* 7. MENSAJES DEL CHAT E HISTORIAL */
     [data-testid="stChatMessage"] {
         background-color: #0e1726 !important;
         border: 1px solid #00f3ff !important;
@@ -129,25 +129,25 @@ def obtener_divisas_chile():
         url_dolar = "https://mindicador.cl/api/dolar"
         resp_dolar = requests.get(url_dolar, timeout=5).json()
         serie = resp_dolar.get('serie', [])
-        datos['dolar_clp'] = serie[0]['valor'] if len(serie) > 0 else "N/A"
+        datos['dolar_clp'] = serie[0]['valor'] if len(serie) > 0 else 0.0
     except Exception:
-        datos['dolar_clp'] = "N/A"
+        datos['dolar_clp'] = 0.0
 
     try:
         url_euro = "https://mindicador.cl/api/euro"
         resp_euro = requests.get(url_euro, timeout=5).json()
         serie_e = resp_euro.get('serie', [])
-        datos['euro_clp'] = serie_e[0]['valor'] if len(serie_e) > 0 else "N/A"
+        datos['euro_clp'] = serie_e[0]['valor'] if len(serie_e) > 0 else 0.0
     except Exception:
-        datos['euro_clp'] = "N/A"
+        datos['euro_clp'] = 0.0
 
     try:
         url_uf = "https://mindicador.cl/api/uf"
         resp_uf = requests.get(url_uf, timeout=5).json()
         serie_uf = resp_uf.get('serie', [])
-        datos['uf_clp'] = serie_uf[0]['valor'] if len(serie_uf) > 0 else "N/A"
+        datos['uf_clp'] = serie_uf[0]['valor'] if len(serie_uf) > 0 else 0.0
     except Exception:
-        datos['uf_clp'] = "N/A"
+        datos['uf_clp'] = 0.0
 
     return datos
 
@@ -178,7 +178,7 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (MAPA, RELOJ, FINANZAS, CLIMA, PERSONALIDAD, SISMOS & NOTAS)
+# BARRA LATERAL
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
@@ -233,9 +233,13 @@ with st.sidebar:
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
     
-    dolar_s = finanzas_sidebar.get('dolar_clp', 'N/A')
-    euro_s = finanzas_sidebar.get('euro_clp', 'N/A')
-    uf_s = finanzas_sidebar.get('uf_clp', 'N/A')
+    dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
+    euro_val = finanzas_sidebar.get('euro_clp', 0.0)
+    uf_val = finanzas_sidebar.get('uf_clp', 0.0)
+
+    dolar_s = f"${dolar_val:,.2f}" if isinstance(dolar_val, (int, float)) else str(dolar_val)
+    euro_s = f"${euro_val:,.2f}" if isinstance(euro_val, (int, float)) else str(euro_val)
+    uf_s = f"${uf_val:,.2f}" if isinstance(uf_val, (int, float)) else str(uf_val)
     
     st.markdown(f"""
     <div style="
@@ -246,15 +250,15 @@ with st.sidebar:
         font-family: monospace;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
     ">
-        <span style="color: #00a8b5; font-size: 13px; display: block;">💵 Dólar: <b style="color: #00f3ff;">${dolar_s:,.2f} CLP</b></span>
-        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">💶 Euro: <b style="color: #00f3ff;">${euro_s:,.2f} CLP</b></span>
-        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">🇨🇱 UF: <b style="color: #00f3ff;">${uf_s:,.2f} CLP</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block;">💵 Dólar: <b style="color: #00f3ff;">{dolar_s} CLP</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">💶 Euro: <b style="color: #00f3ff;">{euro_s} CLP</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">🇨🇱 UF: <b style="color: #00f3ff;">{uf_s} CLP</b></span>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
 
-    # TELEMETRÍA METEOROLÓGICA (VERTICAL)
+    # CLIMA
     st.subheader("🌤️ Clima Buin")
     clima = obtener_clima_buin()
     temp_v = clima.get('temperature', 'N/A')
@@ -278,7 +282,7 @@ with st.sidebar:
 
     st.divider()
 
-    # MONITOR SISMOLÓGICO SISMICO CHILE
+    # SISMOS
     st.subheader("🌍 Telemetría Sísmica CSN")
     ultimo_sismo = obtener_ultimo_sismo_chile()
     if ultimo_sismo:
@@ -304,7 +308,7 @@ with st.sidebar:
 
     st.divider()
 
-    # BLOC DE NOTAS
+    # NOTAS
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
         st.session_state['notas_jarvis'] = []
@@ -320,12 +324,11 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# TERMINAL DE CONVERSACIÓN Y CONTROL DE IA
+# TERMINAL DE CONVERSACIÓN
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
 
-# MÓDULO DE ALERTAS Y RESUMEN TÁCTICO
-dolar_actual = finanzas_sidebar.get('dolar_clp', 'N/A')
+dolar_actual = dolar_s
 
 st.markdown(f"""
 <div style="
@@ -338,13 +341,13 @@ st.markdown(f"""
 ">
     <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
     <span style="font-size: 0.9rem; color: #00a8b5;">
-        • Buin: {temp_v}°C | Dólar: ${dolar_actual} CLP<br>
+        • Buin: {temp_v}°C | Dólar: {dolar_actual} CLP<br>
         • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# MÓDULO DE VOZ SÍNTESIS
+# SÍNTESIS DE VOZ
 if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
     ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
     if ultimo_mensaje_asistente:
@@ -379,7 +382,7 @@ if 'chat_history' in st.session_state and len(st.session_state['chat_history']) 
             </script>
         """, height=65)
 
-# MÓDULO DE DICTADO POR VOZ (MICRÓFONO DIRECTO)
+# MICRÓFONO DIRECTO
 st.components.v1.html("""
     <div style="margin-bottom: 10px; text-align: center;">
         <button id="btn-mic" onclick="comenzarDictado()" style="
@@ -472,19 +475,18 @@ with col_btn4:
 
 st.divider()
 
-# Inicialización del historial
+# HISTORIAL DE CHAT
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = [
         {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
     ]
 
-# Render del historial de chat
 chat_container = st.container()
 with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# Entrada de mensajes
+# ENTRADA DE MENSAJES
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -506,7 +508,6 @@ if user_input:
                 pass
 
             modelo = genai.GenerativeModel(modelo_nombre)
-            
             prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
@@ -519,7 +520,7 @@ if user_input:
         elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
             respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets di Streamlit)."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
     st.rerun()
