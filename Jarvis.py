@@ -14,11 +14,11 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (ESTILO CLARO PARA CAJA DE CHAT Y TEXTO)
+# ESTILOS VISUALES (ALTO CONTRASTE - ENTRADA Y CHAT BLANCOS)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* Fondo principal */
+    /* Fondo principal de la app */
     .stApp {
         background-color: #0e1117;
         color: #ffffff;
@@ -38,15 +38,36 @@ st.markdown("""
         border-color: #4b5563 !important;
     }
 
-    /* Caja de entrada de texto (Chat Input en Blanco y Letra Negra) */
-    .stChatInput textarea {
+    /* Caja de entrada del chat - Fondo Blanco Brillante y Texto Negro */
+    [data-testid="stChatInput"] {
+        background-color: #ffffff !important;
+        border: 2px solid #6ee7b7 !important;
+        border-radius: 12px !important;
+        padding: 5px !important;
+    }
+    
+    [data-testid="stChatInput"] textarea {
         color: #000000 !important;
         background-color: #ffffff !important;
+        font-size: 1.1rem !important;
+        font-weight: 500 !important;
     }
+
+    [data-testid="stChatInput"] textarea::placeholder {
+        color: #555555 !important;
+    }
+
+    /* Contenedor general del Input */
     .stChatInputContainer {
         background-color: #ffffff !important;
-        border: 1px solid #374151 !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Cajas de entrada de texto generales (ej. API Key) */
+    .stTextInput input {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        font-weight: 500 !important;
     }
 
     /* Mensajes del Chat e Historial */
@@ -54,8 +75,8 @@ st.markdown("""
         background-color: #1a202c !important;
         border: 1px solid #2d3748 !important;
         border-radius: 10px !important;
-        padding: 10px !important;
-        margin-bottom: 8px !important;
+        padding: 12px !important;
+        margin-bottom: 10px !important;
     }
     [data-testid="stChatMessage"] p {
         color: #ffffff !important;
@@ -195,18 +216,24 @@ with tab1:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
         
-        # PROCESAMIENTO CON GEMINI O RESPUESTA TÁCTICA
+        # PROCESAMIENTO CON GEMINI
         api_key = st.session_state.get('api_key_gemini')
         respuesta_jarvis = ""
 
         if api_key:
             try:
                 genai.configure(api_key=api_key)
+                
+                # Búsqueda dinámica del modelo disponible para evitar errores 404
+                modelo_nombre = 'gemini-1.5-flash'
                 try:
-                    modelo = genai.GenerativeModel('gemini-3.8-flash')
+                    modelos_disponibles = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                    if modelos_disponibles:
+                        modelo_nombre = modelos_disponibles[0]
                 except Exception:
-                    modelo = genai.GenerativeModel('gemini-1.5-flash')
+                    pass
 
+                modelo = genai.GenerativeModel(modelo_nombre)
                 prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico pero leal y eficiente, que asiste a tu creadora Cindy en Buin, Chile."
                 respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
