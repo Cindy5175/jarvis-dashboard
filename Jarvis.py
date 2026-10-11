@@ -27,12 +27,11 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR Y EL MENÚ AL LADO DE SHARE */
+    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
     header button, header svg, button[title], [data-testid="baseButton-header"],
-    [data-testid="stMainMenu"], [data-testid="stMainMenu"] *, [data-testid="stMainMenu"] svg,
-    button[kind="header"] {
+    [data-testid="stMainMenu"], [data-testid="stMainMenu"] *, [data-testid="stMainMenu"] svg {
         color: #00f3ff !important;
         fill: #00f3ff !important;
         stroke: #00f3ff !important;
@@ -499,16 +498,9 @@ if user_input:
     if api_key:
         try:
             genai.configure(api_key=api_key)
-            modelo_nombre = 'gemini-1.5-flash'
-            try:
-                modelos_disp = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                for m_name in modelos_disp:
-                    if '1.5-flash' in m_name or 'flash' in m_name:
-                        modelo_nombre = m_name
-                        break
-            except Exception:
-                pass
-
+            # Actualizado al modelo libre actual recomendado por la API de Google
+            modelo_nombre = 'gemini-2.5-flash'
+            
             modelo = genai.GenerativeModel(modelo_nombre)
             prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
             respuesta = modelo.generate_content(prompt_completo)
