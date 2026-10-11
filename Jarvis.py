@@ -64,7 +64,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS (MÓDULOS)
+# FUNCIONES AUXILIARES DE APIS
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -106,7 +106,7 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (PANEL DE CONTROL & BASTIÓN)
+# BARRA LATERAL (PANEL DE CONTROL & RELOJ EN VIVO)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
@@ -114,8 +114,32 @@ with st.sidebar:
     st.map(data={"lat": [-33.73], "lon": [-70.73]}, zoom=10)
     st.divider()
     st.subheader("⏱️ Sincronización Temporal")
-    hora_actual = datetime.datetime.now().strftime("%H:%M:%S")
-    st.metric(label="Hora Local", value=hora_actual)
+    
+    # RELOJ DIGITAL EN TIEMPO REAL (HTML + JavaScript)
+    st.components.v1.html("""
+        <div style="
+            background-color: #1e222d;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-family: monospace;
+        ">
+            <span style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">Hora Local (Chile)</span>
+            <span id="reloj-jarvis" style="color: #6ee7b7; font-size: 28px; font-weight: bold; letter-spacing: 2px;">--:--:--</span>
+        </div>
+        <script>
+            function actualizarReloj() {
+                const ahora = new Date();
+                const horas = String(ahora.getHours()).padStart(2, '0');
+                const minutos = String(ahora.getMinutes()).padStart(2, '0');
+                const segundos = String(ahora.getSeconds()).padStart(2, '0');
+                document.getElementById('reloj-jarvis').textContent = horas + ':' + minutos + ':' + segundos;
+            }
+            actualizarReloj();
+            setInterval(actualizarReloj, 1000);
+        </script>
+    """, height=90)
 
 # ---------------------------------------------------------
 # NAVEGACIÓN POR PESTAÑAS
@@ -165,17 +189,14 @@ with tab1:
             {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
         ]
 
-    # Renderizar historial de chat
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # Entrada de texto del usuario con respuesta automática garantizada
     user_input = st.chat_input("Escribe una orden para J.A.R.V.I.S...")
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
         
-        # Lógica de respuesta inteligente según el mensaje
         texto_lower = user_input.lower()
         if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
             respuesta_jarvis = "J.A.R.V.I.S.: Saludos operativos, jefa. Los sistemas están activos y listos para cualquier directiva."
