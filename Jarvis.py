@@ -14,18 +14,18 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (TEMA AZUL NEÓN INTEGRAL Y ALTO CONTRASTE)
+# ESTILOS VISUALES (TEMA NEGRO ABSOLUTO Y AZUL NEÓN COMPLETO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* Fondo principal de la app */
-    .stApp {
+    /* Fondo principal y barra lateral en negro absoluto */
+    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"] {
         background-color: #080c14 !important;
         color: #00f3ff !important;
     }
     
-    /* Todos los textos, títulos y subtítulos en Azul Neón */
-    h1, h2, h3, h4, h5, h6, p, span, label, div {
+    /* Todos los textos, títulos, etiquetas e inputs en Azul Neón */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption {
         color: #00f3ff !important;
         text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
     }
@@ -65,7 +65,7 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* Entradas de texto generales */
+    /* Entradas de texto generales (Blocs, etc) */
     .stTextInput input {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
@@ -87,26 +87,28 @@ st.markdown("""
         color: #00f3ff !important;
         font-size: 1rem !important;
     }
+    
+    /* Métricas e Indicadores con brillo neón */
+    div[data-testid="stMetricValue"] {
+        color: #00f3ff !important;
+        font-weight: bold !important;
+        text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #00a8b5 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS
+# FUNCIONES AUXILIARES DE APIS (MINDICADOR CLP & OPEN-METEO)
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
-def obtener_crypto_y_divisas():
+def obtener_divisas_chile():
     datos = {}
-    try:
-        url_crypto = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd,clp"
-        resp = requests.get(url_crypto, timeout=5).json()
-        datos['btc_usd'] = resp.get('bitcoin', {}).get('usd', 'N/A')
-        datos['eth_usd'] = resp.get('ethereum', {}).get('usd', 'N/A')
-        datos['usdt_clp'] = resp.get('tether', {}).get('clp', 'N/A')
-    except Exception:
-        datos['btc_usd'], datos['eth_usd'], datos['usdt_clp'] = "Error", "Error", "Error"
-
-    # Dólar con respaldo para fines de semana
+    
+    # Dólar Observador con respaldo
     try:
         url_dolar = "https://mindicador.cl/api/dolar"
         resp_dolar = requests.get(url_dolar, timeout=5).json()
@@ -115,7 +117,7 @@ def obtener_crypto_y_divisas():
     except Exception:
         datos['dolar_clp'] = "N/A"
 
-    # Euro con respaldo para fines de semana
+    # Euro con respaldo
     try:
         url_euro = "https://mindicador.cl/api/euro"
         resp_euro = requests.get(url_euro, timeout=5).json()
@@ -202,7 +204,7 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# NAVEGACIÓN POR PESTAÑAS (ÚNICAMENTE 3 PESTAÑAS)
+# NAVEGACIÓN POR PESTAÑAS (FINANZAS AL LADO IZQUIERDO)
 # ---------------------------------------------------------
 tab1, tab2, tab3 = st.tabs([
     "📈 Finanzas", 
@@ -211,17 +213,16 @@ tab1, tab2, tab3 = st.tabs([
 ])
 
 # ---------------------------------------------------------
-# TAB 1: FINANZAS (MERCADO, DIVISAS, UF & CRYPTO)
+# TAB 1: FINANZAS (DÓLAR, EURO Y UF)
 # ---------------------------------------------------------
 with tab1:
-    st.subheader("📊 Indicadores Financieros & Mercado en Tiempo Real")
+    st.subheader("📊 Indicadores Financieros Oficiales (Chile)")
     if st.button("🔄 Actualizar Cotizaciones"):
         st.cache_data.clear()
         st.rerun()
         
-    finanzas = obtener_crypto_y_divisas()
+    finanzas = obtener_divisas_chile()
     
-    st.markdown("### 💵 Monedas e Indicadores Nacionales")
     c1, c2, c3 = st.columns(3)
     with c1:
         dolar_val = finanzas.get('dolar_clp', 'N/A')
@@ -233,19 +234,6 @@ with tab1:
         uf_val = finanzas.get('uf_clp', 'N/A')
         st.metric("🇨🇱 UF (Unidad de Fomento)", f"${uf_val:,.2f} CLP" if isinstance(uf_val, (int, float)) else str(uf_val))
 
-    st.divider()
-    st.markdown("### ₿ Criptomonedas")
-    c4, c5, c6 = st.columns(3)
-    with c4:
-        btc = finanzas.get('btc_usd')
-        st.metric("₿ Bitcoin (BTC)", f"${btc:,.2f} USD" if isinstance(btc, (int, float)) else str(btc))
-    with c5:
-        eth = finanzas.get('eth_usd')
-        st.metric("Ξ Ethereum (ETH)", f"${eth:,.2f} USD" if isinstance(eth, (int, float)) else str(eth))
-    with c6:
-        usdt = finanzas.get('usdt_clp')
-        st.metric("₮ USDT / CLP", f"${usdt:,.2f} CLP" if isinstance(usdt, (int, float)) else str(usdt))
-
 # ---------------------------------------------------------
 # TAB 2: TERMINAL DE CONVERSACIÓN
 # ---------------------------------------------------------
@@ -254,11 +242,10 @@ with tab2:
     
     # MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
     clima_res = obtener_clima_buin()
-    fin_res = obtener_crypto_y_divisas()
+    fin_res = obtener_divisas_chile()
     
     temp_actual = clima_res.get('temperature', 'N/A')
     dolar_actual = fin_res.get('dolar_clp', 'N/A')
-    btc_actual = fin_res.get('btc_usd', 'N/A')
     
     st.markdown(f"""
     <div style="
@@ -271,7 +258,7 @@ with tab2:
     ">
         <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
         <span style="font-size: 0.9rem; color: #00a8b5;">
-            • Buin: {temp_actual}°C | Dólar: ${dolar_actual} CLP | Bitcoin: ${btc_actual} USD<br>
+            • Buin: {temp_actual}°C | Dólar: ${dolar_actual} CLP<br>
             • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
         </span>
     </div>
