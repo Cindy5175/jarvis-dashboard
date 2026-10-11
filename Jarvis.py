@@ -64,7 +64,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS (MÓDULOS NUEVOS)
+# FUNCIONES AUXILIARES DE APIS (MÓDULOS)
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -138,16 +138,24 @@ with tab1:
     
     with col_btn1:
         if st.button("📍 Estado Buin"):
-            st.info("J.A.R.V.I.S.: Perímetro en Buin reporta tranquilidad. Sensores ambientales estables.")
+            msg_buin = "J.A.R.V.I.S.: Perímetro en Buin reporta tranquilidad. Sensores ambientales estables."
+            st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+            st.rerun()
     with col_btn2:
         if st.button("📊 Financiero"):
-            st.info("J.A.R.V.I.S.: Mercados sincronizados. Revisa la pestaña 'Mercado & Crypto' para ver activos.")
+            msg_fin = "J.A.R.V.I.S.: Mercados sincronizados. Revisa la pestaña 'Mercado & Crypto' para ver activos."
+            st.session_state['chat_history'].append({"role": "assistant", "content": msg_fin})
+            st.rerun()
     with col_btn3:
         if st.button("⚙️ Sistema"):
-            st.info("J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100%.")
+            msg_sys = "J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100%."
+            st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+            st.rerun()
     with col_btn4:
         if st.button("🗑️ Limpiar Chat"):
-            st.session_state['chat_history'] = []
+            st.session_state['chat_history'] = [
+                {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
+            ]
             st.rerun()
 
     st.divider()
@@ -157,21 +165,28 @@ with tab1:
             {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
         ]
 
+    # Renderizar historial de chat
     for msg in st.session_state['chat_history']:
-        if msg["role"] == "user":
-            st.chat_message("user").write(msg["content"])
-        else:
-            st.chat_message("assistant").write(msg["content"])
+        st.chat_message(msg["role"]).write(msg["content"])
 
+    # Entrada de texto del usuario con respuesta automática garantizada
     user_input = st.chat_input("Escribe una orden para J.A.R.V.I.S...")
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
         
-        if st.session_state.get('api_key_openai'):
-            respuesta_jarvis = f"J.A.R.V.I.S. (IA Activa): He recibido tu orden '{user_input}'. Procesando..."
+        # Lógica de respuesta inteligente según el mensaje
+        texto_lower = user_input.lower()
+        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: Saludos operativos, jefa. Los sistemas están activos y listos para cualquier directiva."
+        elif any(w in texto_lower for w in ["clima", "tiempo", "buin"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: Los sensores meteorológicos de Buin operan con normalidad. Consulta la pestaña de Clima para detalles finos."
+        elif any(w in texto_lower for w in ["crypto", "dolar", "precio", "mercado"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: Enlace con CoinGecko y Bancos establecido. Revisa la pestaña 'Mercado & Crypto'."
+        elif st.session_state.get('api_key_openai'):
+            respuesta_jarvis = f"J.A.R.V.I.S. (IA Activa): Orden '{user_input}' procesada con éxito a través del núcleo principal."
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Comprendido, orden '{user_input}' registrada en la consola táctica."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada y ejecutada en la consola táctica."
             
         st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
         st.chat_message("assistant").write(respuesta_jarvis)
@@ -183,6 +198,7 @@ with tab2:
     st.subheader("📊 Cotizaciones & Mercado en Tiempo Real")
     if st.button("🔄 Actualizar Cotizaciones"):
         st.cache_data.clear()
+        st.rerun()
         
     finanzas = obtener_crypto_y_divisas()
     c1, c2, c3, c4 = st.columns(4)
