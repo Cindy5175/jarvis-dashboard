@@ -27,10 +27,12 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
+    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR Y EL MENÚ AL LADO DE SHARE */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
-    header button, header svg, button[title], [data-testid="baseButton-header"] {
+    header button, header svg, button[title], [data-testid="baseButton-header"],
+    [data-testid="stMainMenu"], [data-testid="stMainMenu"] *, [data-testid="stMainMenu"] svg,
+    button[kind="header"] {
         color: #00f3ff !important;
         fill: #00f3ff !important;
         stroke: #00f3ff !important;
