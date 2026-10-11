@@ -226,7 +226,7 @@ with tab1:
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         
-        # PROCESAMIENTO GEMINI ROBUSTO
+        # PROCESAMIENTO GEMINI CON AUTODETECCIÓN INTELIGENTE
         api_key = st.session_state.get('api_key_gemini')
         respuesta_jarvis = ""
 
@@ -234,12 +234,17 @@ with tab1:
             try:
                 genai.configure(api_key=api_key)
                 
-                # Selección limpia de modelo compatible
+                # Autodetección de modelo disponible en la cuenta
+                modelo_nombre = 'gemini-pro'
                 try:
-                    modelo = genai.GenerativeModel('gemini-1.5-flash')
+                    for m in genai.list_models():
+                        if 'generateContent' in m.supported_generation_methods:
+                            modelo_nombre = m.name
+                            break
                 except Exception:
-                    modelo = genai.GenerativeModel('gemini-pro')
+                    pass
 
+                modelo = genai.GenerativeModel(modelo_nombre)
                 prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial leal, inteligente y eficiente que asiste a Cindy en Buin, Chile."
                 respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
