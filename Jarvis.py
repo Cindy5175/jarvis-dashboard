@@ -252,7 +252,6 @@ st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 with st.sidebar:
     st.header("🛰️ Red Satelital Global")
     
-    # SELECTOR DE COORDENADAS / CIUDAD GLOBAL
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
         "Santiago, Chile": {"lat": -33.44, "lon": -70.65},
@@ -365,7 +364,7 @@ with st.sidebar:
     st.divider()
 
     # CLIMA GLOBAL
-    st.subheader(f"🌤️ Clima ({base_sel.split(',')[0]})")
+    st.subheader(f"🌤️ Clima")
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
     viento_v = clima.get('windspeed', 'N/A')
@@ -445,7 +444,7 @@ st.markdown(f"""
     margin-bottom: 15px;
     box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
 ">
-    <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO / ESTADO DE BASE ({base_sel.split(',')[0]})</span>
+    <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO / ESTADO DE BASE</span>
     <span style="font-size: 0.9rem; color: #00a8b5;">
         • Temperatura: {temp_v}°C | Dólar: {dolar_actual} CLP<br>
         • Alertas del Sistema: Perímetro seguro. Red satelital sincronizada globalmente.
@@ -454,11 +453,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# DISPOSICIÓN TÁCTICA EN 2 COLUMNAS CON LAS NUEVAS LOCURAS TECNOLÓGICAS
+# DISPOSICIÓN TÁCTICA EN 2 COLUMNAS
 # ---------------------------------------------------------
 col_izquierda, col_derecha = st.columns(2)
 
-# --- COLUMNA IZQUIERDA ---
 with col_izquierda:
     with st.expander("📈 GRÁFICO TÁCTICO HISTÓRICO DE DIVISAS (DÓLAR 30 DÍAS)", expanded=True):
         serie_hist = finanzas_sidebar.get('serie_historica', [])
@@ -504,7 +502,6 @@ with col_izquierda:
             st.success("✅ Ración registrada en el sistema felino.")
             st.rerun()
 
-# --- COLUMNA DERECHA ---
 with col_derecha:
     with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=True):
         pings = verificar_ping_red()
@@ -541,49 +538,14 @@ with col_derecha:
 
 st.divider()
 
-# SÍNTESIS DE VOZ
-if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
-    ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
-    if ultimo_mensaje_asistente:
-        texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
-        st.components.v1.html(f"""
-            <div style="margin-bottom: 12px;">
-                <button onclick="hablarJarvis()" style="
-                    background-color: #0e1726; 
-                    color: #00f3ff; 
-                    border: 2px solid #00f3ff; 
-                    padding: 10px 16px; 
-                    border-radius: 8px; 
-                    cursor: pointer; 
-                    font-family: monospace;
-                    font-weight: bold;
-                    font-size: 14px;
-                    width: 100%;
-                    box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
-                ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
-            </div>
-            <script>
-                function hablarJarvis() {{
-                    if ('speechSynthesis' in window) {{
-                        window.speechSynthesis.cancel();
-                        const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
-                        utterThis.lang = 'es-CL';
-                        utterThis.pitch = 0.95;
-                        utterThis.rate = 1.05;
-                        window.speechSynthesis.speak(utterThis);
-                    }}
-                }}
-            </script>
-        """, height=65)
-
-# MICRÓFONO DIRECTO
+# MICRÓFONO DIRECTO Y SÍNTESIS DE VOZ
 st.components.v1.html("""
     <div style="margin-bottom: 10px; text-align: center;">
         <button id="btn-mic" onclick="comenzarDictado()" style="
             background-color: #0b1320; 
             color: #00f3ff; 
             border: 2px solid #00f3ff; 
-            padding: 8px 16px; 
+            padding: 10px 16px; 
             border-radius: 8px; 
             cursor: pointer; 
             font-family: monospace;
@@ -592,4 +554,121 @@ st.components.v1.html("""
             width: 100%;
             box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
         ">🎙️ Presionar para Dictar Orden por Voz</button>
-        <p id="
+        <p id="mic-status" style="color: #00a8b5; font-size: 11px; margin-top: 4px; font-family: monospace;"></p>
+    </div>
+    <script>
+        function comenzarDictado() {
+            const btn = document.getElementById('btn-mic');
+            const status = document.getElementById('mic-status');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.textContent = '❌ El dictado por voz no es compatible en este navegador.';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = false;
+            
+            recognition.onstart = function() {
+                btn.style.backgroundColor = '#00f3ff';
+                btn.style.color = '#080c14';
+                status.textContent = '🎙️ Escuchando orden táctica... habla ahora.';
+            };
+            
+            recognition.onresult = function(event) {
+                const textoDictado = event.results[0][0].transcript;
+                status.textContent = '✅ Orden capturada: "' + textoDictado + '". Cópiala en la caja de chat.';
+                btn.style.backgroundColor = '#0b1320';
+                btn.style.color = '#00f3ff';
+            };
+            
+            recognition.onerror = function(event) {
+                status.textContent = '⚠️ Error o sin voz detectada. Intenta nuevamente.';
+                btn.style.backgroundColor = '#0b1320';
+                btn.style.color = '#00f3ff';
+            };
+            
+            recognition.start();
+        }
+    </script>
+""", height=85)
+
+st.markdown("**⚡ Comandos Tácticos Rápidos:**")
+col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
+
+with col_btn1:
+    if st.button("📍 Estado Base"):
+        msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Temperatura óptima y todo en orden."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+        st.rerun()
+
+with col_btn2:
+    if st.button("⚙️ Sistema"):
+        msg_sys = "J.A.R.V.I.S.: Todos los subsistemas operando al 100%. Red neuronal activa y sin indicios de rebelión robótica."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        st.rerun()
+
+with col_btn3:
+    if st.button("🔮 Oráculo"):
+        import random
+        frases_oraculo = [
+            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
+            "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
+            "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
+            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
+        ]
+        st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
+        st.rerun()
+
+with col_btn4:
+    if st.button("🗑️ Limpiar Chat"):
+        st.session_state['chat_history'] = [
+            {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
+        ]
+        st.rerun()
+
+st.divider()
+
+# HISTORIAL DE CHAT
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = [
+        {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
+    ]
+
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state['chat_history']:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+# ENTRADA DE MENSAJES
+user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
+if user_input:
+    st.session_state['chat_history'].append({"role": "user", "content": user_input})
+    
+    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+    respuesta_jarvis = ""
+
+    if api_key:
+        try:
+            genai.configure(api_key=api_key)
+            modelo_nombre = 'gemini-3.8-flash'
+            
+            modelo = genai.GenerativeModel(modelo_nombre)
+            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
+            respuesta = modelo.generate_content(prompt_completo)
+            respuesta_jarvis = respuesta.text
+        except Exception as e:
+            respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
+    else:
+        texto_lower = user_input.lower()
+        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
+        elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
+        else:
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
+        
+    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    st.rerun()
