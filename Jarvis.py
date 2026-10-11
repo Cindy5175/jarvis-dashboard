@@ -300,7 +300,7 @@ with st.sidebar:
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "GB Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "💂‍♂️ Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
         "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
@@ -391,7 +391,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- RESUMEN TÁCTICO REUBICADO A LA IZQUIERDA ---
+    # --- RESUMEN TÁCTICO SIN DÓLAR ---
     st.divider()
     st.subheader("📊 Resumen Táctico")
     clima = obtener_clima_global(lat_Base, lon_base)
@@ -411,7 +411,6 @@ with st.sidebar:
         <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">ESTADO DE BASE ({base_sel.split(',')[0]})</span>
         <span style="font-size: 0.85rem; color: #00a8b5;">
             • Temperatura: {temp_v}°C<br>
-            • Dólar: {dolar_s} CLP<br>
             • Alertas: Perímetro seguro. Red satelital óptima.
         </span>
     </div>
