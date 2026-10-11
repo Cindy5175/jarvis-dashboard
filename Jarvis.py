@@ -322,10 +322,13 @@ with st.sidebar:
                 
                 api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
                 if api_key:
-                    genai.configure(api_key=api_key)
-                    m = genai.GenerativeModel('gemini-3.8-flash')
-                    res = m.generate_content(f"{prompt_personalidad}\n{prompt_doc}")
-                    st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                    try:
+                        genai.configure(api_key=api_key)
+                        m = genai.GenerativeModel('gemini-3.8-flash')
+                        res = m.generate_content(f"{prompt_personalidad}\n{prompt_doc}")
+                        st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                    except Exception:
+                        st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Cuota de API saturada momentáneamente. Intenta de nuevo en unos segundos."})
                 else:
                     st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Lectura completada. Se requiere API Key para la síntesis de inteligencia."})
                 st.rerun()
@@ -334,17 +337,20 @@ with st.sidebar:
 
     st.divider()
 
-    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL
+    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL (CON BLINDAJE CONTRA SATURACIÓN)
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
         st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
         api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
         if api_key:
-            genai.configure(api_key=api_key)
-            m = genai.GenerativeModel('gemini-3.8-flash')
-            res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
-            st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+            try:
+                genai.configure(api_key=api_key)
+                m = genai.GenerativeModel('gemini-3.8-flash')
+                res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
+                st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+            except Exception:
+                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Alerta de límite de cuota superado (Error 429). Demasiadas solicitudes a la API. Respira un momento y reintenta."})
         else:
             st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Auditoría completada en modo offline. Los números se ven estables."})
         st.rerun()
@@ -354,10 +360,13 @@ with st.sidebar:
         st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
         api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
         if api_key:
-            genai.configure(api_key=api_key)
-            m = genai.GenerativeModel('gemini-3.8-flash')
-            res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
-            st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+            try:
+                genai.configure(api_key=api_key)
+                m = genai.GenerativeModel('gemini-3.8-flash')
+                res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
+                st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+            except Exception:
+                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Servidores sobrecargados de peticiones por minuto. Espera un instante antes de la siguiente orden."})
         else:
             st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Protocolo activo. Menos distracciones, más ejecución."})
         st.rerun()
@@ -631,7 +640,7 @@ if user_input:
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
         except Exception as e:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un momento antes de enviar otra orden."
     else:
         texto_lower = user_input.lower()
         if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
@@ -639,7 +648,7 @@ if user_input:
         elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
             respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets di Streamlit)."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
     st.rerun()
