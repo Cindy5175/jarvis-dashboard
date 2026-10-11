@@ -300,7 +300,7 @@ with st.sidebar:
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "💂‍♂️ Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "GB Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
         "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
@@ -391,15 +391,36 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    # --- RESUMEN TÁCTICO REUBICADO A LA IZQUIERDA ---
     st.divider()
-
-    # CLIMA GLOBAL
-    st.subheader(f"🌤️ Clima")
+    st.subheader("📊 Resumen Táctico")
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
     viento_v = clima.get('windspeed', 'N/A')
     dir_v = clima.get('winddirection', 'N/A')
 
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    ">
+        <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">ESTADO DE BASE ({base_sel.split(',')[0]})</span>
+        <span style="font-size: 0.85rem; color: #00a8b5;">
+            • Temperatura: {temp_v}°C<br>
+            • Dólar: {dolar_s} CLP<br>
+            • Alertas: Perímetro seguro. Red satelital óptima.
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # CLIMA GLOBAL
+    st.subheader(f"🌤️ Clima")
     st.markdown(f"""
     <div style="
         background-color: #0b1320;
@@ -462,25 +483,6 @@ with st.sidebar:
 # TERMINAL DE CONVERSACIÓN Y PANELES PRINCIPALES
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
-
-dolar_actual = dolar_s
-
-st.markdown(f"""
-<div style="
-    background-color: #0b1320;
-    border: 1px solid #00f3ff;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 15px;
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-">
-    <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO / ESTADO DE BASE</span>
-    <span style="font-size: 0.9rem; color: #00a8b5;">
-        • Temperatura: {temp_v}°C | Dólar: {dolar_actual} CLP<br>
-        • Alertas del Sistema: Perímetro seguro. Red satelital sincronizada globalmente.
-    </span>
-</div>
-""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # DISPOSICIÓN TÁCTICA EN 2 COLUMNAS
