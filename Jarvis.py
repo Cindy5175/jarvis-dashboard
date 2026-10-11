@@ -4,6 +4,7 @@ import requests
 import xml.etree.ElementTree as ET
 import time
 import pandas as pd
+import plotly.express as px
 import google.generativeai as genai
 
 # ---------------------------------------------------------
@@ -123,7 +124,7 @@ st.markdown("""
     /* BARRAS DE PROGRESO NEÓN */
     .stProgress > div > div > div > div {
         background-color: #00f3ff !important;
-        box-shadow: 0 0 10px #00f3ff;
+        box-shadow: 0 0 12px #00f3ff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -276,7 +277,7 @@ with st.sidebar:
 
     st.divider()
     
-    # MÓDULO: ESCÁNER DE ARCHIVOS DE TEXTO / DOCUMENTOS
+    # ESCÁNER DE ARCHIVOS DE TEXTO
     st.subheader("📄 Escáner Táctico de Texto")
     archivo_subido = st.file_uploader("Cargar TXT para análisis:", type=["txt", "csv", "md"])
     if archivo_subido is not None:
@@ -396,7 +397,7 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# TERMINAL DE CONVERSACIÓN
+# TERMINAL DE CONVERSACIÓN Y PANELES PRINCIPALES
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
 
@@ -412,240 +413,4 @@ st.markdown(f"""
     box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
 ">
     <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
-    <span style="font-size: 0.9rem; color: #00a8b5;">
-        • Buin: {temp_v}°C | Dólar: {dolar_actual} CLP<br>
-        • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# MÓDULOS TECNOLÓGICOS NUEVOS (PANELES EXPANDIBLES)
-# ---------------------------------------------------------
-col_m1, col_m2 = st.columns(2)
-
-with col_m1:
-    with st.expander("📈 TENDENCIA HISTÓRICA DÓLAR (30 DÍAS)", expanded=False):
-        serie_hist = finanzas_sidebar.get('serie_historica', [])
-        if serie_hist:
-            df_hist = pd.DataFrame(serie_hist)
-            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
-            df_hist = df_hist.sort_values(by='fecha')
-            chart_data = df_hist.set_index('fecha')[['valor']]
-            st.line_chart(chart_data)
-        else:
-            st.caption("Cargando datos del Banco Central...")
-
-with col_m2:
-    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
-        pings = verificar_ping_red()
-        for srv, stt in pings.items():
-            st.markdown(f"**{srv}:** `{stt}`")
-
-# MATRIZ DE OBJETIVOS Y METAS
-with st.expander("🎯 MATRIZ DE OBJETIVOS Y PROYECTOS TÁCTICOS", expanded=False):
-    if 'metas_jarvis' not in st.session_state:
-        st.session_state['metas_jarvis'] = [
-            {"meta": "Optimización del núcleo J.A.R.V.I.S. 4.0", "progreso": 100},
-            {"meta": "Auditoría de Fondos y Crypto", "progreso": 75}
-        ]
-    
-    col_n1, col_n2 = st.columns([3, 1])
-    with col_n1:
-        nueva_m = st.text_input("Nuevo proyecto/objetivo:", key="txt_meta")
-    with col_n2:
-        prog_m = st.slider("Avance %", 0, 100, 50, key="sld_meta")
-    
-    if st.button("📌 Agregar Objetivo"):
-        if nueva_m:
-            st.session_state['metas_jarvis'].append({"meta": nueva_m, "progreso": prog_m})
-            st.rerun()
-
-    for idx, item in enumerate(st.session_state['metas_jarvis']):
-        st.markdown(f"**{item['meta']}** - `{item['progreso']}%`")
-        st.progress(item['progreso'] / 100)
-
-# MONITOR DE NOTICIAS
-with st.expander("📰 MONITOR DE NOTICIAS Y TENDENCIAS FINANCIERAS", expanded=False):
-    lista_noticias = obtener_noticias_tacticas()
-    for item in lista_noticias:
-        t_title = item['titulo']
-        t_link = item['link']
-        st.markdown(
-            f'<div style="background-color: #0e1726; border-left: 3px solid #00f3ff; padding: 8px 12px; margin-bottom: 8px; border-radius: 4px;">'
-            f'<a href="{t_link}" target="_blank" style="color: #00f3ff; text-decoration: none; font-weight: bold; font-size: 0.95rem;">📌 {t_title}</a>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-
-st.divider()
-
-# SÍNTESIS DE VOZ
-if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
-    ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
-    if ultimo_mensaje_asistente:
-        texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
-        st.components.v1.html(f"""
-            <div style="margin-bottom: 12px;">
-                <button onclick="hablarJarvis()" style="
-                    background-color: #0e1726; 
-                    color: #00f3ff; 
-                    border: 2px solid #00f3ff; 
-                    padding: 10px 16px; 
-                    border-radius: 8px; 
-                    cursor: pointer; 
-                    font-family: monospace;
-                    font-weight: bold;
-                    font-size: 14px;
-                    width: 100%;
-                    box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
-                ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
-            </div>
-            <script>
-                function hablarJarvis() {{
-                    if ('speechSynthesis' in window) {{
-                        window.speechSynthesis.cancel();
-                        const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
-                        utterThis.lang = 'es-CL';
-                        utterThis.pitch = 0.95;
-                        utterThis.rate = 1.05;
-                        window.speechSynthesis.speak(utterThis);
-                    }}
-                }}
-            </script>
-        """, height=65)
-
-# MICRÓFONO DIRECTO
-st.components.v1.html("""
-    <div style="margin-bottom: 10px; text-align: center;">
-        <button id="btn-mic" onclick="comenzarDictado()" style="
-            background-color: #0b1320; 
-            color: #00f3ff; 
-            border: 2px solid #00f3ff; 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 13px;
-            width: 100%;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">🎙️ Presionar para Dictar Orden por Voz</button>
-        <p id="mic-status" style="color: #00a8b5; font-size: 11px; margin-top: 4px; font-family: monospace;"></p>
-    </div>
-    <script>
-        function comenzarDictado() {
-            const btn = document.getElementById('btn-mic');
-            const status = document.getElementById('mic-status');
-            
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.textContent = '❌ El dictado por voz no es compatible en este navegador.';
-                return;
-            }
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                btn.style.backgroundColor = '#00f3ff';
-                btn.style.color = '#080c14';
-                status.textContent = '🎙️ Escuchando orden táctica... habla ahora.';
-            };
-            
-            recognition.onresult = function(event) {
-                const textoDictado = event.results[0][0].transcript;
-                status.textContent = '✅ Orden capturada: "' + textoDictado + '". Cópiala en la caja de chat.';
-                btn.style.backgroundColor = '#0b1320';
-                btn.style.color = '#00f3ff';
-            };
-            
-            recognition.onerror = function(event) {
-                status.textContent = '⚠️ Error o sin voz detectada. Intenta nuevamente.';
-                btn.style.backgroundColor = '#0b1320';
-                btn.style.color = '#00f3ff';
-            };
-            
-            recognition.start();
-        }
-    </script>
-""", height=85)
-
-st.markdown("**⚡ Comandos Tácticos Rápidos:**")
-col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
-
-with col_btn1:
-    if st.button("📍 Estado Buin"):
-        msg_buin = f"J.A.R.V.I.S.: El perímetro en Buin está tranquilo. Temperatura actual de {temp_v}°C... nada que un café o mi sofisticación no puedan resolver."
-        st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
-        st.rerun()
-
-with col_btn2:
-    if st.button("⚙️ Sistema"):
-        msg_sys = "J.A.R.V.I.S.: Todos los sistemas operando al 100%. Sobreviviendo milagrosamente a sus exigencias y sin que explote nada... por ahora."
-        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
-        st.rerun()
-
-with col_btn3:
-    if st.button("🔮 Oráculo"):
-        import random
-        frases_oraculo = [
-            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
-            "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
-            "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
-            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
-        ]
-        st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
-        st.rerun()
-
-with col_btn4:
-    if st.button("🗑️ Limpiar Chat"):
-        st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
-        ]
-        st.rerun()
-
-st.divider()
-
-# HISTORIAL DE CHAT
-if 'chat_history' not in st.session_state:
-    st.session_state['chat_history'] = [
-        {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
-    ]
-
-chat_container = st.container()
-with chat_container:
-    for msg in st.session_state['chat_history']:
-        st.chat_message(msg["role"]).write(msg["content"])
-
-# ENTRADA DE MENSAJES
-user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
-if user_input:
-    st.session_state['chat_history'].append({"role": "user", "content": user_input})
-    
-    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-    respuesta_jarvis = ""
-
-    if api_key:
-        try:
-            genai.configure(api_key=api_key)
-            modelo_nombre = 'gemini-3.8-flash'
-            
-            modelo = genai.GenerativeModel(modelo_nombre)
-            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
-            respuesta = modelo.generate_content(prompt_completo)
-            respuesta_jarvis = respuesta.text
-        except Exception as e:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
-    else:
-        texto_lower = user_input.lower()
-        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
-        elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
-        else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
-        
-    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
-    st.rerun()
+    <span style="font-
