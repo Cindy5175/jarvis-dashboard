@@ -19,11 +19,17 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* Fondo principal y barra lateral en negro absoluto */
-    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"], header, .stAppHeader {
+    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"], header, .stAppHeader, div[data-testid="stHeader"] {
         background-color: #080c14 !important;
         color: #00f3ff !important;
     }
     
+    /* PUNTOS EN LA BARRA SUPERIOR (AL LADO DE SHARE) Y BOTONES HEADER EN AZUL NEÓN */
+    header *, .stAppHeader *, div[data-testid="stHeader"] *, button[title], [data-testid="stToolbar"] * {
+        color: #00f3ff !important;
+        fill: #00f3ff !important;
+    }
+
     /* Todos los textos, títulos, etiquetas e inputs en Azul Neón */
     h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption {
         color: #00f3ff !important;
@@ -46,8 +52,13 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* CAJA DE ENTRADA DEL CHAT - ESTILO TOTALMENTE OSCURO CON BORDE NEÓN */
-    div[data-testid="stChatInput"], div[data-testid="stChatInput"] > div {
+    /* ELIMINAR EL BORDADO BLANCO EN LA FRANJA DEL CHAT Y FONDO NEGRO COMPLETO */
+    footer, [data-testid="stBottom"], [data-testid="stChatInputContainer"] {
+        background-color: #080c14 !important;
+        border: none !important;
+    }
+
+    div[data-testid="stChatInput"], div[data-testid="stChatInput"] > div, div[data-baseweb="base-input"] {
         background-color: #0b1320 !important;
         border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
