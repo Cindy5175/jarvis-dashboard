@@ -182,28 +182,85 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ---------------------------------------------------------
 with tab1:
     st.subheader("Conversación Autónoma & Dictado por Voz")
+    
+    # MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
+    clima_res = obtener_clima_buin()
+    fin_res = obtener_crypto_y_divisas()
+    
+    temp_actual = clima_res.get('temperature', 'N/A')
+    dolar_actual = fin_res.get('dolar_clp', 'N/A')
+    btc_actual = fin_res.get('btc_usd', 'N/A')
+    
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    ">
+        <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
+        <span style="font-size: 0.9rem; color: #00a8b5;">
+            • Buin: {temp_actual}°C | Dólar: ${dolar_actual} CLP | Bitcoin: ${btc_actual} USD<br>
+            • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # MÓDULO DE VOZ REAL (SÍNTESIS DE VOZ NATIVA PARA EL ÚLTIMO MENSAJE)
+    if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
+        ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
+        if ultimo_mensaje_asistente:
+            texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
+            st.components.v1.html(f"""
+                <div style="margin-bottom: 10px;">
+                    <button onclick="hablarJarvis()" style="
+                        background-color: #0e1726; 
+                        color: #00f3ff; 
+                        border: 1px solid #00f3ff; 
+                        padding: 6px 12px; 
+                        border-radius: 6px; 
+                        cursor: pointer; 
+                        font-family: monospace;
+                        font-weight: bold;
+                        box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+                    ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
+                </div>
+                <script>
+                    function hablarJarvis() {{
+                        const synth = window.speechSynthesis;
+                        const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
+                        utterThis.lang = 'es-ES';
+                        utterThis.pitch = 0.9;
+                        utterThis.rate = 1.0;
+                        synth.speak(utterThis);
+                    }}
+                </script>
+            """, height=50)
+
     st.markdown("**⚡ Comandos Tácticos Rápidos:**")
     col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
     
     with col_btn1:
         if st.button("📍 Estado Buin"):
-            msg_buin = "J.A.R.V.I.S.: Perímetro en Buin reporta tranquilidad. Sensores ambientales estables."
+            msg_buin = f"J.A.R.V.I.S.: Perímetro en Buin reporta tranquilidad. Temperatura actual de {temp_actual} grados."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
             st.rerun()
     with col_btn2:
         if st.button("📊 Financiero"):
-            msg_fin = "J.A.R.V.I.S.: Mercados sincronizados. Revisa la pestaña 'Mercado & Crypto' para ver activos."
+            msg_fin = f"J.A.R.V.I.S.: Dólar a ${dolar_actual} y Bitcoin en ${btc_actual}. Mercados sincronizados."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_fin})
             st.rerun()
     with col_btn3:
         if st.button("⚙️ Sistema"):
-            msg_sys = "J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100%."
+            msg_sys = "J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100% operativo."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
             st.rerun()
     with col_btn4:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = [
-                {"role": "assistant", "content": "Hola Cindy. ¿En qué te puedo ayudar hoy?"}
+                {"role": "assistant", "content": "Hola Cindy. Sistemas listos y operando al máximo rendimiento."}
             ]
             st.rerun()
 
@@ -212,7 +269,7 @@ with tab1:
     # Inicialización del historial
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Hola Cindy. ¿En qué te puedo ayudar hoy?"}
+            {"role": "assistant", "content": "Hola Cindy. Sistemas listos y operando al máximo rendimiento."}
         ]
 
     # Render del historial de chat arriba
@@ -226,15 +283,13 @@ with tab1:
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         
-        # PROCESAMIENTO GEMINI CON AUTODETECCIÓN INTELIGENTE
+        # PROCESAMIENTO GEMINI ROBUSTO
         api_key = st.session_state.get('api_key_gemini')
         respuesta_jarvis = ""
 
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                
-                # Autodetección de modelo disponible en la cuenta
                 modelo_nombre = 'gemini-pro'
                 try:
                     for m in genai.list_models():
