@@ -65,7 +65,7 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* Entradas de texto generales (API Key, Blocs, etc) */
+    /* Entradas de texto generales */
     .stTextInput input {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
@@ -106,12 +106,32 @@ def obtener_crypto_y_divisas():
     except Exception:
         datos['btc_usd'], datos['eth_usd'], datos['usdt_clp'] = "Error", "Error", "Error"
 
+    # Dólar con respaldo para fines de semana
     try:
-        url_clp = "https://mindicador.cl/api/dolar"
-        resp_clp = requests.get(url_clp, timeout=5).json()
-        datos['dolar_clp'] = resp_clp['serie'][0]['valor']
+        url_dolar = "https://mindicador.cl/api/dolar"
+        resp_dolar = requests.get(url_dolar, timeout=5).json()
+        serie = resp_dolar.get('serie', [])
+        datos['dolar_clp'] = serie[0]['valor'] if len(serie) > 0 else "N/A"
     except Exception:
         datos['dolar_clp'] = "N/A"
+
+    # Euro con respaldo para fines de semana
+    try:
+        url_euro = "https://mindicador.cl/api/euro"
+        resp_euro = requests.get(url_euro, timeout=5).json()
+        serie_e = resp_euro.get('serie', [])
+        datos['euro_clp'] = serie_e[0]['valor'] if len(serie_e) > 0 else "N/A"
+    except Exception:
+        datos['euro_clp'] = "N/A"
+
+    # UF con respaldo
+    try:
+        url_uf = "https://mindicador.cl/api/uf"
+        resp_uf = requests.get(url_uf, timeout=5).json()
+        serie_uf = resp_uf.get('serie', [])
+        datos['uf_clp'] = serie_uf[0]['valor'] if len(serie_uf) > 0 else "N/A"
+    except Exception:
+        datos['uf_clp'] = "N/A"
 
     return datos
 
@@ -131,7 +151,7 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (PANEL DE CONTROL & RELOJ EN VIVO)
+# BARRA LATERAL (PANEL DE CONTROL, RELOJ & BLOC)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
@@ -166,21 +186,70 @@ with st.sidebar:
         </script>
     """, height=90)
 
+    st.divider()
+    st.subheader("📝 Bloc de Notas")
+    if 'notas_jarvis' not in st.session_state:
+        st.session_state['notas_jarvis'] = []
+
+    nueva_nota = st.text_input("Recordatorio rápido:")
+    if st.button("➕ Guardar Nota"):
+        if nueva_nota:
+            st.session_state['notas_jarvis'].append(nueva_nota)
+            st.rerun()
+
+    if st.session_state['notas_jarvis']:
+        for i, nota in enumerate(st.session_state['notas_jarvis']):
+            st.caption(f"• {nota}")
+
 # ---------------------------------------------------------
-# NAVEGACIÓN POR PESTAÑAS
+# NAVEGACIÓN POR PESTAÑAS (ÚNICAMENTE 3 PESTAÑAS)
 # ---------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3 = st.tabs([
+    "📈 Finanzas", 
     "💬 Terminal de Conversación", 
-    "📈 Mercado & Crypto", 
-    "🌤️ Clima & Telemetría", 
-    "📝 Bloc & Tareas",
-    "⚙️ Configuración & IA"
+    "🌤️ Clima & Telemetría"
 ])
 
 # ---------------------------------------------------------
-# TAB 1: TERMINAL DE CONVERSACIÓN
+# TAB 1: FINANZAS (MERCADO, DIVISAS, UF & CRYPTO)
 # ---------------------------------------------------------
 with tab1:
+    st.subheader("📊 Indicadores Financieros & Mercado en Tiempo Real")
+    if st.button("🔄 Actualizar Cotizaciones"):
+        st.cache_data.clear()
+        st.rerun()
+        
+    finanzas = obtener_crypto_y_divisas()
+    
+    st.markdown("### 💵 Monedas e Indicadores Nacionales")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        dolar_val = finanzas.get('dolar_clp', 'N/A')
+        st.metric("💵 Dólar Observador", f"${dolar_val:,.2f} CLP" if isinstance(dolar_val, (int, float)) else str(dolar_val))
+    with c2:
+        euro_val = finanzas.get('euro_clp', 'N/A')
+        st.metric("💶 Euro", f"${euro_val:,.2f} CLP" if isinstance(euro_val, (int, float)) else str(euro_val))
+    with c3:
+        uf_val = finanzas.get('uf_clp', 'N/A')
+        st.metric("🇨🇱 UF (Unidad de Fomento)", f"${uf_val:,.2f} CLP" if isinstance(uf_val, (int, float)) else str(uf_val))
+
+    st.divider()
+    st.markdown("### ₿ Criptomonedas")
+    c4, c5, c6 = st.columns(3)
+    with c4:
+        btc = finanzas.get('btc_usd')
+        st.metric("₿ Bitcoin (BTC)", f"${btc:,.2f} USD" if isinstance(btc, (int, float)) else str(btc))
+    with c5:
+        eth = finanzas.get('eth_usd')
+        st.metric("Ξ Ethereum (ETH)", f"${eth:,.2f} USD" if isinstance(eth, (int, float)) else str(eth))
+    with c6:
+        usdt = finanzas.get('usdt_clp')
+        st.metric("₮ USDT / CLP", f"${usdt:,.2f} CLP" if isinstance(usdt, (int, float)) else str(usdt))
+
+# ---------------------------------------------------------
+# TAB 2: TERMINAL DE CONVERSACIÓN
+# ---------------------------------------------------------
+with tab2:
     st.subheader("Conversación Autónoma & Dictado por Voz")
     
     # MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
@@ -208,39 +277,45 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
 
-    # MÓDULO DE VOZ REAL (SÍNTESIS DE VOZ NATIVA PARA EL ÚLTIMO MENSAJE)
+    # MÓDULO DE VOZ REAL OPTIMIZADO
     if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
         ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
         if ultimo_mensaje_asistente:
             texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
             st.components.v1.html(f"""
-                <div style="margin-bottom: 10px;">
+                <div style="margin-bottom: 12px;">
                     <button onclick="hablarJarvis()" style="
                         background-color: #0e1726; 
                         color: #00f3ff; 
-                        border: 1px solid #00f3ff; 
-                        padding: 6px 12px; 
-                        border-radius: 6px; 
+                        border: 2px solid #00f3ff; 
+                        padding: 10px 16px; 
+                        border-radius: 8px; 
                         cursor: pointer; 
                         font-family: monospace;
                         font-weight: bold;
-                        box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+                        font-size: 14px;
+                        width: 100%;
+                        box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
                     ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
                 </div>
                 <script>
                     function hablarJarvis() {{
-                        const synth = window.speechSynthesis;
-                        const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
-                        utterThis.lang = 'es-ES';
-                        utterThis.pitch = 0.9;
-                        utterThis.rate = 1.0;
-                        synth.speak(utterThis);
+                        if ('speechSynthesis' in window) {{
+                            window.speechSynthesis.cancel();
+                            const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
+                            utterThis.lang = 'es-CL';
+                            utterThis.pitch = 0.95;
+                            utterThis.rate = 1.05;
+                            window.speechSynthesis.speak(utterThis);
+                        }} else {{
+                            alert('La síntesis de voz no es compatible con este navegador.');
+                        }}
                     }}
                 </script>
-            """, height=50)
+            """, height=65)
 
     st.markdown("**⚡ Comandos Tácticos Rápidos:**")
-    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
+    col_btn1, col_btn2, col_btn3 = st.columns(3)
     
     with col_btn1:
         if st.button("📍 Estado Buin"):
@@ -248,16 +323,11 @@ with tab1:
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
             st.rerun()
     with col_btn2:
-        if st.button("📊 Financiero"):
-            msg_fin = f"J.A.R.V.I.S.: Dólar a ${dolar_actual} y Bitcoin en ${btc_actual}. Mercados sincronizados."
-            st.session_state['chat_history'].append({"role": "assistant", "content": msg_fin})
-            st.rerun()
-    with col_btn3:
         if st.button("⚙️ Sistema"):
             msg_sys = "J.A.R.V.I.S.: CPU 12%, Memoria RAM 34%, Servidor Streamlit Cloud al 100% operativo."
             st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
             st.rerun()
-    with col_btn4:
+    with col_btn3:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = [
                 {"role": "assistant", "content": "Hola Cindy. Sistemas listos y operando al máximo rendimiento."}
@@ -283,8 +353,8 @@ with tab1:
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         
-        # PROCESAMIENTO GEMINI ROBUSTO
-        api_key = st.session_state.get('api_key_gemini')
+        # PROCESAMIENTO GEMINI AUTOMÁTICO
+        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
         respuesta_jarvis = ""
 
         if api_key:
@@ -310,33 +380,10 @@ with tab1:
             if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
                 respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy, sistemas listos. ¿En qué te ayudo hoy?"
             else:
-                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su API Key en la pestaña Configuración)."
+                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su clave en los Secrets de Streamlit)."
             
         st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
         st.rerun()
-
-# ---------------------------------------------------------
-# TAB 2: MERCADO & CRYPTO
-# ---------------------------------------------------------
-with tab2:
-    st.subheader("📊 Cotizaciones & Mercado en Tiempo Real")
-    if st.button("🔄 Actualizar Cotizaciones"):
-        st.cache_data.clear()
-        st.rerun()
-        
-    finanzas = obtener_crypto_y_divisas()
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.metric("💵 Dólar Observador", f"${finanzas.get('dolar_clp', 'N/A')} CLP")
-    with c2:
-        btc = finanzas.get('btc_usd')
-        st.metric("₿ Bitcoin (BTC)", f"${btc:,.2f} USD" if isinstance(btc, (int, float)) else str(btc))
-    with c3:
-        eth = finanzas.get('eth_usd')
-        st.metric("Ξ Ethereum (ETH)", f"${eth:,.2f} USD" if isinstance(eth, (int, float)) else str(eth))
-    with c4:
-        usdt = finanzas.get('usdt_clp')
-        st.metric("₮ USDT / CLP", f"${usdt:,.2f} CLP" if isinstance(usdt, (int, float)) else str(usdt))
 
 # ---------------------------------------------------------
 # TAB 3: CLIMA & TELEMETRÍA
@@ -354,36 +401,3 @@ with tab3:
             st.metric("🧭 Dirección del Viento", f"{clima.get('winddirection', 'N/A')}°")
     else:
         st.warning("No se pudo obtener el reporte en vivo de los sensores meteorológicos.")
-
-# ---------------------------------------------------------
-# TAB 4: BLOC & TAREAS
-# ---------------------------------------------------------
-with tab4:
-    st.subheader("📝 Módulo de Notas Rápidas & Pendientes")
-    if 'notas_jarvis' not in st.session_state:
-        st.session_state['notas_jarvis'] = []
-
-    nueva_nota = st.text_input("Agregar un recordatorio táctico:")
-    if st.button("➕ Guardar Nota"):
-        if nueva_nota:
-            st.session_state['notas_jarvis'].append(nueva_nota)
-            st.success("Nota agregada al protocolo.")
-            st.rerun()
-
-    st.markdown("### 📋 Notas Guardadas en Sesión:")
-    if st.session_state['notas_jarvis']:
-        for i, nota in enumerate(st.session_state['notas_jarvis']):
-            st.write(f"• **{i+1}.** {nota}")
-    else:
-        st.caption("No hay notas guardadas actualmente.")
-
-# ---------------------------------------------------------
-# TAB 5: CONFIGURACIÓN & IA
-# ---------------------------------------------------------
-with tab5:
-    st.subheader("⚙️ Configuración del Motor de Inteligencia")
-    st.caption("Conecta tu clave de API de Google Gemini para activar el núcleo de razonamiento autónomo.")
-    key_input = st.text_input("Clave API de Google Gemini:", type="password", value=st.session_state.get('api_key_gemini', ''))
-    if st.button("💾 Guardar Clave API"):
-        st.session_state['api_key_gemini'] = key_input
-        st.success("Clave de Gemini vinculada con éxito al núcleo de J.A.R.V.I.S.")
