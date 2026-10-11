@@ -24,7 +24,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
     
-    /* PUNTOS EN LA BARRA SUPERIOR (AL LADO DE SHARE) Y BOTONES HEADER EN AZUL NEÓN */
+    /* BARRA SUPERIOR E ÍCONOS EN AZUL NEÓN */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, button[title], [data-testid="stToolbar"] * {
         color: #00f3ff !important;
         fill: #00f3ff !important;
@@ -52,7 +52,7 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* ELIMINAR EL BORDADO BLANCO EN LA FRANJA DEL CHAT Y FONDO NEGRO COMPLETO */
+    /* FRANJA DEL CHAT - FONDO NEGRO Y BORDE NEÓN */
     footer, [data-testid="stBottom"], [data-testid="stChatInputContainer"] {
         background-color: #080c14 !important;
         border: none !important;
@@ -76,8 +76,8 @@ st.markdown("""
         color: #00a8b5 !important;
     }
 
-    /* Entradas de texto generales */
-    .stTextInput input {
+    /* Entradas de texto y selectbox */
+    .stTextInput input, div[data-baseweb="select"] > div {
         color: #00f3ff !important;
         background-color: #0b1320 !important;
         border: 1px solid #00f3ff !important;
@@ -153,6 +153,18 @@ def obtener_clima_buin():
     except Exception:
         return {}
 
+# OPCIÓN 5: MONITOR SISMOLÓGICO DE CHILE
+@st.cache_data(ttl=300)
+def obtener_ultimo_sismo_chile():
+    try:
+        url = "https://api.gael.cl/general/post/sismos"
+        resp = requests.get(url, timeout=5).json()
+        if isinstance(resp, list) and len(resp) > 0:
+            return resp[0]
+        return None
+    except Exception:
+        return None
+
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
@@ -160,7 +172,7 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (MAPA, RELOJ, FINANZAS, CLIMA & NOTAS)
+# BARRA LATERAL (MAPA, RELOJ, FINANZAS, CLIMA, PERSONALIDAD, SISMOS & NOTAS)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
@@ -197,6 +209,19 @@ with st.sidebar:
     """, height=90)
 
     st.divider()
+
+    # OPCIÓN 3: SELECTOR DE PERSONALIDAD (MATRIZ DE HUMOR)
+    st.subheader("🎭 Matriz de Personalidad")
+    personalidades = {
+        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en Buin, Chile.",
+        "💂‍♂️ Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
+        "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
+    }
+    modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
+    prompt_personalidad = personalidades[modo_seleccionado]
+
+    st.divider()
     
     # FINANZAS
     st.subheader("📊 Finanzas / Mercado")
@@ -223,7 +248,7 @@ with st.sidebar:
 
     st.divider()
 
-    # TELEMETRÍA METEOROLÓGICA (EN VERTICAL)
+    # TELEMETRÍA METEOROLÓGICA (VERTICAL)
     st.subheader("🌤️ Clima Buin")
     clima = obtener_clima_buin()
     temp_v = clima.get('temperature', 'N/A')
@@ -247,6 +272,32 @@ with st.sidebar:
 
     st.divider()
 
+    # OPCIÓN 5: MONITOR SISMOLÓGICO SISMICO CHILE
+    st.subheader("🌍 Telemetría Sísmica CSN")
+    ultimo_sismo = obtener_ultimo_sismo_chile()
+    if ultimo_sismo:
+        lugar_s = ultimo_sismo.get('RefGeografica', 'Chile')
+        mag_s = ultimo_sismo.get('Magnitud', 'N/A')
+        fecha_s = ultimo_sismo.get('Fecha', 'Reciente')
+        st.markdown(f"""
+        <div style="
+            background-color: #0b1320;
+            border: 1px solid #00f3ff;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        ">
+            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 {lugar_s}</span>
+            <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block; margin-top: 4px;">Magnitud: {mag_s} Richter</span>
+            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.caption("Sin reportes sísmicos recientes.")
+
+    st.divider()
+
     # BLOC DE NOTAS
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
@@ -267,7 +318,7 @@ with st.sidebar:
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
 
-# MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
+# MÓDULO DE ALERTAS Y RESUMEN TÁCTICO
 dolar_actual = finanzas_sidebar.get('dolar_clp', 'N/A')
 
 st.markdown(f"""
@@ -287,7 +338,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# MÓDULO DE VOZ REAL OPTIMIZADO
+# MÓDULO DE VOZ SÍNTESIS
 if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
     ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
     if ultimo_mensaje_asistente:
@@ -317,27 +368,97 @@ if 'chat_history' in st.session_state and len(st.session_state['chat_history']) 
                         utterThis.pitch = 0.95;
                         utterThis.rate = 1.05;
                         window.speechSynthesis.speak(utterThis);
-                    }} else {{
-                        alert('La síntesis de voz no es compatible con este navegador.');
                     }}
                 }}
             </script>
         """, height=65)
 
+# OPCIÓN 2: MÓDULO DE DICTADO POR VOZ (MICRÓFONO DIRECTO)
+st.components.v1.html("""
+    <div style="margin-bottom: 10px; text-align: center;">
+        <button id="btn-mic" onclick="comenzarDictado()" style="
+            background-color: #0b1320; 
+            color: #00f3ff; 
+            border: 2px solid #00f3ff; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 13px;
+            width: 100%;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        ">🎙️ Presionar para Dictar Orden por Voz</button>
+        <p id="mic-status" style="color: #00a8b5; font-size: 11px; margin-top: 4px; font-family: monospace;"></p>
+    </div>
+    <script>
+        function comenzarDictado() {
+            const btn = document.getElementById('btn-mic');
+            const status = document.getElementById('mic-status');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.textContent = '❌ El dictado por voz no es compatible en este navegador.';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = false;
+            
+            recognition.onstart = function() {
+                btn.style.backgroundColor = '#00f3ff';
+                btn.style.color = '#080c14';
+                status.textContent = '🎙️ Escuchando orden táctica... habla ahora.';
+            };
+            
+            recognition.onresult = function(event) {
+                const textoDictado = event.results[0][0].transcript;
+                status.textContent = '✅ Orden capturada: "' + textoDictado + '". Cópiala en la caja de chat.';
+                btn.style.backgroundColor = '#0b1320';
+                btn.style.color = '#00f3ff';
+            };
+            
+            recognition.onerror = function(event) {
+                status.textContent = '⚠️ Error o sin voz detectada. Intenta nuevamente.';
+                btn.style.backgroundColor = '#0b1320';
+                btn.style.color = '#00f3ff';
+            };
+            
+            recognition.start();
+        }
+    </script>
+""", height=85)
+
 st.markdown("**⚡ Comandos Tácticos Rápidos:**")
-col_btn1, col_btn2, col_btn3 = st.columns(3)
+col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
 
 with col_btn1:
     if st.button("📍 Estado Buin"):
         msg_buin = f"J.A.R.V.I.S.: El perímetro en Buin está tranquilo. Temperatura actual de {temp_v}°C... nada que un café o mi sofisticación no puedan resolver."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
         st.rerun()
+
 with col_btn2:
     if st.button("⚙️ Sistema"):
         msg_sys = "J.A.R.V.I.S.: Todos los sistemas operando al 100%. Sobreviviendo milagrosamente a sus exigencias y sin que explote nada... por ahora."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         st.rerun()
+
+# OPCIÓN 4: ORÁCULO TÁCTICO / PREDICCIÓN DÍA
 with col_btn3:
+    if st.button("🔮 Oráculo"):
+        import random
+        frases_oraculo = [
+            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
+            "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
+            "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
+            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
+        ]
+        st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
+        st.rerun()
+
+with col_btn4:
     if st.button("🗑️ Limpiar Chat"):
         st.session_state['chat_history'] = [
             {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
@@ -381,15 +502,8 @@ if user_input:
 
             modelo = genai.GenerativeModel(modelo_nombre)
             
-            prompt_sistema = (
-                "Eres J.A.R.V.I.S., una inteligencia artificial de última generación, sarcástica, aguda, muy inteligente, "
-                "leal y con un gran toque de humor cínico al estilo de Tony Stark. "
-                "Asistes a Cindy en Buin, Chile. Responde a preguntas sencillas ('cómo estás', 'cómo están los sistemas') "
-                "con naturalidad, fluidez, un toque de ironía divertida y elegancia tecnológica. No suenes como un manual "
-                "robótico aburrido; responde siempre con personalidad, confianza y respuestas ingeniosas."
-            )
-            
-            respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
+            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
+            respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
         except Exception as e:
             respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
