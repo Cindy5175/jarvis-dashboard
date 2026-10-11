@@ -202,7 +202,11 @@ with tab1:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                modelo = genai.GenerativeModel('gemini-1.5-flash')
+                try:
+                    modelo = genai.GenerativeModel('gemini-2.5-flash')
+                except Exception:
+                    modelo = genai.GenerativeModel('gemini-1.5-flash')
+
                 prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico pero leal y eficiente, que asiste a tu creadora Cindy en Buin, Chile."
                 respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
