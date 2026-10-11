@@ -334,6 +334,36 @@ with st.sidebar:
 
     st.divider()
 
+    # NUEVO: PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL (Opción 4)
+    st.subheader("⚡ Presets de Comandos")
+    if st.button("📊 Auditoría Financiera Exprés"):
+        cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
+        st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
+        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key:
+            genai.configure(api_key=api_key)
+            m = genai.GenerativeModel('gemini-3.8-flash')
+            res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
+            st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+        else:
+            st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Auditoría completada en modo offline. Los números se ven estables."})
+        st.rerun()
+
+    if st.button("🚀 Protocolo de Máxima Eficiencia"):
+        cmd_text = "J.A.R.V.I.S., dame una recomendación táctica de productividad para hoy."
+        st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
+        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key:
+            genai.configure(api_key=api_key)
+            m = genai.GenerativeModel('gemini-3.8-flash')
+            res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
+            st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+        else:
+            st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Protocolo activo. Menos distracciones, más ejecución."})
+        st.rerun()
+
+    st.divider()
+
     # FINANZAS
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
@@ -538,7 +568,7 @@ with col_derecha:
 
 st.divider()
 
-# MICRÓFONO DIRECTO Y SÍNTESIS DE VOZ
+# MICRÓFONO DIRECTO
 st.components.v1.html("""
     <div style="margin-bottom: 10px; text-align: center;">
         <button id="btn-mic" onclick="comenzarDictado()" style="
