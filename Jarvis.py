@@ -498,8 +498,8 @@ if user_input:
     if api_key:
         try:
             genai.configure(api_key=api_key)
-            # Actualizado al modelo libre actual recomendado por la API de Google
-            modelo_nombre = 'gemini-2.5-flash'
+            # Actualizado al modelo gemini-3.8-flash solicitado por la API
+            modelo_nombre = 'gemini-3.8-flash'
             
             modelo = genai.GenerativeModel(modelo_nombre)
             prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
