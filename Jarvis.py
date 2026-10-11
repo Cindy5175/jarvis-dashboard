@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (CSS DE ALTO CONTRASTE Y VISIBILIDAD)
+# ESTILOS VISUALES (ESTILO CLARO PARA CAJA DE CHAT Y TEXTO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -38,13 +38,13 @@ st.markdown("""
         border-color: #4b5563 !important;
     }
 
-    /* Caja de entrada de texto (Chat Input) */
+    /* Caja de entrada de texto (Chat Input en Blanco y Letra Negra) */
     .stChatInput textarea {
-        color: #ffffff !important;
-        background-color: #1e222d !important;
+        color: #000000 !important;
+        background-color: #ffffff !important;
     }
     .stChatInputContainer {
-        background-color: #1e222d !important;
+        background-color: #ffffff !important;
         border: 1px solid #374151 !important;
         border-radius: 10px !important;
     }
