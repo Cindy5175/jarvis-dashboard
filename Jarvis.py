@@ -391,14 +391,9 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- RESUMEN TÁCTICO SIN DÓLAR ---
+    # --- RESUMEN TÁCTICO MÍNIMO (SOLO ALERTAS) ---
     st.divider()
     st.subheader("📊 Resumen Táctico")
-    clima = obtener_clima_global(lat_Base, lon_base)
-    temp_v = clima.get('temperature', 'N/A')
-    viento_v = clima.get('windspeed', 'N/A')
-    dir_v = clima.get('winddirection', 'N/A')
-
     st.markdown(f"""
     <div style="
         background-color: #0b1320;
@@ -410,7 +405,6 @@ with st.sidebar:
     ">
         <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">ESTADO DE BASE ({base_sel.split(',')[0]})</span>
         <span style="font-size: 0.85rem; color: #00a8b5;">
-            • Temperatura: {temp_v}°C<br>
             • Alertas: Perímetro seguro. Red satelital óptima.
         </span>
     </div>
@@ -419,6 +413,11 @@ with st.sidebar:
     st.divider()
 
     # CLIMA GLOBAL
+    clima = obtener_clima_global(lat_Base, lon_base)
+    temp_v = clima.get('temperature', 'N/A')
+    viento_v = clima.get('windspeed', 'N/A')
+    dir_v = clima.get('winddirection', 'N/A')
+
     st.subheader(f"🌤️ Clima")
     st.markdown(f"""
     <div style="
@@ -572,7 +571,7 @@ col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
 
 with col_btn1:
     if st.button("📍 Estado Base"):
-        msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Temperatura óptima y todo en orden."
+        msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
         st.rerun()
 
@@ -640,7 +639,7 @@ if user_input:
         elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
             respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
         else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets di Streamlit)."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
     st.rerun()
