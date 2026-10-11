@@ -14,72 +14,77 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (ENTRADA FIJA ABAJO Y DISEÑO CLARO)
+# ESTILOS VISUALES (TEMA AZUL NEÓN INTEGRAL Y ALTO CONTRASTE)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
     /* Fondo principal de la app */
     .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
+        background-color: #080c14 !important;
+        color: #00f3ff !important;
     }
     
-    /* Botones tácticos */
+    /* Todos los textos, títulos y subtítulos en Azul Neón */
+    h1, h2, h3, h4, h5, h6, p, span, label, div {
+        color: #00f3ff !important;
+        text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+    }
+
+    /* Botones tácticos con borde e iluminación Neón */
     .stButton>button {
-        background-color: #1f2937 !important;
-        color: #ffffff !important;
-        border: 1px solid #374151 !important;
+        background-color: #0e1726 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
         border-radius: 8px !important;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
         width: 100% !important;
+        font-weight: bold !important;
     }
     .stButton>button:hover {
-        background-color: #374151 !important;
-        color: #6ee7b7 !important;
-        border-color: #4b5563 !important;
+        background-color: #00f3ff !important;
+        color: #080c14 !important;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* Caja de entrada del chat fija abajo - Fondo Blanco y Texto Negro */
-    [data-testid="stChatInput"] {
-        background-color: #ffffff !important;
-        border: 2px solid #6ee7b7 !important;
+    /* CAJA DE ENTRADA DEL CHAT - ESTILO AZUL NEÓN DESTACADO */
+    div[data-testid="stChatInput"] {
+        background-color: #0b1320 !important;
+        border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
-        padding: 5px !important;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.5) !important;
     }
-    
-    [data-testid="stChatInput"] textarea {
-        color: #000000 !important;
-        background-color: #ffffff !important;
+
+    div[data-testid="stChatInput"] textarea {
+        background-color: #0b1320 !important;
+        color: #00f3ff !important;
         font-size: 1.1rem !important;
-        font-weight: 500 !important;
+        font-weight: bold !important;
     }
 
-    [data-testid="stChatInput"] textarea::placeholder {
-        color: #555555 !important;
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #00a8b5 !important;
     }
 
-    /* Contenedor del Chat Input */
-    .stChatInputContainer {
-        background-color: #ffffff !important;
-        border-radius: 12px !important;
-    }
-
-    /* Entradas de texto generales (API Key) */
+    /* Entradas de texto generales (API Key, Blocs, etc) */
     .stTextInput input {
-        color: #000000 !important;
-        background-color: #ffffff !important;
-        font-weight: 500 !important;
+        color: #00f3ff !important;
+        background-color: #0b1320 !important;
+        border: 1px solid #00f3ff !important;
+        box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+        font-weight: bold !important;
     }
 
-    /* Mensajes del Chat e Historial */
+    /* Mensajes del Chat e Historial con Bordes Neón */
     [data-testid="stChatMessage"] {
-        background-color: #1a202c !important;
-        border: 1px solid #2d3748 !important;
+        background-color: #0e1726 !important;
+        border: 1px solid #00f3ff !important;
         border-radius: 10px !important;
         padding: 12px !important;
         margin-bottom: 10px !important;
+        box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
     }
     [data-testid="stChatMessage"] p {
-        color: #ffffff !important;
+        color: #00f3ff !important;
         font-size: 1rem !important;
     }
 </style>
@@ -137,15 +142,16 @@ with st.sidebar:
     
     st.components.v1.html("""
         <div style="
-            background-color: #1e222d;
-            border: 1px solid #374151;
+            background-color: #0b1320;
+            border: 1px solid #00f3ff;
             border-radius: 8px;
             padding: 10px;
             text-align: center;
             font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
         ">
-            <span style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">Hora Local (Chile)</span>
-            <span id="reloj-jarvis" style="color: #6ee7b7; font-size: 28px; font-weight: bold; letter-spacing: 2px;">--:--:--</span>
+            <span style="color: #00a8b5; font-size: 12px; display: block; margin-bottom: 4px;">Hora Local (Chile)</span>
+            <span id="reloj-jarvis" style="color: #00f3ff; font-size: 28px; font-weight: bold; letter-spacing: 2px;">--:--:--</span>
         </div>
         <script>
             function actualizarReloj() {
@@ -197,30 +203,30 @@ with tab1:
     with col_btn4:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = [
-                {"role": "assistant", "content": "Buenas noches, jefa. ¿En qué le puedo asistir el día de hoy?"}
+                {"role": "assistant", "content": "Hola Cindy. ¿En qué te puedo ayudar hoy?"}
             ]
             st.rerun()
 
     st.divider()
 
-    # Inicializar historial
+    # Inicialización del historial
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Buenas noches, jefa. ¿En qué le puedo asistir el día de hoy?"}
+            {"role": "assistant", "content": "Hola Cindy. ¿En qué te puedo ayudar hoy?"}
         ]
 
-    # Contenedor para mostrar todo el historial arriba
+    # Render del historial de chat arriba
     chat_container = st.container()
     with chat_container:
         for msg in st.session_state['chat_history']:
             st.chat_message(msg["role"]).write(msg["content"])
 
-    # La caja para escribir queda al final (Streamlit la ancla abajo)
-    user_input = st.chat_input("Escribe una orden para J.A.R.V.I.S...")
+    # Entrada de mensajes abajo
+    user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
     if user_input:
         st.session_state['chat_history'].append({"role": "user", "content": user_input})
         
-        # PROCESAMIENTO CON GEMINI
+        # PROCESAMIENTO GEMINI ROBUSTO
         api_key = st.session_state.get('api_key_gemini')
         respuesta_jarvis = ""
 
@@ -228,31 +234,14 @@ with tab1:
             try:
                 genai.configure(api_key=api_key)
                 
-                # Búsqueda dinámica para elegir automáticamente el modelo Gemini compatible
-                modelo_obj = None
-                modelos_candidatos = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro']
-                
+                # Selección limpia de modelo compatible
                 try:
-                    modelos_remotos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                    if modelos_remotos:
-                        # Limpiar el prefijo 'models/' si viniera presente
-                        modelos_candidatos = [m.replace('models/', '') for m in modelos_remotos] + modelos_candidatos
+                    modelo = genai.GenerativeModel('gemini-1.5-flash')
                 except Exception:
-                    pass
+                    modelo = genai.GenerativeModel('gemini-pro')
 
-                for nombre_mod in modelos_candidatos:
-                    try:
-                        modelo_obj = genai.GenerativeModel(nombre_mod)
-                        # Prueba rápida para verificar que el modelo no dé 404
-                        break
-                    except Exception:
-                        continue
-
-                if not modelo_obj:
-                    modelo_obj = genai.GenerativeModel('gemini-1.5-flash')
-
-                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial leal, astuto y sumamente eficiente, que asiste a Cindy en Buin, Chile."
-                respuesta = modelo_obj.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
+                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial leal, inteligente y eficiente que asiste a Cindy en Buin, Chile."
+                respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
             except Exception as e:
                 respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Verifique su clave."
