@@ -1,4 +1,6 @@
 streamlit
 pandas
 psutil
-pypdf 
+pypdf
+requests
+google-generativeai
