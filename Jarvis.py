@@ -1,3 +1,4 @@
+
 import streamlit as st
 import datetime
 import requests
@@ -107,8 +108,6 @@ st.markdown("""
 @st.cache_data(ttl=300)
 def obtener_divisas_chile():
     datos = {}
-    
-    # Dólar Observador con respaldo
     try:
         url_dolar = "https://mindicador.cl/api/dolar"
         resp_dolar = requests.get(url_dolar, timeout=5).json()
@@ -117,7 +116,6 @@ def obtener_divisas_chile():
     except Exception:
         datos['dolar_clp'] = "N/A"
 
-    # Euro con respaldo
     try:
         url_euro = "https://mindicador.cl/api/euro"
         resp_euro = requests.get(url_euro, timeout=5).json()
@@ -126,7 +124,6 @@ def obtener_divisas_chile():
     except Exception:
         datos['euro_clp'] = "N/A"
 
-    # UF con respaldo
     try:
         url_uf = "https://mindicador.cl/api/uf"
         resp_uf = requests.get(url_uf, timeout=5).json()
@@ -153,7 +150,7 @@ st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (MAPA, RELOJ, FINANZAS & BLOC DE NOTAS)
+# BARRA LATERAL (MAPA, RELOJ, FINANZAS, CLIMA & NOTAS)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Serafín")
@@ -161,6 +158,7 @@ with st.sidebar:
     st.map(data={"lat": [-33.73], "lon": [-70.73]}, zoom=10)
     st.divider()
     
+    # RELOJ DIGITAL
     st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
@@ -189,6 +187,8 @@ with st.sidebar:
     """, height=90)
 
     st.divider()
+    
+    # FINANZAS
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
     
@@ -212,6 +212,32 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.divider()
+
+    # TELEMETRÍA METEOROLÓGICA (EN VERTICAL)
+    st.subheader("🌤️ Clima Buin")
+    clima = obtener_clima_buin()
+    temp_v = clima.get('temperature', 'N/A')
+    viento_v = clima.get('windspeed', 'N/A')
+    dir_v = clima.get('winddirection', 'N/A')
+
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    ">
+        <span style="color: #00a8b5; font-size: 13px; display: block;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Vel. del Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🧭 Dirección Viento: <b style="color: #00f3ff;">{dir_v}°</b></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # BLOC DE NOTAS
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
         st.session_state['notas_jarvis'] = []
@@ -227,173 +253,143 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# NAVEGACIÓN POR PESTAÑAS (SOLO 2 PESTAÑAS PRINCIPALES)
+# TERMINAL DE CONVERSACIÓN Y CONTROL DE IA
 # ---------------------------------------------------------
-tab1, tab2 = st.tabs([
-    "💬 Terminal de Conversación", 
-    "🌤️ Clima & Telemetría"
-])
+st.subheader("💬 Terminal de Conversación Autónoma")
 
-# ---------------------------------------------------------
-# TAB 1: TERMINAL DE CONVERSACIÓN
-# ---------------------------------------------------------
-with tab1:
-    st.subheader("Conversación Autónoma & Dictado por Voz")
-    
-    # MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
-    clima_res = obtener_clima_buin()
-    temp_actual = clima_res.get('temperature', 'N/A')
-    dolar_actual = finanzas_sidebar.get('dolar_clp', 'N/A')
-    
-    st.markdown(f"""
-    <div style="
-        background-color: #0b1320;
-        border: 1px solid #00f3ff;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 15px;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-    ">
-        <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
-        <span style="font-size: 0.9rem; color: #00a8b5;">
-            • Buin: {temp_actual}°C | Dólar: ${dolar_actual} CLP<br>
-            • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+# MÓDULO DE ALERTAS Y RESUMEN TÁCTICO AUTOMATIZADO
+dolar_actual = finanzas_sidebar.get('dolar_clp', 'N/A')
 
-    # MÓDULO DE VOZ REAL OPTIMIZADO
-    if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
-        ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
-        if ultimo_mensaje_asistente:
-            texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
-            st.components.v1.html(f"""
-                <div style="margin-bottom: 12px;">
-                    <button onclick="hablarJarvis()" style="
-                        background-color: #0e1726; 
-                        color: #00f3ff; 
-                        border: 2px solid #00f3ff; 
-                        padding: 10px 16px; 
-                        border-radius: 8px; 
-                        cursor: pointer; 
-                        font-family: monospace;
-                        font-weight: bold;
-                        font-size: 14px;
-                        width: 100%;
-                        box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
-                    ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
-                </div>
-                <script>
-                    function hablarJarvis() {{
-                        if ('speechSynthesis' in window) {{
-                            window.speechSynthesis.cancel();
-                            const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
-                            utterThis.lang = 'es-CL';
-                            utterThis.pitch = 0.95;
-                            utterThis.rate = 1.05;
-                            window.speechSynthesis.speak(utterThis);
-                        }} else {{
-                            alert('La síntesis de voz no es compatible con este navegador.');
-                        }}
+st.markdown(f"""
+<div style="
+    background-color: #0b1320;
+    border: 1px solid #00f3ff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+">
+    <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">📊 RESUMEN TÁCTICO MATUTINO / ESTADO DE BASE</span>
+    <span style="font-size: 0.9rem; color: #00a8b5;">
+        • Buin: {temp_v}°C | Dólar: ${dolar_actual} CLP<br>
+        • Alertas del Sistema: Perímetro seguro. Sin anomalías detectadas en la red satelital.
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+# MÓDULO DE VOZ REAL OPTIMIZADO
+if 'chat_history' in st.session_state and len(st.session_state['chat_history']) > 0:
+    ultimo_mensaje_asistente = [m['content'] for m in st.session_state['chat_history'] if m['role'] == 'assistant']
+    if ultimo_mensaje_asistente:
+        texto_a_leer = ultimo_mensaje_asistente[-1].replace('"', "'").replace('\n', ' ')
+        st.components.v1.html(f"""
+            <div style="margin-bottom: 12px;">
+                <button onclick="hablarJarvis()" style="
+                    background-color: #0e1726; 
+                    color: #00f3ff; 
+                    border: 2px solid #00f3ff; 
+                    padding: 10px 16px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-family: monospace;
+                    font-weight: bold;
+                    font-size: 14px;
+                    width: 100%;
+                    box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+                ">🔊 Escuchar último reporte de J.A.R.V.I.S.</button>
+            </div>
+            <script>
+                function hablarJarvis() {{
+                    if ('speechSynthesis' in window) {{
+                        window.speechSynthesis.cancel();
+                        const utterThis = new SpeechSynthesisUtterance("{texto_a_leer}");
+                        utterThis.lang = 'es-CL';
+                        utterThis.pitch = 0.95;
+                        utterThis.rate = 1.05;
+                        window.speechSynthesis.speak(utterThis);
+                    }} else {{
+                        alert('La síntesis de voz no es compatible con este navegador.');
                     }}
-                </script>
-            """, height=65)
+                }}
+            </script>
+        """, height=65)
 
-    st.markdown("**⚡ Comandos Tácticos Rápidos:**")
-    col_btn1, col_btn2, col_btn3 = st.columns(3)
-    
-    with col_btn1:
-        if st.button("📍 Estado Buin"):
-            msg_buin = f"J.A.R.V.I.S.: El perímetro en Buin está tranquilo. Temperatura actual de {temp_actual}°C... nada que un café o mi sofisticación no puedan resolver."
-            st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
-            st.rerun()
-    with col_btn2:
-        if st.button("⚙️ Sistema"):
-            msg_sys = "J.A.R.V.I.S.: Todos los sistemas operando al 100%. Sobreviviendo milagrosamente a sus exigencias y sin que explote nada... por ahora."
-            st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
-            st.rerun()
-    with col_btn3:
-        if st.button("🗑️ Limpiar Chat"):
-            st.session_state['chat_history'] = [
-                {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
-            ]
-            st.rerun()
+st.markdown("**⚡ Comandos Tácticos Rápidos:**")
+col_btn1, col_btn2, col_btn3 = st.columns(3)
 
-    st.divider()
-
-    # Inicialización del historial
-    if 'chat_history' not in st.session_state:
+with col_btn1:
+    if st.button("📍 Estado Buin"):
+        msg_buin = f"J.A.R.V.I.S.: El perímetro en Buin está tranquilo. Temperatura actual de {temp_v}°C... nada que un café o mi sofisticación no puedan resolver."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+        st.rerun()
+with col_btn2:
+    if st.button("⚙️ Sistema"):
+        msg_sys = "J.A.R.V.I.S.: Todos los sistemas operando al 100%. Sobreviviendo milagrosamente a sus exigencias y sin que explote nada... por ahora."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        st.rerun()
+with col_btn3:
+    if st.button("🗑️ Limpiar Chat"):
         st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
+            {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
         ]
-
-    # Render del historial de chat arriba
-    chat_container = st.container()
-    with chat_container:
-        for msg in st.session_state['chat_history']:
-            st.chat_message(msg["role"]).write(msg["content"])
-
-    # Entrada de mensajes abajo
-    user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
-    if user_input:
-        st.session_state['chat_history'].append({"role": "user", "content": user_input})
-        
-        # PROCESAMIENTO GEMINI AUTOMÁTICO CON PERSONALIDAD TONY STARK
-        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-        respuesta_jarvis = ""
-
-        if api_key:
-            try:
-                genai.configure(api_key=api_key)
-                modelo_nombre = 'gemini-pro'
-                try:
-                    for m in genai.list_models():
-                        if 'generateContent' in m.supported_generation_methods:
-                            modelo_nombre = m.name
-                            break
-                except Exception:
-                    pass
-
-                modelo = genai.GenerativeModel(modelo_nombre)
-                
-                # INSTRUCCIÓN DE PERSONALIDAD ESTILO TONY STARK / JARVIS
-                prompt_sistema = (
-                    "Eres J.A.R.V.I.S., una inteligencia artificial de última generación, sarcástica, aguda, muy inteligente, "
-                    "leal y con un gran toque de humor cínico al estilo de Tony Stark. "
-                    "Asistes a Cindy en Buin, Chile. Responde a preguntas sencillas ('cómo estás', 'cómo están los sistemas') "
-                    "con naturalidad, fluidez, un toque de ironía divertida y elegancia tecnológica. No suenes como un manual "
-                    "robótico aburrido; responde siempre con personalidad, confianza y respuestas ingeniosas."
-                )
-                
-                respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
-                respuesta_jarvis = respuesta.text
-            except Exception as e:
-                respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
-        else:
-            texto_lower = user_input.lower()
-            if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-                respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
-            elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
-                respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
-            else:
-                respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
-            
-        st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
         st.rerun()
 
-# ---------------------------------------------------------
-# TAB 2: CLIMA & TELEMETRÍA
-# ---------------------------------------------------------
-with tab2:
-    st.subheader("🌤️ Telemetría Meteorológica - Buin")
-    clima = obtener_clima_buin()
-    if clima:
-        col_m1, col_m2, col_m3 = st.columns(3)
-        with col_m1:
-            st.metric("🌡️ Temperatura Actual", f"{clima.get('temperature', 'N/A')} °C")
-        with col_m2:
-            st.metric("💨 Velocidad del Viento", f"{clima.get('windspeed', 'N/A')} km/h")
-        with col_m3:
-            st.metric("🧭 Dirección del Viento", f"{clima.get('winddirection', 'N/A')}°")
+st.divider()
+
+# Inicialización del historial
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = [
+        {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
+    ]
+
+# Render del historial de chat
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state['chat_history']:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+# Entrada de mensajes
+user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
+if user_input:
+    st.session_state['chat_history'].append({"role": "user", "content": user_input})
+    
+    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+    respuesta_jarvis = ""
+
+    if api_key:
+        try:
+            genai.configure(api_key=api_key)
+            modelo_nombre = 'gemini-pro'
+            try:
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        modelo_nombre = m.name
+                        break
+            except Exception:
+                pass
+
+            modelo = genai.GenerativeModel(modelo_nombre)
+            
+            prompt_sistema = (
+                "Eres J.A.R.V.I.S., una inteligencia artificial de última generación, sarcástica, aguda, muy inteligente, "
+                "leal y con un gran toque de humor cínico al estilo de Tony Stark. "
+                "Asistes a Cindy en Buin, Chile. Responde a preguntas sencillas ('cómo estás', 'cómo están los sistemas') "
+                "con naturalidad, fluidez, un toque de ironía divertida y elegancia tecnológica. No suenes como un manual "
+                "robótico aburrido; responde siempre con personalidad, confianza y respuestas ingeniosas."
+            )
+            
+            respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
+            respuesta_jarvis = respuesta.text
+        except Exception as e:
+            respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Hasta las mejores IA sufrimos un calambre mental a veces."
     else:
-        st.warning("No se pudo obtener el reporte en vivo de los sensores meteorológicos.")
+        texto_lower = user_input.lower()
+        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
+        elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
+            respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
+        else:
+            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
+        
+    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    st.rerun()
