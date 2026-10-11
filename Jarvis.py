@@ -1,4 +1,3 @@
-
 import streamlit as st
 import datetime
 import requests
@@ -20,7 +19,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* Fondo principal y barra lateral en negro absoluto */
-    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"] {
+    .stApp, [data-testid="stSidebar"], [data-testid="stSidebarContent"], header, .stAppHeader {
         background-color: #080c14 !important;
         color: #00f3ff !important;
     }
@@ -47,8 +46,8 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* CAJA DE ENTRADA DEL CHAT - ESTILO AZUL NEÓN DESTACADO */
-    div[data-testid="stChatInput"] {
+    /* CAJA DE ENTRADA DEL CHAT - ESTILO TOTALMENTE OSCURO CON BORDE NEÓN */
+    div[data-testid="stChatInput"], div[data-testid="stChatInput"] > div {
         background-color: #0b1320 !important;
         border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
@@ -359,11 +358,12 @@ if user_input:
     if api_key:
         try:
             genai.configure(api_key=api_key)
-            modelo_nombre = 'gemini-pro'
+            modelo_nombre = 'gemini-1.5-flash'
             try:
-                for m in genai.list_models():
-                    if 'generateContent' in m.supported_generation_methods:
-                        modelo_nombre = m.name
+                modelos_disp = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                for m_name in modelos_disp:
+                    if '1.5-flash' in m_name or 'flash' in m_name:
+                        modelo_nombre = m_name
                         break
             except Exception:
                 pass
