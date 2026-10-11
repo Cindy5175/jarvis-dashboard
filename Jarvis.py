@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (ENTRADA FIJA ABAJO + DISEÑO CLARO)
+# ESTILOS VISUALES (ENTRADA FIJA ABAJO Y DISEÑO CLARO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -197,7 +197,7 @@ with tab1:
     with col_btn4:
         if st.button("🗑️ Limpiar Chat"):
             st.session_state['chat_history'] = [
-                {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
+                {"role": "assistant", "content": "Buenas noches, jefa. ¿En qué le puedo asistir el día de hoy?"}
             ]
             st.rerun()
 
@@ -206,7 +206,7 @@ with tab1:
     # Inicializar historial
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Buenas noches, jefa. ¿Trabajando hasta tarde otra vez? Alguien tiene que mantener este imperio en pie. ¿Qué travesura tecnológica planea para hoy?"}
+            {"role": "assistant", "content": "Buenas noches, jefa. ¿En qué le puedo asistir el día de hoy?"}
         ]
 
     # Contenedor para mostrar todo el historial arriba
@@ -227,27 +227,39 @@ with tab1:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                # Detección inteligente de modelo disponible
-                modelo_nombre = 'gemini-1.5-flash'
+                
+                # Búsqueda dinámica para elegir automáticamente el modelo Gemini compatible
+                modelo_obj = None
+                modelos_candidatos = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro']
+                
                 try:
-                    models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                    if models:
-                        # Prioriza modelos 'flash' o toma el primero compatible
-                        flash_models = [m for m in models if 'flash' in m]
-                        modelo_nombre = flash_models[0] if flash_models else models[0]
+                    modelos_remotos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                    if modelos_remotos:
+                        # Limpiar el prefijo 'models/' si viniera presente
+                        modelos_candidatos = [m.replace('models/', '') for m in modelos_remotos] + modelos_candidatos
                 except Exception:
                     pass
 
-                modelo = genai.GenerativeModel(modelo_nombre)
-                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico pero leal y eficiente, que asiste a tu creadora Cindy en Buin, Chile."
-                respuesta = modelo.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
+                for nombre_mod in modelos_candidatos:
+                    try:
+                        modelo_obj = genai.GenerativeModel(nombre_mod)
+                        # Prueba rápida para verificar que el modelo no dé 404
+                        break
+                    except Exception:
+                        continue
+
+                if not modelo_obj:
+                    modelo_obj = genai.GenerativeModel('gemini-1.5-flash')
+
+                prompt_sistema = "Eres J.A.R.V.I.S., un asistente de inteligencia artificial leal, astuto y sumamente eficiente, que asiste a Cindy en Buin, Chile."
+                respuesta = modelo_obj.generate_content(f"{prompt_sistema}\nUsuario: {user_input}")
                 respuesta_jarvis = respuesta.text
             except Exception as e:
                 respuesta_jarvis = f"J.A.R.V.I.S.: Error al conectar con el núcleo de Gemini ({str(e)}). Verifique su clave."
         else:
             texto_lower = user_input.lower()
             if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-                respuesta_jarvis = "J.A.R.V.I.S.: Saludos operativos, jefa. Los sistemas están activos y listos para cualquier directiva."
+                respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy, sistemas listos. ¿En qué te ayudo hoy?"
             else:
                 respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para razonamiento avanzado con IA, configure su API Key en la pestaña Configuración)."
             
