@@ -283,40 +283,10 @@ st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.0")
 st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (ORDENADA SEGÚN SOLICITUD)
+# BARRA LATERAL (ORDENADA: PERSONALIDAD -> RED SATELITAL -> VISIÓN -> PRESETS -> FINANZAS -> TELEMETRÍA PC -> CLIMA)
 # ---------------------------------------------------------
 with st.sidebar:
-    # 1. TELEMETRÍA DE PC
-    cpu_uso = psutil.cpu_percent(interval=None)
-    mem_uso = psutil.virtual_memory().percent
-    bat_val = "Conectado a Red / Cloud"
-    try:
-        bateria = psutil.sensors_battery()
-        if bateria:
-            bat_val = f"{bateria.percent}%"
-    except Exception:
-        pass
-    
-    st.markdown(f"""
-    <div style="
-        background-color: #0b1320;
-        border: 1px solid #00f3ff;
-        border-radius: 8px;
-        padding: 10px;
-        font-family: monospace;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        margin-bottom: 10px;
-    ">
-        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block;">💻 TELEMETRÍA DE PC</span>
-        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">⚡ CPU en Uso: <b>{cpu_uso}%</b></span>
-        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🧠 Memoria RAM: <b>{mem_uso}%</b></span>
-        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🔋 Batería: <b>{bat_val}</b></span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # 2. MATRIZ DE PERSONALIDAD
+    # 1. MATRIZ DE PERSONALIDAD
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
@@ -329,7 +299,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 3. RED SATELITAL GLOBAL (UBICADA ENTRE PERSONALIDAD Y VISIÓN)
+    # 2. RED SATELITAL GLOBAL
     st.subheader("🛰️ Red Satelital Global")
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
@@ -346,7 +316,7 @@ with st.sidebar:
 
     st.divider()
     
-    # 4. RELOJ DIGITAL
+    # RELOJ DIGITAL
     st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
@@ -376,7 +346,7 @@ with st.sidebar:
 
     st.divider()
     
-    # 5. ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
+    # 3. ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
     st.subheader("📷 Visión por Computadora & Archivos")
     archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
@@ -416,7 +386,7 @@ with st.sidebar:
 
     st.divider()
 
-    # PRESETS TÁCTICOS RÁPIDOS
+    # 4. PRESETS TÁCTICOS RÁPIDOS
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
@@ -454,7 +424,7 @@ with st.sidebar:
 
     st.divider()
 
-    # FINANZAS Y MERCADO
+    # 5. FINANZAS / MERCADO
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
@@ -480,7 +450,36 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ⛈️ CLIMA EXTENDIDO Y ALERTAS DE TORMENTAS
+    st.divider()
+
+    # 6. TELEMETRÍA DE PC (UBICADA EXACTAMENTE ENTRE FINANZAS Y CLIMA)
+    cpu_uso = psutil.cpu_percent(interval=None)
+    mem_uso = psutil.virtual_memory().percent
+    bat_val = "Conectado a Red / Cloud"
+    try:
+        bateria = psutil.sensors_battery()
+        if bateria:
+            bat_val = f"{bateria.percent}%"
+    except Exception:
+        pass
+    
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    ">
+        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block;">💻 TELEMETRÍA DE PC</span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">⚡ CPU en Uso: <b>{cpu_uso}%</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🧠 Memoria RAM: <b>{mem_uso}%</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🔋 Batería: <b>{bat_val}</b></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 7. CLIMA & ALERTAS
     st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
