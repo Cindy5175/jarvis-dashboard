@@ -1,7 +1,6 @@
 import streamlit as st
 import datetime
 import requests
-import xml.etree.ElementTree as ET
 import time
 import pandas as pd
 import google.generativeai as genai
@@ -9,10 +8,8 @@ import re
 import psutil
 import os
 import sqlite3
-import cv2
 import numpy as np
 import yfinance as yf
-import mediapipe as mp
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -255,6 +252,23 @@ def obtener_divisas_chile():
 
     return datos
 
+@st.cache_data(ttl=300)
+def obtener_acciones_tiempo_real():
+    tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "SPY"]
+    datos_acciones = {}
+    for t in tickers:
+        try:
+            stock = yf.Ticker(t)
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                precio = hist['Close'].iloc[-1]
+                prev = stock.info.get('previousClose', precio)
+                var_pct = ((precio - prev) / prev) * 100
+                datos_acciones[t] = {"precio": precio, "variacion": var_pct}
+        except Exception:
+            pass
+    return datos_acciones
+
 @st.cache_data(ttl=600)
 def obtener_clima_global(lat, lon):
     try:
@@ -374,70 +388,6 @@ def reproducir_voz_jarvis(texto):
     st.components.v1.html(js_code, height=0)
 
 # ---------------------------------------------------------
-# FUNCIONES DE DETECCIÓN FACIAL Y GESTOS (OPENCV + MEDIAPIPE)
-# ---------------------------------------------------------
-def analizar_rostro_y_gestos(img_np):
-    # Detección de rostro básica con OpenCV
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-    
-    rostro_detectado = len(faces) > 0
-    img_dibujada = img_np.copy()
-    
-    for (x, y, w, h) in faces:
-        cv2.rectangle(img_dibujada, (x, y), (x+w, y+h), (255, 243, 0), 2)
-        cv2.putText(img_dibujada, "OPERADORA IDENTIFICADA: CINDY", (x, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 243, 0), 2)
-        
-    # Detección de Gestos con MediaPipe
-    mp_hands = mp.solutions.hands
-    gesto = "NINGUNO"
-    with mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as hands:
-        results = hands.process(cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB))
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                # Contar dedos levantados
-                landmarks = hand_landmarks.landmark
-                dedos_arriba = 0
-                if landmarks[mp_hands.HandLandmark.THUMB_TIP].y < landmarks[mp_hands.HandLandmark.THUMB_IP].y:
-                    dedos_arriba += 1
-                if landmarks[mp_hands.HandLandmark.INDEX_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.INDEX_FINGER_PIP].y:
-                    dedos_arriba += 1
-                if landmarks[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].y:
-                    dedos_arriba += 1
-                if landmarks[mp_hands.HandLandmark.RING_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.RING_FINGER_PIP].y:
-                    dedos_arriba += 1
-                if landmarks[mp_hands.HandLandmark.PINKY_TIP].y < landmarks[mp_hands.HandLandmark.PINKY_PIP].y:
-                    dedos_arriba += 1
-
-                if dedos_arriba >= 4:
-                    gesto = "MANO_ABIERTA"
-                elif dedos_arriba == 2:
-                    gesto = "DOS_DEDOS"
-                elif dedos_arriba == 1:
-                    gesto = "PULGAR_ARRIBA"
-
-    return img_dibujada, rostro_detectado, gesto
-
-@st.cache_data(ttl=300)
-def obtener_acciones_tiempo_real():
-    tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "SPY"]
-    datos_acciones = {}
-    for t in tickers:
-        try:
-            stock = yf.Ticker(t)
-            hist = stock.history(period="1d")
-            if not hist.empty:
-                precio = hist['Close'].iloc[-1]
-                prev = stock.info.get('previousClose', precio)
-                var_pct = ((precio - prev) / prev) * 100
-                datos_acciones[t] = {"precio": precio, "variacion": var_pct}
-        except Exception:
-            pass
-    return datos_acciones
-
-# ---------------------------------------------------------
 # ENCABEZADO Y SISTEMA DE ALERTA SÍSMICA EN PANTALLA
 # ---------------------------------------------------------
 st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.4")
@@ -497,7 +447,7 @@ with st.sidebar:
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
         "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía, sofisticación y reverencia hacia Cindy ('Señorita Cindy', 'a su entera disposición', 'excelencia').",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son strictly concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -522,74 +472,32 @@ with st.sidebar:
 
     st.divider()
     
-    # 4. MÓDULO INTEGRADO: CENTINELA + CÁMARA IP / WEBCAM CON BIOMETRÍA Y GESTOS
-    st.subheader("🛡️ Seguridad: Biometría & Gestos")
+    # 4. MÓDULO INTEGRADO: CÁMARA TÁCTICA & VISIÓN POR IA
+    st.subheader("🛡️ Cámara Táctica & Visión")
     
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
         centinela_activo = st.checkbox("Activar Protocolo Centinela en Sistema")
         if centinela_activo:
             st.info("🌙 **Centinela Activo:** Puedes cerrar la tapa de tu laptop. J.A.R.V.I.S. continuará vigilando en segundo plano.")
-        
-        st.caption("⚙️ **Configuración rápida en Windows:**")
-        st.caption("1. Presiona `Win + R`, escribe `control powercfg.cpl` y presiona Enter.")
-        st.caption("2. Haz clic en 'Elegir el comportamiento del cierre de la tapa'.")
-        st.caption("3. En 'Al cerrar la tapa', selecciona **'No hacer nada'**.")
 
-    with st.expander("📹 WEBCAM CON HUD BIOMÉTRICO Y GESTOS", expanded=False):
-        origen_cam = st.radio("Fuente de cámara:", ["Webcam Laptop", "Cámara IP / ESP32-CAM"])
-        
-        if origen_cam == "Cámara IP / ESP32-CAM":
-            url_stream = st.text_input("URL Stream RTSP/HTTP (ej: http://192.168.1.50:81/stream):")
-            if url_stream and st.button("🔗 Conectar Cámara Externa"):
-                try:
-                    r_cam = requests.get(url_stream, timeout=3)
-                    if r_cam.status_code == 200:
-                        st.success("🟢 Cámara externa en línea.")
-                        registrar_evento_seguridad("ESP32/IP", "CONEXION", "Stream externo sincronizado correctamente.")
-                    else:
-                        st.warning("⚠️ Cámara respondió con código diferente a 200.")
-                except Exception:
-                    st.error("🔴 No se pudo establecer conexión con la URL del stream.")
-        else:
-            foto_cam = st.camera_input("Sensor Biométrico de Perímetro")
-            if foto_cam is not None:
-                bytes_cam = foto_cam.getvalue()
-                nparr = np.frombuffer(bytes_cam, np.uint8)
-                img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                img_analizada, rostro_detectado, gesto_detectado = analizar_rostro_y_gestos(img_np)
-                
-                if rostro_detectado:
-                    st.success("👤 OPERADORA IDENTIFICADA: CINDY CARRERA")
-                
-                if gesto_detectado != "NINGUNO":
-                    st.info(f"🖐️ GESTO RECONOCIDO: {gesto_detectado}")
-                    if gesto_detectado == "PULGAR_ARRIBA":
-                        st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Gesto recibido (Pulgar Arriba). Todo en orden en la base."})
-                    elif gesto_detectado == "DOS_DEDOS":
-                        borrar_historial_db()
-                        st.session_state['chat_history'] = [{"role": "assistant", "content": "J.A.R.V.I.S.: Chat limpiado mediante orden gestual."}]
-
-                if st.button("🔍 Analizar Fotograma con J.A.R.V.I.S."):
-                    st.session_state['chat_history'].append({"role": "user", "content": "[Captura de Sensor de Webcam]"})
-                    guardar_mensaje_db("user", "[Captura de Sensor de Webcam]")
-                    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-                    if api_key:
-                        genai.configure(api_key=api_key)
-                        m = genai.GenerativeModel('gemini-1.5-flash')
-                        res = m.generate_content([prompt_personalidad + "\nAnaliza esta captura del sensor de la cámara en el perímetro de operaciones:", {"mime_type": "image/jpeg", "data": bytes_cam}])
-                        st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
-                        guardar_mensaje_db("assistant", res.text)
-                        reproducir_voz_jarvis(res.text)
-                    st.rerun()
-
-    with st.expander("📋 BITÁCORA DE EVENTOS REGISTRADOS", expanded=False):
-        eventos_sec = cargar_eventos_seguridad()
-        if eventos_sec:
-            for src, ev_type, det, ts in eventos_sec:
-                st.caption(f"[{ts}] **{src}** | {ev_type}: {det}")
-        else:
-            st.caption("Sin registros de alerta recientes.")
+    with st.expander("📹 WEBCAM & RECONOCIMIENTO FACIAL IA", expanded=False):
+        foto_cam = st.camera_input("Sensor Biométrico de Perímetro")
+        if foto_cam is not None:
+            bytes_cam = foto_cam.getvalue()
+            st.success("📸 Fotograma capturado correctamente.")
+            
+            if st.button("🔍 Escanear Rostro / Perímetro con IA"):
+                st.session_state['chat_history'].append({"role": "user", "content": "[Escaneo de Sensor de Cámara]"})
+                guardar_mensaje_db("user", "[Escaneo de Sensor de Cámara]")
+                api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+                if api_key:
+                    genai.configure(api_key=api_key)
+                    m = genai.GenerativeModel('gemini-1.5-flash')
+                    res = m.generate_content([prompt_personalidad + "\nAnaliza esta imagen de la cámara. Si ves a una persona, confirma 'OPERADORA IDENTIFICADA: CINDY CARRERA // ACCESO CONCEDIDO'. Si no, describe lo que ves:", {"mime_type": "image/jpeg", "data": bytes_cam}])
+                    st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                    guardar_mensaje_db("assistant", res.text)
+                    reproducir_voz_jarvis(res.text)
+                st.rerun()
 
     archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
@@ -609,10 +517,6 @@ with st.sidebar:
                         st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
                         guardar_mensaje_db("assistant", res.text)
                         reproducir_voz_jarvis(res.text)
-                    else:
-                        msg_err = "J.A.R.V.I.S.: Falta la API Key para procesar imágenes con visión artificial."
-                        st.session_state['chat_history'].append({"role": "assistant", "content": msg_err})
-                        guardar_mensaje_db("assistant", msg_err)
                     st.rerun()
             else:
                 texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
@@ -651,13 +555,9 @@ with st.sidebar:
                 guardar_mensaje_db("assistant", res.text)
                 reproducir_voz_jarvis(res.text)
             except Exception:
-                msg_e = "J.A.R.V.I.S.: Alerta de límite de cuota superado (Error 429)."
+                msg_e = "J.A.R.V.I.S.: Servidores sobrecargados de peticiones."
                 st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
                 guardar_mensaje_db("assistant", msg_e)
-        else:
-            msg_e = "J.A.R.V.I.S.: Auditoría completada en modo offline."
-            st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
-            guardar_mensaje_db("assistant", msg_e)
         st.rerun()
 
     if st.button("🚀 Protocolo de Máxima Eficiencia"):
@@ -674,13 +574,9 @@ with st.sidebar:
                 guardar_mensaje_db("assistant", res.text)
                 reproducir_voz_jarvis(res.text)
             except Exception:
-                msg_e = "J.A.R.V.I.S.: Servidores sobrecargados de peticiones."
+                msg_e = "J.A.R.V.I.S.: Servidores sobrecargados."
                 st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
                 guardar_mensaje_db("assistant", msg_e)
-        else:
-            msg_e = "J.A.R.V.I.S.: Protocolo activo. Menos distracciones, más ejecución."
-            st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
-            guardar_mensaje_db("assistant", msg_e)
         st.rerun()
 
     st.divider()
@@ -711,12 +607,15 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # NUEVO DASHBOARD DE ACCIONES
+    # DASHBOARD DE ACCIONES
     st.caption("📈 Acciones & ETFs en Tiempo Real:")
     acciones_data = obtener_acciones_tiempo_real()
-    for symbol, info in acciones_data.items():
-        color_var = "#00f3ff" if info['variacion'] >= 0 else "#ff4b4b"
-        st.markdown(f"<small><b>{symbol}:</b> ${info['precio']:.2f} USD (<span style='color:{color_var}'>{info['variacion']:+.2f}%</span>)</small>", unsafe_allow_html=True)
+    if acciones_data:
+        for symbol, info in acciones_data.items():
+            color_var = "#00f3ff" if info['variacion'] >= 0 else "#ff4b4b"
+            st.markdown(f"<small><b>{symbol}:</b> ${info['precio']:.2f} USD (<span style='color:{color_var}'>{info['variacion']:+.2f}%</span>)</small>", unsafe_allow_html=True)
+    else:
+        st.caption("Mercado cerrado / Cargando datos...")
 
     st.divider()
 
@@ -779,30 +678,6 @@ with st.sidebar:
         for srv, stt in pings.items():
             st.write(f"**{srv}:** {stt}")
 
-    with st.expander("📈 GRÁFICO TÁCTICO DE DIVISAS (30 DÍAS)", expanded=False):
-        serie_hist = finanzas_sidebar.get('serie_historica', [])
-        if serie_hist:
-            df_hist = pd.DataFrame(serie_hist)
-            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
-            df_hist = df_hist.sort_values(by='fecha')
-            chart_data = df_hist.set_index('fecha')[['valor']]
-            st.line_chart(chart_data)
-
-    with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
-        if 'metas_jarvis' not in st.session_state:
-            st.session_state['metas_jarvis'] = [
-                {"meta": "Optimización J.A.R.V.I.S. 6.4", "progreso": 100},
-                {"meta": "Auditoría de Fondos y Acciones", "progreso": 90}
-            ]
-        for idx, item in enumerate(st.session_state['metas_jarvis']):
-            st.write(f"**{item['meta']}** — {item['progreso']}%")
-            st.progress(item['progreso'] / 100)
-
-    with st.expander("🧠 RED NEURONAL Y OPERADOR", expanded=False):
-        st.write("⚡ **Productividad:** 99.8%")
-        st.write("🔋 **Estrés Operador:** Nivel Zen")
-        st.progress(0.99)
-
     # SISMOS CSN EN TIEMPO REAL
     st.divider()
     st.subheader("🌍 Telemetría Sísmica CSN")
@@ -824,41 +699,11 @@ with st.sidebar:
             <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
         </div>
         """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style="
-            background-color: #0b1320;
-            border: 1px solid #00f3ff;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">
-            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 Red CSN Chile</span>
-            <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block; margin-top: 4px;">🟢 Perímetro Estable</span>
-            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">Sin anomalías registradas</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.divider()
-    st.subheader("📝 Bloc de Notas")
-    if 'notas_jarvis' not in st.session_state:
-        st.session_state['notas_jarvis'] = []
-
-    nueva_nota = st.text_input("Recordatorio rápido:")
-    if st.button("➕ Guardar Nota"):
-        if nueva_nota:
-            st.session_state['notas_jarvis'].append(nueva_nota)
-            st.rerun()
-
-    if st.session_state['notas_jarvis']:
-        for i, nota in enumerate(st.session_state['notas_jarvis']):
-            st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
 # CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & RECONOCIMIENTO POR VOZ
 # ---------------------------------------------------------
-st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.4)")
+st.subheader("💬 Terminal de ConversACIÓN Autónoma (Memoria & Centinela 6.4)")
 
 # MÓDULO DE ESCUCHA ACTIVA POR MICRÓFONO
 st.components.v1.html("""
@@ -889,7 +734,6 @@ st.components.v1.html("""
                 recognition.onresult = function(event) {
                     var text = event.results[0][0].transcript;
                     document.getElementById('mic-status').textContent = '✅ Comando capturado: ' + text;
-                    // Enviar texto al input
                     const inputElement = parent.document.querySelector('div[data-testid="stChatInput"] textarea');
                     if (inputElement) {
                         inputElement.value = text;
@@ -927,14 +771,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-        if api_key_btn:
-            genai.configure(api_key=api_key_btn)
-            m_btn = genai.GenerativeModel('gemini-1.5-flash')
-            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma sobre el estado del sistema: CPU al {cpu_uso}%, RAM al {mem_uso}%.")
-            msg_sys = res_btn.text
-        else:
-            msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         guardar_mensaje_db("assistant", msg_sys)
         reproducir_voz_jarvis(msg_sys)
@@ -946,7 +783,7 @@ with col_btn3:
         if api_key_btn:
             genai.configure(api_key=api_key_btn)
             m_btn = genai.GenerativeModel('gemini-1.5-flash')
-            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nDa una predicción oracular o frase magistral sobre las probabilidades de éxito del día.")
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nDa una predicción oracular sobre las probabilidades de éxito del día.")
             oraculo_msg = res_btn.text
         else:
             oraculo_msg = "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy."
@@ -961,14 +798,7 @@ with col_btn4:
             os.system("start spotify:" if os.name == 'nt' else "open -a Spotify")
         except Exception:
             pass
-        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-        if api_key_btn:
-            genai.configure(api_key=api_key_btn)
-            m_btn = genai.GenerativeModel('gemini-1.5-flash')
-            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma que estás lanzando la secuencia musical en Spotify.")
-            msg_spot = res_btn.text
-        else:
-            msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
+        msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_spot})
         guardar_mensaje_db("assistant", msg_spot)
         reproducir_voz_jarvis(msg_spot)
@@ -1001,33 +831,25 @@ if user_input:
     if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
         respuesta_jarvis = "Para Ud señorita siempre."
 
-    elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate", "quien eres tu", "quién eres tú"]):
+    elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
         respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., su asistente de inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirle de forma ininterrumpida en la Base Buin, señorita Cindy."
 
     elif procesar_calculo_local(user_input, finanzas_sidebar):
         respuesta_jarvis = procesar_calculo_local(user_input, finanzas_sidebar)
 
-    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
+    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que hora es"]):
         ahora = datetime.datetime.now()
-        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
-        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-        
-        nombre_dia = dias_semana[ahora.weekday()]
-        nombre_mes = meses[ahora.month - 1]
-        
-        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
+        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {ahora.strftime('%A %d de %B de %Y')}. Son las {ahora.strftime('%H:%M')} hrs."
 
     elif api_key:
         try:
             genai.configure(api_key=api_key)
-            modelo_nombre = 'gemini-1.5-flash'
-            
-            modelo = genai.GenerativeModel(modelo_nombre)
+            modelo = genai.GenerativeModel('gemini-1.5-flash')
             prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
-        except Exception as e:
-            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un minuto antes de enviar otra orden."
+        except Exception:
+            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente. Por favor reintenta en un minuto."
     else:
         respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
         
