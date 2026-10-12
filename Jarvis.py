@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 import time
 import pandas as pd
 import google.generativeai as genai
+import re
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -129,7 +130,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS
+# FUNCIONES AUXILIARES DE APIS Y CÁLCULOS LOCALES
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -202,24 +203,6 @@ def obtener_ultimo_sismo_chile():
     except Exception:
         return None
 
-@st.cache_data(ttl=900)
-def obtener_noticias_tacticas():
-    noticias = []
-    url_rss = "https://news.google.com/rss/search?q=economia+chile+finanzas&hl=es-419&gl=CL&ceid=CL:es-419"
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        resp = requests.get(url_rss, headers=headers, timeout=5)
-        root = ET.fromstring(resp.content)
-        
-        for item in root.findall('.//item')[:5]:
-            titulo = item.find('title').text if item.find('title') is not None else "Sin título"
-            link = item.find('link').text if item.find('link') is not None else "#"
-            pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ""
-            noticias.append({"titulo": titulo, "link": link, "fecha": pub_date})
-    except Exception:
-        noticias = [{"titulo": "No se pudieron cargar las noticias en este momento.", "link": "#", "fecha": ""}]
-    return noticias
-
 def verificar_ping_red():
     servidores = {
         "Google API (Gemini)": "https://generativelanguage.googleapis.com",
@@ -236,6 +219,41 @@ def verificar_ping_red():
         except Exception:
             resultados[nombre] = "🔴 Fuera de línea"
     return resultados
+
+def procesar_calculo_local(texto, divisas):
+    """Procesamiento local para IVA, conversiones y operaciones matemáticas sin usar API"""
+    txt = texto.lower()
+    
+    # 1. Cálculo de IVA
+    if "iva" in txt:
+        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace('.', '').replace(',', '.'))
+        if numeros:
+            monto = float(numeros[0])
+            iva = monto * 0.19
+            total = monto + iva
+            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
+    
+    # 2. Conversión USD a CLP
+    if "usd" in txt or "dolar" in txt or "dólar" in txt:
+        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
+        if numeros:
+            cant = float(numeros[0])
+            val_dolar = divisas.get('dolar_clp', 0.0)
+            if val_dolar > 0:
+                total = cant * val_dolar
+                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD = ${total:,.0f} CLP"
+    
+    # 3. Conversión UF a CLP
+    if "uf" in txt:
+        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
+        if numeros:
+            cant = float(numeros[0])
+            val_uf = divisas.get('uf_clp', 0.0)
+            if val_uf > 0:
+                total = cant * val_uf
+                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF = ${total:,.0f} CLP"
+
+    return None
 
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
@@ -306,13 +324,13 @@ with st.sidebar:
 
     st.divider()
     
-    # ESCÁNER DE ARCHIVOS DE TEXTO
-    st.subheader("📄 Escáner Táctico de Texto")
-    archivo_subido = st.file_uploader("Cargar TXT para análisis:", type=["txt", "csv", "md"])
+    # ESCÁNER DE ARCHIVOS DE TEXTO Y DOCUMENTOS (MULTIMODAL)
+    st.subheader("📄 Escáner Táctico Multimodal")
+    archivo_subido = st.file_uploader("Cargar TXT, CSV o PDF para análisis:", type=["txt", "csv", "md", "pdf"])
     if archivo_subido is not None:
         try:
             texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
-            st.success(f"✅ Documento leído ({len(texto_extraido)} caracteres).")
+            st.success(f"✅ Documento procesado ({len(texto_extraido)} caracteres).")
             if st.button("🔍 Analizar con J.A.R.V.I.S."):
                 prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto:\n\n{texto_extraido[:3000]}"
                 st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
@@ -436,7 +454,7 @@ with st.sidebar:
             chart_data = df_hist.set_index('fecha')[['valor']]
             st.line_chart(chart_data)
 
-    # MATRIZ DE OBJETIVOS
+    # MATRIZ DE OBJETIVOS (GUARDADO EN SESIÓN)
     with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
         if 'metas_jarvis' not in st.session_state:
             st.session_state['metas_jarvis'] = [
@@ -476,7 +494,7 @@ with st.sidebar:
         </div>
         """, unsafe_allow_html=True)
 
-    # BLOC DE NOTAS
+    # BLOC DE NOTAS (GUARDADO EN SESIÓN)
     st.divider()
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
@@ -543,7 +561,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (OPTIMIZADA)
+# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA Y RESPUESTAS LOCALES)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -552,8 +570,14 @@ if user_input:
     respuesta_jarvis = ""
     texto_lower = user_input.lower().strip()
 
-    # 🚀 RESPUESTAS LOCALES INSTANTÁNEAS (SIN GASTAR CUOTA DE API)
-    if any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
+    # 1. PRUEBA DE CÁLCULO LOCAL (FINANCIERO / IVA / CONVERSIÓN)
+    res_calculo = procesar_calculo_local(user_input, finanzas_sidebar)
+    
+    if res_calculo:
+        respuesta_jarvis = res_calculo
+
+    # 2. CONSULTAS LOCALES DE FECHA Y HORA
+    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
         ahora = datetime.datetime.now()
         dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
         meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
@@ -563,12 +587,15 @@ if user_input:
         
         respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
 
+    # 3. SALUDOS DIRECTOS
     elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
         respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
 
+    # 4. CONSULTAS DE ESTADO
     elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
         respuesta_jarvis = "J.A.R.V.I.S.: Estado del sistema: impecable. Perímetro seguro y sin retrasos en la red. ¿Qué se te ofrece?"
 
+    # 5. CONSULTAS COMPLEJAS VÍA API GEMINI
     elif api_key:
         try:
             genai.configure(api_key=api_key)
