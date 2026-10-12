@@ -735,4 +735,142 @@ st.components.v1.html("""
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">
+        ">🎙️ Escucha Activa: Dictar Comando por Micrófono</button>
+        <span id="mic-status" style="color: #00a8b5; margin-left: 10px; font-family: monospace;"></span>
+    </div>
+    <script>
+        function startDictation() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                var recognition = new SpeechRecognition();
+                recognition.lang = 'es-ES';
+                recognition.interimResults = false;
+                
+                document.getElementById('mic-status').textContent = '🎙️ Escuchando orden...';
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    var text = event.results[0][0].transcript;
+                    document.getElementById('mic-status').textContent = '✅ Comando capturado: ' + text;
+                    const inputElement = parent.document.querySelector('div[data-testid="stChatInput"] textarea');
+                    if (inputElement) {
+                        inputElement.value = text;
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    document.getElementById('mic-status').textContent = '🔴 Error de captura de audio.';
+                };
+            } else {
+                alert('El navegador no soporta entrada directa por micrófono.');
+            }
+        }
+    </script>
+""", height=60)
+
+st.markdown("**⚡ Comandos Tácticos Rápidos & Accesos Directos:**")
+col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns(5)
+
+with col_btn1:
+    if st.button("📍 Estado Base"):
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nEl usuario ha solicitado verificar el estado del perímetro y la base principal.")
+            msg_buin = res_btn.text
+        else:
+            msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+        guardar_mensaje_db("assistant", msg_buin)
+        reproducir_voz_jarvis(msg_buin)
+        st.rerun()
+
+with col_btn2:
+    if st.button("⚙️ Sistema"):
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todos los subsistemas, red y traductor táctico operativos."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        guardar_mensaje_db("assistant", msg_sys)
+        reproducir_voz_jarvis(msg_sys)
+        st.rerun()
+
+with col_btn3:
+    if st.button("🔮 Oráculo"):
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nDa una predicción oracular sobre las probabilidades de éxito del día.")
+            oraculo_msg = res_btn.text
+        else:
+            oraculo_msg = "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy."
+        st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
+        guardar_mensaje_db("assistant", oraculo_msg)
+        reproducir_voz_jarvis(oraculo_msg)
+        st.rerun()
+
+with col_btn4:
+    if st.button("🎵 Abrir Spotify"):
+        try:
+            os.system("start spotify:" if os.name == 'nt' else "open -a Spotify")
+        except Exception:
+            pass
+        msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_spot})
+        guardar_mensaje_db("assistant", msg_spot)
+        reproducir_voz_jarvis(msg_spot)
+        st.rerun()
+
+with col_btn5:
+    if st.button("🗑️ Limpiar Chat"):
+        borrar_historial_db()
+        msg_init = "Hola Cindy. Registros y memoria limpios. ¿Qué ocurrencia tienes para hoy?"
+        st.session_state['chat_history'] = [{"role": "assistant", "content": msg_init}]
+        guardar_mensaje_db("assistant", msg_init)
+        st.rerun()
+
+st.divider()
+
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state['chat_history']:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
+if user_input:
+    st.session_state['chat_history'].append({"role": "user", "content": user_input})
+    guardar_mensaje_db("user", user_input)
+    
+    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+    respuesta_jarvis = ""
+    texto_lower = str(user_input).lower()
+
+    if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
+        respuesta_jarvis = "Para ti siempre, Cindy."
+
+    elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con red, misiones, biblioteca académica y traductor táctico activos en la Base Buin, Cindy."
+
+    elif api_key:
+        try:
+            genai.configure(api_key=api_key)
+            modelo = genai.GenerativeModel('gemini-1.5-flash')
+            
+            contexto_docs = ""
+            if st.session_state['documentos_cargados']:
+                lista_nombres = ", ".join(st.session_state['documentos_cargados'])
+                contexto_docs = f"\n[Biblioteca activa cargada por la usuaria: {lista_nombres}]"
+                
+            prompt_completo = f"{prompt_personalidad}{contexto_docs}\nUsuario: {user_input}"
+            respuesta = modelo.generate_content(prompt_completo)
+            respuesta_jarvis = respuesta.text
+        except Exception:
+            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente. Por favor reintenta en un minuto."
+    else:
+        respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
+        
+    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    guardar_mensaje_db("assistant", respuesta_jarvis)
+    reproducir_voz_jarvis(respuesta_jarvis)
+    st.rerun()
