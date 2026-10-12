@@ -16,7 +16,7 @@ import numpy as np
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónoma 6.2",
+    page_title="J.A.R.V.I.S. IA Autónoma 6.3",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -325,7 +325,7 @@ def procesar_calculo_local(texto, divisas):
             monto = float(numeros[0])
             iva = monto * 0.19
             total = monto + iva
-            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19\%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
+            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
     
     if "usd" in txt or "dolar" in txt or "dólar" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
@@ -334,7 +334,7 @@ def procesar_calculo_local(texto, divisas):
             val_dolar = divisas.get('dolar_clp', 0.0)
             if val_dolar > 0:
                 total = cant * val_dolar
-                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD =${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD = ${total:,.0f} CLP"
     
     if "uf" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
@@ -343,7 +343,7 @@ def procesar_calculo_local(texto, divisas):
             val_uf = divisas.get('uf_clp', 0.0)
             if val_uf > 0:
                 total = cant * val_uf
-                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF =${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF = ${total:,.0f} CLP"
 
     return None
 
@@ -366,7 +366,7 @@ def reproducir_voz_jarvis(texto):
 # ---------------------------------------------------------
 # ENCABEZADO Y SISTEMA DE ALERTA SÍSMICA EN PANTALLA
 # ---------------------------------------------------------
-st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.2")
+st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.3")
 
 ultimo_sismo_check = obtener_ultimo_sismo_chile()
 if ultimo_sismo_check:
@@ -686,4 +686,221 @@ with st.sidebar:
     ">
         <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block;">{estado_v}</span>
         <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
-        <span style="color: #00a8b5; font-size: 13
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
+        <hr style="border-color: #00f3ff; margin: 8px 0;">
+        <span style="color: #ffcc00; font-size: 11px; display: block;"><b>Alerta Satelital:</b> {alerta_met}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # TELEMETRÍA Y PING DE RED
+    st.divider()
+    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
+        pings = verificar_ping_red()
+        for srv, stt in pings.items():
+            st.write(f"**{srv}:** {stt}")
+
+    # GRÁFICO HISTÓRICO DE DIVISAS
+    with st.expander("📈 GRÁFICO TÁCTICO DE DIVISAS (30 DÍAS)", expanded=False):
+        serie_hist = finanzas_sidebar.get('serie_historica', [])
+        if serie_hist:
+            df_hist = pd.DataFrame(serie_hist)
+            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
+            df_hist = df_hist.sort_values(by='fecha')
+            chart_data = df_hist.set_index('fecha')[['valor']]
+            st.line_chart(chart_data)
+
+    # MATRIZ DE OBJETIVOS
+    with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
+        if 'metas_jarvis' not in st.session_state:
+            st.session_state['metas_jarvis'] = [
+                {"meta": "Optimización J.A.R.V.I.S. 6.3", "progreso": 100},
+                {"meta": "Auditoría de Fondos y Crypto", "progreso": 85}
+            ]
+        for idx, item in enumerate(st.session_state['metas_jarvis']):
+            st.write(f"**{item['meta']}** — {item['progreso']}%")
+            st.progress(item['progreso'] / 100)
+
+    # RED NEURONAL Y ESTADO DEL OPERADOR
+    with st.expander("🧠 RED NEURONAL Y OPERADOR", expanded=False):
+        st.write("⚡ **Productividad:** 99.8%")
+        st.write("🔋 **Estrés Operador:** Nivel Zen")
+        st.progress(0.99)
+
+    # SISMOS CSN EN TIEMPO REAL
+    st.divider()
+    st.subheader("🌍 Telemetría Sísmica CSN")
+    if ultimo_sismo_check:
+        lugar_s = ultimo_sismo_check.get('RefGeografica', 'Chile')
+        mag_s = ultimo_sismo_check.get('Magnitud', 'N/A')
+        fecha_s = ultimo_sismo_check.get('Fecha', 'Reciente')
+        st.markdown(f"""
+        <div style="
+            background-color: #0b1320;
+            border: 1px solid #00f3ff;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        ">
+            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 {lugar_s}</span>
+            <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block; margin-top: 4px;">Magnitud: {mag_s} Richter</span>
+            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # BLOC DE NOTAS
+    st.divider()
+    st.subheader("📝 Bloc de Notas")
+    if 'notas_jarvis' not in st.session_state:
+        st.session_state['notas_jarvis'] = []
+
+    nueva_nota = st.text_input("Recordatorio rápido:")
+    if st.button("➕ Guardar Nota"):
+        if nueva_nota:
+            st.session_state['notas_jarvis'].append(nueva_nota)
+            st.rerun()
+
+    if st.session_state['notas_jarvis']:
+        for i, nota in enumerate(st.session_state['notas_jarvis']):
+            st.caption(f"• {nota}")
+
+# ---------------------------------------------------------
+# CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN
+# ---------------------------------------------------------
+st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.3)")
+
+st.markdown("**⚡ Comandos Tácticos Rápidos & Accesos Directos:**")
+col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns(5)
+
+with col_btn1:
+    if st.button("📍 Estado Base"):
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nEl usuario ha solicitado verificar el estado del perímetro y la base principal.")
+            msg_buin = res_btn.text
+        else:
+            msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+        guardar_mensaje_db("assistant", msg_buin)
+        reproducir_voz_jarvis(msg_buin)
+        st.rerun()
+
+with col_btn2:
+    if st.button("⚙️ Sistema"):
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma sobre el estado del sistema: CPU al {cpu_uso}%, RAM al {mem_uso}%.")
+            msg_sys = res_btn.text
+        else:
+            msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        guardar_mensaje_db("assistant", msg_sys)
+        reproducir_voz_jarvis(msg_sys)
+        st.rerun()
+
+with col_btn3:
+    if st.button("🔮 Oráculo"):
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nDa una predicción oracular o frase magistral sobre las probabilidades de éxito del día.")
+            oraculo_msg = res_btn.text
+        else:
+            oraculo_msg = "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy."
+        st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
+        guardar_mensaje_db("assistant", oraculo_msg)
+        reproducir_voz_jarvis(oraculo_msg)
+        st.rerun()
+
+with col_btn4:
+    if st.button("🎵 Abrir Spotify"):
+        try:
+            os.system("start spotify:" if os.name == 'nt' else "open -a Spotify")
+        except Exception:
+            pass
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma que estás lanzando la secuencia musical en Spotify.")
+            msg_spot = res_btn.text
+        else:
+            msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_spot})
+        guardar_mensaje_db("assistant", msg_spot)
+        reproducir_voz_jarvis(msg_spot)
+        st.rerun()
+
+with col_btn5:
+    if st.button("🗑️ Limpiar Chat"):
+        borrar_historial_db()
+        msg_init = "Hola Cindy. Registros y memoria limpios. ¿Qué ocurrencia tienes para hoy?"
+        st.session_state['chat_history'] = [{"role": "assistant", "content": msg_init}]
+        guardar_mensaje_db("assistant", msg_init)
+        st.rerun()
+
+st.divider()
+
+# RENDERING DE HISTORIAL DESDE MEMORIA PERSISTENTE
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state['chat_history']:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+# ENTRADA DE MENSAJES CON PROTOCOLOS PERSONALIZADOS
+user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
+if user_input:
+    st.session_state['chat_history'].append({"role": "user", "content": user_input})
+    guardar_mensaje_db("user", user_input)
+    
+    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+    respuesta_jarvis = ""
+    texto_lower = user_input.lower().strip()
+
+    # PROTOCOLO 1: "¿JARVIS ESTÁS DESPIERTO?"
+    if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
+        respuesta_jarvis = "Para Ud señorita siempre."
+
+    # PROTOCOLO 2: PRESENCIACIÓN ("¿QUIÉN ERES?")
+    elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate", "quien eres tu", "quién eres tú"]):
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., su asistente de inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirle de forma ininterrumpida en la Base Buin, señorita Cindy."
+
+    # PROTOCOLO 3: CÁLCULO LOCAL RÁPIDO
+    elif procesar_calculo_local(user_input, finanzas_sidebar):
+        respuesta_jarvis = procesar_calculo_local(user_input, finanzas_sidebar)
+
+    # PROTOCOLO 4: CONSULTAS LOCALES DE FECHA Y HORA
+    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
+        ahora = datetime.datetime.now()
+        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+        
+        nombre_dia = dias_semana[ahora.weekday()]
+        nombre_mes = meses[ahora.month - 1]
+        
+        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
+
+    # PROTOCOLO 5: RESPUESTAS GENERALES VIA GEMINI
+    elif api_key:
+        try:
+            genai.configure(api_key=api_key)
+            modelo_nombre = 'gemini-1.5-flash'
+            
+            modelo = genai.GenerativeModel(modelo_nombre)
+            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
+            respuesta = modelo.generate_content(prompt_completo)
+            respuesta_jarvis = respuesta.text
+        except Exception as e:
+            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un minuto antes de enviar otra orden."
+    else:
+        respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
+        
+    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    guardar_mensaje_db("assistant", respuesta_jarvis)
+    reproducir_voz_jarvis(respuesta_jarvis)
+    st.rerun()
