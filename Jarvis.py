@@ -445,9 +445,9 @@ with st.sidebar:
     # 2. MATRIZ DE PERSONALIDAD
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
-        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy de forma directa y cercana.",
-        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Te diriges a Cindy de forma distinguida pero natural ('at your disposal', 'miss Cindy').",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas.",
+        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Hablas siempre en español directo y cercano a Cindy.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Te diriges a Cindy de forma distinguida en perfecto español ('a su entera disposición, señorita Cindy').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas en español.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -845,7 +845,7 @@ if user_input:
     texto_lower = user_input.lower().strip()
 
     if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
-        respuesta_jarvis = "Always at your service, miss Cindy."
+        respuesta_jarvis = "Para ti siempre, Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
         respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirte sin interrupciones en la Base Buin, Cindy."
