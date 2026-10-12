@@ -30,24 +30,43 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 2. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
+    /* 2. ELIMINAR FONDOS BLANCOS DE LOS EXPANDERS Y CAJAS DE TEXTO */
+    div[data-aria-expanded="true"], 
+    div[data-aria-expanded="false"], 
+    .st-emotion-cache-1e039bf,
+    .streamlit-expanderHeader,
+    details, summary,
+    [data-testid="stExpander"],
+    [data-testid="stExpanderDetails"] {
+        background-color: #0b1320 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 8px !important;
+        color: #00f3ff !important;
+    }
+
+    summary * {
+        background-color: transparent !important;
+        color: #00f3ff !important;
+    }
+
+    /* 3. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
     header button, header svg, button[title], [data-testid="baseButton-header"],
-    [data-testid="stMainMenu"], [data-testid="stMainMenu"] *, [data-testid="stMainMenu"] svg {
+    [data-testid="stMainMenu"], [data-testid="stMainMenu"] * {
         color: #00f3ff !important;
         fill: #00f3ff !important;
         stroke: #00f3ff !important;
         background-color: transparent !important;
     }
 
-    /* 3. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
-    h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption, i, svg {
+    /* 4. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption, i, svg, code {
         color: #00f3ff !important;
         text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
     }
 
-    /* 4. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
+    /* 5. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
     .stButton>button {
         background-color: #0e1726 !important;
         color: #00f3ff !important;
@@ -63,37 +82,19 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* 5. CAJA DE ESCÁNER DE ARCHIVOS Y CARGADOR (ESTILO NEGRO Y NEÓN) */
+    /* 6. CAJA DE ESCÁNER DE ARCHIVOS Y CARGADOR */
     [data-testid="stFileUploader"], 
-    [data-testid="stFileUploaderDropzone"],
-    section[data-testid="stFileUploaderDropzone"] {
+    [data-testid="stFileUploaderDropzone"] {
         background-color: #0b1320 !important;
         border: 2px dashed #00f3ff !important;
         border-radius: 10px !important;
-        box-shadow: 0 0 12px rgba(0, 243, 255, 0.3) !important;
         color: #00f3ff !important;
     }
 
-    [data-testid="stFileUploaderDropzone"] * {
-        color: #00f3ff !important;
-        fill: #00f3ff !important;
-        background-color: transparent !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] button {
-        background-color: #0e1726 !important;
-        border: 1px solid #00f3ff !important;
-        color: #00f3ff !important;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.4) !important;
-    }
-
-    /* 6. MATAR EL FONDO BLANCO DE LA CAJA DE CHAT INFERIOR */
+    /* 7. ENTRADA DE CHAT NEGRO Y NEÓN */
     [data-testid="stChatInput"], 
     [data-testid="stChatInput"] > div, 
-    div[data-baseweb="base-input"],
-    div[data-baseweb="input"],
-    .stChatFloatingInputContainer,
-    div.stChatFloatingInputContainer {
+    div[data-baseweb="base-input"] {
         background-color: #0b1320 !important;
         border: 2px solid #00f3ff !important;
         border-radius: 12px !important;
@@ -103,46 +104,22 @@ st.markdown("""
     div[data-testid="stChatInput"] textarea {
         background-color: #0b1320 !important;
         color: #00f3ff !important;
-        font-size: 1.1rem !important;
         font-weight: bold !important;
     }
 
-    div[data-testid="stChatInput"] textarea::placeholder {
-        color: #00a8b5 !important;
-    }
-
-    /* 7. ENTRADAS DE TEXTO GENERALES Y SELECTBOX */
-    .stTextInput input, div[data-baseweb="select"] > div {
-        color: #00f3ff !important;
-        background-color: #0b1320 !important;
-        border: 1px solid #00f3ff !important;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
-        font-weight: bold !important;
-    }
-
-    /* 8. MENSAJES DEL CHAT E HISTORIAL */
+    /* 8. MENSAJES DEL CHAT */
     [data-testid="stChatMessage"] {
         background-color: #0e1726 !important;
         border: 1px solid #00f3ff !important;
         border-radius: 10px !important;
         padding: 12px !important;
         margin-bottom: 10px !important;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
     }
     [data-testid="stChatMessage"] p {
         color: #00f3ff !important;
-        font-size: 1rem !important;
     }
-    
-    /* 9. MÉTRICAS Y BARRAS DE PROGRESO NEÓN */
-    div[data-testid="stMetricValue"] {
-        color: #00f3ff !important;
-        font-weight: bold !important;
-        text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #00a8b5 !important;
-    }
+
+    /* 9. BARRAS DE PROGRESO Y GRÁFICOS */
     .stProgress > div > div > div > div {
         background-color: #00f3ff !important;
         box-shadow: 0 0 12px #00f3ff;
@@ -190,9 +167,29 @@ def obtener_clima_global(lat, lon):
     try:
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
         resp = requests.get(url, timeout=5).json()
-        return resp.get('current_weather', {})
+        weather = resp.get('current_weather', {})
+        code = weather.get('weathercode', 0)
+        
+        # MONITOS Y TRADUCCIÓN DE CLIMA
+        if code == 0:
+            estado = "☀️ Despejado"
+        elif code in [1, 2, 3]:
+            estado = "☁️ Parcialmente Nublado"
+        elif code in [45, 48]:
+            estado = "🌫️ Niebla"
+        elif code in [51, 53, 55, 61, 63, 65]:
+            estado = "🌧️ Lluvia"
+        elif code in [71, 73, 75]:
+            estado = "❄️ Nieve"
+        elif code in [95, 96, 99]:
+            estado = "⛈️ Tormenta"
+        else:
+            estado = "🌤️ Tiempo Estable"
+            
+        weather['estado_texto'] = estado
+        return weather
     except Exception:
-        return {}
+        return {'estado_texto': '🌤️ No disponible'}
 
 @st.cache_data(ttl=300)
 def obtener_ultimo_sismo_chile():
@@ -421,11 +418,11 @@ with st.sidebar:
 
     st.divider()
 
-    # CLIMA GLOBAL
+    # CLIMA GLOBAL CON MONITOS
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
     viento_v = clima.get('windspeed', 'N/A')
-    dir_v = clima.get('winddirection', 'N/A')
+    estado_v = clima.get('estado_texto', '🌤️ Tiempo Estable')
 
     st.subheader(f"🌤️ Clima")
     st.markdown(f"""
@@ -437,9 +434,9 @@ with st.sidebar:
         font-family: monospace;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
     ">
-        <span style="color: #00a8b5; font-size: 13px; display: block;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
-        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Vel. del Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
-        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🧭 Dirección Viento: <b style="color: #00f3ff;">{dir_v}°</b></span>
+        <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block;">{estado_v}</span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
+        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -528,7 +525,7 @@ with col_izquierda:
                 st.rerun()
 
         for idx, item in enumerate(st.session_state['metas_jarvis']):
-            st.markdown(f"**{item['meta']}** — `<b style='color:#00f3ff;'>{item['progreso']}%</b>`", unsafe_allow_html=True)
+            st.write(f"**{item['meta']}** — {item['progreso']}%")
             st.progress(item['progreso'] / 100)
 
     with st.expander("🐱 PROTOCOLO BIOMETRÍA Y TELEMETRÍA FELINA", expanded=False):
@@ -545,12 +542,12 @@ with col_derecha:
     with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=True):
         pings = verificar_ping_red()
         for srv, stt in pings.items():
-            st.markdown(f"**{srv}:** `{stt}`")
+            st.write(f"**{srv}:** {stt}")
 
     with st.expander("🧠 RED NEURONAL Y ESTADO DEL OPERADOR", expanded=True):
-        st.markdown("⚡ **Índice de Productividad:** `98.4%` (Excelente)")
-        st.markdown("🔋 **Carga de Estrés del Operador:** `Baja (Nivel Zen)`")
-        st.markdown("💬 **Nivel de Sarcasmo de J.A.R.V.I.S.:** `Óptimo / Ácido`")
+        st.write("⚡ **Índice de Productividad:** 98.4% (Excelente)")
+        st.write("🔋 **Carga de Estrés del Operador:** Baja (Nivel Zen)")
+        st.write("💬 **Nivel de Sarcasmo de J.A.R.V.I.S.:** Óptimo / Ácido")
         st.progress(0.98)
 
     with st.expander("🔐 CAJA NEGRA Y AUDITORÍA DE MISIÓN (LOGS)", expanded=False):
@@ -561,7 +558,7 @@ with col_derecha:
                 "17:10 - Interfaz neón absoluta desplegada sin errores."
             ]
         for lg in st.session_state['logs_mision']:
-            st.caption(f"• `[LOG]` {lg}")
+            st.caption(f"• {lg}")
 
     with st.expander("📰 MONITOR DE NOTICIAS Y TENDENCIAS FINANCIERAS", expanded=False):
         lista_noticias = obtener_noticias_tacticas()
@@ -597,7 +594,7 @@ with col_btn3:
             "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
             "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
             "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
-            "J.A.R.V.I.S.: Análisis completado: Eres officially la persona más capacitada en este perímetro."
+            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
         ]
         st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
         st.rerun()
@@ -622,7 +619,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (OPTIMIZADA CON RESPUESTAS LOCALES DE FECHA Y HORA)
+# ENTRADA DE MENSAJES
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
