@@ -597,7 +597,7 @@ with col_btn3:
             "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
             "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
             "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
-            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
+            "J.A.R.V.I.S.: Análisis completado: Eres officially la persona más capacitada en este perímetro."
         ]
         st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
         st.rerun()
@@ -622,7 +622,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (OPTIMIZADA CON RESPUESTA LOCAL INSTANTÁNEA)
+# ENTRADA DE MENSAJES (OPTIMIZADA CON RESPUESTAS LOCALES DE FECHA Y HORA)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -631,11 +631,27 @@ if user_input:
     respuesta_jarvis = ""
     texto_lower = user_input.lower().strip()
 
-    # 🚀 RESPUESTAS LOCALES INSTANTÁNEAS (CERO LATENCIA EN CONSULTAS BÁSICAS)
-    if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+    # 🚀 RESPUESTAS LOCALES INSTANTÁNEAS (SIN GASTAR CUOTA DE API)
+    # 1. Consultas de fecha y hora
+    if any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
+        ahora = datetime.datetime.now()
+        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+        
+        nombre_dia = dias_semana[ahora.weekday()]
+        nombre_mes = meses[ahora.month - 1]
+        
+        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
+
+    # 2. Saludos directos
+    elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
         respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
-    elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado", "cómo está el sistema", "como esta el sistema"]):
+
+    # 3. Consultas de estado
+    elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
         respuesta_jarvis = "J.A.R.V.I.S.: Estado del sistema: impecable. Perímetro seguro y sin retrasos en la red. ¿Qué se te ofrece?"
+
+    # 4. Consultas complejas vía API Gemini
     elif api_key:
         try:
             genai.configure(api_key=api_key)
@@ -646,7 +662,7 @@ if user_input:
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
         except Exception as e:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un momento antes de enviar otra orden."
+            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un minuto antes de enviar otra orden."
     else:
         respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
         
