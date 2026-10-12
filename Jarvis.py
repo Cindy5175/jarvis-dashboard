@@ -255,6 +255,23 @@ def procesar_calculo_local(texto, divisas):
 
     return None
 
+def reproducir_voz_jarvis(texto):
+    """Genera código JavaScript para síntesis de voz en tiempo real"""
+    texto_limpio = texto.replace("J.A.R.V.I.S.:", "").replace('"', '').replace("'", "").replace("\n", " ")
+    js_code = f"""
+        <script>
+            if ('speechSynthesis' in window) {{
+                window.speechSynthesis.cancel();
+                var msg = new SpeechSynthesisUtterance("{texto_limpio}");
+                msg.lang = 'es-ES';
+                msg.rate = 1.0;
+                msg.pitch = 0.9;
+                window.speechSynthesis.speak(msg);
+            }}
+        </script>
+    """
+    st.components.v1.html(js_code, height=0)
+
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
@@ -342,6 +359,7 @@ with st.sidebar:
                         m = genai.GenerativeModel('gemini-3.8-flash')
                         res = m.generate_content(f"{prompt_personalidad}\n{prompt_doc}")
                         st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                        reproducir_voz_jarvis(res.text)
                     except Exception:
                         st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Cuota de API saturada momentáneamente. Intenta de nuevo en unos segundos."})
                 else:
@@ -364,6 +382,7 @@ with st.sidebar:
                 m = genai.GenerativeModel('gemini-3.8-flash')
                 res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
                 st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                reproducir_voz_jarvis(res.text)
             except Exception:
                 st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Alerta de límite de cuota superado (Error 429). Demasiadas solicitudes a la API. Respira un momento y reintenta."})
         else:
@@ -380,6 +399,7 @@ with st.sidebar:
                 m = genai.GenerativeModel('gemini-3.8-flash')
                 res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
                 st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                reproducir_voz_jarvis(res.text)
             except Exception:
                 st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Servidores sobrecargados de peticiones por minuto. Espera un instante antes de la siguiente orden."})
         else:
@@ -522,12 +542,14 @@ with col_btn1:
     if st.button("📍 Estado Base"):
         msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
+        reproducir_voz_jarvis(msg_buin)
         st.rerun()
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
         msg_sys = "J.A.R.V.I.S.: Todos los subsistemas operando al 100%. Red neuronal activa."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        reproducir_voz_jarvis(msg_sys)
         st.rerun()
 
 with col_btn3:
@@ -538,7 +560,9 @@ with col_btn3:
             "J.A.R.V.I.S.: Estado del universo: En constante expansión.",
             "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
         ]
-        st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
+        oraculo_msg = random.choice(frases_oraculo)
+        st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
+        reproducir_voz_jarvis(oraculo_msg)
         st.rerun()
 
 with col_btn4:
@@ -561,7 +585,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA Y RESPUESTAS LOCALES)
+# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA, RESPUESTAS LOCALES Y VOZ EN VIVO)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -611,4 +635,5 @@ if user_input:
         respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    reproducir_voz_jarvis(respuesta_jarvis)
     st.rerun()
