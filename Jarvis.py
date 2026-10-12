@@ -423,7 +423,7 @@ with st.sidebar:
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
         "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía, sofisticación y reverencia hacia Cindy ('Señorita Cindy', 'a su entera disposición', 'excelencia').",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son strictly concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -686,48 +686,4 @@ with st.sidebar:
     ">
         <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block;">{estado_v}</span>
         <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
-        <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
-        <hr style="border-color: #00f3ff; margin: 8px 0;">
-        <span style="color: #ffcc00; font-size: 11px; display: block;"><b>Alerta Satelital:</b> {alerta_met}</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # TELEMETRÍA Y PING DE RED
-    st.divider()
-    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
-        pings = verificar_ping_red()
-        for srv, stt in pings.items():
-            st.write(f"**{srv}:** {stt}")
-
-    # GRÁFICO HISTÓRICO DE DIVISAS
-    with st.expander("📈 GRÁFICO TÁCTICO DE DIVISAS (30 DÍAS)", expanded=False):
-        serie_hist = finanzas_sidebar.get('serie_historica', [])
-        if serie_hist:
-            df_hist = pd.DataFrame(serie_hist)
-            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
-            df_hist = df_hist.sort_values(by='fecha')
-            chart_data = df_hist.set_index('fecha')[['valor']]
-            st.line_chart(chart_data)
-
-    # MATRIZ DE OBJETIVOS
-    with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
-        if 'metas_jarvis' not in st.session_state:
-            st.session_state['metas_jarvis'] = [
-                {"meta": "Optimización J.A.R.V.I.S. 6.2", "progreso": 100},
-                {"meta": "Auditoría de Fondos y Crypto", "progreso": 85}
-            ]
-        for idx, item in enumerate(st.session_state['metas_jarvis']):
-            st.write(f"**{item['meta']}** — {item['progreso']}%")
-            st.progress(item['progreso'] / 100)
-
-    # RED NEURONAL Y ESTADO DEL OPERADOR
-    with st.expander("🧠 RED NEURONAL Y OPERADOR", expanded=False):
-        st.write("⚡ **Productividad:** 99.8%")
-        st.write("🔋 **Estrés Operador:** Nivel Zen")
-        st.progress(0.99)
-
-    # SISMOS CSN EN TIEMPO REAL
-    st.divider()
-    st.subheader("🌍 Telemetría Sísmica CSN")
-    if ultimo_sismo_check:
-        lugar_s = ultimo_sismo_check.get('RefGeografica', 'Chile
+        <span style="color: #00a8b5; font-size: 13
