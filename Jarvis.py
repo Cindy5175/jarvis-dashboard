@@ -283,15 +283,12 @@ st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.0")
 st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (TODOS LOS MÓDULOS Y NUEVAS TECNOLOGÍAS)
+# BARRA LATERAL (ORDENADA SEGÚN SOLICITUD)
 # ---------------------------------------------------------
 with st.sidebar:
-    st.header("🛰️ Red Satelital y Hardware")
-    
-    # 💻 MONITOREO LOCAL SEGURO DE HARDWARE (CPU, RAM, BATERÍA BLINDADO CONTRA CLOUD)
+    # 1. TELEMETRÍA DE PC
     cpu_uso = psutil.cpu_percent(interval=None)
     mem_uso = psutil.virtual_memory().percent
-    
     bat_val = "Conectado a Red / Cloud"
     try:
         bateria = psutil.sensors_battery()
@@ -316,7 +313,24 @@ with st.sidebar:
         <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🔋 Batería: <b>{bat_val}</b></span>
     </div>
     """, unsafe_allow_html=True)
-    
+
+    st.divider()
+
+    # 2. MATRIZ DE PERSONALIDAD
+    st.subheader("🎭 Matriz de Personalidad")
+    personalidades = {
+        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
+        "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
+    }
+    modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
+    prompt_personalidad = personalidades[modo_seleccionado]
+
+    st.divider()
+
+    # 3. RED SATELITAL GLOBAL (UBICADA ENTRE PERSONALIDAD Y VISIÓN)
+    st.subheader("🛰️ Red Satelital Global")
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
         "Santiago, Chile": {"lat": -33.44, "lon": -70.65},
@@ -329,9 +343,10 @@ with st.sidebar:
     lon_base = ciudades_mundo[base_sel]["lon"]
     
     st.map(data={"lat": [lat_Base], "lon": [lon_base]}, zoom=9)
+
     st.divider()
     
-    # RELOJ DIGITAL
+    # 4. RELOJ DIGITAL
     st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
@@ -360,21 +375,8 @@ with st.sidebar:
     """, height=90)
 
     st.divider()
-
-    # SELECTOR DE PERSONALIDAD
-    st.subheader("🎭 Matriz de Personalidad")
-    personalidades = {
-        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
-        "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
-    }
-    modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
-    prompt_personalidad = personalidades[modo_seleccionado]
-
-    st.divider()
     
-    # 📷 ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
+    # 5. ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
     st.subheader("📷 Visión por Computadora & Archivos")
     archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
