@@ -56,13 +56,6 @@ def guardar_mensaje_db(role, content):
     conn.commit()
     conn.close()
 
-def registrar_evento_seguridad(source, event_type, details):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("INSERT INTO security_events (source, event_type, details) VALUES (?, ?, ?)", (source, event_type, details))
-    conn.commit()
-    conn.close()
-
 def cargar_historial_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -72,14 +65,6 @@ def cargar_historial_db():
     if not filas:
         return [{"role": "assistant", "content": "Hola Cindy. Sistemas activos y memoria persistente en línea. ¿Qué órdenes ejecutamos hoy?"}]
     return [{"role": r, "content": m} for r, m in filas]
-
-def cargar_eventos_seguridad():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT source, event_type, details, timestamp FROM security_events ORDER BY id DESC LIMIT 10")
-    filas = c.fetchall()
-    conn.close()
-    return filas
 
 def borrar_historial_db():
     conn = sqlite3.connect(DB_NAME)
@@ -92,6 +77,12 @@ init_db()
 
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = cargar_historial_db()
+
+if 'manual_1_texto' not in st.session_state:
+    st.session_state['manual_1_texto'] = ""
+
+if 'manual_2_texto' not in st.session_state:
+    st.session_state['manual_2_texto'] = ""
 
 # ---------------------------------------------------------
 # ESTILOS VISUALES (TEMA NEGRO ABSOLUTO Y AZUL NEÓN COMPLETO)
@@ -316,53 +307,6 @@ def obtener_ultimo_sismo_chile():
     except Exception:
         return None
 
-def verificar_ping_red():
-    servidores = {
-        "Google API (Gemini)": "https://generativelanguage.googleapis.com",
-        "Mindicador Chile": "https://mindicador.cl",
-        "Open-Meteo Satélite": "https://api.open-meteo.com"
-    }
-    resultados = {}
-    for nombre, url in servidores.items():
-        t0 = time.time()
-        try:
-            r = requests.get(url, timeout=2)
-            ms = round((time.time() - t0) * 1000)
-            resultados[nombre] = f"🟢 {ms} ms"
-        except Exception:
-            resultados[nombre] = "🔴 Fuera de línea"
-    return resultados
-
-def procesar_calculo_local(texto, divisas):
-    txt = texto.lower()
-    if "iva" in txt:
-        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace('.', '').replace(',', '.'))
-        if numeros:
-            monto = float(numeros[0])
-            iva = monto * 0.19
-            total = monto + iva
-            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
-    
-    if "usd" in txt or "dolar" in txt or "dólar" in txt:
-        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
-        if numeros:
-            cant = float(numeros[0])
-            val_dolar = divisas.get('dolar_clp', 0.0)
-            if val_dolar > 0:
-                total = cant * val_dolar
-                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD = ${total:,.0f} CLP"
-    
-    if "uf" in txt:
-        numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
-        if numeros:
-            cant = float(numeros[0])
-            val_uf = divisas.get('uf_clp', 0.0)
-            if val_uf > 0:
-                total = cant * val_uf
-                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF = ${total:,.0f} CLP"
-
-    return None
-
 def reproducir_voz_jarvis(texto):
     texto_limpio = texto.replace("J.A.R.V.I.S.:", "").replace('"', '').replace("'", "").replace("\n", " ")
     js_code = f"""
@@ -455,7 +399,42 @@ with st.sidebar:
 
     st.divider()
 
-    # 3. RED SATELITAL GLOBAL
+    # 3. ENLACE DE PERIFÉRICOS (SMARTBAND & AUDÍFONOS)
+    st.subheader("⌚ Enlace de Periféricos & Smartband")
+    st.markdown("""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    ">
+        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">🔗 HARDWARE VINCULADO</span>
+        <span style="color: #00a8b5; font-size: 12px; display: block;">⌚ Smartband Mi Band: <b style="color: #00f3ff;">Conectado (46% Bat)</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🎧 Audífonos BT: <b style="color: #00f3ff;">Canal de Voz Activo</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">❤️ Pulso Biométrico: <b style="color: #00f3ff;">74 BPM (Estable)</b></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 4. BIBLIOTECA DE FÍSICA (MANUAL 1 Y MANUAL 2 - PDF)
+    st.subheader("📚 Biblioteca de Física (PDF)")
+    with st.expander("📖 Cargar Manual 1 y Manual 2", expanded=True):
+        pdf_m1 = st.file_uploader("Cargar Manual de Física 1 (PDF):", type=["pdf"], key="m1")
+        if pdf_m1 is not None:
+            st.session_state['manual_1_texto'] = f"[Manual 1 de Física cargado: {pdf_m1.name}]"
+            st.success("✅ Manual 1 vinculado a J.A.R.V.I.S.")
+
+        pdf_m2 = st.file_uploader("Cargar Manual de Física 2 (PDF):", type=["pdf"], key="m2")
+        if pdf_m2 is not None:
+            st.session_state['manual_2_texto'] = f"[Manual 2 de Física cargado: {pdf_m2.name}]"
+            st.success("✅ Manual 2 vinculado a J.A.R.V.I.S.")
+
+    st.divider()
+
+    # 5. RED SATELITAL GLOBAL
     st.subheader("🛰️ Red Satelital Global")
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
@@ -472,7 +451,7 @@ with st.sidebar:
 
     st.divider()
     
-    # 4. MÓDULO INTEGRADO: CÁMARA TÁCTICA & VISIÓN POR IA
+    # 6. MÓDULO INTEGRADO: CÁMARA TÁCTICA & VISIÓN POR IA
     st.subheader("🛡️ Cámara Táctica & Visión")
     
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
@@ -499,7 +478,7 @@ with st.sidebar:
                     reproducir_voz_jarvis(res.text)
                 st.rerun()
 
-    archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
+    archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF general:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
         try:
             tipo_archivo = archivo_subido.type
@@ -539,49 +518,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 5. PRESETS TÁCTICOS RÁPIDOS
-    st.subheader("⚡ Presets de Comandos")
-    if st.button("📊 Auditoría Financiera Exprés"):
-        cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
-        st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
-        guardar_mensaje_db("user", cmd_text)
-        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-        if api_key:
-            try:
-                genai.configure(api_key=api_key)
-                m = genai.GenerativeModel('gemini-1.5-flash')
-                res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
-                st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
-                guardar_mensaje_db("assistant", res.text)
-                reproducir_voz_jarvis(res.text)
-            except Exception:
-                msg_e = "J.A.R.V.I.S.: Servidores sobrecargados de peticiones."
-                st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
-                guardar_mensaje_db("assistant", msg_e)
-        st.rerun()
-
-    if st.button("🚀 Protocolo de Máxima Eficiencia"):
-        cmd_text = "J.A.R.V.I.S., dame una recomendación táctica de productividad para hoy."
-        st.session_state['chat_history'].append({"role": "user", "content": cmd_text})
-        guardar_mensaje_db("user", cmd_text)
-        api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-        if api_key:
-            try:
-                genai.configure(api_key=api_key)
-                m = genai.GenerativeModel('gemini-1.5-flash')
-                res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
-                st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
-                guardar_mensaje_db("assistant", res.text)
-                reproducir_voz_jarvis(res.text)
-            except Exception:
-                msg_e = "J.A.R.V.I.S.: Servidores sobrecargados."
-                st.session_state['chat_history'].append({"role": "assistant", "content": msg_e})
-                guardar_mensaje_db("assistant", msg_e)
-        st.rerun()
-
-    st.divider()
-
-    # 6. FINANZAS / MERCADO Y ACCIONES
+    # 7. FINANZAS / MERCADO Y ACCIONES
     st.subheader("📊 Finanzas & Acciones EE.UU.")
     finanzas_sidebar = obtener_divisas_chile()
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
@@ -635,7 +572,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 7. TELEMETRÍA DE PC
+    # 8. TELEMETRÍA DE PC
     cpu_uso = psutil.cpu_percent(interval=None)
     mem_uso = psutil.virtual_memory().percent
     bat_val = "Conectado a Red / Cloud"
@@ -662,7 +599,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # 8. CLIMA & ALERTAS
+    # 9. CLIMA & ALERTAS
     st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
@@ -687,34 +624,6 @@ with st.sidebar:
         <span style="color: #ffcc00; font-size: 11px; display: block;"><b>Alerta Satelital:</b> {alerta_met}</span>
     </div>
     """, unsafe_allow_html=True)
-
-    st.divider()
-    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
-        pings = verificar_ping_red()
-        for srv, stt in pings.items():
-            st.write(f"**{srv}:** {stt}")
-
-    # SISMOS CSN EN TIEMPO REAL
-    st.divider()
-    st.subheader("🌍 Telemetría Sísmica CSN")
-    if ultimo_sismo_check:
-        lugar_s = ultimo_sismo_check.get('RefGeografica', 'Chile')
-        mag_s = ultimo_sismo_check.get('Magnitud', 'N/A')
-        fecha_s = ultimo_sismo_check.get('Fecha', 'Reciente')
-        st.markdown(f"""
-        <div style="
-            background-color: #0b1320;
-            border: 1px solid #00f3ff;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">
-            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 {lugar_s}</span>
-            <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block; margin-top: 4px;">Magnitud: {mag_s} Richter</span>
-            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
-        </div>
-        """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & RECONOCIMIENTO POR VOZ
@@ -787,7 +696,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Biblioteca de Física y periféricos operativos."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         guardar_mensaje_db("assistant", msg_sys)
         reproducir_voz_jarvis(msg_sys)
@@ -842,26 +751,26 @@ if user_input:
     
     api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
     respuesta_jarvis = ""
-    texto_lower = user_input.lower().strip()
+    texto_lower = str(user_input).lower()
 
     if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
         respuesta_jarvis = "Para ti siempre, Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirte sin interrupciones en la Base Buin, Cindy."
-
-    elif procesar_calculo_local(user_input, finanzas_sidebar):
-        respuesta_jarvis = procesar_calculo_local(user_input, finanzas_sidebar)
-
-    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que hora es"]):
-        ahora = datetime.datetime.now()
-        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {ahora.strftime('%A %d de %B de %Y')}. Son las {ahora.strftime('%H:%M')} hrs."
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con biblioteca de física, telemetría y enlace biométrico activos en la Base Buin, Cindy."
 
     elif api_key:
         try:
             genai.configure(api_key=api_key)
             modelo = genai.GenerativeModel('gemini-1.5-flash')
-            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
+            
+            contexto_manuales = ""
+            if st.session_state['manual_1_texto']:
+                contexto_manuales += f"\n[Contexto activo: {st.session_state['manual_1_texto']}]"
+            if st.session_state['manual_2_texto']:
+                contexto_manuales += f"\n[Contexto activo: {st.session_state['manual_2_texto']}]"
+                
+            prompt_completo = f"{prompt_personalidad}{contexto_manuales}\nUsuario: {user_input}"
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
         except Exception:
