@@ -1,36 +1,29 @@
-# SISMOS CSN EN TIEMPO REAL
-    st.divider()
-    st.subheader("🌍 Telemetría Sísmica CSN")
-    if ultimo_sismo_check:
-        lugar_s = ultimo_sismo_check.get('RefGeografica', 'Chile')
-        mag_s = ultimo_sismo_check.get('Magnitud', 'N/A')
-        fecha_s = ultimo_sismo_check.get('Fecha', 'Reciente')
-        st.markdown(f"""
-        <div style="
-            background-color: #0b1320;
-            border: 1px solid #00f3ff;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">
-            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 {lugar_s}</span>
-            <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block; margin-top: 4px;">Magnitud: {mag_s} Richter</span>
-            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style="
-            background-color: #0b1320;
-            border: 1px solid #00f3ff;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        ">
-            <span style="color: #00a8b5; font-size: 12px; display: block;">📍 Red CSN Chile</span>
-            <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block; margin-top: 4px;">🟢 Perímetro Estable</span>
-            <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">Sin anomalías registradas</span>
-        </div>
-        """, unsafe_allow_html=True)
+def reproducir_voz_jarvis(texto):
+    texto_limpio = texto.replace("J.A.R.V.I.S.:", "").replace('"', '').replace("'", "").replace("\n", " ")
+    js_code = f"""
+        <script>
+            if ('speechSynthesis' in window) {{
+                window.speechSynthesis.cancel();
+                var msg = new SpeechSynthesisUtterance("{texto_limpio}");
+                
+                // Configuración de tono y ritmo al estilo Paul Bettany
+                msg.rate = 0.92;   // Un ritmo ligeramente más pausado y elegante
+                msg.pitch = 0.85;  // Un tono más grave y sobrio
+
+                // Intentar seleccionar una voz masculina adecuada
+                var voices = window.speechSynthesis.getVoices();
+                var jarvisVoice = voices.find(function(v) {{
+                    return (v.name.includes('Male') || v.name.includes('George') || v.name.includes('Ryan') || v.name.includes('Pablo') || v.name.includes('Jorge')) && v.lang.includes('es');
+                }}) || voices.find(function(v) {{ return v.lang.includes('es'); }});
+
+                if (jarvisVoice) {{
+                    msg.voice = jarvisVoice;
+                }} else {{
+                    msg.lang = 'es-ES';
+                }}
+
+                window.speechSynthesis.speak(msg);
+            }}
+        </script>
+    """
+    st.components.v1.html(js_code, height=0)
