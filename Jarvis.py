@@ -78,11 +78,8 @@ init_db()
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = cargar_historial_db()
 
-if 'manual_1_texto' not in st.session_state:
-    st.session_state['manual_1_texto'] = ""
-
-if 'manual_2_texto' not in st.session_state:
-    st.session_state['manual_2_texto'] = ""
+if 'documentos_cargados' not in st.session_state:
+    st.session_state['documentos_cargados'] = []
 
 # ---------------------------------------------------------
 # ESTILOS VISUALES (TEMA NEGRO ABSOLUTO Y AZUL NEÓN COMPLETO)
@@ -419,18 +416,20 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 4. BIBLIOTECA DE FÍSICA (MANUAL 1 Y MANUAL 2 - PDF)
-    st.subheader("📚 Biblioteca de Física (PDF)")
-    with st.expander("📖 Cargar Manual 1 y Manual 2", expanded=True):
-        pdf_m1 = st.file_uploader("Cargar Manual de Física 1 (PDF):", type=["pdf"], key="m1")
-        if pdf_m1 is not None:
-            st.session_state['manual_1_texto'] = f"[Manual 1 de Física cargado: {pdf_m1.name}]"
-            st.success("✅ Manual 1 vinculado a J.A.R.V.I.S.")
-
-        pdf_m2 = st.file_uploader("Cargar Manual de Física 2 (PDF):", type=["pdf"], key="m2")
-        if pdf_m2 is not None:
-            st.session_state['manual_2_texto'] = f"[Manual 2 de Física cargado: {pdf_m2.name}]"
-            st.success("✅ Manual 2 vinculado a J.A.R.V.I.S.")
+    # 4. BIBLIOTECA ACADÉMICA MÚLTIPLE (FÍSICA, ÁLGEBRA, HISTORIA, ETC.)
+    st.subheader("📚 Biblioteca Académica (PDFs)")
+    with st.expander("📖 Carga Masiva de Manuales", expanded=True):
+        archivos_pdfs = st.file_uploader(
+            "Selecciona o arrastra todos tus manuales (Física, Álgebra, Historia...):", 
+            type=["pdf"], 
+            accept_multiple_files=True,
+            key="multi_pdf"
+        )
+        if archivos_pdfs:
+            st.session_state['documentos_cargados'] = [f"• {pdf.name}" for pdf in archivos_pdfs]
+            st.success(f"✅ {len(archivos_pdfs)} manual(es) vinculado(s) al núcleo de J.A.R.V.I.S.")
+            for nombre in st.session_state['documentos_cargados']:
+                st.markdown(f"<small style='color: #00f3ff;'>{nombre}</small>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -478,7 +477,7 @@ with st.sidebar:
                     reproducir_voz_jarvis(res.text)
                 st.rerun()
 
-    archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF general:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
+    archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o documento general:", type=["txt", "csv", "md", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
         try:
             tipo_archivo = archivo_subido.type
@@ -696,7 +695,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Biblioteca de Física y periféricos operativos."
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Biblioteca académica múltiple y periféricos operativos."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         guardar_mensaje_db("assistant", msg_sys)
         reproducir_voz_jarvis(msg_sys)
@@ -757,20 +756,19 @@ if user_input:
         respuesta_jarvis = "Para ti siempre, Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con biblioteca de física, telemetría y enlace biométrico activos en la Base Buin, Cindy."
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con biblioteca académica múltiple, telemetría y enlace biométrico activos en la Base Buin, Cindy."
 
     elif api_key:
         try:
             genai.configure(api_key=api_key)
             modelo = genai.GenerativeModel('gemini-1.5-flash')
             
-            contexto_manuales = ""
-            if st.session_state['manual_1_texto']:
-                contexto_manuales += f"\n[Contexto activo: {st.session_state['manual_1_texto']}]"
-            if st.session_state['manual_2_texto']:
-                contexto_manuales += f"\n[Contexto activo: {st.session_state['manual_2_texto']}]"
+            contexto_docs = ""
+            if st.session_state['documentos_cargados']:
+                lista_nombres = ", ".join(st.session_state['documentos_cargados'])
+                contexto_docs = f"\n[Biblioteca activa cargada por la usuaria: {lista_nombres}]"
                 
-            prompt_completo = f"{prompt_personalidad}{contexto_manuales}\nUsuario: {user_input}"
+            prompt_completo = f"{prompt_personalidad}{contexto_docs}\nUsuario: {user_input}"
             respuesta = modelo.generate_content(prompt_completo)
             respuesta_jarvis = respuesta.text
         except Exception:
