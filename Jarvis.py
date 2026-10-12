@@ -710,8 +710,8 @@ with st.expander("🌐 Traductor y Sintetizador Táctico Multilenguaje", expande
             api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
             if api_key:
                 genai.configure(api_key=api_key)
-                m_trad = genai.GenerativeModel('gemini-1.5-flash')
-                res_trad = m_trad.generate_content(f"Traduce el siguiente texto técnico exactamente al idioma {idioma_destino} manteniendo rigor científico:\n\n{texto_a_traducir}")
+                modelo_trad = genai.GenerativeModel('gemini-1.5-flash')
+                res_trad = modelo_trad.generate_content(f"Traduce el siguiente texto técnico exactamente al idioma {idioma_destino} manteniendo rigor científico:\n\n{texto_a_traducir}")
                 resultado_trad = res_trad.text
                 st.success("✅ Traducción completada con éxito:")
                 st.write(resultado_trad)
