@@ -10,7 +10,7 @@ import google.generativeai as genai
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title= "J.A.R.V.I.S. 6.0"
+    page_title="J.A.R.V.I.S. 6.0",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -243,7 +243,7 @@ def verificar_ping_red():
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
-st.title("⚡ jarvis 6.0- AI Autónoma")
+st.title("⚡ J.A.R.V.I.S. 6.0 - AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
@@ -511,7 +511,7 @@ with col_izquierda:
     with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS TÁCTICAS", expanded=True):
         if 'metas_jarvis' not in st.session_state:
             st.session_state['metas_jarvis'] = [
-                {"meta": "Optimización del núcleo J.A.R.V.I.S. 4.0", "progreso": 100},
+                {"meta": "Optimización del núcleo J.A.R.V.I.S. 6.0", "progreso": 100},
                 {"meta": "Auditoría de Fondos y Crypto", "progreso": 75},
                 {"meta": "Expansión de Protocolos Domóticos", "progreso": 40}
             ]
