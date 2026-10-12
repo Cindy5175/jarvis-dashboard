@@ -10,7 +10,7 @@ import google.generativeai as genai
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 6.0"
+    page_title= "J.A.R.V.I.S. 6.0"
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
