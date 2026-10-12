@@ -11,7 +11,7 @@ import re
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. AI Autónoma 6.0",
+    page_title="J.A.R.V.I.S. IA Autónoma 6.0",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -258,7 +258,7 @@ def procesar_calculo_local(texto, divisas):
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
-st.title("⚡ J.A.R.V.I.S. AI Autónoma 6.0")
+st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.0")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
@@ -454,7 +454,7 @@ with st.sidebar:
             chart_data = df_hist.set_index('fecha')[['valor']]
             st.line_chart(chart_data)
 
-    # MATRIZ DE OBJETIVOS (GUARDADO EN SESIÓN)
+    # MATRIZ DE OBJETIVOS
     with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
         if 'metas_jarvis' not in st.session_state:
             st.session_state['metas_jarvis'] = [
@@ -494,7 +494,7 @@ with st.sidebar:
         </div>
         """, unsafe_allow_html=True)
 
-    # BLOC DE NOTAS (GUARDADO EN SESIÓN)
+    # BLOC DE NOTAS
     st.divider()
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
