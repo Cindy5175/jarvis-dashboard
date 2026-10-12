@@ -1,5 +1,7 @@
 streamlit
 requests
 pandas
-plotly
 google-generativeai
+psutil
+opencv-python-headless
+numpy
