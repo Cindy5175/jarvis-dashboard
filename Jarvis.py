@@ -308,7 +308,7 @@ st.success("✅ Todos los subsistemas satelitales y de hardware responden de for
 # BARRA LATERAL (ORDENADA: RELOJ ARRIBA -> PERSONALIDAD -> RED SATELITAL -> VISIÓN -> PRESETS -> FINANZAS -> TELEMETRÍA PC -> CLIMA)
 # ---------------------------------------------------------
 with st.sidebar:
-    # 1. RELOJ DIGITAL (UBICADO ARRIBA DE TODO)
+    # 1. RELOJ DIGITAL
     st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
@@ -338,12 +338,12 @@ with st.sidebar:
 
     st.divider()
 
-    # 2. MATRIZ DE PERSONALIDAD
+    # 2. MATRIZ DE PERSONALIDAD (INCLUYENDO INSTRUCCIONES ESTRICTAS PARA CADA TONO)
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía, sofisticación y reverencia hacia Cindy ('Señorita Cindy', 'a su entera disposición', 'excelencia').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -383,7 +383,7 @@ with st.sidebar:
                         genai.configure(api_key=api_key)
                         m = genai.GenerativeModel('gemini-1.5-flash')
                         bytes_img = archivo_subido.getvalue()
-                        res = m.generate_content([prompt_personalidad + "\nAnaliza detalladamente esta imagen o captura de pantalla con tono sarcástico y experto:", {"mime_type": tipo_archivo, "data": bytes_img}])
+                        res = m.generate_content([prompt_personalidad + "\nAnaliza detalladamente esta imagen o captura de pantalla manteniendo estrictamente el tono y personalidad seleccionados:", {"mime_type": tipo_archivo, "data": bytes_img}])
                         st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
                         reproducir_voz_jarvis(res.text)
                     else:
@@ -393,7 +393,7 @@ with st.sidebar:
                 texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
                 st.success(f"✅ Documento procesado ({len(texto_extraido)} caracteres).")
                 if st.button("🔍 Analizar Texto con J.A.R.V.I.S."):
-                    prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto:\n\n{texto_extraido[:3000]}"
+                    prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto manteniendo tu personalidad asignada:\n\n{texto_extraido[:3000]}"
                     st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
                     api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
                     if api_key:
@@ -610,27 +610,42 @@ col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns(5)
 
 with col_btn1:
     if st.button("📍 Estado Base"):
-        msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nEl usuario ha solicitado verificar el estado del perímetro y la base principal.")
+            msg_buin = res_btn.text
+        else:
+            msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
         reproducir_voz_jarvis(msg_buin)
         st.rerun()
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma sobre el estado del sistema: CPU al {cpu_uso}%, RAM al {mem_uso}%.")
+            msg_sys = res_btn.text
+        else:
+            msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         reproducir_voz_jarvis(msg_sys)
         st.rerun()
 
 with col_btn3:
     if st.button("🔮 Oráculo"):
-        import random
-        frases_oraculo = [
-            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy.",
-            "J.A.R.V.I.S.: Estado del universo: En constante expansión.",
-            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
-        ]
-        oraculo_msg = random.choice(frases_oraculo)
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nDa una predicción oracular o frase magistral sobre las probabilidades de éxito del día.")
+            oraculo_msg = res_btn.text
+        else:
+            oraculo_msg = "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy."
         st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
         reproducir_voz_jarvis(oraculo_msg)
         st.rerun()
@@ -641,7 +656,14 @@ with col_btn4:
             os.system("start spotify:" if os.name == 'nt' else "open -a Spotify")
         except Exception:
             pass
-        msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
+        api_key_btn = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+        if api_key_btn:
+            genai.configure(api_key=api_key_btn)
+            m_btn = genai.GenerativeModel('gemini-1.5-flash')
+            res_btn = m_btn.generate_content(f"{prompt_personalidad}\nInforma que estás lanzando la secuencia musical en Spotify.")
+            msg_spot = res_btn.text
+        else:
+            msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_spot})
         reproducir_voz_jarvis(msg_spot)
         st.rerun()
@@ -666,7 +688,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES
+# ENTRADA DE MENSAJES (AHORA CONECTADA DIRECTAMENTE A GEMINI CON LA PERSONALIDAD ACTIVA)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -675,11 +697,13 @@ if user_input:
     respuesta_jarvis = ""
     texto_lower = user_input.lower().strip()
 
+    # 1. CÁLCULO LOCAL RÁPIDO (FINANCIERO / IVA / CONVERSIÓN)
     res_calculo = procesar_calculo_local(user_input, finanzas_sidebar)
     
     if res_calculo:
         respuesta_jarvis = res_calculo
 
+    # 2. CONSULTAS LOCALES DE FECHA Y HORA
     elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
         ahora = datetime.datetime.now()
         dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
@@ -690,12 +714,7 @@ if user_input:
         
         respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
 
-    elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
-        respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
-
-    elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
-        respuesta_jarvis = f"J.A.R.V.I.S.: Estado del sistema: impecable. CPU al {cpu_uso}%, RAM al {mem_uso}%. Perímetro seguro."
-
+    # 3. CONSULTAS GENERALES PASADAS A GEMINI PARA QUE RESPETEN LA PERSONALIDAD SELECCIONADA
     elif api_key:
         try:
             genai.configure(api_key=api_key)
