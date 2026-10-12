@@ -445,9 +445,9 @@ with st.sidebar:
     # 2. MATRIZ DE PERSONALIDAD
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
-        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía, sofisticación y reverencia hacia Cindy ('Señorita Cindy', 'a su entera disposición', 'excelencia').",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
+        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy de forma directa y cercana.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Te diriges a Cindy de forma distinguida pero natural ('at your disposal', 'miss Cindy').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -478,7 +478,7 @@ with st.sidebar:
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
         centinela_activo = st.checkbox("Activar Protocolo Centinela en Sistema")
         if centinela_activo:
-            st.info("🌙 **Centinela Activo:** Puedes cerrar la tapa de你的 laptop. J.A.R.V.I.S. continuará vigilando en segundo plano.")
+            st.info("🌙 **Centinela Activo:** Puedes cerrar la tapa de tu laptop. J.A.R.V.I.S. continuará vigilando en segundo plano.")
 
     with st.expander("📹 WEBCAM & RECONOCIMIENTO FACIAL IA", expanded=False):
         foto_cam = st.camera_input("Sensor Biométrico de Perímetro")
@@ -719,7 +719,7 @@ with st.sidebar:
 # ---------------------------------------------------------
 # CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & RECONOCIMIENTO POR VOZ
 # ---------------------------------------------------------
-st.subheader("💬 Terminal de ConversACIÓN Autónoma (Memoria & Centinela 6.4)")
+st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.4)")
 
 # MÓDULO DE ESCUCHA ACTIVA POR MICRÓFONO
 st.components.v1.html("""
@@ -845,10 +845,10 @@ if user_input:
     texto_lower = user_input.lower().strip()
 
     if "despierto" in texto_lower or "estas despierto" in texto_lower or "estás despierto" in texto_lower:
-        respuesta_jarvis = "Para Ud señorita siempre."
+        respuesta_jarvis = "Always at your service, miss Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., su asistente de inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirle de forma ininterrumpida en la Base Buin, señorita Cindy."
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma. Estoy diseñado para coordinar la telemetría, monitorear la seguridad del perímetro y asistirte sin interrupciones en la Base Buin, Cindy."
 
     elif procesar_calculo_local(user_input, finanzas_sidebar):
         respuesta_jarvis = procesar_calculo_local(user_input, finanzas_sidebar)
