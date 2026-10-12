@@ -337,7 +337,7 @@ with st.sidebar:
 
     st.divider()
 
-    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL (CON BLINDAJE CONTRA SATURACIÓN)
+    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
@@ -622,15 +622,21 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (DICTADO POR VOZ DIRECTO VÍA TECLADO DE WINDOWS WIN+H O MÓVIL)
+# ENTRADA DE MENSAJES (OPTIMIZADA CON RESPUESTA LOCAL INSTANTÁNEA)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
     
     api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
     respuesta_jarvis = ""
+    texto_lower = user_input.lower().strip()
 
-    if api_key:
+    # 🚀 RESPUESTAS LOCALES INSTANTÁNEAS (CERO LATENCIA EN CONSULTAS BÁSICAS)
+    if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
+        respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
+    elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado", "cómo está el sistema", "como esta el sistema"]):
+        respuesta_jarvis = "J.A.R.V.I.S.: Estado del sistema: impecable. Perímetro seguro y sin retrasos en la red. ¿Qué se te ofrece?"
+    elif api_key:
         try:
             genai.configure(api_key=api_key)
             modelo_nombre = 'gemini-3.8-flash'
@@ -642,13 +648,7 @@ if user_input:
         except Exception as e:
             respuesta_jarvis = f"J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un momento antes de enviar otra orden."
     else:
-        texto_lower = user_input.lower()
-        if any(w in texto_lower for w in ["hola", "saludos", "buenas", "hey"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están perfectos y yo... bueno, fabuloso como siempre. ¿Qué se te ofrece?"
-        elif any(w in texto_lower for w in ["cómo estás", "como estas", "estado"]):
-            respuesta_jarvis = "J.A.R.V.I.S.: ¿Yo? Operando al 100%, con una elegancia impecable y soportando tus preguntas existenciales sin que salten chispas. ¿Y tú?"
-        else:
-            respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada. (Para que use mi sarcasmo avanzado con IA, recuerda configurar tu clave en los Secrets de Streamlit)."
+        respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
         
     st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
     st.rerun()
