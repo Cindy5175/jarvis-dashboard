@@ -370,7 +370,7 @@ else:
     st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL
+# BARRA LATERAL (IZQUIERDA)
 # ---------------------------------------------------------
 with st.sidebar:
     # 1. RELOJ DIGITAL
@@ -416,7 +416,52 @@ with st.sidebar:
 
     st.divider()
 
-    # 3. TERMINAL HACKER DE RED (IP & DNS)
+    # 3. PROTOCOLO DE MISIONES TÁCTICAS (EN LA BARRA LATERAL)
+    st.subheader("🎯 Protocolo de Misiones")
+    with st.expander("📋 Gestión de Misiones", expanded=True):
+        nueva_mision = st.text_input("Nueva misión:", key="input_mision")
+        if st.button("📥 Registrar Misión"):
+            if nueva_mision:
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                c.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
+                conn.commit()
+                conn.close()
+                st.success("🎯 Misión registrada.")
+                st.rerun()
+
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT id, tarea, estado FROM misiones ORDER BY id DESC")
+        lista_misiones = c.fetchall()
+        conn.close()
+
+        if lista_misiones:
+            for mid, tarea_txt, estado_txt in lista_misiones:
+                st.markdown(f"<small style='color: #00f3ff;'>• {tarea_txt} [{estado_txt}]</small>", unsafe_allow_html=True)
+                col_m1, col_m2 = st.columns(2)
+                with col_m1:
+                    if estado_txt == "Pendiente" and st.button("✔️", key=f"comp_{mid}"):
+                        conn = sqlite3.connect(DB_NAME)
+                        c = conn.cursor()
+                        c.execute("UPDATE misiones SET estado='Completada' WHERE id=?", (mid,))
+                        conn.commit()
+                        conn.close()
+                        st.rerun()
+                with col_m2:
+                    if st.button("🗑️", key=f"del_{mid}"):
+                        conn = sqlite3.connect(DB_NAME)
+                        c = conn.cursor()
+                        c.execute("DELETE FROM misiones WHERE id=?", (mid,))
+                        conn.commit()
+                        conn.close()
+                        st.rerun()
+        else:
+            st.info("Sin misiones activas.")
+
+    st.divider()
+
+    # 4. TERMINAL HACKER DE RED (IP & DNS)
     st.subheader("🌐 Terminal Hacker de Red")
     net_info = obtener_info_red()
     st.markdown(f"""
@@ -437,7 +482,7 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 4. BIBLIOTECA ACADÉMICA MÚLTIPLE (FÍSICA, ÁLGEBRA, HISTORIA, ETC.)
+    # 5. BIBLIOTECA ACADÉMICA MÚLTIPLE (FÍSICA, ÁLGEBRA, HISTORIA, ETC.)
     st.subheader("📚 Biblioteca Académica (PDFs)")
     with st.expander("📖 Carga Masiva de Manuales", expanded=False):
         archivos_pdfs = st.file_uploader(
@@ -454,7 +499,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 5. RED SATELITAL GLOBAL
+    # 6. RED SATELITAL GLOBAL
     st.subheader("🛰️ Red Satelital Global")
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
@@ -471,7 +516,7 @@ with st.sidebar:
 
     st.divider()
     
-    # 6. MÓDULO INTEGRADO: CÁMARA TÁCTICA & VISIÓN POR IA
+    # 7. MÓDULO INTEGRADO: CÁMARA TÁCTICA & VISIÓN POR IA
     st.subheader("🛡️ Cámara Táctica & Visión")
     
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
@@ -538,7 +583,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 7. FINANZAS / MERCADO Y ACCIONES
+    # 8. FINANZAS / MERCADO Y ACCIONES
     st.subheader("📊 Finanzas & Acciones EE.UU.")
     finanzas_sidebar = obtener_divisas_chile()
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
@@ -592,7 +637,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 8. TELEMETRÍA DE PC
+    # 9. TELEMETRÍA DE PC
     cpu_uso = psutil.cpu_percent(interval=None)
     mem_uso = psutil.virtual_memory().percent
     bat_val = "Conectado a Red / Cloud"
@@ -619,7 +664,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # 9. CLIMA & ALERTAS
+    # 10. CLIMA & ALERTAS
     st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
@@ -646,61 +691,11 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CONSOLA PRINCIPAL: MISIONES & TRADUCTOR TÁCTICO
+# CONSOLA PRINCIPAL (DERECHA)
 # ---------------------------------------------------------
-st.subheader("💬 Terminal de Conversación Autónoma & Protocolo de Misiones")
+st.subheader("💬 Terminal de Conversación Autónoma & Traductor Táctico")
 
-# GESTOR DE MISIONES (SQLITE PERSISTENTE)
-with st.expander("🎯 Protocolo de Misiones & Tareas Académicas", expanded=True):
-    col_m1, col_m2 = st.columns([3, 1])
-    with col_m1:
-        nueva_mision = st.text_input("Añadir nueva misión o estudio (ej. Estudiar capítulo 3 de Física):", key="input_mision")
-    with col_m2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        btn_agregar_mision = st.button("📥 Registrar Misión")
-
-    if btn_agregar_mision and nueva_mision:
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
-        c.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
-        conn.commit()
-        conn.close()
-        st.success("🎯 Misión registrada en el núcleo con éxito.")
-        st.rerun()
-
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, tarea, estado FROM misiones ORDER BY id DESC")
-    lista_misiones = c.fetchall()
-    conn.close()
-
-    if lista_misiones:
-        st.markdown("**📋 Misiones Activas en la Base:**")
-        for mid, tarea_txt, estado_txt in lista_misiones:
-            col_t1, col_t2, col_t3 = st.columns([4, 1, 1])
-            with col_t1:
-                st.markdown(f"<span style='color: #00f3ff;'>{tarea_txt} [{estado_txt}]</span>", unsafe_allow_html=True)
-            with col_t2:
-                if estado_txt == "Pendiente":
-                    if st.button("✔️ Completar", key=f"comp_{mid}"):
-                        conn = sqlite3.connect(DB_NAME)
-                        c = conn.cursor()
-                        c.execute("UPDATE misiones SET estado='Completada' WHERE id=?", (mid,))
-                        conn.commit()
-                        conn.close()
-                        st.rerun()
-            with col_t3:
-                if st.button("🗑️ Borrar", key=f"del_{mid}"):
-                    conn = sqlite3.connect(DB_NAME)
-                    c = conn.cursor()
-                    c.execute("DELETE FROM misiones WHERE id=?", (mid,))
-                    conn.commit()
-                    conn.close()
-                    st.rerun()
-    else:
-        st.info("No hay misiones registradas en este momento. Añade una para comenzar el protocolo.")
-
-# TRADUCTOR Y SINTETIZADOR TÁCTICO MULTILENGUAJE
+# TRADUCTOR Y SINTETIZADOR TÁCTICO MULTILENGUAJE (EN PANTALLA PRINCIPAL)
 with st.expander("🌐 Traductor y Sintetizador Táctico Multilenguaje", expanded=False):
     texto_a_traducir = st.text_area("Pega aquí fragmentos científicos o texto en otro idioma:", key="input_trad")
     idioma_destino = st.selectbox("Traducir a:", ["Español", "Inglés", "Francés", "Alemán", "Italiano"])
@@ -789,7 +784,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todos los subsistemas, red y traductor táctico operativos."
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todos los subsistemas, red y protocolo de misiones operativos."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         guardar_mensaje_db("assistant", msg_sys)
         reproducir_voz_jarvis(msg_sys)
@@ -850,7 +845,7 @@ if user_input:
         respuesta_jarvis = "Para ti siempre, Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con red, misiones, biblioteca académica y traductor táctico activos en la Base Buin, Cindy."
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con red, misiones en la barra lateral, biblioteca y traductor activos en la Base Buin, Cindy."
 
     elif api_key:
         try:
