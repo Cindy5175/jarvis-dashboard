@@ -478,7 +478,7 @@ with st.sidebar:
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
         centinela_activo = st.checkbox("Activar Protocolo Centinela en Sistema")
         if centinela_activo:
-            st.info("🌙 **Centinela Activo:** Puedes cerrar la tapa de tu laptop. J.A.R.V.I.S. continuará vigilando en segundo plano.")
+            st.info("🌙 **Centinela Activo:** Puedes cerrar la tapa de你的 laptop. J.A.R.V.I.S. continuará vigilando en segundo plano.")
 
     with st.expander("📹 WEBCAM & RECONOCIMIENTO FACIAL IA", expanded=False):
         foto_cam = st.camera_input("Sensor Biométrico de Perímetro")
@@ -607,15 +607,31 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # DASHBOARD DE ACCIONES
-    st.caption("📈 Acciones & ETFs en Tiempo Real:")
+    # DASHBOARD DE ACCIONES ENMARCADO CON BORDE NEÓN
+    st.markdown("<br>", unsafe_allow_html=True)
     acciones_data = obtener_acciones_tiempo_real()
+    
+    html_acciones = """
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    ">
+        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block; margin-bottom: 8px;">📈 Acciones & ETFs en Tiempo Real</span>
+    """
+    
     if acciones_data:
         for symbol, info in acciones_data.items():
             color_var = "#00f3ff" if info['variacion'] >= 0 else "#ff4b4b"
-            st.markdown(f"<small><b>{symbol}:</b> ${info['precio']:.2f} USD (<span style='color:{color_var}'>{info['variacion']:+.2f}%</span>)</small>", unsafe_allow_html=True)
+            html_acciones += f"""<span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;"><b>{symbol}:</b> ${info['precio']:.2f} USD (<span style='color:{color_var}'>{info['variacion']:+.2f}%</span>)</span>"""
     else:
-        st.caption("Mercado cerrado / Cargando datos...")
+        html_acciones += """<span style="color: #00a8b5; font-size: 12px; display: block;">Mercado cerrado / Cargando...</span>"""
+        
+    html_acciones += "</div>"
+    st.markdown(html_acciones, unsafe_allow_html=True)
 
     st.divider()
 
