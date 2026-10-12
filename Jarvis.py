@@ -231,7 +231,6 @@ def verificar_ping_red():
     return resultados
 
 def procesar_calculo_local(texto, divisas):
-    """Procesamiento local para IVA, conversiones y operaciones matemáticas sin usar API"""
     txt = texto.lower()
     if "iva" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace('.', '').replace(',', '.'))
@@ -239,7 +238,7 @@ def procesar_calculo_local(texto, divisas):
             monto = float(numeros[0])
             iva = monto * 0.19
             total = monto + iva
-            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19\%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
+            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
     
     if "usd" in txt or "dolar" in txt or "dólar" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
@@ -248,7 +247,7 @@ def procesar_calculo_local(texto, divisas):
             val_dolar = divisas.get('dolar_clp', 0.0)
             if val_dolar > 0:
                 total = cant * val_dolar
-                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD =${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD = ${total:,.0f} CLP"
     
     if "uf" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
@@ -257,12 +256,11 @@ def procesar_calculo_local(texto, divisas):
             val_uf = divisas.get('uf_clp', 0.0)
             if val_uf > 0:
                 total = cant * val_uf
-                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF =${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF = ${total:,.0f} CLP"
 
     return None
 
 def reproducir_voz_jarvis(texto):
-    """Genera código JavaScript para síntesis de voz en tiempo real"""
     texto_limpio = texto.replace("J.A.R.V.I.S.:", "").replace('"', '').replace("'", "").replace("\n", " ")
     js_code = f"""
         <script>
@@ -290,11 +288,17 @@ st.success("✅ Todos los subsistemas satelitales y de hardware responden de for
 with st.sidebar:
     st.header("🛰️ Red Satelital y Hardware")
     
-    # 💻 MONITOREO LOCAL DE HARDWARE (CPU, RAM, BATERÍA)
+    # 💻 MONITOREO LOCAL SEGURO DE HARDWARE (CPU, RAM, BATERÍA BLINDADO CONTRA CLOUD)
     cpu_uso = psutil.cpu_percent(interval=None)
     mem_uso = psutil.virtual_memory().percent
-    bateria = psutil.sensors_battery()
-    bat_val = f"{bateria.percent}%" if bateria else "Conectado a Red"
+    
+    bat_val = "Conectado a Red / Cloud"
+    try:
+        bateria = psutil.sensors_battery()
+        if bateria:
+            bat_val = f"{bateria.percent}%"
+    except Exception:
+        pass
     
     st.markdown(f"""
     <div style="
@@ -306,7 +310,7 @@ with st.sidebar:
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
         margin-bottom: 10px;
     ">
-        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block;">💻 TELEMETRÍA DE PC (ASUS)</span>
+        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block;">💻 TELEMETRÍA DE PC</span>
         <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">⚡ CPU en Uso: <b>{cpu_uso}%</b></span>
         <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🧠 Memoria RAM: <b>{mem_uso}%</b></span>
         <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🔋 Batería: <b>{bat_val}</b></span>
@@ -383,7 +387,6 @@ with st.sidebar:
                     api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
                     if api_key:
                         genai.configure(api_key=api_key)
-                        # Nota: Se usa modelo multimodal compatible
                         m = genai.GenerativeModel('gemini-1.5-flash')
                         bytes_img = archivo_subido.getvalue()
                         res = m.generate_content([prompt_personalidad + "\nAnaliza detalladamente esta imagen o captura de pantalla con tono sarcástico y experto:", {"mime_type": tipo_archivo, "data": bytes_img}])
@@ -586,4 +589,104 @@ with col_btn1:
     if st.button("📍 Estado Base"):
         msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
-        reproducir_voz_
+        reproducir_voz_jarvis(msg_buin)
+        st.rerun()
+
+with col_btn2:
+    if st.button("⚙️ Sistema"):
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Todo operando sin anomalías."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
+        reproducir_voz_jarvis(msg_sys)
+        st.rerun()
+
+with col_btn3:
+    if st.button("🔮 Oráculo"):
+        import random
+        frases_oraculo = [
+            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy.",
+            "J.A.R.V.I.S.: Estado del universo: En constante expansión.",
+            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
+        ]
+        oraculo_msg = random.choice(frases_oraculo)
+        st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
+        reproducir_voz_jarvis(oraculo_msg)
+        st.rerun()
+
+with col_btn4:
+    if st.button("🎵 Abrir Spotify"):
+        try:
+            os.system("start spotify:" if os.name == 'nt' else "open -a Spotify")
+        except Exception:
+            pass
+        msg_spot = "J.A.R.V.I.S.: Lanzando secuencia musical en Spotify, jefa."
+        st.session_state['chat_history'].append({"role": "assistant", "content": msg_spot})
+        reproducir_voz_jarvis(msg_spot)
+        st.rerun()
+
+with col_btn5:
+    if st.button("🗑️ Limpiar Chat"):
+        st.session_state['chat_history'] = [
+            {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
+        ]
+        st.rerun()
+
+st.divider()
+
+# HISTORIAL DE CHAT
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = [
+        {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
+    ]
+
+chat_container = st.container()
+with chat_container:
+    for msg in st.session_state['chat_history']:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA, RESPUESTAS LOCALES Y VOZ EN VIVO)
+user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
+if user_input:
+    st.session_state['chat_history'].append({"role": "user", "content": user_input})
+    
+    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+    respuesta_jarvis = ""
+    texto_lower = user_input.lower().strip()
+
+    res_calculo = procesar_calculo_local(user_input, finanzas_sidebar)
+    
+    if res_calculo:
+        respuesta_jarvis = res_calculo
+
+    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
+        ahora = datetime.datetime.now()
+        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+        
+        nombre_dia = dias_semana[ahora.weekday()]
+        nombre_mes = meses[ahora.month - 1]
+        
+        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
+
+    elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
+        respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
+
+    elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
+        respuesta_jarvis = f"J.A.R.V.I.S.: Estado del sistema: impecable. CPU al {cpu_uso}%, RAM al {mem_uso}%. Perímetro seguro."
+
+    elif api_key:
+        try:
+            genai.configure(api_key=api_key)
+            modelo_nombre = 'gemini-1.5-flash'
+            
+            modelo = genai.GenerativeModel(modelo_nombre)
+            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
+            respuesta = modelo.generate_content(prompt_completo)
+            respuesta_jarvis = respuesta.text
+        except Exception as e:
+            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un minuto antes de enviar otra orden."
+    else:
+        respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
+        
+    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
+    reproducir_voz_jarvis(respuesta_jarvis)
+    st.rerun()
