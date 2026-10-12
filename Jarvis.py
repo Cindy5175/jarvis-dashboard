@@ -10,7 +10,7 @@ import google.generativeai as genai
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0",
+    page_title="J.A.R.V.I.S. 6.0"
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -243,7 +243,7 @@ def verificar_ping_red():
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
-st.title("⚡ J.A.R.V.I.S. 4.0 - AI Autónoma")
+st.title("⚡ jarvis 6.0- AI Autónoma")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
