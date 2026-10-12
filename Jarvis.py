@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS VISUALES (TEMA NEGRO ABSOLUTO Y AZUL NEÓN COMPLETO)
+# ESTILOS VISUALES (TEMA NEGRO ABSOLUTO Y AZUL NEÓN COMPLETO + SELECTBOX OSCURO)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -52,7 +52,29 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 3. FORZAR BOTÓN DE UPLOAD Y ZONA DE DROP EN NEGRO Y NEÓN */
+    /* 3. FORZAR FONDO OSCURO EN MENÚS DESPLEGABLES (SELECTBOX Y POPUPS) */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="menu"],
+    ul[data-baseweb="menu"],
+    div[role="listbox"],
+    div[class*="menu"],
+    div[class*="select"] {
+        background-color: #0b1320 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+    }
+
+    li[role="option"] {
+        background-color: #0b1320 !important;
+        color: #00f3ff !important;
+    }
+
+    li[role="option"]:hover {
+        background-color: #00f3ff !important;
+        color: #080c14 !important;
+    }
+
+    /* 4. FORZAR BOTÓN DE UPLOAD Y ZONA DE DROP EN NEGRO Y NEÓN */
     [data-testid="stFileUploaderDropzone"],
     [data-testid="stFileUploaderDropzone"] *,
     [data-testid="stFileUploader"] button,
@@ -62,7 +84,7 @@ st.markdown("""
         border: 1px solid #00f3ff !important;
     }
 
-    /* 4. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
+    /* 5. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
     header button, header svg, button[title], [data-testid="baseButton-header"],
@@ -73,13 +95,13 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* 5. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
+    /* 6. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
     h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption, i, svg, code {
         color: #00f3ff !important;
         text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
     }
 
-    /* 6. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
+    /* 7. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
     .stButton>button {
         background-color: #0e1726 !important;
         color: #00f3ff !important;
@@ -95,7 +117,7 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
     }
 
-    /* 7. ENTRADA DE CHAT NEGRO Y NEÓN */
+    /* 8. ENTRADA DE CHAT NEGRO Y NEÓN */
     [data-testid="stChatInput"], 
     [data-testid="stChatInput"] > div, 
     div[data-baseweb="base-input"] {
@@ -111,7 +133,7 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* 8. MENSAJES DEL CHAT */
+    /* 9. MENSAJES DEL CHAT */
     [data-testid="stChatMessage"] {
         background-color: #0e1726 !important;
         border: 1px solid #00f3ff !important;
@@ -123,7 +145,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 9. BARRAS DE PROGRESO Y GRÁFICOS */
+    /* 10. BARRAS DE PROGRESO Y GRÁFICOS */
     .stProgress > div > div > div > div {
         background-color: #00f3ff !important;
         box-shadow: 0 0 12px #00f3ff;
@@ -283,40 +305,10 @@ st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.0")
 st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (ORDENADA: PERSONALIDAD -> RED SATELITAL -> VISIÓN -> PRESETS -> FINANZAS -> TELEMETRÍA PC -> CLIMA)
+# BARRA LATERAL (ORDENADA: RELOJ ARRIBA -> PERSONALIDAD -> RED SATELITAL -> VISIÓN -> PRESETS -> FINANZAS -> TELEMETRÍA PC -> CLIMA)
 # ---------------------------------------------------------
 with st.sidebar:
-    # 1. MATRIZ DE PERSONALIDAD
-    st.subheader("🎭 Matriz de Personalidad")
-    personalidades = {
-        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
-        "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
-    }
-    modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
-    prompt_personalidad = personalidades[modo_seleccionado]
-
-    st.divider()
-
-    # 2. RED SATELITAL GLOBAL
-    st.subheader("🛰️ Red Satelital Global")
-    ciudades_mundo = {
-        "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
-        "Santiago, Chile": {"lat": -33.44, "lon": -70.65},
-        "Tokio, Japón": {"lat": 35.67, "lon": 139.65},
-        "Nueva York, EE.UU.": {"lat": 40.71, "lon": -74.00},
-        "Londres, Reino Unido": {"lat": 51.50, "lon": -0.12}
-    }
-    base_sel = st.selectbox("Seleccionar Base Global:", list(ciudades_mundo.keys()))
-    lat_Base = ciudades_mundo[base_sel]["lat"]
-    lon_base = ciudades_mundo[base_sel]["lon"]
-    
-    st.map(data={"lat": [lat_Base], "lon": [lon_base]}, zoom=9)
-
-    st.divider()
-    
-    # RELOJ DIGITAL
+    # 1. RELOJ DIGITAL (UBICADO ARRIBA DE TODO)
     st.subheader("⏱️ Sincronización Temporal")
     st.components.v1.html("""
         <div style="
@@ -345,8 +337,38 @@ with st.sidebar:
     """, height=90)
 
     st.divider()
+
+    # 2. MATRIZ DE PERSONALIDAD
+    st.subheader("🎭 Matriz de Personalidad")
+    personalidades = {
+        "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
+        "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
+    }
+    modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
+    prompt_personalidad = personalidades[modo_seleccionado]
+
+    st.divider()
+
+    # 3. RED SATELITAL GLOBAL
+    st.subheader("🛰️ Red Satelital Global")
+    ciudades_mundo = {
+        "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
+        "Santiago, Chile": {"lat": -33.44, "lon": -70.65},
+        "Tokio, Japón": {"lat": 35.67, "lon": 139.65},
+        "Nueva York, EE.UU.": {"lat": 40.71, "lon": -74.00},
+        "Londres, Reino Unido": {"lat": 51.50, "lon": -0.12}
+    }
+    base_sel = st.selectbox("Seleccionar Base Global:", list(ciudades_mundo.keys()))
+    lat_Base = ciudades_mundo[base_sel]["lat"]
+    lon_base = ciudades_mundo[base_sel]["lon"]
     
-    # 3. ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
+    st.map(data={"lat": [lat_Base], "lon": [lon_base]}, zoom=9)
+
+    st.divider()
+    
+    # 4. ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
     st.subheader("📷 Visión por Computadora & Archivos")
     archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
@@ -386,7 +408,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 4. PRESETS TÁCTICOS RÁPIDOS
+    # 5. PRESETS TÁCTICOS RÁPIDOS
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
@@ -424,7 +446,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 5. FINANZAS / MERCADO
+    # 6. FINANZAS / MERCADO
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
@@ -452,7 +474,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 6. TELEMETRÍA DE PC (UBICADA EXACTAMENTE ENTRE FINANZAS Y CLIMA)
+    # 7. TELEMETRÍA DE PC
     cpu_uso = psutil.cpu_percent(interval=None)
     mem_uso = psutil.virtual_memory().percent
     bat_val = "Conectado a Red / Cloud"
@@ -479,7 +501,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # 7. CLIMA & ALERTAS
+    # 8. CLIMA & ALERTAS
     st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
@@ -644,7 +666,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA, RESPUESTAS LOCALES Y VOZ EN VIVO)
+# ENTRADA DE MENSAJES
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
