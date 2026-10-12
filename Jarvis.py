@@ -46,6 +46,14 @@ def init_db():
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS misiones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tarea TEXT,
+            estado TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -257,6 +265,18 @@ def obtener_acciones_tiempo_real():
             pass
     return datos_acciones
 
+@st.cache_data(ttl=300)
+def obtener_info_red():
+    info = {"ip": "Detectando...", "pais": "Chile", "ISP": "Enlace Satelital Cloud"}
+    try:
+        resp = requests.get("https://ipapi.co/json/", timeout=3).json()
+        info["ip"] = resp.get("ip", "190.160.x.x")
+        info["pais"] = resp.get("country_name", "Chile")
+        info["ISP"] = resp.get("org", "Red Privada")
+    except Exception:
+        pass
+    return info
+
 @st.cache_data(ttl=600)
 def obtener_clima_global(lat, lon):
     try:
@@ -396,9 +416,10 @@ with st.sidebar:
 
     st.divider()
 
-    # 3. ENLACE DE PERIFÉRICOS (SMARTBAND & AUDÍFONOS)
-    st.subheader("⌚ Enlace de Periféricos & Smartband")
-    st.markdown("""
+    # 3. TERMINAL HACKER DE RED (IP & DNS)
+    st.subheader("🌐 Terminal Hacker de Red")
+    net_info = obtener_info_red()
+    st.markdown(f"""
     <div style="
         background-color: #0b1320;
         border: 1px solid #00f3ff;
@@ -407,10 +428,10 @@ with st.sidebar:
         font-family: monospace;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
     ">
-        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">🔗 HARDWARE VINCULADO</span>
-        <span style="color: #00a8b5; font-size: 12px; display: block;">⌚ Smartband Mi Band: <b style="color: #00f3ff;">Conectado (46% Bat)</b></span>
-        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🎧 Audífonos BT: <b style="color: #00f3ff;">Canal de Voz Activo</b></span>
-        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">❤️ Pulso Biométrico: <b style="color: #00f3ff;">74 BPM (Estable)</b></span>
+        <span style="color: #00f3ff; font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">💻 ENLACE DE RED ACTIVO</span>
+        <span style="color: #00a8b5; font-size: 11px; display: block;">IP Pública: <b style="color: #00f3ff;">{net_info['ip']}</b></span>
+        <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 3px;">Ubicación: <b style="color: #00f3ff;">{net_info['pais']}</b></span>
+        <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 3px;">Proveedor: <b style="color: #00f3ff;">{net_info['ISP']}</b></span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -418,9 +439,9 @@ with st.sidebar:
 
     # 4. BIBLIOTECA ACADÉMICA MÚLTIPLE (FÍSICA, ÁLGEBRA, HISTORIA, ETC.)
     st.subheader("📚 Biblioteca Académica (PDFs)")
-    with st.expander("📖 Carga Masiva de Manuales", expanded=True):
+    with st.expander("📖 Carga Masiva de Manuales", expanded=False):
         archivos_pdfs = st.file_uploader(
-            "Selecciona o arrastra todos tus manuales (Física, Álgebra, Historia...):", 
+            "Selecciona o arrastra todos tus manuales:", 
             type=["pdf"], 
             accept_multiple_files=True,
             key="multi_pdf"
@@ -625,9 +646,62 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & RECONOCIMIENTO POR VOZ
+# CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & PROTOCOLO DE MISIONES
 # ---------------------------------------------------------
-st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.4)")
+st.subheader("💬 Terminal de Conversación Autónoma & Protocolo de Misiones")
+
+# GESTOR DE MISIONES (SQLITE PERSISTENTE)
+with st.expander("🎯 Protocolo de Misiones & Tareas Académicas", expanded=True):
+    col_m1, col_m2 = st.columns([3, 1])
+    with col_m1:
+        nueva_mision = st.text_input("Añadir nueva misión o estudio (ej. Estudiar capítulo 3 de Física):", key="input_mision")
+    with col_m2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        btn_agregar_mision = st.button("📥 Registrar Misión")
+
+    if btn_agregar_mision and nueva_mision:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
+        conn.commit()
+        conn.close()
+        st.success("🎯 Misión registrada en el núcleo con éxito.")
+        st.rerun()
+
+    # Mostrar listado de misiones
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, tarea, estado FROM misiones ORDER BY id DESC")
+    lista_misiones = c.fetchall()
+    conn.close()
+
+    if lista_misiones:
+        st.markdown("**📋 Misiones Activas en la Base:**")
+        for mid, tarea_txt, estado_txt in lista_misiones:
+            col_t1, col_t2, col_t3 = st.columns([4, 1, 1])
+            with col_t1:
+                st.markdown(f"<span style='color: #00f3ff;'>{tarea_txt} [{estado_txt}]</span>", unsafe_allow_html=True)
+            with col_t2:
+                if estado_txt == "Pendiente":
+                    if st.button("✔️ Completar", key=f"comp_{mid}"):
+                        conn = sqlite3.connect(DB_NAME)
+                        c = conn.cursor()
+                        c.execute("UPDATE misiones SET estado='Completada' WHERE id=?", (mid,))
+                        conn.commit()
+                        conn.close()
+                        st.rerun()
+            with col_t3:
+                if st.button("🗑️ Borrar", key=f"del_{mid}"):
+                    conn = sqlite3.connect(DB_NAME)
+                    c = conn.cursor()
+                    c.execute("DELETE FROM misiones WHERE id=?", (mid,))
+                    conn.commit()
+                    conn.close()
+                    st.rerun()
+    else:
+        st.info("No hay misiones registradas en este momento. Añade una para comenzar el protocolo.")
+
+st.divider()
 
 # MÓDULO DE ESCUCHA ACTIVA POR MICRÓFONO
 st.components.v1.html("""
@@ -695,7 +769,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Biblioteca académica múltiple y periféricos operativos."
+        msg_sys = f"J.A.R.V.I.S.: CPU al {cpu_uso}%, RAM al {mem_uso}%. Terminal de red y protocolo de misiones activos."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         guardar_mensaje_db("assistant", msg_sys)
         reproducir_voz_jarvis(msg_sys)
@@ -756,7 +830,7 @@ if user_input:
         respuesta_jarvis = "Para ti siempre, Cindy."
 
     elif any(w in texto_lower for w in ["quién eres", "quien eres", "presentate", "preséntate"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con biblioteca académica múltiple, telemetría y enlace biométrico activos en la Base Buin, Cindy."
+        respuesta_jarvis = "J.A.R.V.I.S.: Soy J.A.R.V.I.S., tu inteligencia artificial autónoma con terminal de red, protocolo de misiones y biblioteca académica activa en la Base Buin, Cindy."
 
     elif api_key:
         try:
