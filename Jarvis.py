@@ -6,6 +6,8 @@ import time
 import pandas as pd
 import google.generativeai as genai
 import re
+import psutil
+import os
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
@@ -130,7 +132,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNCIONES AUXILIARES DE APIS Y CÁLCULOS LOCALES
+# FUNCIONES AUXILIARES DE APIS Y HARDWARE LOCAL
 # ---------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -167,30 +169,38 @@ def obtener_divisas_chile():
 @st.cache_data(ttl=600)
 def obtener_clima_global(lat, lon):
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=precipitation"
         resp = requests.get(url, timeout=5).json()
         weather = resp.get('current_weather', {})
         code = weather.get('weathercode', 0)
         
         if code == 0:
             estado = "☀️ Despejado"
+            alerta = "Perímetro meteorológico estable."
         elif code in [1, 2, 3]:
             estado = "☁️ Parcialmente Nublado"
+            alerta = "Cielo cubierto, sin novedades pluviales."
         elif code in [45, 48]:
             estado = "🌫️ Niebla"
+            alerta = "Visibilidad reducida en ruta."
         elif code in [51, 53, 55, 61, 63, 65]:
-            estado = "🌧️ Lluvia"
+            estado = "🌧️ Lluvia Activa"
+            alerta = "⚠️ Alerta de precipitaciones en el sector."
         elif code in [71, 73, 75]:
             estado = "❄️ Nieve"
+            alerta = "⚠️ Alerta de acumulación nívea."
         elif code in [95, 96, 99]:
-            estado = "⛈️ Tormenta"
+            estado = "⛈️ Tormenta Eléctrica"
+            alerta = "🚨 ALERTA ROJA: Tormenta detectada en la zona."
         else:
             estado = "🌤️ Tiempo Estable"
+            alerta = "Condiciones normales."
             
         weather['estado_texto'] = estado
+        weather['alerta_met'] = alerta
         return weather
     except Exception:
-        return {'estado_texto': '🌤️ No disponible'}
+        return {'estado_texto': '🌤️ No disponible', 'alerta_met': 'Sensor meteorológico sin conexión.'}
 
 @st.cache_data(ttl=300)
 def obtener_ultimo_sismo_chile():
@@ -223,17 +233,14 @@ def verificar_ping_red():
 def procesar_calculo_local(texto, divisas):
     """Procesamiento local para IVA, conversiones y operaciones matemáticas sin usar API"""
     txt = texto.lower()
-    
-    # 1. Cálculo de IVA
     if "iva" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace('.', '').replace(',', '.'))
         if numeros:
             monto = float(numeros[0])
             iva = monto * 0.19
             total = monto + iva
-            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
+            return f"J.A.R.V.I.S.: Análisis contable express para CLP ${monto:,.0f}:\n• IVA (19\%): ${iva:,.0f} CLP\n• Total Neto + IVA: ${total:,.0f} CLP"
     
-    # 2. Conversión USD a CLP
     if "usd" in txt or "dolar" in txt or "dólar" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
         if numeros:
@@ -241,9 +248,8 @@ def procesar_calculo_local(texto, divisas):
             val_dolar = divisas.get('dolar_clp', 0.0)
             if val_dolar > 0:
                 total = cant * val_dolar
-                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD = ${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión al tipo de cambio actual (${val_dolar:,.2f} CLP):\n• {cant:,.2f} USD =${total:,.0f} CLP"
     
-    # 3. Conversión UF a CLP
     if "uf" in txt:
         numeros = re.findall(r'\d+(?:\.\d+)?', txt.replace(',', '.'))
         if numeros:
@@ -251,7 +257,7 @@ def procesar_calculo_local(texto, divisas):
             val_uf = divisas.get('uf_clp', 0.0)
             if val_uf > 0:
                 total = cant * val_uf
-                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF = ${total:,.0f} CLP"
+                return f"J.A.R.V.I.S.: Conversión según valor UF del día (${val_uf:,.2f} CLP):\n• {cant:,.2f} UF =${total:,.0f} CLP"
 
     return None
 
@@ -276,13 +282,36 @@ def reproducir_voz_jarvis(texto):
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
 st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.0")
-st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
+st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL (TODOS LOS MÓDULOS REUBICADOS A LA IZQUIERDA)
+# BARRA LATERAL (TODOS LOS MÓDULOS Y NUEVAS TECNOLOGÍAS)
 # ---------------------------------------------------------
 with st.sidebar:
-    st.header("🛰️ Red Satelital Global")
+    st.header("🛰️ Red Satelital y Hardware")
+    
+    # 💻 MONITOREO LOCAL DE HARDWARE (CPU, RAM, BATERÍA)
+    cpu_uso = psutil.cpu_percent(interval=None)
+    mem_uso = psutil.virtual_memory().percent
+    bateria = psutil.sensors_battery()
+    bat_val = f"{bateria.percent}%" if bateria else "Conectado a Red"
+    
+    st.markdown(f"""
+    <div style="
+        background-color: #0b1320;
+        border: 1px solid #00f3ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        margin-bottom: 10px;
+    ">
+        <span style="color: #00f3ff; font-size: 13px; font-weight: bold; display: block;">💻 TELEMETRÍA DE PC (ASUS)</span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">⚡ CPU en Uso: <b>{cpu_uso}%</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🧠 Memoria RAM: <b>{mem_uso}%</b></span>
+        <span style="color: #00a8b5; font-size: 12px; display: block; margin-top: 4px;">🔋 Batería: <b>{bat_val}</b></span>
+    </div>
+    """, unsafe_allow_html=True)
     
     ciudades_mundo = {
         "Buin, Chile (Base Principal)": {"lat": -33.73, "lon": -70.73},
@@ -341,32 +370,44 @@ with st.sidebar:
 
     st.divider()
     
-    # ESCÁNER DE ARCHIVOS DE TEXTO Y DOCUMENTOS (MULTIMODAL)
-    st.subheader("📄 Escáner Táctico Multimodal")
-    archivo_subido = st.file_uploader("Cargar TXT, CSV o PDF para análisis:", type=["txt", "csv", "md", "pdf"])
+    # 📷 ESCÁNER TÁCTICO MULTIMODAL Y VISIÓN POR COMPUTADORA
+    st.subheader("📷 Visión por Computadora & Archivos")
+    archivo_subido = st.file_uploader("Cargar imagen (PNG/JPG) o TXT/PDF:", type=["txt", "csv", "md", "pdf", "png", "jpg", "jpeg"])
     if archivo_subido is not None:
         try:
-            texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
-            st.success(f"✅ Documento procesado ({len(texto_extraido)} caracteres).")
-            if st.button("🔍 Analizar con J.A.R.V.I.S."):
-                prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto:\n\n{texto_extraido[:3000]}"
-                st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
-                
-                api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-                if api_key:
-                    try:
+            tipo_archivo = archivo_subido.type
+            if "image" in tipo_archivo:
+                st.image(archivo_subido, caption="Captura / Imagen Analizada", use_column_width=True)
+                if st.button("👁️ Analizar Imagen con IA"):
+                    st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis Visual de Captura: {archivo_subido.name}]"})
+                    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+                    if api_key:
                         genai.configure(api_key=api_key)
-                        m = genai.GenerativeModel('gemini-3.8-flash')
+                        # Nota: Se usa modelo multimodal compatible
+                        m = genai.GenerativeModel('gemini-1.5-flash')
+                        bytes_img = archivo_subido.getvalue()
+                        res = m.generate_content([prompt_personalidad + "\nAnaliza detalladamente esta imagen o captura de pantalla con tono sarcástico y experto:", {"mime_type": tipo_archivo, "data": bytes_img}])
+                        st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
+                        reproducir_voz_jarvis(res.text)
+                    else:
+                        st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Falta la API Key para procesar imágenes con visión artificial."})
+                    st.rerun()
+            else:
+                texto_extraido = archivo_subido.read().decode("utf-8", errors="ignore")
+                st.success(f"✅ Documento procesado ({len(texto_extraido)} caracteres).")
+                if st.button("🔍 Analizar Texto con J.A.R.V.I.S."):
+                    prompt_doc = f"Por favor haz un resumen ejecutivo en 3 puntos clave del siguiente texto:\n\n{texto_extraido[:3000]}"
+                    st.session_state['chat_history'].append({"role": "user", "content": f"[Análisis de Documento: {archivo_subido.name}]"})
+                    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
+                    if api_key:
+                        genai.configure(api_key=api_key)
+                        m = genai.GenerativeModel('gemini-1.5-flash')
                         res = m.generate_content(f"{prompt_personalidad}\n{prompt_doc}")
                         st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
                         reproducir_voz_jarvis(res.text)
-                    except Exception:
-                        st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Cuota de API saturada momentáneamente. Intenta de nuevo en unos segundos."})
-                else:
-                    st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Lectura completada. Se requiere API Key para la síntesis de inteligencia."})
-                st.rerun()
+                    st.rerun()
         except Exception as e:
-            st.error(f"Error al leer archivo: {str(e)}")
+            st.error(f"Error al procesar archivo: {str(e)}")
 
     st.divider()
 
@@ -379,14 +420,14 @@ with st.sidebar:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                m = genai.GenerativeModel('gemini-3.8-flash')
+                m = genai.GenerativeModel('gemini-1.5-flash')
                 res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
                 st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
                 reproducir_voz_jarvis(res.text)
             except Exception:
-                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Alerta de límite de cuota superado (Error 429). Demasiadas solicitudes a la API. Respira un momento y reintenta."})
+                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Alerta de límite de cuota superado (Error 429)."})
         else:
-            st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Auditoría completada en modo offline. Los números se ven estables."})
+            st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Auditoría completada en modo offline."})
         st.rerun()
 
     if st.button("🚀 Protocolo de Máxima Eficiencia"):
@@ -396,12 +437,12 @@ with st.sidebar:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                m = genai.GenerativeModel('gemini-3.8-flash')
+                m = genai.GenerativeModel('gemini-1.5-flash')
                 res = m.generate_content(f"{prompt_personalidad}\n{cmd_text}")
                 st.session_state['chat_history'].append({"role": "assistant", "content": res.text})
                 reproducir_voz_jarvis(res.text)
             except Exception:
-                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Servidores sobrecargados de peticiones por minuto. Espera un instante antes de la siguiente orden."})
+                st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Servidores sobrecargados de peticiones."})
         else:
             st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Protocolo activo. Menos distracciones, más ejecución."})
         st.rerun()
@@ -434,14 +475,15 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # CLIMA GLOBAL CON MONITOS
+    # ⛈️ CLIMA EXTENDIDO Y ALERTAS DE TORMENTAS
     st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
     viento_v = clima.get('windspeed', 'N/A')
     estado_v = clima.get('estado_texto', '🌤️ Tiempo Estable')
+    alerta_met = clima.get('alerta_met', 'Sin alertas.')
 
-    st.subheader(f"🌤️ Clima")
+    st.subheader(f"⛈️ Clima & Alertas")
     st.markdown(f"""
     <div style="
         background-color: #0b1320;
@@ -454,6 +496,8 @@ with st.sidebar:
         <span style="color: #00f3ff; font-size: 14px; font-weight: bold; display: block;">{estado_v}</span>
         <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">🌡️ Temperatura: <b style="color: #00f3ff;">{temp_v} °C</b></span>
         <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 6px;">💨 Viento: <b style="color: #00f3ff;">{viento_v} km/h</b></span>
+        <hr style="border-color: #00f3ff; margin: 8px 0;">
+        <span style="color: #ffcc00; font-size: 11px; display: block;"><b>Alerta Satelital:</b> {alerta_met}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -535,105 +579,11 @@ with st.sidebar:
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
 
-st.markdown("**⚡ Comandos Tácticos Rápidos:**")
-col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
+st.markdown("**⚡ Comandos Tácticos Rápidos & Accesos Directos:**")
+col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns(5)
 
 with col_btn1:
     if st.button("📍 Estado Base"):
         msg_buin = "J.A.R.V.I.S.: El perímetro está bajo control. Todo en orden."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_buin})
-        reproducir_voz_jarvis(msg_buin)
-        st.rerun()
-
-with col_btn2:
-    if st.button("⚙️ Sistema"):
-        msg_sys = "J.A.R.V.I.S.: Todos los subsistemas operando al 100%. Red neuronal activa."
-        st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
-        reproducir_voz_jarvis(msg_sys)
-        st.rerun()
-
-with col_btn3:
-    if st.button("🔮 Oráculo"):
-        import random
-        frases_oraculo = [
-            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy.",
-            "J.A.R.V.I.S.: Estado del universo: En constante expansión.",
-            "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
-        ]
-        oraculo_msg = random.choice(frases_oraculo)
-        st.session_state['chat_history'].append({"role": "assistant", "content": oraculo_msg})
-        reproducir_voz_jarvis(oraculo_msg)
-        st.rerun()
-
-with col_btn4:
-    if st.button("🗑️ Limpiar Chat"):
-        st.session_state['chat_history'] = [
-            {"role": "assistant", "content": "Hola Cindy. Registros limpios. ¿Qué ocurrencia tienes para hoy?"}
-        ]
-        st.rerun()
-
-st.divider()
-
-# HISTORIAL DE CHAT
-if 'chat_history' not in st.session_state:
-    st.session_state['chat_history'] = [
-        {"role": "assistant", "content": "Hola Cindy. Sistemas activos. ¿Qué milagro tecnológico necesitas hoy?"}
-    ]
-
-chat_container = st.container()
-with chat_container:
-    for msg in st.session_state['chat_history']:
-        st.chat_message(msg["role"]).write(msg["content"])
-
-# ENTRADA DE MENSAJES (OPTIMIZADA CON CALCULADORA, RESPUESTAS LOCALES Y VOZ EN VIVO)
-user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
-if user_input:
-    st.session_state['chat_history'].append({"role": "user", "content": user_input})
-    
-    api_key = st.secrets.get("GEMINI_API_KEY", st.session_state.get('api_key_gemini'))
-    respuesta_jarvis = ""
-    texto_lower = user_input.lower().strip()
-
-    # 1. PRUEBA DE CÁLCULO LOCAL (FINANCIERO / IVA / CONVERSIÓN)
-    res_calculo = procesar_calculo_local(user_input, finanzas_sidebar)
-    
-    if res_calculo:
-        respuesta_jarvis = res_calculo
-
-    # 2. CONSULTAS LOCALES DE FECHA Y HORA
-    elif any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
-        ahora = datetime.datetime.now()
-        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
-        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-        
-        nombre_dia = dias_semana[ahora.weekday()]
-        nombre_mes = meses[ahora.month - 1]
-        
-        respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
-
-    # 3. SALUDOS DIRECTOS
-    elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
-        respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
-
-    # 4. CONSULTAS DE ESTADO
-    elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
-        respuesta_jarvis = "J.A.R.V.I.S.: Estado del sistema: impecable. Perímetro seguro y sin retrasos en la red. ¿Qué se te ofrece?"
-
-    # 5. CONSULTAS COMPLEJAS VÍA API GEMINI
-    elif api_key:
-        try:
-            genai.configure(api_key=api_key)
-            modelo_nombre = 'gemini-3.8-flash'
-            
-            modelo = genai.GenerativeModel(modelo_nombre)
-            prompt_completo = f"{prompt_personalidad}\nUsuario: {user_input}"
-            respuesta = modelo.generate_content(prompt_completo)
-            respuesta_jarvis = respuesta.text
-        except Exception as e:
-            respuesta_jarvis = "J.A.R.V.I.S.: Límite de solicitudes de API alcanzado temporalmente (ResourceExhausted). Por favor espera un minuto antes de enviar otra orden."
-    else:
-        respuesta_jarvis = f"J.A.R.V.I.S.: Orden '{user_input}' registrada localmente."
-        
-    st.session_state['chat_history'].append({"role": "assistant", "content": respuesta_jarvis})
-    reproducir_voz_jarvis(respuesta_jarvis)
-    st.rerun()
+        reproducir_voz_
