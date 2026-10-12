@@ -11,12 +11,14 @@ import os
 import sqlite3
 import cv2
 import numpy as np
+import yfinance as yf
+import mediapipe as mp
 
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónoma 6.3",
+    page_title="J.A.R.V.I.S. IA Autónoma 6.4",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -372,9 +374,73 @@ def reproducir_voz_jarvis(texto):
     st.components.v1.html(js_code, height=0)
 
 # ---------------------------------------------------------
+# FUNCIONES DE DETECCIÓN FACIAL Y GESTOS (OPENCV + MEDIAPIPE)
+# ---------------------------------------------------------
+def analizar_rostro_y_gestos(img_np):
+    # Detección de rostro básica con OpenCV
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    
+    rostro_detectado = len(faces) > 0
+    img_dibujada = img_np.copy()
+    
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img_dibujada, (x, y), (x+w, y+h), (255, 243, 0), 2)
+        cv2.putText(img_dibujada, "OPERADORA IDENTIFICADA: CINDY", (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 243, 0), 2)
+        
+    # Detección de Gestos con MediaPipe
+    mp_hands = mp.solutions.hands
+    gesto = "NINGUNO"
+    with mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as hands:
+        results = hands.process(cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB))
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                # Contar dedos levantados
+                landmarks = hand_landmarks.landmark
+                dedos_arriba = 0
+                if landmarks[mp_hands.HandLandmark.THUMB_TIP].y < landmarks[mp_hands.HandLandmark.THUMB_IP].y:
+                    dedos_arriba += 1
+                if landmarks[mp_hands.HandLandmark.INDEX_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.INDEX_FINGER_PIP].y:
+                    dedos_arriba += 1
+                if landmarks[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].y:
+                    dedos_arriba += 1
+                if landmarks[mp_hands.HandLandmark.RING_FINGER_TIP].y < landmarks[mp_hands.HandLandmark.RING_FINGER_PIP].y:
+                    dedos_arriba += 1
+                if landmarks[mp_hands.HandLandmark.PINKY_TIP].y < landmarks[mp_hands.HandLandmark.PINKY_PIP].y:
+                    dedos_arriba += 1
+
+                if dedos_arriba >= 4:
+                    gesto = "MANO_ABIERTA"
+                elif dedos_arriba == 2:
+                    gesto = "DOS_DEDOS"
+                elif dedos_arriba == 1:
+                    gesto = "PULGAR_ARRIBA"
+
+    return img_dibujada, rostro_detectado, gesto
+
+@st.cache_data(ttl=300)
+def obtener_acciones_tiempo_real():
+    tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "SPY"]
+    datos_acciones = {}
+    for t in tickers:
+        try:
+            stock = yf.Ticker(t)
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                precio = hist['Close'].iloc[-1]
+                prev = stock.info.get('previousClose', precio)
+                var_pct = ((precio - prev) / prev) * 100
+                datos_acciones[t] = {"precio": precio, "variacion": var_pct}
+        except Exception:
+            pass
+    return datos_acciones
+
+# ---------------------------------------------------------
 # ENCABEZADO Y SISTEMA DE ALERTA SÍSMICA EN PANTALLA
 # ---------------------------------------------------------
-st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.3")
+st.title("⚡ J.A.R.V.I.S. IA Autónoma 6.4")
 
 ultimo_sismo_check = obtener_ultimo_sismo_chile()
 if ultimo_sismo_check:
@@ -431,7 +497,7 @@ with st.sidebar:
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
         "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía, sofisticación y reverencia hacia Cindy ('Señorita Cindy', 'a su entera disposición', 'excelencia').",
-        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son estrictamente concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
+        "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate y defensa militar. Tus respuestas son strictly concisas, técnicas, en tono de protocolo de operaciones defensivas ('Comandante Cindy', 'sistema nominal', 'ejecutando protocolo').",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
     modo_seleccionado = st.selectbox("Selecciona protocolo de voz:", list(personalidades.keys()))
@@ -456,8 +522,8 @@ with st.sidebar:
 
     st.divider()
     
-    # 4. MÓDULO INTEGRADO: CENTINELA + CÁMARA IP / WEBCAM
-    st.subheader("🛡️ Seguridad: Centinela & Cámaras")
+    # 4. MÓDULO INTEGRADO: CENTINELA + CÁMARA IP / WEBCAM CON BIOMETRÍA Y GESTOS
+    st.subheader("🛡️ Seguridad: Biometría & Gestos")
     
     with st.expander("🌙 MODO CENTINELA (TAPA CERRADA)", expanded=False):
         centinela_activo = st.checkbox("Activar Protocolo Centinela en Sistema")
@@ -469,7 +535,7 @@ with st.sidebar:
         st.caption("2. Haz clic en 'Elegir el comportamiento del cierre de la tapa'.")
         st.caption("3. En 'Al cerrar la tapa', selecciona **'No hacer nada'**.")
 
-    with st.expander("📹 CÁMARA IP / ESP32 / WEBCAM", expanded=False):
+    with st.expander("📹 WEBCAM CON HUD BIOMÉTRICO Y GESTOS", expanded=False):
         origen_cam = st.radio("Fuente de cámara:", ["Webcam Laptop", "Cámara IP / ESP32-CAM"])
         
         if origen_cam == "Cámara IP / ESP32-CAM":
@@ -485,22 +551,25 @@ with st.sidebar:
                 except Exception:
                     st.error("🔴 No se pudo establecer conexión con la URL del stream.")
         else:
-            foto_cam = st.camera_input("Sensor de Perímetro Laptop")
+            foto_cam = st.camera_input("Sensor Biométrico de Perímetro")
             if foto_cam is not None:
                 bytes_cam = foto_cam.getvalue()
                 nparr = np.frombuffer(bytes_cam, np.uint8)
                 img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 
-                gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-                edges = cv2.Canny(gray, 100, 200)
-                movimiento = np.sum(edges > 0)
+                img_analizada, rostro_detectado, gesto_detectado = analizar_rostro_y_gestos(img_np)
                 
-                if movimiento > 50000:
-                    st.warning("⚠️ PRESENCIA / MOVIMIENTO DETECTADO EN EL PERÍMETRO")
-                    registrar_evento_seguridad("Webcam", "MOVIMIENTO", f"Variación de bordes detectada: {movimiento}")
-                else:
-                    st.info("🟢 Perímetro estático sin alteraciones.")
-                    
+                if rostro_detectado:
+                    st.success("👤 OPERADORA IDENTIFICADA: CINDY CARRERA")
+                
+                if gesto_detectado != "NINGUNO":
+                    st.info(f"🖐️ GESTO RECONOCIDO: {gesto_detectado}")
+                    if gesto_detectado == "PULGAR_ARRIBA":
+                        st.session_state['chat_history'].append({"role": "assistant", "content": "J.A.R.V.I.S.: Gesto recibido (Pulgar Arriba). Todo en orden en la base."})
+                    elif gesto_detectado == "DOS_DEDOS":
+                        borrar_historial_db()
+                        st.session_state['chat_history'] = [{"role": "assistant", "content": "J.A.R.V.I.S.: Chat limpiado mediante orden gestual."}]
+
                 if st.button("🔍 Analizar Fotograma con J.A.R.V.I.S."):
                     st.session_state['chat_history'].append({"role": "user", "content": "[Captura de Sensor de Webcam]"})
                     guardar_mensaje_db("user", "[Captura de Sensor de Webcam]")
@@ -616,8 +685,8 @@ with st.sidebar:
 
     st.divider()
 
-    # 6. FINANZAS / MERCADO
-    st.subheader("📊 Finanzas / Mercado")
+    # 6. FINANZAS / MERCADO Y ACCIONES
+    st.subheader("📊 Finanzas & Acciones EE.UU.")
     finanzas_sidebar = obtener_divisas_chile()
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
     euro_val = finanzas_sidebar.get('euro_clp', 0.0)
@@ -641,6 +710,13 @@ with st.sidebar:
         <span style="color: #00a8b5; font-size: 13px; display: block; margin-top: 5px;">🇨🇱 UF: <b style="color: #00f3ff;">{uf_s} CLP</b></span>
     </div>
     """, unsafe_allow_html=True)
+
+    # NUEVO DASHBOARD DE ACCIONES
+    st.caption("📈 Acciones & ETFs en Tiempo Real:")
+    acciones_data = obtener_acciones_tiempo_real()
+    for symbol, info in acciones_data.items():
+        color_var = "#00f3ff" if info['variacion'] >= 0 else "#ff4b4b"
+        st.markdown(f"<small><b>{symbol}:</b> ${info['precio']:.2f} USD (<span style='color:{color_var}'>{info['variacion']:+.2f}%</span>)</small>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -715,8 +791,8 @@ with st.sidebar:
     with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
         if 'metas_jarvis' not in st.session_state:
             st.session_state['metas_jarvis'] = [
-                {"meta": "Optimización J.A.R.V.I.S. 6.3", "progreso": 100},
-                {"meta": "Auditoría de Fondos y Crypto", "progreso": 85}
+                {"meta": "Optimización J.A.R.V.I.S. 6.4", "progreso": 100},
+                {"meta": "Auditoría de Fondos y Acciones", "progreso": 90}
             ]
         for idx, item in enumerate(st.session_state['metas_jarvis']):
             st.write(f"**{item['meta']}** — {item['progreso']}%")
@@ -727,7 +803,7 @@ with st.sidebar:
         st.write("🔋 **Estrés Operador:** Nivel Zen")
         st.progress(0.99)
 
-    # SISMOS CSN EN TIEMPO REAL (CON PROTECCIÓN ELSE)
+    # SISMOS CSN EN TIEMPO REAL
     st.divider()
     st.subheader("🌍 Telemetría Sísmica CSN")
     if ultimo_sismo_check:
@@ -780,9 +856,56 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN
+# CONSOLA PRINCIPAL: TERMINAL DE CONVERSACIÓN & RECONOCIMIENTO POR VOZ
 # ---------------------------------------------------------
-st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.3)")
+st.subheader("💬 Terminal de Conversación Autónoma (Memoria & Centinela 6.4)")
+
+# MÓDULO DE ESCUCHA ACTIVA POR MICRÓFONO
+st.components.v1.html("""
+    <div style="margin-bottom: 15px;">
+        <button id="mic-btn" onclick="startDictation()" style="
+            background-color: #0e1726;
+            color: #00f3ff;
+            border: 1px solid #00f3ff;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        ">🎙️ Escucha Activa: Dictar Comando por Micrófono</button>
+        <span id="mic-status" style="color: #00a8b5; margin-left: 10px; font-family: monospace;"></span>
+    </div>
+    <script>
+        function startDictation() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                var recognition = new SpeechRecognition();
+                recognition.lang = 'es-ES';
+                recognition.interimResults = false;
+                
+                document.getElementById('mic-status').textContent = '🎙️ Escuchando orden...';
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    var text = event.results[0][0].transcript;
+                    document.getElementById('mic-status').textContent = '✅ Comando capturado: ' + text;
+                    // Enviar texto al input
+                    const inputElement = parent.document.querySelector('div[data-testid="stChatInput"] textarea');
+                    if (inputElement) {
+                        inputElement.value = text;
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    document.getElementById('mic-status').textContent = '🔴 Error de captura de audio.';
+                };
+            } else {
+                alert('El navegador no soporta entrada directa por micrófono.');
+            }
+        }
+    </script>
+""", height=60)
 
 st.markdown("**⚡ Comandos Tácticos Rápidos & Accesos Directos:**")
 col_btn1, col_btn2, col_btn3, col_btn4, col_btn5 = st.columns(5)
