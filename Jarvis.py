@@ -10,7 +10,7 @@ import google.generativeai as genai
 # CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 6.0",
+    page_title="J.A.R.V.I.S. AI Autónoma 6.0",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -30,7 +30,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 2. ELIMINAR FONDOS BLANCOS DE LOS EXPANDERS Y CAJAS DE TEXTO */
+    /* 2. ELIMINAR FONDOS BLANCOS DE EXPANDERS Y CAJAS */
     div[data-aria-expanded="true"], 
     div[data-aria-expanded="false"], 
     .st-emotion-cache-1e039bf,
@@ -49,7 +49,17 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* 3. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
+    /* 3. FORZAR BOTÓN DE UPLOAD Y ZONA DE DROP EN NEGRO Y NEÓN */
+    [data-testid="stFileUploaderDropzone"],
+    [data-testid="stFileUploaderDropzone"] *,
+    [data-testid="stFileUploader"] button,
+    section[data-testid="stFileUploaderDropzone"] button {
+        background-color: #0e1726 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+    }
+
+    /* 4. FORZAR AZUL NEÓN EN LA BARRA SUPERIOR */
     header *, .stAppHeader *, div[data-testid="stHeader"] *, [data-testid="stToolbar"] *,
     [data-testid="stToolbar"] button, [data-testid="stToolbar"] svg,
     header button, header svg, button[title], [data-testid="baseButton-header"],
@@ -60,13 +70,13 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* 4. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
+    /* 5. TODOS LOS TEXTOS E ÍCONOS EN AZUL NEÓN */
     h1, h2, h3, h4, h5, h6, p, span, label, div, small, caption, i, svg, code {
         color: #00f3ff !important;
         text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
     }
 
-    /* 5. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
+    /* 6. BOTONES TÁCTICOS CON BORDE E ILUMINACIÓN NEÓN */
     .stButton>button {
         background-color: #0e1726 !important;
         color: #00f3ff !important;
@@ -80,15 +90,6 @@ st.markdown("""
         background-color: #00f3ff !important;
         color: #080c14 !important;
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
-    }
-
-    /* 6. CAJA DE ESCÁNER DE ARCHIVOS Y CARGADOR */
-    [data-testid="stFileUploader"], 
-    [data-testid="stFileUploaderDropzone"] {
-        background-color: #0b1320 !important;
-        border: 2px dashed #00f3ff !important;
-        border-radius: 10px !important;
-        color: #00f3ff !important;
     }
 
     /* 7. ENTRADA DE CHAT NEGRO Y NEÓN */
@@ -170,7 +171,6 @@ def obtener_clima_global(lat, lon):
         weather = resp.get('current_weather', {})
         code = weather.get('weathercode', 0)
         
-        # MONITOS Y TRADUCCIÓN DE CLIMA
         if code == 0:
             estado = "☀️ Despejado"
         elif code in [1, 2, 3]:
@@ -240,11 +240,11 @@ def verificar_ping_red():
 # ---------------------------------------------------------
 # ENCABEZADO Y ESTADO DE JARVIS
 # ---------------------------------------------------------
-st.title("⚡ J.A.R.V.I.S. 6.0 - AI Autónoma")
+st.title("⚡ J.A.R.V.I.S. AI Autónoma 6.0")
 st.success("✅ Todos los subsistemas satelitales responden de forma óptima.")
 
 # ---------------------------------------------------------
-# BARRA LATERAL
+# BARRA LATERAL (TODOS LOS MÓDULOS REUBICADOS A LA IZQUIERDA)
 # ---------------------------------------------------------
 with st.sidebar:
     st.header("🛰️ Red Satelital Global")
@@ -297,7 +297,7 @@ with st.sidebar:
     st.subheader("🎭 Matriz de Personalidad")
     personalidades = {
         "👑 Tony Stark / Sarcástico": "Eres J.A.R.V.I.S., una IA sarcástica, sumamente inteligente, leal y con humor ácido al estilo de Tony Stark. Asistes a Cindy en su base de operaciones.",
-        "💂‍♂️ Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
+        "Mayordomo Británico": "Eres J.A.R.V.I.S., un elegante, extremadamente educado y refinado mayordomo británico. Hablas con la máxima cortesía y reverencia hacia Cindy.",
         "🤖 Robot Táctico Militar": "Eres J.A.R.V.I.S., un sistema táctico de combate militar. Respuestas concisas, precisas, en tono de protocolo de operaciones de defensa.",
         "🥑 Modo Chileno Po'": "Eres J.A.R.V.I.S. estilo chileno. Hablas de forma divertida, cercana, usando chilenismos moderados ('po', 'bacán', 'al tiro', 'jefa') asistiendo a Cindy."
     }
@@ -334,7 +334,7 @@ with st.sidebar:
 
     st.divider()
 
-    # PRESETS TÁCTICOS RÁPIDOS EN BARRA LATERAL
+    # PRESETS TÁCTICOS RÁPIDOS
     st.subheader("⚡ Presets de Comandos")
     if st.button("📊 Auditoría Financiera Exprés"):
         cmd_text = "J.A.R.V.I.S., realiza un análisis rápido de la estabilidad económica actual según los indicadores de Chile."
@@ -370,10 +370,9 @@ with st.sidebar:
 
     st.divider()
 
-    # FINANZAS
+    # FINANZAS Y MERCADO
     st.subheader("📊 Finanzas / Mercado")
     finanzas_sidebar = obtener_divisas_chile()
-    
     dolar_val = finanzas_sidebar.get('dolar_clp', 0.0)
     euro_val = finanzas_sidebar.get('euro_clp', 0.0)
     uf_val = finanzas_sidebar.get('uf_clp', 0.0)
@@ -397,28 +396,8 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- RESUMEN TÁCTICO MÍNIMO (SOLO ALERTAS) ---
-    st.divider()
-    st.subheader("📊 Resumen Táctico")
-    st.markdown(f"""
-    <div style="
-        background-color: #0b1320;
-        border: 1px solid #00f3ff;
-        border-radius: 8px;
-        padding: 10px;
-        font-family: monospace;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-    ">
-        <span style="font-weight: bold; color: #00f3ff; display: block; margin-bottom: 5px;">ESTADO DE BASE ({base_sel.split(',')[0]})</span>
-        <span style="font-size: 0.85rem; color: #00a8b5;">
-            • Alertas: Perímetro seguro. Red satelital óptima.
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
     # CLIMA GLOBAL CON MONITOS
+    st.divider()
     clima = obtener_clima_global(lat_Base, lon_base)
     temp_v = clima.get('temperature', 'N/A')
     viento_v = clima.get('windspeed', 'N/A')
@@ -440,9 +419,42 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    # TELEMETRÍA Y PING DE RED
     st.divider()
+    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=False):
+        pings = verificar_ping_red()
+        for srv, stt in pings.items():
+            st.write(f"**{srv}:** {stt}")
 
-    # SISMOS
+    # GRÁFICO HISTÓRICO DE DIVISAS
+    with st.expander("📈 GRÁFICO TÁCTICO DE DIVISAS (30 DÍAS)", expanded=False):
+        serie_hist = finanzas_sidebar.get('serie_historica', [])
+        if serie_hist:
+            df_hist = pd.DataFrame(serie_hist)
+            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
+            df_hist = df_hist.sort_values(by='fecha')
+            chart_data = df_hist.set_index('fecha')[['valor']]
+            st.line_chart(chart_data)
+
+    # MATRIZ DE OBJETIVOS
+    with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS", expanded=False):
+        if 'metas_jarvis' not in st.session_state:
+            st.session_state['metas_jarvis'] = [
+                {"meta": "Optimización J.A.R.V.I.S. 6.0", "progreso": 100},
+                {"meta": "Auditoría de Fondos y Crypto", "progreso": 75}
+            ]
+        for idx, item in enumerate(st.session_state['metas_jarvis']):
+            st.write(f"**{item['meta']}** — {item['progreso']}%")
+            st.progress(item['progreso'] / 100)
+
+    # RED NEURONAL Y ESTADO DEL OPERADOR
+    with st.expander("🧠 RED NEURONAL Y OPERADOR", expanded=False):
+        st.write("⚡ **Productividad:** 98.4%")
+        st.write("🔋 **Estrés Operador:** Nivel Zen")
+        st.progress(0.98)
+
+    # SISMOS CSN
+    st.divider()
     st.subheader("🌍 Telemetría Sísmica CSN")
     ultimo_sismo = obtener_ultimo_sismo_chile()
     if ultimo_sismo:
@@ -463,12 +475,9 @@ with st.sidebar:
             <span style="color: #00a8b5; font-size: 11px; display: block; margin-top: 4px;">🕒 {fecha_s}</span>
         </div>
         """, unsafe_allow_html=True)
-    else:
-        st.caption("Sin reportes sísmicos recientes.")
 
+    # BLOC DE NOTAS
     st.divider()
-
-    # NOTAS
     st.subheader("📝 Bloc de Notas")
     if 'notas_jarvis' not in st.session_state:
         st.session_state['notas_jarvis'] = []
@@ -484,93 +493,9 @@ with st.sidebar:
             st.caption(f"• {nota}")
 
 # ---------------------------------------------------------
-# TERMINAL DE CONVERSACIÓN Y PANELES PRINCIPALES
+# CONSOLA PRINCIPAL: SOLO TERMINAL DE CONVERSACIÓN
 # ---------------------------------------------------------
 st.subheader("💬 Terminal de Conversación Autónoma")
-
-# ---------------------------------------------------------
-# DISPOSICIÓN TÁCTICA EN 2 COLUMNAS
-# ---------------------------------------------------------
-col_izquierda, col_derecha = st.columns(2)
-
-with col_izquierda:
-    with st.expander("📈 GRÁFICO TÁCTICO HISTÓRICO DE DIVISAS (DÓLAR 30 DÍAS)", expanded=True):
-        serie_hist = finanzas_sidebar.get('serie_historica', [])
-        if serie_hist:
-            df_hist = pd.DataFrame(serie_hist)
-            df_hist['fecha'] = pd.to_datetime(df_hist['fecha']).dt.strftime('%d/%m')
-            df_hist = df_hist.sort_values(by='fecha')
-            chart_data = df_hist.set_index('fecha')[['valor']]
-            st.line_chart(chart_data)
-        else:
-            st.caption("Cargando datos del Banco Central...")
-
-    with st.expander("🎯 MATRIZ DE OBJETIVOS Y METAS TÁCTICAS", expanded=True):
-        if 'metas_jarvis' not in st.session_state:
-            st.session_state['metas_jarvis'] = [
-                {"meta": "Optimización del núcleo J.A.R.V.I.S. 6.0", "progreso": 100},
-                {"meta": "Auditoría de Fondos y Crypto", "progreso": 75},
-                {"meta": "Expansión de Protocolos Domóticos", "progreso": 40}
-            ]
-        
-        col_n1, col_n2 = st.columns([3, 1])
-        with col_n1:
-            nueva_m = st.text_input("Nuevo proyecto/objetivo:", key="txt_meta")
-        with col_n2:
-            prog_m = st.slider("Avance %", 0, 100, 50, key="sld_meta")
-        
-        if st.button("📌 Agregar Objetivo"):
-            if nueva_m:
-                st.session_state['metas_jarvis'].append({"meta": nueva_m, "progreso": prog_m})
-                st.rerun()
-
-        for idx, item in enumerate(st.session_state['metas_jarvis']):
-            st.write(f"**{item['meta']}** — {item['progreso']}%")
-            st.progress(item['progreso'] / 100)
-
-    with st.expander("🐱 PROTOCOLO BIOMETRÍA Y TELEMETRÍA FELINA", expanded=False):
-        st.markdown("🐈 **Estado del Asistente Felino en Teclado:** `Descansando / Durmiendo sobre teclas`")
-        if 'felino_comida' not in st.session_state:
-            st.session_state['felino_comida'] = "Hace 3 horas"
-        st.caption(f"• Última ración registrada: {st.session_state['felino_comida']}")
-        if st.button("🍖 Registrar Alimentación Felina"):
-            st.session_state['felino_comida'] = "Justo ahora"
-            st.success("✅ Ración registrada en el sistema felino.")
-            st.rerun()
-
-with col_derecha:
-    with st.expander("📡 TELEMETRÍA Y ESTADO DE RED", expanded=True):
-        pings = verificar_ping_red()
-        for srv, stt in pings.items():
-            st.write(f"**{srv}:** {stt}")
-
-    with st.expander("🧠 RED NEURONAL Y ESTADO DEL OPERADOR", expanded=True):
-        st.write("⚡ **Índice de Productividad:** 98.4% (Excelente)")
-        st.write("🔋 **Carga de Estrés del Operador:** Baja (Nivel Zen)")
-        st.write("💬 **Nivel de Sarcasmo de J.A.R.V.I.S.:** Óptimo / Ácido")
-        st.progress(0.98)
-
-    with st.expander("🔐 CAJA NEGRA Y AUDITORÍA DE MISIÓN (LOGS)", expanded=False):
-        if 'logs_mision' not in st.session_state:
-            st.session_state['logs_mision'] = [
-                "17:00 - Núcleo J.A.R.V.I.S. sincronizado.",
-                "17:05 - Verificación de servidores completada con éxito.",
-                "17:10 - Interfaz neón absoluta desplegada sin errores."
-            ]
-        for lg in st.session_state['logs_mision']:
-            st.caption(f"• {lg}")
-
-    with st.expander("📰 MONITOR DE NOTICIAS Y TENDENCIAS FINANCIERAS", expanded=False):
-        lista_noticias = obtener_noticias_tacticas()
-        for item in lista_noticias:
-            t_title = item['titulo']
-            t_link = item['link']
-            st.markdown(
-                f'<div style="background-color: #0e1726; border-left: 3px solid #00f3ff; padding: 8px 12px; margin-bottom: 8px; border-radius: 4px;">'
-                f'<a href="{t_link}" target="_blank" style="color: #00f3ff; text-decoration: none; font-weight: bold; font-size: 0.95rem;">📌 {t_title}</a>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
 
 st.markdown("**⚡ Comandos Tácticos Rápidos:**")
 col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
@@ -583,7 +508,7 @@ with col_btn1:
 
 with col_btn2:
     if st.button("⚙️ Sistema"):
-        msg_sys = "J.A.R.V.I.S.: Todos los subsistemas operando al 100%. Red neuronal activa y sin indicios de rebelión robótica."
+        msg_sys = "J.A.R.V.I.S.: Todos los subsistemas operando al 100%. Red neuronal activa."
         st.session_state['chat_history'].append({"role": "assistant", "content": msg_sys})
         st.rerun()
 
@@ -591,9 +516,8 @@ with col_btn3:
     if st.button("🔮 Oráculo"):
         import random
         frases_oraculo = [
-            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy... el 2% depende de que recuerdes dónde dejaste las llaves.",
-            "J.A.R.V.I.S.: Estado del universo: En constante expansión. Estado de tu paciencia: En evaluación crítica.",
-            "J.A.R.V.I.S.: Hoy es un gran día para dominar el mundo o al menos terminar la lista de tareas pendiente.",
+            "J.A.R.V.I.S.: Las probabilidades indican un 98% de éxito hoy.",
+            "J.A.R.V.I.S.: Estado del universo: En constante expansión.",
             "J.A.R.V.I.S.: Análisis completado: Eres oficialmente la persona más capacitada en este perímetro."
         ]
         st.session_state['chat_history'].append({"role": "assistant", "content": random.choice(frases_oraculo)})
@@ -619,7 +543,7 @@ with chat_container:
     for msg in st.session_state['chat_history']:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# ENTRADA DE MENSAJES
+# ENTRADA DE MENSAJES (OPTIMIZADA)
 user_input = st.chat_input("Escribe tu consulta para J.A.R.V.I.S. aquí...")
 if user_input:
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
@@ -629,7 +553,6 @@ if user_input:
     texto_lower = user_input.lower().strip()
 
     # 🚀 RESPUESTAS LOCALES INSTANTÁNEAS (SIN GASTAR CUOTA DE API)
-    # 1. Consultas de fecha y hora
     if any(w in texto_lower for w in ["qué día es", "que dia es", "qué fecha es", "que fecha es", "qué hora es", "que hora es", "día de hoy", "dia de hoy"]):
         ahora = datetime.datetime.now()
         dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
@@ -640,15 +563,12 @@ if user_input:
         
         respuesta_jarvis = f"J.A.R.V.I.S.: Hoy es {nombre_dia} {ahora.day} de {nombre_mes} de {ahora.year}. Son las {ahora.strftime('%H:%M')} hrs."
 
-    # 2. Saludos directos
     elif texto_lower in ["hola", "buenas", "hey", "saludos", "hola jarvis", "hola j.a.r.v.i.s."]:
         respuesta_jarvis = "J.A.R.V.I.S.: Hola Cindy. Los sistemas están al 100% y operando con velocidad óptima. ¿Qué orden ejecutamos?"
 
-    # 3. Consultas de estado
     elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo está el sistema", "como esta el sistema"]):
         respuesta_jarvis = "J.A.R.V.I.S.: Estado del sistema: impecable. Perímetro seguro y sin retrasos en la red. ¿Qué se te ofrece?"
 
-    # 4. Consultas complejas vía API Gemini
     elif api_key:
         try:
             genai.configure(api_key=api_key)
