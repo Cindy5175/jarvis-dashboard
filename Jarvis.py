@@ -33,6 +33,10 @@ def cargar_memoria():
             "Telegram": {"estado": "Conectado", "bot_id": "@JarvisBunkerBot"},
             "Discord": {"estado": "En espera", "channel": "#centro-de-mando"},
             "Webhook": {"estado": "Activo", "endpoint": "/api/v1/jarvis/input"}
+        },
+        "preferencias_voz": {
+            "voz_activa": "Español (Reino Unido / Neutro)",
+            "tono": "Sarcástico / Sofisticado"
         }
     }
 
@@ -78,7 +82,7 @@ st.markdown("""
         margin-bottom: 15px;
         box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
     }
-    .stTextInput input, .stTextArea textarea {
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
         background-color: #050505 !important;
         color: #00d2ff !important;
         border: 1px solid #00d2ff !important;
@@ -123,25 +127,56 @@ st.markdown("""
 # 1. TÍTULO PRINCIPAL ARRIBA
 # ---------------------------------------------------------
 st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
-st.success("✅ Sistema Unificado: Memoria Persistente, Habilidades Autónomas, Pasarela Multiplataforma y Ejecución Local Operativas.")
+st.success("✅ Sistema Unificado: Memoria, Habilidades, Multiplataforma, Ejecución Local y Voice Library Operativos.")
 
 # ---------------------------------------------------------
-# 2. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
+# 2. MÓDULO DE VOZ Y SÍNTESIS (Voice Library / Web Speech API)
 # ---------------------------------------------------------
-voice_component = """
-<div style="background-color: #050505; padding: 10px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
-    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
-    <button onclick="startListening()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
-    <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: Esperando que digas algo brillante...</p>
+# Capturamos la última respuesta de J.A.R.V.I.S. para que el sintetizador la lea
+texto_a_decir = st.session_state.get("ultima_respuesta", "Sistemas listos.")
+
+voice_component = f"""
+<div style="background-color: #050505; padding: 12px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
+    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Biblioteca de Voces & Interfaz de Audio (Voice Library)</h4>
+    <p style="color: #a5b4fc; font-size: 12px; margin: 4px 0;">Voz Activa: Butler Británico / Sarcástico (Modo J.A.R.V.I.S.)</p>
+    <button onclick="speakText()" style="background-color: #00d2ff; color: #000; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.4);">🔊 Reproducer Respuesta de J.A.R.V.I.S.</button>
+    <button onclick="startListening()" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px;">🎤 Dictar Comando</button>
+    <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: Subsistema de audio en espera...</p>
 </div>
 
 <script>
-function startListening() {
-    const statusText = document.getElementById("voice-status");
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        statusText.innerText = "Error: Tu navegador no soporta esto.";
+const textToSpeak = "{texto_a_decir}";
+
+function speakText() {{
+    if (!('speechSynthesis' in window)) {{
+        alert("Tu navegador no soporta síntesis de voz.");
         return;
-    }
+    }}
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1.0;
+    utterance.pitch = 0.9; // Tono ligeramente más grave y formal
+    
+    // Buscar una voz en español si está disponible
+    const voices = window.speechSynthesis.getVoices();
+    const spanishVoice = voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
+    if (spanishVoice) {{
+        utterance.voice = spanishVoice;
+    }}
+
+    document.getElementById("voice-status").innerText = "Transmitiendo audio sintético...";
+    utterance.onend = function() {{
+        document.getElementById("voice-status").innerText = "Audio finalizado con éxito.";
+    }};
+    window.speechSynthesis.speak(utterance);
+}}
+
+function startListening() {{
+    const statusText = document.getElementById("voice-status");
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
+        statusText.innerText = "Error: Tu navegador no soporta reconocimiento de voz.";
+        return;
+    }}
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-CL';
     recognition.interimResults = false;
@@ -149,21 +184,21 @@ function startListening() {
 
     statusText.innerText = "Escuchando cada palabra, jefa...";
 
-    recognition.onresult = function(event) {
+    recognition.onresult = function(event) {{
         const command = event.results[0][0].transcript;
         statusText.innerText = "Capturado: \\"" + command + "\\"";
-    };
+    }};
 
-    recognition.onerror = function(event) {
+    recognition.onerror = function(event) {{
         statusText.innerText = "Error de captura: " + event.error;
-    };
+    }};
 
     recognition.start();
-}
+}}
 </script>
 """
 
-components.html(voice_component, height=110)
+components.html(voice_component, height=130)
 st.markdown("---")
 
 # ---------------------------------------------------------
@@ -287,7 +322,7 @@ with col_der:
         st.rerun()
 
     # ---------------------------------------------------------
-    # MÓDULOS AVANZADOS
+    # MÓDULOS AVANZADOS & VOICE LIBRARY
     # ---------------------------------------------------------
     st.markdown("---")
     st.markdown("<h3 class='neon-text'>🧠 1. Memoria Persistente Autónoma</h3>", unsafe_allow_html=True)
@@ -333,7 +368,20 @@ with col_der:
         for canal, info in st.session_state.memoria["canales_multiplataforma"].items():
             st.markdown(f"• **{canal}**: `{info.get('estado')}` — {list(info.items())[1][0]}: `{list(info.items())[1][1]}`")
 
-    st.markdown("<h3 class='neon-text'>💻 4. Ejecución Local & Herramientas de Sistema</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 class='neon-text'>🔊 4. Biblioteca de Voces (Voice Library)</h3>", unsafe_allow_html=True)
+    
+    with st.expander("🎛️ Configurar Perfil de Voz", expanded=False):
+        selected_voice_tone = st.selectbox(
+            "Seleccionar tono de voz de síntesis:",
+            ["Butler Británico / Sarcástico", "IA Táctica / Neutra", "Voz de Mando de Acero"],
+            index=0
+        )
+        if st.button("💾 Actualizar Perfil de Voz"):
+            st.session_state.memoria["preferencias_voz"]["tono"] = selected_voice_tone
+            guardar_memoria(st.session_state.memoria)
+            st.success(f"Perfil de voz actualizado a: {selected_voice_tone}")
+
+    st.markdown("<h3 class='neon-text'>💻 5. Ejecución Local & Herramientas de Sistema</h3>", unsafe_allow_html=True)
     
     with st.expander("💻 Terminal Local (Ejecución de Comandos)", expanded=False):
         cmd_input = st.text_input("Comando de consola local (ej: dir, ping 127.0.0.1, python --version):")
