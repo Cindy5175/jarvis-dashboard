@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS con FONDO NEGRO ABSOLUTO (#000000)
+# Estilos CSS con FONDO NEGRO ABSOLUTO y corrección de botones
 st.markdown("""
     <style>
     .stApp {
@@ -48,17 +48,18 @@ st.markdown("""
         border: 1px solid #00d2ff;
         border-radius: 8px;
     }
-    .stButton button {
-        background-color: #050505;
-        color: #00d2ff;
-        border: 1px solid #00d2ff;
-        border-radius: 6px;
-        font-weight: bold;
-        width: 100%;
+    /* Estilo forzado para que el botón de envío respete el diseño neón */
+    div.stButton > button, div.stFormSubmitButton > button {
+        background-color: #050505 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 6px !important;
+        font-weight: bold !important;
+        width: 100% !important;
     }
-    .stButton button:hover {
-        background-color: #00d2ff;
-        color: #000;
+    div.stButton > button:hover, div.stFormSubmitButton > button:hover {
+        background-color: #00d2ff !important;
+        color: #000 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -116,7 +117,7 @@ st.markdown("---")
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    # Panel Izquierdo 1: Hora, Ubicación y MAPA ULTRA COMPACTO
+    # Panel Izquierdo 1: Hora, Ubicación y Mapa Ultra Compacto
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
     reloj_component = """
@@ -179,15 +180,13 @@ with col_der:
     if st.button("📍 Estado Base"):
         st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
 
-    # Inicialización interna de mensajes
-    if "mensajes_chat" not in st.session_state:
-        st.session_state.mensajes_chat = []
-    if "ultimo_usuario" not in st.session_state:
-        st.session_state.ultimo_usuario = ""
+    # Inicialización de estados
     if "ultima_respuesta" not in st.session_state:
         st.session_state.ultima_respuesta = "Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?"
+    if "ultimo_usuario" not in st.session_state:
+        st.session_state.ultimo_usuario = ""
 
-    # Cuadro principal de respuesta activa
+    # Cuadro visual de JARVIS
     st.markdown(f"""
         <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 15px; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">🤖 J.A.R.V.I.S. :: En Línea</p>
@@ -195,14 +194,13 @@ with col_der:
         </div>
     """, unsafe_allow_html=True)
 
-    # Si hay una entrada previa de la usuaria, la mostramos justo encima del input
     if st.session_state.ultimo_usuario:
         st.markdown(f"**👩‍💻 Último comando enviado:** `{st.session_state.ultimo_usuario}`")
 
-    # Formulario para enviar mensajes directamente
+    # Formulario con botón corregido
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
         entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
-        boton_enviar = st.form_submit_button(label="🚀 Enviar Comando a J.A.R.V.I.S.")
+        boton_enviar = st.form_submit_button(label="🚀 Enviar Comando")
 
     if boton_enviar and entrada_usuario:
         respuestas_sarcasticas = [
@@ -213,11 +211,6 @@ with col_der:
         ]
         respuesta_ia = random.choice(respuestas_sarcasticas)
         
-        # Guardar en la estructura interna
-        st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
-        st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
-        
-        # Actualizar variables visibles directas
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
