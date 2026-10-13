@@ -5,22 +5,35 @@ import pandas as pd
 
 # Configuración de la página en modo ancho con estilo táctico
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónomo // Centro de Mando", 
+    page_title="J.A.R.V.I.S. IA Autónoma // Centro de Mando", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS personalizados para replicar el diseño neón / cian oscuro
+# Estilos CSS personalizados para el diseño neón / cian
 st.markdown("""
     <style>
     .main {
         background-color: #0b0f19;
         color: #ffffff;
     }
+    .main-title {
+        color: #00d2ff;
+        font-size: 36px;
+        font-weight: 800;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+    }
+    .neon-text {
+        color: #00d2ff;
+        font-weight: 600;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
     .stTextInput input {
         background-color: #121826;
-        color: #00ffcc;
-        border: 1px solid #00ffcc;
+        color: #00d2ff;
+        border: 1px solid #00d2ff;
         border-radius: 8px;
     }
     .stMetric {
@@ -29,16 +42,36 @@ st.markdown("""
         padding: 10px;
         border-radius: 8px;
     }
+    .stButton button {
+        background-color: #121826;
+        color: #00d2ff;
+        border: 1px solid #00d2ff;
+        border-radius: 6px;
+        font-weight: bold;
+        width: 100%;
+    }
+    .stButton button:hover {
+        background-color: #00d2ff;
+        color: #000;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 1. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
+# 1. TÍTULO PRINCIPAL ARRIBA
+# ---------------------------------------------------------
+st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
+
+# Alerta de subsistemas en verde neón
+st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
+
+# ---------------------------------------------------------
+# 2. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
 # ---------------------------------------------------------
 voice_component = """
-<div style="background-color: #121826; padding: 10px; border-radius: 8px; border: 1px solid #00ffcc; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
-    <h4 style="color: #00ffcc; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
-    <button onclick="startListening()" style="background-color: #00ffcc; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
+<div style="background-color: #121826; padding: 10px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
+    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
+    <button onclick="startListening()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
     <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: En espera de comandos...</p>
 </div>
 
@@ -72,97 +105,68 @@ function startListening() {
 
 components.html(voice_component, height=110)
 
-# ---------------------------------------------------------
-# 2. ENCABEZADO PRINCIPAL
-# ---------------------------------------------------------
-st.markdown("⚡ **J.A.R.V.I.S. IA Autónomo**")
-hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-st.markdown(f"🕒 **Fecha y Hora del Sistema:** `{hora_actual}` | 📍 **Ubicación:** [Buin, Chile]")
-
-# Alerta de subsistemas en verde
-st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
-
 st.markdown("---")
 
 # ---------------------------------------------------------
-# 3. DISEÑO DE COLUMNAS (Izquierda: Táctico y Finanzas | Derecha: Terminal de Conversación)
+# 3. DISEÑO DE COLUMNAS PRINCIPALES
 # ---------------------------------------------------------
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    st.markdown("### 📊 Finanzas & Acciones EE.UU.")
+    # HORA Y FECHA A LA IZQUIERDA EN AZUL NEÓN
+    hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.markdown(f'<p class="neon-text">🕒 Fecha y Hora: {hora_actual}</p>', unsafe_allow_html=True)
+    st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    # Divisas
-    st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
-            <p style="margin: 0; color: #00ffcc; font-weight: bold;">💱 Divisas Clave</p>
-            <p style="margin: 5px 0 0 0; font-size: 14px;">💵 Dólar: $930.50 CLP</p>
-            <p style="margin: 2px 0 0 0; font-size: 14px;">💶 Euro: $1,015.20 CLP</p>
-            <p style="margin: 2px 0 0 0; font-size: 14px;">📈 UF: $38,400 CLP</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("**Acciones & ETFs en Tiempo Real:**")
-    st.metric(label="AAPL", value="$340.97 USD", delta="+1.29%")
-    st.metric(label="MSFT", value="$541.15 USD", delta="+1.14%")
-    st.metric(label="NVDA", value="$226.32 USD", delta="-1.29%")
-    st.metric(label="TSLA", value="$378.03 USD", delta="-1.22%")
-    st.metric(label="SPY", value="$778.10 USD", delta="-0.06%")
-
     st.markdown("---")
-    st.markdown("### ☁️ Clima & Alertas")
-    st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 12px;">
-            <p style="margin: 0; font-weight: bold; color: #00ffcc;">☀️ Despejado</p>
-            <p style="margin: 4px 0; font-size: 13px;">🌡️ Temperatura: 14,9 °C</p>
-            <p style="margin: 4px 0; font-size: 13px;">💨 Viento: 6,5 km/h</p>
-            <hr style="border-color: #1f293d; margin: 8px 0;">
-            <p style="margin: 0; font-size: 12px; color: #a5b4fc;">Alerta Satelital: Perímetro meteorológico estable en Buin.</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("### 💻 Telemetría de PC")
-    st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #1f293d; border-radius: 8px; padding: 10px;">
-            <p style="margin: 2px 0; font-size: 13px;">⚡ CPU en Uso: 38.5%</p>
-            <p style="margin: 2px 0; font-size: 13px;">🧠 Memoria RAM: 22.8%</p>
-            <p style="margin: 2px 0; font-size: 13px;">🔋 Batería: Conectado a Red / Cloud</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col_der:
-    st.markdown("### 💬 Terminal de Conversación Autónoma")
     
-    # Botones de protocolos rápidos
+    # PROTOCOLOS A LA IZQUIERDA EN AZUL NEÓN
+    st.markdown('<p class="neon-text" style="font-size: 18px;">⚙️ Protocolos Tácticos</p>', unsafe_allow_html=True)
+    
     if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
         st.info("Protocolo académico activado. Analizando base de datos.")
         
-    if st.button("🌐 Traductor y Sintetizador Táctico Multilenguaje"):
+    if st.button("🌐 Traductor y Sintetizador Multilenguaje"):
         st.info("Subsistema multilingüe listo para operar.")
         
     if st.button("📍 Estado Base"):
         st.success("Ubicación actual fijada en Buin, Santiago Metropolitan Region, Chile.")
 
-    # Registro de estado / saludo
+    st.markdown("---")
+    
+    # MAPA MÁS PEQUEÑO A LA IZQUIERDA
+    st.markdown('<p class="neon-text">🗺️ Geolocalización Táctica</p>', unsafe_allow_html=True)
+    mapa_data = pd.DataFrame({
+        'lat': [-33.7333],
+        'lon': [-70.7333]
+    })
+    st.map(mapa_data, zoom=10, use_container_width=True)
+
+with col_der:
+    st.markdown("### 💬 Terminal de Conversación Autónoma")
+    
+    # Finanzas Clave & Clima compacto
     st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 12px; margin-top: 15px;">
-            <p style="margin: 0; color: #00ffcc; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
+        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+            <p style="margin: 0; color: #00d2ff; font-weight: bold;">💱 Divisas & Clima en Buin</p>
+            <p style="margin: 5px 0 0 0; font-size: 13px;">💵 Dólar: $930.50 CLP | 💶 Euro: $1,015.20 CLP | 📈 UF: $38,400 CLP</p>
+            <p style="margin: 3px 0 0 0; font-size: 13px;">☀️ Clima: Despejado, 14,9 °C (Viento: 6,5 km/h)</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+            <p style="margin: 0; color: #00d2ff; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
             <p style="margin: 5px 0 0 0; font-size: 13px;">Sistema sincronizado con el búnker. ¿Qué orden ejecutamos ahora, jefa?</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Caja de consulta para JARVIS
-    st.markdown("<br>", unsafe_allow_html=True)
-    comando = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
+    # Telemetría de PC compacta
+    st.markdown("""
+        <div style="background-color: #121826; border: 1px solid #1f293d; border-radius: 8px; padding: 10px; margin-bottom: 20px;">
+            <p style="margin: 2px 0; font-size: 12px; color: #a5b4fc;">💻 Telemetría: CPU: 38.5% | RAM: 22.8% | Batería: Cloud Red</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# 4. MAPA DE GEOLOCALIZACIÓN TÁCTICA
-# ---------------------------------------------------------
-st.markdown("---")
-st.markdown("### 🗺️ Geolocalización Táctica - Buin, Chile")
-mapa_data = pd.DataFrame({
-    'lat': [-33.7333],
-    'lon': [-70.7333]
-})
-st.map(mapa_data, zoom=11)
+    # Caja de consulta para JARVIS
+    comando = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
