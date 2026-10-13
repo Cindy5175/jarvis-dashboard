@@ -1,4 +1,3 @@
-
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime
@@ -11,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS personalizados para márgenes, tonos neón y diseño general
+# Estilos CSS personalizados para márgenes y diseño ordenado
 st.markdown("""
     <style>
     .main {
@@ -64,7 +63,7 @@ st.markdown("""
 # 1. TÍTULO PRINCIPAL ARRIBA
 # ---------------------------------------------------------
 st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
-st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
+st.success("✅ Todos los subsistemas operan al 100%. Afortunadamente, nadie ha tocado nada crítico todavía.")
 
 # ---------------------------------------------------------
 # 2. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
@@ -73,14 +72,14 @@ voice_component = """
 <div style="background-color: #121826; padding: 10px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
     <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
     <button onclick="startListening()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
-    <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: En espera de comandos...</p>
+    <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: Esperando que digas algo inteligente...</p>
 </div>
 
 <script>
 function startListening() {
     const statusText = document.getElementById("voice-status");
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        statusText.innerText = "Error: Tu navegador no soporta reconocimiento de voz.";
+        statusText.innerText = "Error: Tu navegador no soporta esto.";
         return;
     }
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -88,11 +87,11 @@ function startListening() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    statusText.innerText = "Escuchando atentamente...";
+    statusText.innerText = "Escuchando cada palabra, jefa...";
 
     recognition.onresult = function(event) {
         const command = event.results[0][0].transcript;
-        statusText.innerText = "Comando recibido: \\"" + command + "\\"";
+        statusText.innerText = "Capturado: \\"" + command + "\\"";
     };
 
     recognition.onerror = function(event) {
@@ -108,16 +107,16 @@ components.html(voice_component, height=110)
 st.markdown("---")
 
 # ---------------------------------------------------------
-# 3. DISEÑO DE COLUMNAS PRINCIPALES
+# 3. DISEÑO DE COLUMNAS PRINCIPALES (Ordenado y con Márgenes)
 # ---------------------------------------------------------
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
+    # Panel Izquierdo 1: Hora y Ubicación con el mapa ultra compacto
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
-    # HORA CON SEGUNDERO EN TIEMPO REAL
     reloj_component = """
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #00d2ff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">
+    <div style="font-family: 'Segoe UI', sans-serif; color: #00d2ff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">
         🕒 Fecha y Hora: <span id="reloj">Cargando...</span>
     </div>
     <script>
@@ -134,13 +133,13 @@ with col_izq:
     
     st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    # MAPA MÁS PEQUEÑO Y COMPACTO DEBAJO DE UBICACIÓN BUIN (Zoom ajustado)
+    # MAPA COMPACTO (Ajustado con lat/lon exactas y contenedor reducido)
     mapa_data = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7333]})
-    st.map(mapa_data, zoom=3, use_container_width=True)
+    st.map(mapa_data, zoom=12, use_container_width=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # PANEL IZQUIERDO: DIVISAS Y CLIMA BUIN
+    # Panel Izquierdo 2: Divisas y Clima
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💱 Divisas & Clima en Buin</p>', unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💵 Dólar: $930.50 CLP</p>", unsafe_allow_html=True)
@@ -148,55 +147,61 @@ with col_izq:
     st.markdown("<p style='font-size: 13px; margin: 2px 0;'>📈 UF: $38,400 CLP</p>", unsafe_allow_html=True)
     st.markdown("<hr style='border-color: #00d2ff; opacity: 0.3; margin: 8px 0;'>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0;'>☀️ Clima: Despejado, 14,9 °C</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💨 Viento: 6,5 km/h</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💨 Viento: 6,5 km/h (Suficiente para volar con la Mark 85)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # TELEMETRÍA EN AZUL NEÓN CON MÁRGENES
+    # Panel Izquierdo 3: Telemetría en Azul Neón
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💻 Telemetría de PC</p>', unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5%</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5% (Tranquilo, no va a explotar)</p>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🧠 Memoria RAM: 22.8%</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red / Cloud</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red (Arc Reactor virtual)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
     st.markdown("### 💬 Terminal de Conversación Autónoma")
     
-    # Protocolos Tácticos con estilo azul neón
+    # Botones tácticos con estilo
     if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
-        st.info("Protocolo académico activado con éxito. Analizando registros en la nube.")
+        st.info("Protocolo activado. Espero que no me pidas que resuelva otra tesis a última hora, jefa.")
         
     if st.button("🌐 Traductor y Sintetizador Multilenguaje"):
-        st.info("Subsistema multilingüe sincronizado y listo para operar.")
+        st.info("Subsistema multilingüe listo. Puedo insultar en siete idiomas si lo requieres.")
         
     if st.button("📍 Estado Base"):
-        st.success("Ubicación del búnker fijada en Buin, Santiago Metropolitan Region, Chile.")
+        st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
 
-    # Estado de bienvenida fluido
+    # Estado de bienvenida con personalidad Stark
     st.markdown("""
         <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 15px; margin-bottom: 15px;">
             <p style="margin: 0; color: #00d2ff; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
-            <p style="margin: 5px 0 0 0; font-size: 13px;">Sistema sincronizado con el búnker. ¿Qué orden ejecutamos ahora, jefa?</p>
+            <p style="margin: 5px 0 0 0; font-size: 13px;">Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # GESTIÓN DE CHAT CON FORMULARIO FUNCIONAL Y FLUÍDO
+    # GESTIÓN DE CHAT FUNCIONAL Y FLUIDO
     if "mensajes_chat" not in st.session_state:
         st.session_state.mensajes_chat = [
-            {"rol": "jarvis", "texto": "Canal de texto abierto y fluido. Ingrese instrucción táctica."}
+            {"rol": "jarvis", "texto": "Canal de texto abierto. Te escucho... o mejor dicho, te leo."}
         ]
 
-    # Formulario para enviar mensajes correctamente
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
         entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
         boton_enviar = st.form_submit_button(label="🚀 Enviar Comando a J.A.R.V.I.S.")
 
     if boton_enviar and entrada_usuario:
         st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
-        respuesta_ia = f"Orden recibida, jefa: '{entrada_usuario}'. Subsistemas procesando instrucción con prioridad alfa."
+        # Respuestas con toque de Tony Stark
+        respuestas_sarcasticas = [
+            f"Interesante orden, jefa: '{entrada_usuario}'. Déjame fingir que me sorprende.",
+            f"Procesando '{entrada_usuario}'... Menos mal que tengo paciencia infinita, ¿verdad?",
+            f"Anotado: '{entrada_usuario}'. Si esto sale mal, la culpa es enteramente tuya.",
+            f"Ejecutando '{entrada_usuario}' con la precisión de un reloj suizo. De nada."
+        ]
+        import random
+        respuesta_ia = random.choice(respuestas_sarcasticas)
         st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
 
-    # Mostrar historial de chat con fluidez
     st.markdown("---")
     st.markdown("<p class='neon-text'>📜 Registro de Comunicaciones</p>", unsafe_allow_html=True)
     for msg in reversed(st.session_state.mensajes_chat[-6:]):
