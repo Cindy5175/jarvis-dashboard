@@ -24,6 +24,11 @@ def cargar_memoria():
         except Exception:
             pass
     return {
+        "usuario": {
+            "nombre": "Cindy",
+            "titulo": "Jefa",
+            "ubicacion": "Buin, Chile"
+        },
         "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "habilidades": {
             "Diagnostico": "st.write('Todos los sistemas operativos al 100%')",
@@ -123,23 +128,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
+titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
+
 # ---------------------------------------------------------
 # 1. TÍTULO PRINCIPAL ARRIBA
 # ---------------------------------------------------------
 st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
-st.success("✅ Sistema Unificado: Memoria, Habilidades, Multiplataforma, Ejecución Local y Voice Library Operativos.")
+st.success(f"✅ Reconocimiento Biométrico Confirmado: Operando para {titulo_jefa} {nombre_jefa}.")
 
 # ---------------------------------------------------------
-# 2. MÓDULO DE VOZ Y SÍNTESIS (Voice Library / Web Speech API)
+# 2. MÓDULO DE VOZ Y SÍNTESIS
 # ---------------------------------------------------------
-# Capturamos la última respuesta de J.A.R.V.I.S. para que el sintetizador la lea
-texto_a_decir = st.session_state.get("ultima_respuesta", "Sistemas listos.")
+texto_a_decir = st.session_state.get("ultima_respuesta", f"Sistemas listos para {nombre_jefa}.")
 
 voice_component = f"""
 <div style="background-color: #050505; padding: 12px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
-    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Biblioteca de Voces & Interfaz de Audio (Voice Library)</h4>
+    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Biblioteca de Voces & Interfaz de Audio</h4>
     <p style="color: #a5b4fc; font-size: 12px; margin: 4px 0;">Voz Activa: Butler Británico / Sarcástico (Modo J.A.R.V.I.S.)</p>
-    <button onclick="speakText()" style="background-color: #00d2ff; color: #000; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.4);">🔊 Reproducer Respuesta de J.A.R.V.I.S.</button>
+    <button onclick="speakText()" style="background-color: #00d2ff; color: #000; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.4);">🔊 Reproducir Respuesta</button>
     <button onclick="startListening()" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px;">🎤 Dictar Comando</button>
     <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: Subsistema de audio en espera...</p>
 </div>
@@ -155,9 +162,8 @@ function speakText() {{
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang = 'es-ES';
     utterance.rate = 1.0;
-    utterance.pitch = 0.9; // Tono ligeramente más grave y formal
+    utterance.pitch = 0.9;
     
-    // Buscar una voz en español si está disponible
     const voices = window.speechSynthesis.getVoices();
     const spanishVoice = voices.find(v => v.lang.includes('es') || v.lang.includes('ES'));
     if (spanishVoice) {{
@@ -182,7 +188,7 @@ function startListening() {{
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    statusText.innerText = "Escuchando cada palabra, jefa...";
+    statusText.innerText = "Escuchando cada palabra, {titulo_jefa}...";
 
     recognition.onresult = function(event) {{
         const command = event.results[0][0].transcript;
@@ -271,21 +277,21 @@ with col_der:
     st.markdown("<h3 class='neon-text'>💬 Terminal de Conversación Autónoma</h3>", unsafe_allow_html=True)
     
     if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
-        st.info("Protocolo activado. Espero que no me pidas que resuelva otra tesis a última hora, jefa.")
+        st.info(f"Protocolo activado. Espero que no me pidas que resuelva otra tesis a última hora, {nombre_jefa}.")
         
     if st.button("🌐 Traductor y Sintetizador Multilenguaje"):
         st.info("Subsistema multilingüe listo. Puedo replicar sarcasmo en siete idiomas.")
         
     if st.button("📍 Estado Base"):
-        st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
+        st.success(f"Ubicación confirmada en Buin. El café está listo y el búnker intacto, {titulo_jefa}.")
 
     # Inicialización de variables de chat
     if "ultima_respuesta" not in st.session_state:
-        st.session_state.ultima_respuesta = "Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?"
+        st.session_state.ultima_respuesta = f"Bienvenida al centro de mando, {titulo_jefa} {nombre_jefa}. ¿Qué orden ejecutamos hoy?"
     if "ultimo_usuario" not in st.session_state:
         st.session_state.ultimo_usuario = ""
 
-    # 1. RESPUESTA DE JARVIS (Con rayo ⚡)
+    # 1. RESPUESTA DE JARVIS
     st.markdown(f"""
         <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 5px; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">⚡ J.A.R.V.I.S.</p>
@@ -297,7 +303,7 @@ with col_der:
     if st.session_state.ultimo_usuario:
         st.markdown(f"""
             <div style="background-color: #050505; border: 1px solid #1f293d; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
-                <p style="margin: 0; color: #a5b4fc; font-weight: bold; font-size: 13px;">👩‍💻 Jefa:</p>
+                <p style="margin: 0; color: #a5b4fc; font-weight: bold; font-size: 13px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p>
                 <p style="margin: 4px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultimo_usuario}</p>
             </div>
         """, unsafe_allow_html=True)
@@ -310,10 +316,10 @@ with col_der:
 
     if boton_enviar and entrada_usuario:
         respuestas_sarcasticas = [
-            f"Interesante orden, jefa: '{entrada_usuario}'. Déjame fingir que me sorprende.",
-            f"Procesando '{entrada_usuario}'... Menos mal que tengo paciencia infinita, ¿verdad?",
-            f"Anotado: '{entrada_usuario}'. Si esto sale mal, la culpa es enteramente tuya.",
-            f"Ejecutando '{entrada_usuario}' con la precisión de un reloj suizo. De nada."
+            f"Interesante orden, {titulo_jefa} {nombre_jefa}: '{entrada_usuario}'. Déjame fingir que me sorprende.",
+            f"Procesando '{entrada_usuario}'... Menos mal que tengo paciencia infinita, ¿verdad, {nombre_jefa}?",
+            f"Anotado: '{entrada_usuario}'. Si esto sale mal, la culpa es enteramente suya, {titulo_jefa}.",
+            f"Ejecutando '{entrada_usuario}' con la precisión de un reloj suizo. De nada, {nombre_jefa}."
         ]
         respuesta_ia = random.choice(respuestas_sarcasticas)
         
@@ -322,9 +328,23 @@ with col_der:
         st.rerun()
 
     # ---------------------------------------------------------
-    # MÓDULOS AVANZADOS & VOICE LIBRARY
+    # MÓDULOS AVANZADOS & CONFIGURACIÓN DE IDENTIDAD
     # ---------------------------------------------------------
     st.markdown("---")
+    st.markdown("<h3 class='neon-text'>👤 0. Identidad del Usuario / Protocolo Biométrico</h3>", unsafe_allow_html=True)
+    
+    with st.expander("🔑 Configurar Perfil de Usuario", expanded=False):
+        input_nombre = st.text_input("Tu Nombre:", value=nombre_jefa)
+        input_titulo = st.text_input("Título preferido (ej: Jefa, Comandante, Doctora):", value=titulo_jefa)
+        if st.button("💾 Actualizar Perfil Biométrico"):
+            if "usuario" not in st.session_state.memoria:
+                st.session_state.memoria["usuario"] = {}
+            st.session_state.memoria["usuario"]["nombre"] = input_nombre
+            st.session_state.memoria["usuario"]["titulo"] = input_titulo
+            guardar_memoria(st.session_state.memoria)
+            st.success(f"Perfil de {input_titulo} {input_nombre} actualizado en memoria.")
+            st.rerun()
+
     st.markdown("<h3 class='neon-text'>🧠 1. Memoria Persistente Autónoma</h3>", unsafe_allow_html=True)
     
     with st.expander("📝 Gestionar Notas y Registros de Memoria", expanded=False):
