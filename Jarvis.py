@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS personalizados para el diseño neón / cian
+# Estilos CSS personalizados para márgenes, tonos neón y diseño general
 st.markdown("""
     <style>
     .main {
@@ -30,16 +30,18 @@ st.markdown("""
         font-weight: 600;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+    .left-panel {
+        background-color: #121826;
+        border: 1px solid #00d2ff;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+    }
     .stTextInput input {
         background-color: #121826;
         color: #00d2ff;
         border: 1px solid #00d2ff;
-        border-radius: 8px;
-    }
-    .stMetric {
-        background-color: #121826;
-        border: 1px solid #1f293d;
-        padding: 10px;
         border-radius: 8px;
     }
     .stButton button {
@@ -61,8 +63,6 @@ st.markdown("""
 # 1. TÍTULO PRINCIPAL ARRIBA
 # ---------------------------------------------------------
 st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
-
-# Alerta de subsistemas en verde neón
 st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 # ---------------------------------------------------------
@@ -104,7 +104,6 @@ function startListening() {
 """
 
 components.html(voice_component, height=110)
-
 st.markdown("---")
 
 # ---------------------------------------------------------
@@ -113,60 +112,93 @@ st.markdown("---")
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    # HORA Y FECHA A LA IZQUIERDA EN AZUL NEÓN
-    hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f'<p class="neon-text">🕒 Fecha y Hora: {hora_actual}</p>', unsafe_allow_html=True)
+    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
+    
+    # HORA CON SEGUNDERO EN TIEMPO REAL (Vía HTML/JS para fluidez)
+    reloj_component = """
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #00d2ff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">
+        🕒 Fecha y Hora: <span id="reloj">Cargando...</span>
+    </div>
+    <script>
+    function actualizarReloj() {
+        const ahora = new Date();
+        const opciones = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        document.getElementById('reloj').innerText = ahora.toLocaleString('sv-SE', opciones);
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+    </script>
+    """
+    components.html(reloj_component, height=35)
+    
     st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    st.markdown("---")
+    # MAPA REDUCIDO DEBAJO DE UBICACIÓN BUIN
+    mapa_data = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7333]})
+    st.map(mapa_data, zoom=9, use_container_width=True)
     
-    # PROTOCOLOS A LA IZQUIERDA EN AZUL NEÓN
-    st.markdown('<p class="neon-text" style="font-size: 18px;">⚙️ Protocolos Tácticos</p>', unsafe_allow_html=True)
-    
-    if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
-        st.info("Protocolo académico activado. Analizando base de datos.")
-        
-    if st.button("🌐 Traductor y Sintetizador Multilenguaje"):
-        st.info("Subsistema multilingüe listo para operar.")
-        
-    if st.button("📍 Estado Base"):
-        st.success("Ubicación actual fijada en Buin, Santiago Metropolitan Region, Chile.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-    
-    # MAPA MÁS PEQUEÑO A LA IZQUIERDA
-    st.markdown('<p class="neon-text">🗺️ Geolocalización Táctica</p>', unsafe_allow_html=True)
-    mapa_data = pd.DataFrame({
-        'lat': [-33.7333],
-        'lon': [-70.7333]
-    })
-    st.map(mapa_data, zoom=10, use_container_width=True)
+    # PANEL IZQUIERDO: DIVISAS Y CLIMA BUIN
+    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
+    st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💱 Divisas & Clima en Buin</p>', unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💵 Dólar: $930.50 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💶 Euro: $1,015.20 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>📈 UF: $38,400 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: #00d2ff; opacity: 0.3; margin: 8px 0;'>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>☀️ Clima: Despejado, 14,9 °C</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💨 Viento: 6,5 km/h</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # TELEMETRÍA EN AZUL NEÓN CON MÁRGENES
+    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
+    st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💻 Telemetría de PC</p>', unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5%</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🧠 Memoria RAM: 22.8%</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red / Cloud</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
     st.markdown("### 💬 Terminal de Conversación Autónoma")
     
-    # Finanzas Clave & Clima compacto
-    st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-            <p style="margin: 0; color: #00d2ff; font-weight: bold;">💱 Divisas & Clima en Buin</p>
-            <p style="margin: 5px 0 0 0; font-size: 13px;">💵 Dólar: $930.50 CLP | 💶 Euro: $1,015.20 CLP | 📈 UF: $38,400 CLP</p>
-            <p style="margin: 3px 0 0 0; font-size: 13px;">☀️ Clima: Despejado, 14,9 °C (Viento: 6,5 km/h)</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # Protocolos Tácticos con estilo azul neón
+    if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
+        st.info("Protocolo académico activado con éxito. Analizando registros en la nube.")
+        
+    if st.button("🌐 Traductor y Sintetizador Multilenguaje"):
+        st.info("Subsistema multilingüe sincronizado y listo para operar.")
+        
+    if st.button("📍 Estado Base"):
+        st.success("Ubicación del búnker fijada en Buin, Santiago Metropolitan Region, Chile.")
 
+    # Estado de bienvenida fluido
     st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 15px; margin-bottom: 15px;">
             <p style="margin: 0; color: #00d2ff; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
             <p style="margin: 5px 0 0 0; font-size: 13px;">Sistema sincronizado con el búnker. ¿Qué orden ejecutamos ahora, jefa?</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Telemetría de PC compacta
-    st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #1f293d; border-radius: 8px; padding: 10px; margin-bottom: 20px;">
-            <p style="margin: 2px 0; font-size: 12px; color: #a5b4fc;">💻 Telemetría: CPU: 38.5% | RAM: 22.8% | Batería: Cloud Red</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # GESTIÓN DE CHAT CON FLUIDEZ ESCRITA (Historial de conversación persistente)
+    if "mensajes_chat" not in st.session_state:
+        st.session_state.mensajes_chat = [
+            {"rol": "jarvis", "texto": "Canal de texto abierto y fluido. Ingrese instrucción táctica."}
+        ]
 
-    # Caja de consulta para JARVIS
-    comando = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
+    # Entrada de texto interactiva
+    entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...", key="input_chat")
+
+    if entrada_usuario:
+        # Registrar mensaje de la usuaria
+        st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
+        # Generar respuesta fluida de JARVIS
+        respuesta_ia = f"Orden recibida, jefa: '{entrada_usuario}'. Subsistemas procesando instrucción con prioridad alfa."
+        st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
+
+    # Mostrar historial de chat con fluidez
+    st.markdown("---")
+    for msg in reversed(st.session_state.mensajes_chat[-6:]):  # Muestra los últimos mensajes
+        if msg["rol"] == "usuario":
+            st.markdown(f"**👩‍💻 Cindy:** {msg['texto']}")
+        else:
+            st.markdown(f"**🤖 J.A.R.V.I.S.:** <span style='color: #00d2ff;'>{msg['texto']}</span>", unsafe_allow_html=True)
