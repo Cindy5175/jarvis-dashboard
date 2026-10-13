@@ -35,7 +35,7 @@ def listener_background():
                 
                 if "jarvis" in text:
                     print("¡Palabra de activación detectada! [JARVIS]")
-                    st.session_state.estado_jarvis = "¡Escuchando comando activo!"
+                    st.session_state.estado_jarvis = "¡Escuchando comando activo"
             except Exception:
                 time.sleep(1)
 
