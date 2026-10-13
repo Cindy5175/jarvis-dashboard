@@ -1,3 +1,4 @@
+
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime
@@ -114,7 +115,7 @@ col_izq, col_der = st.columns([1, 1.8])
 with col_izq:
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
-    # HORA CON SEGUNDERO EN TIEMPO REAL (Vía HTML/JS para fluidez)
+    # HORA CON SEGUNDERO EN TIEMPO REAL
     reloj_component = """
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #00d2ff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">
         🕒 Fecha y Hora: <span id="reloj">Cargando...</span>
@@ -133,9 +134,9 @@ with col_izq:
     
     st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    # MAPA REDUCIDO DEBAJO DE UBICACIÓN BUIN
+    # MAPA MÁS PEQUEÑO Y COMPACTO DEBAJO DE UBICACIÓN BUIN (Zoom ajustado)
     mapa_data = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7333]})
-    st.map(mapa_data, zoom=9, use_container_width=True)
+    st.map(mapa_data, zoom=3, use_container_width=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -179,25 +180,26 @@ with col_der:
         </div>
     """, unsafe_allow_html=True)
 
-    # GESTIÓN DE CHAT CON FLUIDEZ ESCRITA (Historial de conversación persistente)
+    # GESTIÓN DE CHAT CON FORMULARIO FUNCIONAL Y FLUÍDO
     if "mensajes_chat" not in st.session_state:
         st.session_state.mensajes_chat = [
             {"rol": "jarvis", "texto": "Canal de texto abierto y fluido. Ingrese instrucción táctica."}
         ]
 
-    # Entrada de texto interactiva
-    entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...", key="input_chat")
+    # Formulario para enviar mensajes correctamente
+    with st.form(key="form_chat_jarvis", clear_on_submit=True):
+        entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
+        boton_enviar = st.form_submit_button(label="🚀 Enviar Comando a J.A.R.V.I.S.")
 
-    if entrada_usuario:
-        # Registrar mensaje de la usuaria
+    if boton_enviar and entrada_usuario:
         st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
-        # Generar respuesta fluida de JARVIS
         respuesta_ia = f"Orden recibida, jefa: '{entrada_usuario}'. Subsistemas procesando instrucción con prioridad alfa."
         st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
 
     # Mostrar historial de chat con fluidez
     st.markdown("---")
-    for msg in reversed(st.session_state.mensajes_chat[-6:]):  # Muestra los últimos mensajes
+    st.markdown("<p class='neon-text'>📜 Registro de Comunicaciones</p>", unsafe_allow_html=True)
+    for msg in reversed(st.session_state.mensajes_chat[-6:]):
         if msg["rol"] == "usuario":
             st.markdown(f"**👩‍💻 Cindy:** {msg['texto']}")
         else:
