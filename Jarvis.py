@@ -10,10 +10,10 @@ st.set_page_config(page_title="J.A.R.V.I.S. // CENTRO DE MANDO", layout="wide")
 # 1. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
 # ---------------------------------------------------------
 voice_component = """
-<div style="background-color: #121212; padding: 12px; border-radius: 10px; border: 1px solid #00ffcc; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
-    <h4 style="color: #00ffcc; margin: 0 0 8px 0;">🎙️ Módulo de Voz en la Nube</h4>
-    <button onclick="startListening()" style="background-color: #00ffcc; color: #000; border: none; padding: 8px 16px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px;">Activar Micrófono</button>
-    <p id="voice-status" style="color: #ffffff; margin-top: 8px; font-size: 12px;">Estado: En espera de comandos...</p>
+<div style="background-color: #121212; padding: 10px; border-radius: 8px; border: 1px solid #00ffcc; text-align: center; font-family: sans-serif; margin-bottom: 10px;">
+    <h4 style="color: #00ffcc; margin: 0 0 6px 0; font-size: 14px;">🎙️ Módulo de Voz en la Nube</h4>
+    <button onclick="startListening()" style="background-color: #00ffcc; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
+    <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: En espera de comandos...</p>
 </div>
 
 <script>
@@ -44,7 +44,7 @@ function startListening() {
 </script>
 """
 
-components.html(voice_component, height=125)
+components.html(voice_component, height=110)
 
 # ---------------------------------------------------------
 # 2. ENCABEZADO Y HORA ACTUALIZADA
@@ -55,15 +55,14 @@ hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 st.markdown(f"🕒 **Fecha y Hora del Sistema:** `{hora_actual}` | 📍 **Ubicación:** [Buin, Chile]")
 
 # ---------------------------------------------------------
-# 3. DISEÑO PRINCIPAL (Columnas Tácticas Invertidas)
+# 3. DISEÑO PRINCIPAL (Centro Táctico compacto IZQUIERDA, JARVIS IA DERECHA)
 # ---------------------------------------------------------
-# Invertimos el orden: col_izq (Centro Táctico) va primero, col_der (JARVIS IA) va después
 col_izq, col_der = st.columns([1, 2])
 
 with col_izq:
     st.subheader("🌐 CENTRO TÁCTICO")
     
-    # Pestañas de control a la izquierda
+    # Pestañas compactas a la izquierda
     pestana_control, pestana_biometria, pestana_finanzas = st.tabs(["Control y Clima", "Biometría", "Finanzas"])
     
     with pestana_control:
@@ -73,7 +72,7 @@ with col_izq:
         st.metric(label="Estado Biométrico", value="Estable", delta="98% Óptimo")
         
     with pestana_finanzas:
-        st.metric(label="Índice Financiero / Cripto", value="USD/CLP Activo", delta="+1.2%")
+        st.metric(label="Índice Financiero", value="USD/CLP", delta="+1.2%")
 
 with col_der:
     st.subheader("🔵 JARVIS IA")
