@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS con FONDO NEGRO ABSOLUTO y correcciones de color Neón
+# Estilos CSS con FONDO NEGRO ABSOLUTO y estilización total del file uploader
 st.markdown("""
     <style>
     .stApp {
@@ -53,7 +53,23 @@ st.markdown("""
         color: #00d2ff !important;
         font-weight: bold !important;
     }
-    /* Estilo del botón de envío totalmente Neón sin partes blancas */
+    /* Forzar fondo negro y bordes neón en la zona de carga de archivos */
+    [data-testid="stFileUploader"] {
+        background-color: #050505 !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
+    }
+    div[data-testid="stFileUploadDropzone"] {
+        background-color: #050505 !important;
+        border: 2px dashed #00d2ff !important;
+    }
+    div[data-testid="stFileUploadDropzone"] p, 
+    div[data-testid="stFileUploadDropzone"] span, 
+    div[data-testid="stFileUploadDropzone"] small {
+        color: #00d2ff !important;
+    }
+    /* Estilo del botón de envío totalmente Neón */
     div.stButton > button, div.stFormSubmitButton > button {
         background-color: #050505 !important;
         color: #00d2ff !important;
@@ -201,7 +217,7 @@ with col_der:
     if "ultimo_usuario" not in st.session_state:
         st.session_state.ultimo_usuario = ""
 
-    # Cuadro visual de JARVIS (Más elevado)
+    # Cuadro visual de JARVIS
     st.markdown(f"""
         <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 5px; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">🤖 J.A.R.V.I.S. :: En Línea</p>
@@ -212,7 +228,7 @@ with col_der:
     if st.session_state.ultimo_usuario:
         st.markdown(f"<p class='neon-text' style='font-size: 13px;'>👩‍💻 Último comando enviado: <code>{st.session_state.ultimo_usuario}</code></p>", unsafe_allow_html=True)
 
-    # Formulario subido y refinado sin elementos blancos
+    # Formulario de chat
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
         entrada_usuario = st.text_input("", placeholder="Instrucción táctica o financiera...")
         st.markdown('<p class="neon-text" style="font-size: 12px; margin-top: 2px; margin-bottom: 6px;">Escribe tu consulta para J.A.R.V.I.S. aquí...</p>', unsafe_allow_html=True)
@@ -231,7 +247,7 @@ with col_der:
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
-    # MÓDULO DE REPOSISTORIO EN AZUL NEÓN
+    # MÓDULO DE REPOSISTORIO EN AZUL NEÓN (Corregido fondo y letras)
     st.markdown("---")
     st.markdown("<h3 class='neon-text'>📂 Repositorio & Carga de Documentos (PDF)</h3>", unsafe_allow_html=True)
     archivo_subido = st.file_uploader("Sube un archivo PDF táctico para análisis de J.A.R.V.I.S.", type=["pdf"])
