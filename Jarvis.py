@@ -2,6 +2,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 import datetime
 import random
+import json
+import os
+import subprocess
 
 # Configuración de la página en modo ancho con estilo táctico
 st.set_page_config(
@@ -10,7 +13,40 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS con FONDO NEGRO ABSOLUTO y estilización total del file uploader
+# ARCHIVO DE MEMORIA PERSISTENTE LOCAL
+MEMORY_FILE = "jarvis_memory.json"
+
+def cargar_memoria():
+    if os.path.exists(MEMORY_FILE):
+        try:
+            with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "habilidades": {
+            "Diagnostico": "st.write('Todos los sistemas operativos al 100%')",
+            "Limpieza_Tmp": "import os; print('Archivos temporales analizados')"
+        },
+        "canales_multiplataforma": {
+            "Telegram": {"estado": "Conectado", "bot_id": "@JarvisBunkerBot"},
+            "Discord": {"estado": "En espera", "channel": "#centro-de-mando"},
+            "Webhook": {"estado": "Activo", "endpoint": "/api/v1/jarvis/input"}
+        }
+    }
+
+def guardar_memoria(memoria):
+    try:
+        with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(memoria, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        st.error(f"Error guardando memoria: {e}")
+
+if "memoria" not in st.session_state:
+    st.session_state.memoria = cargar_memoria()
+
+# Estilos CSS con FONDO NEGRO ABSOLUTO y estilización Neón
 st.markdown("""
     <style>
     .stApp {
@@ -42,18 +78,16 @@ st.markdown("""
         margin-bottom: 15px;
         box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
     }
-    .stTextInput input {
-        background-color: #050505;
-        color: #00d2ff;
-        border: 1px solid #00d2ff;
-        border-radius: 8px;
+    .stTextInput input, .stTextArea textarea {
+        background-color: #050505 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 8px !important;
     }
-    /* Estilo para etiquetas y textos del file uploader en azul neón */
     label[data-testid="stWidgetLabel"] {
         color: #00d2ff !important;
         font-weight: bold !important;
     }
-    /* Forzar fondo negro y bordes neón en la zona de carga de archivos */
     [data-testid="stFileUploader"] {
         background-color: #050505 !important;
         border: 1px solid #00d2ff !important;
@@ -69,7 +103,6 @@ st.markdown("""
     div[data-testid="stFileUploadDropzone"] small {
         color: #00d2ff !important;
     }
-    /* Estilo del botón de envío totalmente Neón */
     div.stButton > button, div.stFormSubmitButton > button {
         background-color: #050505 !important;
         color: #00d2ff !important;
@@ -90,7 +123,7 @@ st.markdown("""
 # 1. TÍTULO PRINCIPAL ARRIBA
 # ---------------------------------------------------------
 st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónomo</h1>', unsafe_allow_html=True)
-st.success("✅ Todos los subsistemas operan al 100% sobre fondo negro absoluto. Menos mal que tengo buen gusto.")
+st.success("✅ Sistema Unificado: Memoria Persistente, Habilidades Autónomas, Pasarela Multiplataforma y Ejecución Local Operativas.")
 
 # ---------------------------------------------------------
 # 2. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
@@ -211,22 +244,28 @@ with col_der:
     if st.button("📍 Estado Base"):
         st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
 
-    # Inicialización de variables
+    # Inicialización de variables de chat
     if "ultima_respuesta" not in st.session_state:
         st.session_state.ultima_respuesta = "Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?"
     if "ultimo_usuario" not in st.session_state:
         st.session_state.ultimo_usuario = ""
 
-    # Cuadro visual de JARVIS
+    # 1. RESPUESTA DE JARVIS (Con rayo ⚡)
     st.markdown(f"""
         <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 5px; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
-            <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">🤖 J.A.R.V.I.S. :: En Línea</p>
+            <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">⚡ J.A.R.V.I.S.</p>
             <p style="margin: 6px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultima_respuesta}</p>
         </div>
     """, unsafe_allow_html=True)
 
+    # 2. ÚLTIMO COMANDO DE LA JEFA
     if st.session_state.ultimo_usuario:
-        st.markdown(f"<p class='neon-text' style='font-size: 13px;'>👩‍💻 Último comando enviado: <code>{st.session_state.ultimo_usuario}</code></p>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style="background-color: #050505; border: 1px solid #1f293d; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                <p style="margin: 0; color: #a5b4fc; font-weight: bold; font-size: 13px;">👩‍💻 Jefa:</p>
+                <p style="margin: 4px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultimo_usuario}</p>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Formulario de chat
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
@@ -247,7 +286,67 @@ with col_der:
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
-    # MÓDULO DE REPOSISTORIO EN AZUL NEÓN (Corregido fondo y letras)
+    # ---------------------------------------------------------
+    # MÓDULOS AVANZADOS
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.markdown("<h3 class='neon-text'>🧠 1. Memoria Persistente Autónoma</h3>", unsafe_allow_html=True)
+    
+    with st.expander("📝 Gestionar Notas y Registros de Memoria", expanded=False):
+        nueva_nota = st.text_input("Añadir nueva memoria/instrucción clave:")
+        if st.button("💾 Guardar en Memoria Local"):
+            if nueva_nota:
+                st.session_state.memoria["notas"].append(nueva_nota)
+                guardar_memoria(st.session_state.memoria)
+                st.success("Memoria sincronizada en jarvis_memory.json")
+                st.rerun()
+        
+        st.markdown("**Notas guardadas en el núcleo:**")
+        for idx, nota in enumerate(st.session_state.memoria["notas"]):
+            st.markdown(f"• `{nota}`")
+
+    st.markdown("<h3 class='neon-text'>🛠️ 2. Creación Automática de Habilidades</h3>", unsafe_allow_html=True)
+    
+    with st.expander("⚡ Registrar/Ejecutar Habilidades personalizadas", expanded=False):
+        nombre_skill = st.text_input("Nombre de la nueva habilidad:")
+        codigo_skill = st.text_area("Código Python de la habilidad:")
+        if st.button("🛠️ Registrar Habilidad"):
+            if nombre_skill and codigo_skill:
+                st.session_state.memoria["habilidades"][nombre_skill] = codigo_skill
+                guardar_memoria(st.session_state.memoria)
+                st.success(f"Habilidad '{nombre_skill}' integrada a la memoria.")
+                st.rerun()
+
+        st.markdown("**Habilidades disponibles:**")
+        for skill_name, script in st.session_state.memoria["habilidades"].items():
+            if st.button(f"🚀 Ejecutar: {skill_name}"):
+                try:
+                    exec(script)
+                    st.success(f"Habilidad '{skill_name}' ejecutada con éxito.")
+                except Exception as e:
+                    st.error(f"Error al ejecutar habilidad: {e}")
+
+    st.markdown("<h3 class='neon-text'>🌐 3. Pasarela Multiplataforma</h3>", unsafe_allow_html=True)
+    
+    with st.expander("📡 Nodos y Canales Vinculados", expanded=False):
+        st.markdown("Conexión con aplicaciones y bots externos:")
+        for canal, info in st.session_state.memoria["canales_multiplataforma"].items():
+            st.markdown(f"• **{canal}**: `{info.get('estado')}` — {list(info.items())[1][0]}: `{list(info.items())[1][1]}`")
+
+    st.markdown("<h3 class='neon-text'>💻 4. Ejecución Local & Herramientas de Sistema</h3>", unsafe_allow_html=True)
+    
+    with st.expander("💻 Terminal Local (Ejecución de Comandos)", expanded=False):
+        cmd_input = st.text_input("Comando de consola local (ej: dir, ping 127.0.0.1, python --version):")
+        if st.button("🖥️ Ejecutar en Consola Local"):
+            if cmd_input:
+                try:
+                    res = subprocess.run(cmd_input, shell=True, capture_output=True, text=True, timeout=5)
+                    out = res.stdout if res.stdout else res.stderr
+                    st.code(out, language="bash")
+                except Exception as ex:
+                    st.error(f"Error ejecutando comando local: {ex}")
+
+    # MÓDULO DE REPOSITORIO
     st.markdown("---")
     st.markdown("<h3 class='neon-text'>📂 Repositorio & Carga de Documentos (PDF)</h3>", unsafe_allow_html=True)
     archivo_subido = st.file_uploader("Sube un archivo PDF táctico para análisis de J.A.R.V.I.S.", type=["pdf"])
