@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime
-import pandas as pd
 import random
 
 # Configuración de la página en modo ancho con estilo táctico
@@ -117,7 +116,7 @@ st.markdown("---")
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    # Panel Izquierdo 1: Hora y Ubicación con el mapa compacto
+    # Panel Izquierdo 1: Hora, Ubicación y MAPA ULTRA COMPACTO (Vía HTML OpenStreetMap)
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
     reloj_component = """
@@ -138,9 +137,15 @@ with col_izq:
     
     st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    # Mapa ultra compacto y limpio
-    mapa_data = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7333]})
-    st.map(mapa_data, zoom=12, use_container_width=True)
+    # Mapa ultra compacto integrado con iframe para que no ocupe toda la pantalla
+    mapa_html = """
+    <div style="width: 100%; height: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #00d2ff;">
+        <iframe width="100%" height="160" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-70.76,-33.76,-70.70,-33.70&layer=mapnik">
+        </iframe>
+    </div>
+    """
+    components.html(mapa_html, height=170)
     
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -163,6 +168,17 @@ with col_izq:
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red (Arc Reactor virtual)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # NUEVA UBICACIÓN DEL REGISTRO DE COMUNICACIONES A LA IZQUIERDA
+    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
+    st.markdown('<p class="neon-text">📜 Registro de Comunicaciones</p>', unsafe_allow_html=True)
+    if "mensajes_chat" in st.session_state:
+        for msg in reversed(st.session_state.mensajes_chat[-5:]):
+            if msg["rol"] == "usuario":
+                st.markdown(f"**👩‍💻 Cindy:** {msg['texto']}")
+            else:
+                st.markdown(f"**🤖 J.A.R.V.I.S.:** <span style='color: #00d2ff;'>{msg['texto']}</span>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
 with col_der:
     st.markdown("### 💬 Terminal de Conversación Autónoma")
     
@@ -182,7 +198,7 @@ with col_der:
         </div>
     """, unsafe_allow_html=True)
 
-    # GESTIÓN DE CHAT FUNCIONAL Y FLUIDO
+    # GESTIÓN DE CHAT FUNCIONAL Y FLUIDO (Único elemento destacado a la derecha)
     if "mensajes_chat" not in st.session_state:
         st.session_state.mensajes_chat = [
             {"rol": "jarvis", "texto": "Canal de texto abierto sobre fondo negro. Te escucho... o mejor dicho, te leo."}
@@ -202,11 +218,4 @@ with col_der:
         ]
         respuesta_ia = random.choice(respuestas_sarcasticas)
         st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
-
-    st.markdown("---")
-    st.markdown("<p class='neon-text'>📜 Registro de Comunicaciones</p>", unsafe_allow_html=True)
-    for msg in reversed(st.session_state.mensajes_chat[-6:]):
-        if msg["rol"] == "usuario":
-            st.markdown(f"**👩‍💻 Cindy:** {msg['texto']}")
-        else:
-            st.markdown(f"**🤖 J.A.R.V.I.S.:** <span style='color: #00d2ff;'>{msg['texto']}</span>", unsafe_allow_html=True)
+        st.rerun()
