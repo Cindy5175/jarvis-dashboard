@@ -116,7 +116,7 @@ st.markdown("---")
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    # Panel Izquierdo 1: Hora, Ubicación y MAPA ULTRA COMPACTO (Vía HTML OpenStreetMap)
+    # Panel Izquierdo 1: Hora, Ubicación y MAPA ULTRA COMPACTO
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
     reloj_component = """
@@ -137,7 +137,6 @@ with col_izq:
     
     st.markdown('<p class="neon-text">📍 Ubicación: Buin, Chile</p>', unsafe_allow_html=True)
     
-    # Mapa ultra compacto integrado con iframe para que no ocupe toda la pantalla
     mapa_html = """
     <div style="width: 100%; height: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #00d2ff;">
         <iframe width="100%" height="160" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
@@ -168,17 +167,6 @@ with col_izq:
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red (Arc Reactor virtual)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # NUEVA UBICACIÓN DEL REGISTRO DE COMUNICACIONES A LA IZQUIERDA
-    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
-    st.markdown('<p class="neon-text">📜 Registro de Comunicaciones</p>', unsafe_allow_html=True)
-    if "mensajes_chat" in st.session_state:
-        for msg in reversed(st.session_state.mensajes_chat[-5:]):
-            if msg["rol"] == "usuario":
-                st.markdown(f"**👩‍💻 Cindy:** {msg['texto']}")
-            else:
-                st.markdown(f"**🤖 J.A.R.V.I.S.:** <span style='color: #00d2ff;'>{msg['texto']}</span>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
 with col_der:
     st.markdown("### 💬 Terminal de Conversación Autónoma")
     
@@ -191,25 +179,32 @@ with col_der:
     if st.button("📍 Estado Base"):
         st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
 
-    st.markdown("""
-        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 15px; margin-bottom: 15px;">
-            <p style="margin: 0; color: #00d2ff; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
-            <p style="margin: 5px 0 0 0; font-size: 13px;">Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?</p>
+    # Inicialización interna de mensajes
+    if "mensajes_chat" not in st.session_state:
+        st.session_state.mensajes_chat = []
+    if "ultimo_usuario" not in st.session_state:
+        st.session_state.ultimo_usuario = ""
+    if "ultima_respuesta" not in st.session_state:
+        st.session_state.ultima_respuesta = "Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?"
+
+    # Cuadro principal de respuesta activa
+    st.markdown(f"""
+        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 15px; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">🤖 J.A.R.V.I.S. :: En Línea</p>
+            <p style="margin: 8px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultima_respuesta}</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # GESTIÓN DE CHAT FUNCIONAL Y FLUIDO (Único elemento destacado a la derecha)
-    if "mensajes_chat" not in st.session_state:
-        st.session_state.mensajes_chat = [
-            {"rol": "jarvis", "texto": "Canal de texto abierto sobre fondo negro. Te escucho... o mejor dicho, te leo."}
-        ]
+    # Si hay una entrada previa de la usuaria, la mostramos justo encima del input
+    if st.session_state.ultimo_usuario:
+        st.markdown(f"**👩‍💻 Último comando enviado:** `{st.session_state.ultimo_usuario}`")
 
+    # Formulario para enviar mensajes directamente
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
         entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
         boton_enviar = st.form_submit_button(label="🚀 Enviar Comando a J.A.R.V.I.S.")
 
     if boton_enviar and entrada_usuario:
-        st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
         respuestas_sarcasticas = [
             f"Interesante orden, jefa: '{entrada_usuario}'. Déjame fingir que me sorprende.",
             f"Procesando '{entrada_usuario}'... Menos mal que tengo paciencia infinita, ¿verdad?",
@@ -217,5 +212,12 @@ with col_der:
             f"Ejecutando '{entrada_usuario}' con la precisión de un reloj suizo. De nada."
         ]
         respuesta_ia = random.choice(respuestas_sarcasticas)
+        
+        # Guardar en la estructura interna
+        st.session_state.mensajes_chat.append({"rol": "usuario", "texto": entrada_usuario})
         st.session_state.mensajes_chat.append({"rol": "jarvis", "texto": respuesta_ia})
+        
+        # Actualizar variables visibles directas
+        st.session_state.ultimo_usuario = entrada_usuario
+        st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
