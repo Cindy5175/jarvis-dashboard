@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS con FONDO NEGRO ABSOLUTO y corrección de botones
+# Estilos CSS con FONDO NEGRO ABSOLUTO y correcciones estéticas
 st.markdown("""
     <style>
     .stApp {
@@ -48,7 +48,6 @@ st.markdown("""
         border: 1px solid #00d2ff;
         border-radius: 8px;
     }
-    /* Estilo forzado para que el botón de envío respete el diseño neón */
     div.stButton > button, div.stFormSubmitButton > button {
         background-color: #050505 !important;
         color: #00d2ff !important;
@@ -149,7 +148,16 @@ with col_izq:
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Panel Izquierdo 2: Divisas y Clima
+    # Panel Izquierdo 2: Conexión Satelital (Satélite Serafín)
+    st.markdown('<div class="left-panel">', unsafe_allow_html=True)
+    st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">📡 Enlace Satelital: Satélite Serafín</p>', unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🛰️ Estado: Órbita Activa / Enlace 100%</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>🌐 Latitud: -33.7333° S</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>🌍 Longitud: -70.7333° W</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>📶 Latencia: 14 ms (Señal Segura)</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Panel Izquierdo 3: Divisas y Clima
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💱 Divisas & Clima en Buin</p>', unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💵 Dólar: $930.50 CLP</p>", unsafe_allow_html=True)
@@ -160,7 +168,7 @@ with col_izq:
     st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💨 Viento: 6,5 km/h (Suficiente para volar con estilo)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Panel Izquierdo 3: Telemetría en Azul Neón
+    # Panel Izquierdo 4: Telemetría en Azul Neón
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💻 Telemetría de PC</p>', unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5% (Tranquila, no colapsará)</p>", unsafe_allow_html=True)
@@ -197,9 +205,10 @@ with col_der:
     if st.session_state.ultimo_usuario:
         st.markdown(f"**👩‍💻 Último comando enviado:** `{st.session_state.ultimo_usuario}`")
 
-    # Formulario con botón corregido
+    # Formulario de chat con etiqueta en AZUL NEÓN ABAJO DE LA CAJITA
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
-        entrada_usuario = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
+        entrada_usuario = st.text_input("", placeholder="Instrucción táctica o financiera...")
+        st.markdown('<p class="neon-text" style="font-size: 12px; margin-top: 4px; margin-bottom: 8px;">Escribe tu consulta para J.A.R.V.I.S. aquí...</p>', unsafe_allow_html=True)
         boton_enviar = st.form_submit_button(label="🚀 Enviar Comando")
 
     if boton_enviar and entrada_usuario:
@@ -214,3 +223,18 @@ with col_der:
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
+
+    # MÓDULO DE CARGA Y DESCARGA DE PDFS / DOCUMENTOS TÁCTICOS
+    st.markdown("---")
+    st.markdown("### 📂 Repositorio & Carga de Documentos (PDF)")
+    archivo_subido = st.file_uploader("Sube un archivo PDF táctico para análisis de J.A.R.V.I.S.", type=["pdf"])
+    
+    if archivo_subido is not None:
+        st.success(f"📄 Archivo '{archivo_subido.name}' recibido y encriptado en el búnker con éxito.")
+        # Botón de descarga de ejemplo o simulación
+        st.download_button(
+            label="📥 Descargar Resumen Táctico (PDF)",
+            data=b"Resumen generado por J.A.R.V.I.S. IA Autonoma.",
+            file_name="Resumen_Tactico_Jarvis.pdf",
+            mime="application/pdf"
+        )
