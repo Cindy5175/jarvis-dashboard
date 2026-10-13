@@ -5,30 +5,22 @@ import pandas as pd
 
 # Configuración de la página en modo ancho con estilo táctico
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónoma // Centro de Mando", 
+    page_title="J.A.R.V.I.S. IA Autónomo // Centro de Mando", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS personalizados para replicar el tono azul/celeste neón exacto de tu interfaz
+# Estilos CSS personalizados para replicar el diseño neón / cian oscuro
 st.markdown("""
     <style>
     .main {
         background-color: #0b0f19;
         color: #ffffff;
     }
-    .main-title {
-        color: #00d2ff;
-        font-size: 38px;
-        font-weight: 800;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        letter-spacing: 1.5px;
-        margin-bottom: 10px;
-    }
     .stTextInput input {
         background-color: #121826;
-        color: #00d2ff;
-        border: 1px solid #00d2ff;
+        color: #00ffcc;
+        border: 1px solid #00ffcc;
         border-radius: 8px;
     }
     .stMetric {
@@ -44,9 +36,9 @@ st.markdown("""
 # 1. MÓDULO DE VOZ EN LA NUBE (JavaScript Web Speech API)
 # ---------------------------------------------------------
 voice_component = """
-<div style="background-color: #121826; padding: 10px; border-radius: 8px; border: 1px solid #00d2ff; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
-    <h4 style="color: #00d2ff; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
-    <button onclick="startListening()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
+<div style="background-color: #121826; padding: 10px; border-radius: 8px; border: 1px solid #00ffcc; text-align: center; font-family: sans-serif; margin-bottom: 15px;">
+    <h4 style="color: #00ffcc; margin: 0 0 6px 0; font-size: 14px;">🎙️ Escucha Activa: Dictado de Comandos en la Nube</h4>
+    <button onclick="startListening()" style="background-color: #00ffcc; color: #000; border: none; padding: 6px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px;">Activar Micrófono</button>
     <p id="voice-status" style="color: #ffffff; margin-top: 6px; font-size: 11px;">Estado: En espera de comandos...</p>
 </div>
 
@@ -81,29 +73,29 @@ function startListening() {
 components.html(voice_component, height=110)
 
 # ---------------------------------------------------------
-# 2. ENCABEZADO IDÉNTICO A LA FOTO
+# 2. ENCABEZADO PRINCIPAL
 # ---------------------------------------------------------
-st.markdown('<h1 class="main-title">⚡ J.A.R.V.I.S. IA Autónoma</h1>', unsafe_allow_html=True)
-
-# Alerta de subsistemas en verde neón
-st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
-
+st.markdown("⚡ **J.A.R.V.I.S. IA Autónomo**")
 hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 st.markdown(f"🕒 **Fecha y Hora del Sistema:** `{hora_actual}` | 📍 **Ubicación:** [Buin, Chile]")
+
+# Alerta de subsistemas en verde
+st.success("✅ Todos los subsistemas satelitales y de hardware responden de forma óptima.")
 
 st.markdown("---")
 
 # ---------------------------------------------------------
-# 3. DISEÑO DE COLUMNAS (Izquierda: Táctico & Finanzas | Derecha: Terminal Autónoma)
+# 3. DISEÑO DE COLUMNAS (Izquierda: Táctico y Finanzas | Derecha: Terminal de Conversación)
 # ---------------------------------------------------------
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
     st.markdown("### 📊 Finanzas & Acciones EE.UU.")
     
+    # Divisas
     st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
-            <p style="margin: 0; color: #00d2ff; font-weight: bold;">💱 Divisas Clave</p>
+        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+            <p style="margin: 0; color: #00ffcc; font-weight: bold;">💱 Divisas Clave</p>
             <p style="margin: 5px 0 0 0; font-size: 14px;">💵 Dólar: $930.50 CLP</p>
             <p style="margin: 2px 0 0 0; font-size: 14px;">💶 Euro: $1,015.20 CLP</p>
             <p style="margin: 2px 0 0 0; font-size: 14px;">📈 UF: $38,400 CLP</p>
@@ -120,8 +112,8 @@ with col_izq:
     st.markdown("---")
     st.markdown("### ☁️ Clima & Alertas")
     st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px;">
-            <p style="margin: 0; font-weight: bold; color: #00d2ff;">☀️ Despejado</p>
+        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 12px;">
+            <p style="margin: 0; font-weight: bold; color: #00ffcc;">☀️ Despejado</p>
             <p style="margin: 4px 0; font-size: 13px;">🌡️ Temperatura: 14,9 °C</p>
             <p style="margin: 4px 0; font-size: 13px;">💨 Viento: 6,5 km/h</p>
             <hr style="border-color: #1f293d; margin: 8px 0;">
@@ -142,6 +134,7 @@ with col_izq:
 with col_der:
     st.markdown("### 💬 Terminal de Conversación Autónoma")
     
+    # Botones de protocolos rápidos
     if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
         st.info("Protocolo académico activado. Analizando base de datos.")
         
@@ -151,13 +144,15 @@ with col_der:
     if st.button("📍 Estado Base"):
         st.success("Ubicación actual fijada en Buin, Santiago Metropolitan Region, Chile.")
 
+    # Registro de estado / saludo
     st.markdown("""
-        <div style="background-color: #121826; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 15px;">
-            <p style="margin: 0; color: #00d2ff; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
+        <div style="background-color: #121826; border: 1px solid #00ffcc; border-radius: 8px; padding: 12px; margin-top: 15px;">
+            <p style="margin: 0; color: #00ffcc; font-weight: bold;">🤖 Hola Cindy. Registros al día.</p>
             <p style="margin: 5px 0 0 0; font-size: 13px;">Sistema sincronizado con el búnker. ¿Qué orden ejecutamos ahora, jefa?</p>
         </div>
     """, unsafe_allow_html=True)
 
+    # Caja de consulta para JARVIS
     st.markdown("<br>", unsafe_allow_html=True)
     comando = st.text_input("Escribe tu consulta para J.A.R.V.I.S. aquí...", placeholder="Instrucción táctica o financiera...")
 
