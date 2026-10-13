@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS con FONDO NEGRO ABSOLUTO y correcciones estéticas
+# Estilos CSS con FONDO NEGRO ABSOLUTO y correcciones de color Neón
 st.markdown("""
     <style>
     .stApp {
@@ -30,7 +30,7 @@ st.markdown("""
         margin-bottom: 5px;
     }
     .neon-text {
-        color: #00d2ff;
+        color: #00d2ff !important;
         font-weight: 600;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -48,6 +48,12 @@ st.markdown("""
         border: 1px solid #00d2ff;
         border-radius: 8px;
     }
+    /* Estilo para etiquetas y textos del file uploader en azul neón */
+    label[data-testid="stWidgetLabel"] {
+        color: #00d2ff !important;
+        font-weight: bold !important;
+    }
+    /* Estilo del botón de envío totalmente Neón sin partes blancas */
     div.stButton > button, div.stFormSubmitButton > button {
         background-color: #050505 !important;
         color: #00d2ff !important;
@@ -55,10 +61,11 @@ st.markdown("""
         border-radius: 6px !important;
         font-weight: bold !important;
         width: 100% !important;
+        box-shadow: 0 0 8px rgba(0, 210, 255, 0.3) !important;
     }
     div.stButton > button:hover, div.stFormSubmitButton > button:hover {
         background-color: #00d2ff !important;
-        color: #000 !important;
+        color: #000000 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -116,7 +123,7 @@ st.markdown("---")
 col_izq, col_der = st.columns([1, 1.8])
 
 with col_izq:
-    # Panel Izquierdo 1: Hora, Ubicación y Mapa Ultra Compacto
+    # Panel Izquierdo 1: Hora, Ubicación y Mapa Compacto
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     
     reloj_component = """
@@ -148,36 +155,36 @@ with col_izq:
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Panel Izquierdo 2: Conexión Satelital (Satélite Serafín)
+    # Panel Izquierdo 2: Satélite Serafín
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">📡 Enlace Satelital: Satélite Serafín</p>', unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🛰️ Estado: Órbita Activa / Enlace 100%</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>🌐 Latitud: -33.7333° S</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>🌍 Longitud: -70.7333° W</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>📶 Latencia: 14 ms (Señal Segura)</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🌐 Latitud: -33.7333° S</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🌍 Longitud: -70.7333° W</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>📶 Latencia: 14 ms (Señal Segura)</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Panel Izquierdo 3: Divisas y Clima
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💱 Divisas & Clima en Buin</p>', unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💵 Dólar: $930.50 CLP</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💶 Euro: $1,015.20 CLP</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>📈 UF: $38,400 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>💵 Dólar: $930.50 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>💶 Euro: $1,015.20 CLP</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>📈 UF: $38,400 CLP</p>", unsafe_allow_html=True)
     st.markdown("<hr style='border-color: #00d2ff; opacity: 0.3; margin: 8px 0;'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>☀️ Clima: Despejado, 14,9 °C</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0;'>💨 Viento: 6,5 km/h (Suficiente para volar con estilo)</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>☀️ Clima: Despejado, 14,9 °C</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>💨 Viento: 6,5 km/h</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Panel Izquierdo 4: Telemetría en Azul Neón
+    # Panel Izquierdo 4: Telemetría
     st.markdown('<div class="left-panel">', unsafe_allow_html=True)
     st.markdown('<p class="neon-text" style="font-size: 16px; margin-bottom: 5px;">💻 Telemetría de PC</p>', unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5% (Tranquila, no colapsará)</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>⚡ CPU en Uso: 38.5%</p>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🧠 Memoria RAM: 22.8%</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red (Arc Reactor virtual)</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin: 2px 0; color: #00d2ff;'>🔋 Batería: Conectado a Red</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    st.markdown("### 💬 Terminal de Conversación Autónoma")
+    st.markdown("<h3 class='neon-text'>💬 Terminal de Conversación Autónoma</h3>", unsafe_allow_html=True)
     
     if st.button("🎯 Protocolo de Misiones & Tareas Académicas"):
         st.info("Protocolo activado. Espero que no me pidas que resuelva otra tesis a última hora, jefa.")
@@ -188,27 +195,27 @@ with col_der:
     if st.button("📍 Estado Base"):
         st.success("Ubicación confirmada en Buin. El café está listo y el búnker intacto.")
 
-    # Inicialización de estados
+    # Inicialización de variables
     if "ultima_respuesta" not in st.session_state:
         st.session_state.ultima_respuesta = "Sobrevivimos a otro día más en este planeta. ¿Qué genialidad o catástrofe financiera gestionamos ahora?"
     if "ultimo_usuario" not in st.session_state:
         st.session_state.ultimo_usuario = ""
 
-    # Cuadro visual de JARVIS
+    # Cuadro visual de JARVIS (Más elevado)
     st.markdown(f"""
-        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 15px; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; margin-top: 5px; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="margin: 0; color: #00d2ff; font-weight: bold; font-size: 15px;">🤖 J.A.R.V.I.S. :: En Línea</p>
-            <p style="margin: 8px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultima_respuesta}</p>
+            <p style="margin: 6px 0 0 0; font-size: 14px; color: #ffffff;">{st.session_state.ultima_respuesta}</p>
         </div>
     """, unsafe_allow_html=True)
 
     if st.session_state.ultimo_usuario:
-        st.markdown(f"**👩‍💻 Último comando enviado:** `{st.session_state.ultimo_usuario}`")
+        st.markdown(f"<p class='neon-text' style='font-size: 13px;'>👩‍💻 Último comando enviado: <code>{st.session_state.ultimo_usuario}</code></p>", unsafe_allow_html=True)
 
-    # Formulario de chat con etiqueta en AZUL NEÓN ABAJO DE LA CAJITA
+    # Formulario subido y refinado sin elementos blancos
     with st.form(key="form_chat_jarvis", clear_on_submit=True):
         entrada_usuario = st.text_input("", placeholder="Instrucción táctica o financiera...")
-        st.markdown('<p class="neon-text" style="font-size: 12px; margin-top: 4px; margin-bottom: 8px;">Escribe tu consulta para J.A.R.V.I.S. aquí...</p>', unsafe_allow_html=True)
+        st.markdown('<p class="neon-text" style="font-size: 12px; margin-top: 2px; margin-bottom: 6px;">Escribe tu consulta para J.A.R.V.I.S. aquí...</p>', unsafe_allow_html=True)
         boton_enviar = st.form_submit_button(label="🚀 Enviar Comando")
 
     if boton_enviar and entrada_usuario:
@@ -224,14 +231,13 @@ with col_der:
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
-    # MÓDULO DE CARGA Y DESCARGA DE PDFS / DOCUMENTOS TÁCTICOS
+    # MÓDULO DE REPOSISTORIO EN AZUL NEÓN
     st.markdown("---")
-    st.markdown("### 📂 Repositorio & Carga de Documentos (PDF)")
+    st.markdown("<h3 class='neon-text'>📂 Repositorio & Carga de Documentos (PDF)</h3>", unsafe_allow_html=True)
     archivo_subido = st.file_uploader("Sube un archivo PDF táctico para análisis de J.A.R.V.I.S.", type=["pdf"])
     
     if archivo_subido is not None:
         st.success(f"📄 Archivo '{archivo_subido.name}' recibido y encriptado en el búnker con éxito.")
-        # Botón de descarga de ejemplo o simulación
         st.download_button(
             label="📥 Descargar Resumen Táctico (PDF)",
             data=b"Resumen generado por J.A.R.V.I.S. IA Autonoma.",
