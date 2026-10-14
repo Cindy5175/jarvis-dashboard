@@ -4,6 +4,7 @@ import datetime
 import random
 import json
 import os
+import time
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -53,13 +54,12 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
 
-# CONFIGURACIÓN DIRECTA DE GEMINI CON EL MODELO ACTUAL
+# CONFIGURACIÓN DIRECTA DE GEMINI
 cliente_ia = None
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        # Usando el modelo actual indicado por el sistema
         cliente_ia = genai.GenerativeModel('gemini-3.8-flash')
     except Exception as e:
         cliente_ia = None
@@ -162,14 +162,18 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto = entrada_usuario.lower().strip()
         
-        # PROCESAMIENTO CON IA REAL O RESPALDO
+        # PROCESAMIENTO CON IA REAL Y CONTROL DE CUOTA (429)
         if cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., asistente de inteligencia artificial leal, sofisticado y formal. Te diriges a la usuaria como '{titulo_jefa} {nombre_jefa}' en su búnker en Buin, Chile. Responde de forma concisa."
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nInstrucción: {entrada_usuario}")
                 respuesta_ia = respuesta_modelo.text
             except Exception as e:
-                respuesta_ia = f"Error de núcleo Gemini: {e}"
+                err_str = str(e)
+                if "429" in err_str or "quota" in err_str.lower():
+                    respuesta_ia = f"Jefa, hemos alcanzado temporalmente el límite de consultas gratuitas por minuto de la API de Gemini. Esperemos 20 segundos y volvemos a transmitir."
+                else:
+                    respuesta_ia = f"Error temporal en el núcleo Gemini: {e}"
         else:
             if "hola" in texto or "saludos" in texto:
                 respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker operativo."
@@ -200,8 +204,7 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expande
         if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
             
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["usuario"]["preferencias_voz"]["ai_api_key"] = ai_api_key
         
         guardar_memoria(st.session_state.memoria)
         st.success("Configuración actualizada con éxito.")
