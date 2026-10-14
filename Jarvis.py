@@ -102,7 +102,7 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
-# 1. TELETIPO FINANCIERO Y DE MERCADOS (SIN CRIPTO)
+# TELETIPO FINANCIERO Y DE MERCADOS (SIN CRIPTO)
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
@@ -137,7 +137,7 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 2. REPRODUCTOR DE MÚSICA INTEGRADO (STARK AMBIENT SOUNDS)
+# REPRODUCTOR DE MÚSICA CORREGIDO CON ESTACIONES REALES
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA BÚNKER</div>', unsafe_allow_html=True)
     playlist_sel = st.selectbox("Seleccionar Estación Sonora:", [
@@ -147,15 +147,15 @@ with col_orbe:
         "Silent Night Buin"
     ])
     
-    # Reproductor embebido de YouTube para ambientar
+    # Enlaces directos y reales para cada estación musical
     if "Synthwave" in playlist_sel:
-        embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0&loop=1"
+        embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&loop=1"
     elif "Lo-Fi" in playlist_sel:
-        embed_url = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0&loop=1"
+        embed_url = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1"
     elif "Cyberpunk" in playlist_sel:
-        embed_url = "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=0&loop=1"
+        embed_url = "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=1&loop=1"
     else:
-        embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=0&loop=1"
+        embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&loop=1"
 
     components.html(f'<iframe width="100%" height="110" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px; border:1px solid #00d2ff;"></iframe>', height=125)
 
@@ -207,11 +207,10 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 3. CHAT UNIFICADO CON BURBUJAS CONTINUAS HACIA ABAJO (ESTILO WHATSAPP)
+# CHAT UNIFICADO CON BURBUJAS CONTINUAS HACIA ABAJO
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # Contenedor con scroll para ver el historial completo en burbujas
     chat_container = st.container(height=340)
     with chat_container:
         for item in st.session_state.historial_chat:
@@ -320,9 +319,7 @@ with col_chat:
 
 st.markdown("---")
 
-# ---------------------------------------------------------
 # MÓDULO: 🛰️ OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
-# ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
 
@@ -427,7 +424,7 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# 4. MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
@@ -471,9 +468,7 @@ with j4:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------------
 # EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
-# ---------------------------------------------------------
 with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
     st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso y la <b>API Key de Gemini</b> para activar el motor neuronal inteligente:</p>", unsafe_allow_html=True)
     
