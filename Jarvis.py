@@ -31,7 +31,7 @@ def cargar_memoria():
             "titulo": "Jefa",
             "ubicacion": "Buin, Chile"
         },
-        "notas": ["Búnker activado in Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
@@ -136,15 +136,14 @@ with col_orbe:
     
     orbe_visual_html = """
     <div style="display: flex; justify-content: center; align-items: center; height: 100px; width: 100%;">
-        <div style="width: 80px; height: 80px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 25px #00d2ff;"></div>
+        <div style="width: 80px; height: 80px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 25px #00d2ff; margin-left: 35px;"></div>
     </div>
     """
     components.html(orbe_visual_html, height=110)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
-    # Contenedor para centrar el botón de voz exactamente debajo de la esfera
-    col_btn_dummy1, col_btn_centro, col_btn_dummy2 = st.columns([0.1, 0.8, 0.1])
+    col_btn_dummy1, col_btn_centro, col_btn_dummy2 = st.columns([0.25, 0.7, 0.05])
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
