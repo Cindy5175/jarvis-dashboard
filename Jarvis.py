@@ -55,23 +55,28 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "").strip()
 
-# CONFIGURACIÓN DIRECTA Y ROBUSTA DE GEMINI
+# CONFIGURACIÓN DIRECTA DE GEMINI
 cliente_ia = None
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
         cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
-    except Exception as e:
+    except Exception:
         try:
             import google.generativeai as genai
             cliente_ia = genai.GenerativeModel('gemini-pro')
         except Exception:
             cliente_ia = None
 
-# INICIALIZAR HISTORIAL MÚLTIPLE DE CONVERSACIÓN
+# INICIALIZAR HISTORIAL DE CHAT ESTILO BURBUJAS
 if "historial_chat" not in st.session_state:
-    st.session_state.historial_chat = []
+    st.session_state.historial_chat = [
+        {"remitente": "jarvis", "texto": f"Saludos, {titulo_jefa} {nombre_jefa}. Sistemas del búnker en Buin operando al 100%. ¿Qué planeamos hoy?"}
+    ]
+
+if "ultima_respuesta" not in st.session_state:
+    st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
 st.markdown("""
@@ -97,16 +102,18 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
+# 1. TELETIPO FINANCIERO Y DE MERCADOS (SIN CRIPTO)
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
         <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
         <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
+        <span class="market-item">🛢️ BRENT: <span class="market-value">$82.40 ▼ -0.3%</span></span>
         <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">ENLACE 100%</span></span>
     </div>
 """, unsafe_allow_html=True)
 
-col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.2])
+col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
 with col_telemetria:
     st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA DEL SISTEMA</div>', unsafe_allow_html=True)
@@ -130,39 +137,50 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-hora_actual = datetime.datetime.now().hour
-saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
-
-if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera al 100%. Presiona Windows + H en la caja de texto cuando quieras charlar."
-
-if "ultimo_mensaje_usuario" not in st.session_state:
-    st.session_state.ultimo_mensaje_usuario = "Ninguna orden reciente."
-
+# 2. REPRODUCTOR DE MÚSICA INTEGRADO (STARK AMBIENT SOUNDS)
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL & SÍNTESIS TÁCTICA</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA BÚNKER</div>', unsafe_allow_html=True)
+    playlist_sel = st.selectbox("Seleccionar Estación Sonora:", [
+        "Stark Chill Synthwave (Foco)",
+        "Lo-Fi Labs & Coffee",
+        "Cyberpunk Electronic Beats",
+        "Silent Night Buin"
+    ])
     
+    # Reproductor embebido de YouTube para ambientar
+    if "Synthwave" in playlist_sel:
+        embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0&loop=1"
+    elif "Lo-Fi" in playlist_sel:
+        embed_url = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0&loop=1"
+    elif "Cyberpunk" in playlist_sel:
+        embed_url = "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=0&loop=1"
+    else:
+        embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=0&loop=1"
+
+    components.html(f'<iframe width="100%" height="110" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px; border:1px solid #00d2ff;"></iframe>', height=125)
+
+    st.markdown('<div class="holo-title" style="margin-top:10px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100px; overflow: hidden; }
-      .audio-container { width: 100%; height: 85px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
-      .waveform { display: flex; align-items: center; gap: 3px; height: 65px; }
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 75px; overflow: hidden; }
+      .audio-container { width: 100%; height: 70px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.95) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+      .waveform { display: flex; align-items: center; gap: 3px; height: 50px; }
       .bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; animation: soundWaveAnim 1.2s ease-in-out infinite alternate; box-shadow: 0 0 8px #00d2ff; }
-      .bar:nth-child(1)  { height: 20px; animation-delay: 0.1s; }
-      .bar:nth-child(2)  { height: 45px; animation-delay: 0.3s; }
-      .bar:nth-child(3)  { height: 65px; animation-delay: 0.2s; }
-      .bar:nth-child(4)  { height: 30px; animation-delay: 0.5s; }
-      .bar:nth-child(5)  { height: 75px; animation-delay: 0.1s; }
-      .bar:nth-child(6)  { height: 50px; animation-delay: 0.4s; }
-      .bar:nth-child(7)  { height: 85px; animation-delay: 0.2s; }
-      .bar:nth-child(8)  { height: 60px; animation-delay: 0.6s; }
-      .bar:nth-child(9)  { height: 90px; animation-delay: 0.1s; }
-      .bar:nth-child(10) { height: 70px; animation-delay: 0.3s; }
+      .bar:nth-child(1)  { height: 15px; animation-delay: 0.1s; }
+      .bar:nth-child(2)  { height: 35px; animation-delay: 0.3s; }
+      .bar:nth-child(3)  { height: 50px; animation-delay: 0.2s; }
+      .bar:nth-child(4)  { height: 25px; animation-delay: 0.5s; }
+      .bar:nth-child(5)  { height: 60px; animation-delay: 0.1s; }
+      .bar:nth-child(6)  { height: 40px; animation-delay: 0.4s; }
+      .bar:nth-child(7)  { height: 65px; animation-delay: 0.2s; }
+      .bar:nth-child(8)  { height: 45px; animation-delay: 0.6s; }
+      .bar:nth-child(9)  { height: 70px; animation-delay: 0.1s; }
+      .bar:nth-child(10) { height: 55px; animation-delay: 0.3s; }
       @keyframes soundWaveAnim { 0% { transform: scaleY(0.4); opacity: 0.5; } 100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; } }
     </style>
     <div class="audio-container"><div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
     """
-    components.html(audio_wave_core_html, height=100)
+    components.html(audio_wave_core_html, height=85)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
@@ -189,23 +207,34 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# CHAT UNIFICADO (ORDEN INVERTIDO: JEFA ARRIBA, JARVIS ABAJO)
-# ---------------------------------------------------------
+# 3. CHAT UNIFICADO CON BURBUJAS CONTINUAS HACIA ABAJO (ESTILO WHATSAPP)
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. MOSTRAR EL MENSAJE DE LA JEFA ARRIBA
-    st.markdown(f'<div style="background-color: #000000; border: 1px solid #a5b4fc; border-radius: 8px; padding: 10px; margin-bottom: 8px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:12px;">👤 {titulo_jefa} {nombre_jefa}:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultimo_mensaje_usuario}</p></div>', unsafe_allow_html=True)
-
-    # 2. MOSTRAR LA RESPUESTA DE JARVIS ABAJO
-    st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
-
-    if st.session_state.historial_chat:
-        with st.expander("📜 Historial de Comandos Tácticos", expanded=False):
-            for autor, msg in reversed(st.session_state.historial_chat[-6:]):
-                col_a = "#a5b4fc" if autor == "Jefa" else "#00ffaa"
-                st.markdown(f"<p style='margin:2px 0; font-size:11px;'><b style='color:{col_a};'>{autor}:</b> <span style='color:#ccc;'>{msg}</span></p>", unsafe_allow_html=True)
+    # Contenedor con scroll para ver el historial completo en burbujas
+    chat_container = st.container(height=340)
+    with chat_container:
+        for item in st.session_state.historial_chat:
+            remitente = item["remitente"]
+            msg = item["texto"]
+            if remitente == "jefa":
+                st.markdown(f'''
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 10px 10px 0 10px; padding: 10px; max-width: 85%; color: #ffffff; font-size: 13px;">
+                            <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👤 {titulo_jefa} {nombre_jefa}:</p>
+                            <p style="margin:4px 0 0 0;">{msg}</p>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 8px;">
+                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 10px 10px 10px 0; padding: 10px; max-width: 85%; color: #ffffff; font-size: 13px; box-shadow: 0 0 8px rgba(0,210,255,0.15);">
+                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:11px;">⚡ J.A.R.V.I.S.:</p>
+                            <p style="margin:4px 0 0 0;">{msg}</p>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
 
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
@@ -214,9 +243,10 @@ with col_chat:
     with col_q4: btn_limpiar = st.button("🧹 Purga Chat")
 
     if btn_limpiar:
-        st.session_state.historial_chat = []
-        st.session_state.ultimo_mensaje_usuario = "Ninguna orden reciente."
-        st.session_state.ultima_respuesta = f"Listo, {nombre_jefa}. Memoria limpia y sin rastro de la charla anterior."
+        st.session_state.historial_chat = [
+            {"remitente": "jarvis", "texto": f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Registros limpios."}
+        ]
+        st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
         st.rerun()
 
     with st.form(key="form_chat", clear_on_submit=True):
@@ -243,9 +273,9 @@ with col_chat:
             try:
                 prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
                 REGLAS DE CONVERSACIÓN:
-                1. Habla de forma completamente natural, fluida, cercana y humana, como un buen colega de equipo. Nada de formalismos robóticos ni acartonados.
+                1. Habla de forma completamente natural, fluida, cercana y humana, como un buen colega de equipo. Nada de formalismos robóticos.
                 2. Usa un toque sutil de sarcasmo elegante, inteligencia y confianza.
-                3. Sé conciso (máximo 2 o 3 frases) pero con mucha personalidad.
+                3. Sé conciso (máximo 2 o 3 frases) pero con personalidad.
                 4. Responde siempre en español conversacional."""
                 
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
@@ -261,7 +291,7 @@ with col_chat:
                 sugerencias = [
                     f"Todo en orden por acá, {nombre_jefa}. El búnker no se va a incendiar hoy... a menos que intentes cocinar algo.",
                     f"Sensores estables en Buin. Si el satélite Serafín tuviera sentimientos, estaría tan aburrido como yo esperando que me des una misión difícil.",
-                    f"Perímetro tranquilo, servidores frescos y café caliente (bueno, eso último lo imagino). Todo nominal, jefa."
+                    f"Perímetro tranquilo, servidores frescos y café caliente. Todo nominal, jefa."
                 ]
                 respuesta_ia = random.choice(sugerencias)
             elif "despierto" in texto or "activo" in texto or "estas ahi" in texto or "estás ahí" in texto:
@@ -281,9 +311,8 @@ with col_chat:
             else:
                 respuesta_ia = f"Recibido, {nombre_jefa}. Déjame procesar eso... o mejor dime qué planeas ahora."
 
-        st.session_state.ultimo_mensaje_usuario = comando_ejecutar
-        st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
-        st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
+        st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
+        st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
@@ -398,16 +427,14 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES
-# ---------------------------------------------------------
+# 4. MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
     st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
 
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA // STARK INDUSTRIES</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA & CALENDARIO // STARK INDUSTRIES</div>', unsafe_allow_html=True)
 
 j1, j2, j3, j4 = st.columns(4)
 
@@ -425,7 +452,7 @@ with j2:
     st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:10px; color:#00ffaa;'>Núcleo al {nivel_reactor}% | Temp: {temp_bunker}°C</div>", unsafe_allow_html=True)
 
 with j3:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 MISIONES TÁCTICAS</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 CALENDARIO & MISIONES</p>", unsafe_allow_html=True)
     for mision, estado in st.session_state.misiones_lista.items():
         st.session_state.misiones_lista[mision] = st.checkbox(mision, value=estado, key=f"mission_{mision}")
 
