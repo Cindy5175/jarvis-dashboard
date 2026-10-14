@@ -23,6 +23,7 @@ def cargar_memoria():
                 return json.load(f)
         except Exception:
             pass
+    # Definimos la estructura base segura si el archivo no existe o está corrupto
     return {
         "usuario": {
             "nombre": "Cindy",
@@ -36,6 +37,7 @@ def cargar_memoria():
         "canales_multiplataforma": {
             "Telegram": {"estado": "Conectado", "bot_id": "@JarvisBunkerBot"}
         },
+        # Aseguramos que la estructura de voz exista desde el inicio
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
             "elevenlabs_api_key": "",
@@ -123,7 +125,7 @@ st.markdown("""
 
 # CABECERA HOLOGRÁFICA
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.0</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; FULL VOICE ENGINE: ENABLED</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; VOICE MODULE: STABLE</div>', unsafe_allow_html=True)
 
 # DISPOSICIÓN EN 3 COLUMNAS
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.2])
@@ -155,12 +157,7 @@ with col_telemetria:
     st.markdown('<div class="holo-title">📍 BASE & SATÉLITE</div>', unsafe_allow_html=True)
     st.markdown(f"<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Ubicación: {st.session_state.memoria['usuario'].get('ubicacion', 'Buin, Chile')}</p>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Serafín-Sat: Órbita Estable</p>", unsafe_allow_html=True)
-    
-    # --- AQUÍ ESTABA EL ERROR DE SINTAXIS ---
-    # Corrección: Añadida la comilla de cierre " y el paréntesis final )
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP: $930.50</p>", unsafe_allow_html=True)
-    # ----------------------------------------
-    
     st.markdown('</div>', unsafe_allow_html=True)
 
 # LÓGICA DE RESPUESTA Y SALUDOS DINÁMICOS SEGÚN HORA DEL DÍA
@@ -173,12 +170,13 @@ else:
     saludo_tiempo = "Buenas noches"
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Núcleo holográfico y micrófono listos en el búnker. Toca el orbe para hablarme."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Núcleo holográfico y módulo de voz depurados. Haz clic en el orbe para hablarme."
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
 with col_orbe:
     # COMPONENTE CENTRAL: ORBE CON VOZ SINTETIZADA + DICTADO POR MICRÓFONO + MODULACIÓN VISUAL
+    # Limpiamos comillas del texto para evitar errores en JS
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
     
     orb_component = f"""
@@ -193,11 +191,11 @@ with col_orbe:
         </div>
         
         <div style="margin-top: 12px; display: flex; gap: 8px;">
-            <button onclick="hablarJarvis()" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🔊 Reproducer Respuesta</button>
+            <button onclick="hablarJarvis()" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🔊 Reproducir Respuesta</button>
             <button onclick="activarMicrofono()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.4);">🎤 Dictar Comando</button>
         </div>
 
-        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 8px; font-family: monospace;">[ TOCA EL ORBE O EL MICROFONO ]</p>
+        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 8px; font-family: monospace;">[ SISTEMA DE VOZ IMPLECADLE, JEFA ]</p>
     </div>
 
     <style>
@@ -398,9 +396,10 @@ with col_chat:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS
+# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS (CON RED DE SEGURIDAD)
 st.markdown("---")
 with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expanded=False):
+    # Aseguramos que las keys de session_state para los inputs existan
     if "input_nombre" not in st.session_state:
         st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state:
@@ -411,14 +410,33 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expa
         nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
         nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
     with col_id2:
-        api_key_eleven = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=st.session_state.memoria.get("preferencias_voz", {}).get("elevenlabs_api_key", ""))
-        voice_id_eleven = st.text_input("ElevenLabs Voice ID:", value=st.session_state.memoria.get("preferencias_voz", {}).get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM"))
+        # Recuperamos datos de memoria de forma segura
+        prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
+        api_key_actual = prefs_voz.get("elevenlabs_api_key", "")
+        voice_id_actual = prefs_voz.get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM")
+        
+        api_key_eleven = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=api_key_actual)
+        voice_id_eleven = st.text_input("ElevenLabs Voice ID:", value=voice_id_actual)
     
     if st.button("💾 Actualizar Configuración"):
+        # --- RED DE SEGURIDAD CONTRA EL KEYERROR ---
+        # Aseguramos que la estructura completa exista antes de guardar
+        if "usuario" not in st.session_state.memoria:
+            st.session_state.memoria["usuario"] = {}
+        if "preferencias_voz" not in st.session_state.memoria:
+            st.session_state.memoria["preferencias_voz"] = {}
+        # --------------------------------------------
+            
+        # Guardamos datos de identidad
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        
+        # Guardamos datos de voz (ahora es seguro)
         st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = api_key_eleven
         st.session_state.memoria["preferencias_voz"]["elevenlabs_voice_id"] = voice_id_eleven
+        
+        # Persistimos en el archivo JSON
         guardar_memoria(st.session_state.memoria)
-        st.success("Sincronización biométrica y de voz completada.")
+        
+        st.success("Sincronización biométrica y de voz completada con éxito.")
         st.rerun()
