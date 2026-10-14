@@ -261,54 +261,39 @@ st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO
 
 col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
 with col_map1:
-    destino_input = st.text_input("📍 Coordenadas / Base Manual:", value="-33.7315, -70.7412 (Buin Base)")
+    busqueda_objetivo = st.text_input("🔍 Escribe qué buscar (Ej: Valdivia, Concepcion):", value="Valdivia")
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
-    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="Valdivia")
+    nodo_rapido = st.selectbox("⚡ Nodos Rápidos de Acceso:", [
+        "--- Selecciona un Nodo ---",
+        "🏰 Base Búnker [Buin]",
+        "🏙️ Santiago Centro",
+        "🌲 Chiguayante [Concepción]",
+        "🌊 Valdivia [Los Ríos]"
+    ])
 with col_map4:
     st.markdown("<br>", unsafe_allow_html=True)
-    btn_escanear = st.button("📡 Rastrear Objetivo en Mapa")
+    btn_escanear = st.button("📡 Rastrear en Mapa")
 
 lat_val, lon_val = -33.7315, -70.7412
 lugar_encontrado_nombre = "Base Central Buin"
 
-# Selección de locaciones estratégicas y unidades para centrado táctico
-col_drone_sel, col_radio = st.columns([2, 1])
-with col_drone_sel:
-    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Destino / Unidad:", [
-        "Foco en Objetivo Buscado (Arriba)",
-        "🏰 Base Búnker [Buin] (-33.7315, -70.7412)",
-        "🏙️ Santiago Centro [Región Metropolitana] (-33.4489, -70.6693)",
-        "🌲 Chiguayante [Concepción, Biobío] (-36.9183, -73.0286)",
-        "🌊 Valdivia [Los Ríos] (-39.8196, -73.2452)",
-        "🚁 Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
-        "🚘 Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)"
-    ])
-with col_radio:
-    radio_perimetro = st.slider("🚨 Radio Perímetro de Seguridad (km):", 1, 10, 3)
-
-# LÓGICA DE JERARQUÍA CORREGIDA
-if unidad_foco != "Foco en Objetivo Buscado (Arriba)":
-    if "Santiago Centro" in unidad_foco:
+# LÓGICA DE BÚSQUEDA DIRECTA Y ABSOLUTA
+if nodo_rapido != "--- Selecciona un Nodo ---":
+    if "Santiago Centro" in nodo_rapido:
         lat_val, lon_val = -33.4489, -70.6693
         lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
-    elif "Chiguayante" in unidad_foco:
+    elif "Chiguayante" in nodo_rapido:
         lat_val, lon_val = -36.9183, -73.0286
         lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
-    elif "Valdivia" in unidad_foco:
+    elif "Valdivia" in nodo_rapido:
         lat_val, lon_val = -39.8196, -73.2452
         lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
-    elif "Drone-Alpha" in unidad_foco:
-        lat_val, lon_val = -33.7210, -70.7380
-        lugar_encontrado_nombre = "Drone-Alpha 01 [Norte Buin]"
-    elif "Unidad Móvil" in unidad_foco:
-        lat_val, lon_val = -33.7450, -70.7480
-        lugar_encontrado_nombre = "Unidad Móvil Terrestre [Ruta 5 Sur]"
-    elif "Base Búnker" in unidad_foco:
+    elif "Base Búnker" in nodo_rapido:
         lat_val, lon_val = -33.7315, -70.7412
         lugar_encontrado_nombre = "Base Central Buin"
-elif busqueda_objetivo and btn_escanear:
+elif busqueda_objetivo:
     try:
         query_str = busqueda_objetivo
         if "chile" not in query_str.lower():
@@ -323,13 +308,8 @@ elif busqueda_objetivo and btn_escanear:
                 lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:45]
     except Exception:
         pass
-elif "," in destino_input and "Buin" not in destino_input:
-    try:
-        parts = destino_input.split(",")
-        lat_val = float(parts[0].strip())
-        lon_val = float(parts[1].strip())
-    except:
-        pass
+
+radio_perimetro = 3
 
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -368,16 +348,6 @@ gods_eye_html = f"""
             attribution: ''
         }}).addTo(map);
 
-        // Perímetro de Seguridad en Base Buin
-        const geofence = L.circle([-33.7315, -70.7412], {{
-            color: '#ff0055',
-            fillColor: '#ff0055',
-            fillOpacity: 0.08,
-            radius: {radio_perimetro * 1000},
-            weight: 1,
-            dashArray: '5, 5'
-        }}).addTo(map);
-
         // Marcador del Objetivo Rastreado
         const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{
             radius: 12,
@@ -387,16 +357,6 @@ gods_eye_html = f"""
             weight: 3
         }}).addTo(map);
         targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
-
-        // Base Principal Buin
-        const baseMarker = L.circleMarker([-33.7315, -70.7412], {{
-            radius: 9,
-            color: '#ffffff',
-            fillColor: '#00d2ff',
-            fillOpacity: 0.9,
-            weight: 2
-        }}).addTo(map);
-        baseMarker.bindPopup("<b>🏰 Búnker Central [Buin]</b>");
 
     </script>
 </body>
