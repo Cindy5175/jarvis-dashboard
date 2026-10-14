@@ -5,6 +5,7 @@ import random
 import json
 import os
 import time
+import requests
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -32,7 +33,7 @@ def cargar_memoria():
         "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
-            "voz_activa": "Español (Neutro)",
+            "voz_activa": "ElevenLabs Neural",
             "elevenlabs_api_key": "",
             "elevenlabs_voice_id": "21m00Tcm4TlvDq8ikWAM",
             "ai_api_key": ""
@@ -53,6 +54,8 @@ nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
+elevenlabs_key = prefs_voz.get("elevenlabs_api_key", "")
+elevenlabs_voice = prefs_voz.get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM")
 
 # CONFIGURACIÓN DIRECTA DE GEMINI
 cliente_ia = None
@@ -84,16 +87,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.0</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.5 // EXPANDED TACTICAL</h1>', unsafe_allow_html=True)
 estado_ia_txt = "AI ENGINE: GEMINI ACTIVE" if cliente_ia else "AI ENGINE: LOCAL MODE"
 st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
+# 📈 BARRA FINANCIERA TRADICIONAL (Sin cripto)
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
         <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
         <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
-        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100%</span></span>
+        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100% (STABLE)</span></span>
     </div>
 """, unsafe_allow_html=True)
 
@@ -131,19 +135,56 @@ if "ultimo_usuario" not in st.session_state:
 
 with col_orbe:
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
+    
+    # 🎙️ Lógica de ElevenLabs integrada (si hay API key, intenta reproducir audio neural)
+    audio_script_eleven = ""
+    if elevenlabs_key:
+        audio_script_eleven = f"""
+        async function reproducirElevenLabs() {{
+            try {{
+                const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{elevenlabs_voice}', {{
+                    method: 'POST',
+                    headers: {{
+                        'xi-api-key': '{elevenlabs_key}',
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{
+                        text: "{texto_para_hablar}",
+                        model_id: "eleven_multilingual_v2"
+                    }})
+                }});
+                if (response.ok) {{
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                    return;
+                }}
+            }} catch(e) {{}}
+            // Fallback a voz nativa si falla ElevenLabs
+            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+            utterance.lang = 'es-ES';
+            window.speechSynthesis.speak(utterance);
+        }}
+        """
+    else:
+        audio_script_eleven = f"""
+        function reproducirElevenLabs() {{
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+            utterance.lang = 'es-ES';
+            window.speechSynthesis.speak(utterance);
+        }}
+        """
+
     orb_component = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px;">
-        <div onclick="hablarJarvis()" style="cursor: pointer; width: 100px; height: 100px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 35px #00d2ff;"></div>
-        <button onclick="hablarJarvis()" style="margin-top: 15px; background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🔊 Reproducir Respuesta</button>
+        <div onclick="reproducirElevenLabs()" style="cursor: pointer; width: 100px; height: 100px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 35px #00d2ff;"></div>
+        <button onclick="reproducirElevenLabs()" style="margin-top: 15px; background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🔊 Reproducir Voz Neural</button>
     </div>
     <script>
-    function hablarJarvis() {{
-        if (!('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-        utterance.lang = 'es-ES';
-        window.speechSynthesis.speak(utterance);
-    }}
+    {audio_script_eleven}
     </script>
     """
     components.html(orb_component, height=350)
@@ -187,10 +228,10 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (CON BARRIDO SATELITAL DINÁMICO)
+# MÓDULO: 🛰️ EL OJO DE DIOS (CON BARRIDO SATELITAL Y DRONES)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & CLIMA (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & UNIDADES MÓVILES (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
 col_map1, col_map2, col_map3 = st.columns([1.5, 1.2, 1.3])
 with col_map1:
@@ -269,21 +310,16 @@ components.html(gods_eye_html, height=400)
 col_clima, col_log = st.columns([1, 1.2])
 
 with col_clima:
-    st.markdown(
-        """
+    st.markdown("""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
             <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
             <p style="color:#ffffff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
             <p style="color:#ffffff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
         </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    
-    # Eventos dinámicos simulados al presionar el barrido satelital
     eventos_tacticos = [
         "Enlace Serafín-Sat 100% estable y optimizado.",
         "Barrido óptico completado sin anomalías en el sector.",
@@ -302,10 +338,21 @@ with col_log:
     """
     st.markdown(log_html, unsafe_allow_html=True)
 
+# 🛰️ SUBMÓDULO: RASTREO DE DRONES Y UNIDADES MÓVILES
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO & DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
+drones_data = [
+    {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin"},
+    {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central"},
+    {"Unidad": "Unidad Móvil Terrestre", "Estado": "En Movimiento", "Batería": "62%", "Sector": "Ruta 5 Sur"}
+]
+st.dataframe(drones_data, use_container_width=True)
+
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("---")
 
-with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
+# 👤 CONFIGURACIÓN AVANZADA, VOZ ELEVENLABS & SEGURIDAD PIN
+with st.expander("👤 Identidad, Voz Neural (ElevenLabs) & Seguridad del Búnker", expanded=False):
     if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
 
@@ -313,18 +360,22 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expande
     with col_id1:
         nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
         nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
+        pin_bunker = st.text_input("PIN de Acceso Búnker:", type="password", value="1234")
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
         ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
+        eleven_key_actual = prefs_voz.get("elevenlabs_api_key", "")
+        elevenlabs_api_key = st.text_input("ElevenLabs API Key (Voz Neural):", type="password", value=eleven_key_actual)
     
-    if st.button("💾 Actualizar Configuración"):
+    if st.button("💾 Actualizar Configuración y Credenciales"):
         if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
         if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
             
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
         st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_api_key
         
         guardar_memoria(st.session_state.memoria)
-        st.success("Configuración actualizada con éxito.")
+        st.success("Configuración y credenciales neurales actualizadas con éxito.")
         st.rerun()
