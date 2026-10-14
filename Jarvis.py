@@ -155,4 +155,270 @@ with col_telemetria:
     st.markdown('<div class="holo-title">📍 BASE & SATÉLITE</div>', unsafe_allow_html=True)
     st.markdown(f"<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Ubicación: {st.session_state.memoria['usuario'].get('ubicacion', 'Buin, Chile')}</p>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Serafín-Sat: Órbita Estable</p>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP:
+    
+    # --- AQUÍ ESTABA EL ERROR DE SINTAXIS ---
+    # Corrección: Añadida la comilla de cierre " y el paréntesis final )
+    st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP: $930.50</p>", unsafe_allow_html=True)
+    # ----------------------------------------
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# LÓGICA DE RESPUESTA Y SALUDOS DINÁMICOS SEGÚN HORA DEL DÍA
+hora_actual = datetime.datetime.now().hour
+if hora_actual < 12:
+    saludo_tiempo = "Buenos días"
+elif hora_actual < 20:
+    saludo_tiempo = "Buenas tardes"
+else:
+    saludo_tiempo = "Buenas noches"
+
+if "ultima_respuesta" not in st.session_state:
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Núcleo holográfico y micrófono listos en el búnker. Toca el orbe para hablarme."
+if "ultimo_usuario" not in st.session_state:
+    st.session_state.ultimo_usuario = ""
+
+with col_orbe:
+    # COMPONENTE CENTRAL: ORBE CON VOZ SINTETIZADA + DICTADO POR MICRÓFONO + MODULACIÓN VISUAL
+    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
+    
+    orb_component = f"""
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px;">
+        <div class="orb-container" onclick="hablarJarvis()" style="cursor: pointer;" title="Toca el orbe para escuchar a J.A.R.V.I.S.">
+            <div id="ring" class="outer-ring"></div>
+            <div id="core" class="inner-core"></div>
+        </div>
+        <div class="sound-wave" id="waveBox">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+        
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <button onclick="hablarJarvis()" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🔊 Reproducer Respuesta</button>
+            <button onclick="activarMicrofono()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.4);">🎤 Dictar Comando</button>
+        </div>
+
+        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 8px; font-family: monospace;">[ TOCA EL ORBE O EL MICROFONO ]</p>
+    </div>
+
+    <style>
+    .orb-container {{
+        position: relative;
+        width: 170px;
+        height: 170px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    .outer-ring {{
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border: 2px dashed #00d2ff;
+        border-radius: 50%;
+        animation: rotateRing 12s linear infinite;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        transition: all 0.3s ease;
+    }}
+    .inner-core {{
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%);
+        border-radius: 50%;
+        box-shadow: 0 0 35px #00d2ff, inset 0 0 15px #ffffff;
+        animation: pulseCore 2.5s ease-in-out infinite alternate;
+        transition: all 0.3s ease;
+    }}
+    .speaking-core {{
+        background: radial-gradient(circle, #00ffff 0%, #0088cc 70%, #001122 100%) !important;
+        box-shadow: 0 0 60px #00ffff, inset 0 0 25px #ffffff !important;
+        animation: pulseFast 0.8s ease-in-out infinite alternate !important;
+    }}
+    .listening-core {{
+        background: radial-gradient(circle, #ff0055 0%, #880022 70%, #000000 100%) !important;
+        box-shadow: 0 0 60px #ff0055, inset 0 0 25px #ffffff !important;
+    }}
+    .speaking-ring {{
+        border-color: #00ffff !important;
+        box-shadow: 0 0 30px #00ffff !important;
+        animation: rotateRing 3s linear infinite !important;
+    }}
+    .sound-wave {{
+        display: flex;
+        gap: 5px;
+        margin-top: 12px;
+    }}
+    .bar {{
+        width: 4px;
+        height: 8px;
+        background-color: #00d2ff;
+        border-radius: 2px;
+        transition: all 0.2s ease;
+    }}
+    .active-wave .bar {{
+        animation: wave 0.6s ease-in-out infinite alternate;
+    }}
+    .active-wave .bar:nth-child(2) {{ animation-delay: 0.1s; }}
+    .active-wave .bar:nth-child(3) {{ animation-delay: 0.2s; }}
+    .active-wave .bar:nth-child(4) {{ animation-delay: 0.3s; }}
+    .active-wave .bar:nth-child(5) {{ animation-delay: 0.2s; }}
+    .active-wave .bar:nth-child(6) {{ animation-delay: 0.1s; }}
+
+    @keyframes rotateRing {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    @keyframes pulseCore {{
+        0% {{ transform: scale(0.92); box-shadow: 0 0 20px #00d2ff; }}
+        100% {{ transform: scale(1.08); box-shadow: 0 0 45px #00d2ff; }}
+    }}
+    @keyframes pulseFast {{
+        0% {{ transform: scale(0.88); }}
+        100% {{ transform: scale(1.15); }}
+    }}
+    @keyframes wave {{
+        0% {{ height: 6px; }}
+        100% {{ height: 32px; }}
+    }}
+    </style>
+
+    <script>
+    function hablarJarvis() {{
+        if (!('speechSynthesis' in window)) {{
+            alert("Sintetizador no disponible.");
+            return;
+        }}
+        window.speechSynthesis.cancel();
+        const texto = "{texto_para_hablar}";
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.0;
+        utterance.pitch = 0.9;
+
+        const ring = document.getElementById("ring");
+        const core = document.getElementById("core");
+        const waveBox = document.getElementById("waveBox");
+        const orbStatus = document.getElementById("orbStatus");
+
+        utterance.onstart = function() {{
+            core.classList.add("speaking-core");
+            ring.classList.add("speaking-ring");
+            waveBox.classList.add("active-wave");
+            orbStatus.innerText = "⚡ [ J.A.R.V.I.S. HABLANDO ]";
+            orbStatus.style.color = "#00ffff";
+        }};
+
+        utterance.onend = function() {{
+            core.classList.remove("speaking-core");
+            ring.classList.remove("speaking-ring");
+            waveBox.classList.remove("active-wave");
+            orbStatus.innerText = "[ SISTEMA EN ESPERA ]";
+            orbStatus.style.color = "#00d2ff";
+        }};
+
+        window.speechSynthesis.speak(utterance);
+    }}
+
+    function activarMicrofono() {{
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
+            alert("Micrófono no soportado en este navegador.");
+            return;
+        }}
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+
+        const core = document.getElementById("core");
+        const orbStatus = document.getElementById("orbStatus");
+
+        orbStatus.innerText = "🎙️ [ ESCUCHANDO A LA JEFA... ]";
+        orbStatus.style.color = "#ff0055";
+        core.classList.add("listening-core");
+
+        recognition.onresult = function(event) {{
+            const comando = event.results[0][0].transcript;
+            core.classList.remove("listening-core");
+            orbStatus.innerText = "CAPTURA: \\"" + comando + "\\"";
+            orbStatus.style.color = "#00d2ff";
+        }};
+
+        recognition.onerror = function() {{
+            core.classList.remove("listening-core");
+            orbStatus.innerText = "[ ERROR DE ESCUCHA ]";
+        }};
+
+        recognition.start();
+    }}
+    </script>
+    """
+    components.html(orb_component, height=360)
+
+with col_chat:
+    st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title">💬 CONVERSATION CORE</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""
+        <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p>
+            <p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    if st.session_state.ultimo_usuario:
+        st.markdown(f"""
+            <div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;">
+                <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p>
+                <p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with st.form(key="form_chat_jarvis_holo", clear_on_submit=True):
+        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción...")
+        boton_enviar = st.form_submit_button(label="🚀 Transmitir")
+
+    if boton_enviar and entrada_usuario:
+        texto_ingresado = entrada_usuario.lower()
+        
+        if "hola" in texto_ingresado:
+            respuesta_ia = f"{saludo_tiempo}, {nombre_jefa}. Me alegra ver que los sistemas del búnker siguen en pie."
+        elif "telemetria" in texto_ingresado or "estado" in texto_ingresado:
+            respuesta_ia = f"Reporte de telemetría: CPU al 38%, memoria RAM estable y satélite Serafín en enlace del 100%, {titulo_jefa}."
+        elif "clima" in texto_ingresado:
+            respuesta_ia = "El clima en Buin marca 14.9 grados Celsius con cielos despejados. Ideal para operar."
+        else:
+            respuestas_sarcasticas = [
+                f"Analizando tu orden '{entrada_usuario}'... Menos mal que tengo paciencia infinita, {nombre_jefa}.",
+                f"Procesando '{entrada_usuario}'. Si esto sale mal, la responsabilidad recae sobre ti.",
+                f"Comando '{entrada_usuario}' registrado con éxito en los servidores centrales. ¿Algo más?"
+            ]
+            respuesta_ia = random.choice(respuestas_sarcasticas)
+
+        st.session_state.ultimo_usuario = entrada_usuario
+        st.session_state.ultima_respuesta = respuesta_ia
+        st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS
+st.markdown("---")
+with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expanded=False):
+    if "input_nombre" not in st.session_state:
+        st.session_state.input_nombre = nombre_jefa
+    if "input_titulo" not in st.session_state:
+        st.session_state.input_titulo = titulo_jefa
+
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
+        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
+    with col_id2:
+        api_key_eleven = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=st.session_state.memoria.get("preferencias_voz", {}).get("elevenlabs_api_key", ""))
+        voice_id_eleven = st.text_input("ElevenLabs Voice ID:", value=st.session_state.memoria.get("preferencias_voz", {}).get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM"))
+    
+    if st.button("💾 Actualizar Configuración"):
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = api_key_eleven
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_voice_id"] = voice_id_eleven
+        guardar_memoria(st.session_state.memoria)
+        st.success("Sincronización biométrica y de voz completada.")
+        st.rerun()
