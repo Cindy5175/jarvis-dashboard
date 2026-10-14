@@ -136,6 +136,9 @@ saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera al 100%. Presiona Windows + H en la caja de texto cuando quieras charlar."
 
+if "ultimo_mensaje_usuario" not in st.session_state:
+    st.session_state.ultimo_mensaje_usuario = "Ninguna orden reciente."
+
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL & SÍNTESIS TÁCTICA</div>', unsafe_allow_html=True)
     
@@ -187,11 +190,15 @@ with col_orbe:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CHAT UNIFICADO
+# CHAT UNIFICADO (ORDEN INVERTIDO: JEFA ARRIBA, JARVIS ABAJO)
 # ---------------------------------------------------------
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
     
+    # 1. MOSTRAR EL MENSAJE DE LA JEFA ARRIBA
+    st.markdown(f'<div style="background-color: #000000; border: 1px solid #a5b4fc; border-radius: 8px; padding: 10px; margin-bottom: 8px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:12px;">👤 {titulo_jefa} {nombre_jefa}:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultimo_mensaje_usuario}</p></div>', unsafe_allow_html=True)
+
+    # 2. MOSTRAR LA RESPUESTA DE JARVIS ABAJO
     st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
     if st.session_state.historial_chat:
@@ -208,6 +215,7 @@ with col_chat:
 
     if btn_limpiar:
         st.session_state.historial_chat = []
+        st.session_state.ultimo_mensaje_usuario = "Ninguna orden reciente."
         st.session_state.ultima_respuesta = f"Listo, {nombre_jefa}. Memoria limpia y sin rastro de la charla anterior."
         st.rerun()
 
@@ -233,7 +241,6 @@ with col_chat:
         
         if cliente_ia:
             try:
-                # PROMPT AFINADO PARA FLUIDEZ, SARCASMO Y NATURALIDAD ESTARK
                 prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
                 REGLAS DE CONVERSACIÓN:
                 1. Habla de forma completamente natural, fluida, cercana y humana, como un buen colega de equipo. Nada de formalismos robóticos ni acartonados.
@@ -274,6 +281,7 @@ with col_chat:
             else:
                 respuesta_ia = f"Recibido, {nombre_jefa}. Déjame procesar eso... o mejor dime qué planeas ahora."
 
+        st.session_state.ultimo_mensaje_usuario = comando_ejecutar
         st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
         st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
         st.session_state.ultima_respuesta = respuesta_ia
