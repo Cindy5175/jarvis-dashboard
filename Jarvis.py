@@ -212,12 +212,14 @@ with col_orbe:
     reconocimiento_voz_html = """
     <div style="text-align: center; margin-top: 5px;">
         <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar Orden por Voz</button>
+        <p id="status-voz" style="color: #ffbb00; font-size: 10px; font-family: monospace; margin: 4px 0 0 0;"></p>
     </div>
     <script>
     function iniciarReconocimiento() {
+        const statusEl = document.getElementById('status-voz');
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            statusEl.innerText = "❌ Navegador no compatible con voz.";
             return;
         }
         const recognition = new SpeechRecognition();
@@ -225,15 +227,35 @@ with col_orbe:
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
+        recognition.onstart = function() {
+            statusEl.innerText = "🎙️ Escuchando orden...";
+        };
+
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
+            statusEl.innerText = "✅ Orden capturada: " + speechResult;
             window.parent.location.search = "?voice_text=" + encodeURIComponent(speechResult);
         };
-        recognition.start();
+
+        recognition.onerror = function(event) {
+            statusEl.innerText = "⚠️ Error de micro: " + event.error;
+        };
+
+        recognition.onend = function() {
+            if(statusEl.innerText.includes("Escuchando")) {
+                statusEl.innerText = "⚠️ No se detectó audio.";
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch(e) {
+            statusEl.innerText = "⚠️ Error al iniciar micro.";
+        }
     }
     </script>
     """
-    components.html(reconocimiento_voz_html, height=45)
+    components.html(reconocimiento_voz_html, height=75)
 
     if btn_reproducir:
         audio_script = f"""
