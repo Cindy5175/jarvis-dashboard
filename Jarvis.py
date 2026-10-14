@@ -82,7 +82,7 @@ st.markdown("""
     div.stButton > button, div.stFormSubmitButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; }
     div[data-testid="stExpander"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; }
-    div[data-testid="stExpander"] details summary { background-color: #050505 !important; color: #00d2ff !important; font-weight: bold !important; }
+    div[data-testid="stExpander"] details summary { background-color: #00d2ff !important; color: #00d2ff !important; font-weight: bold !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -147,50 +147,6 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
-    # Dictado por voz inteligente que busca la caja de texto de Streamlit en la página principal
-    dictado_voz_html = """
-    <div style="text-align: center; margin-top: 5px;">
-        <button onclick="dictarAlChat()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar a la Caja de Chat</button>
-    </div>
-    <script>
-    function dictarAlChat() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Tu navegador no soporta reconocimiento de voz nativo.");
-            return;
-        }
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = function() {
-            console.log("Escuchando dictado...");
-        };
-
-        recognition.onresult = function(event) {
-            const speechResult = event.results[0][0].transcript;
-            // Busca el input de texto principal de Streamlit en la ventana superior (parent)
-            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
-            if (inputs.length > 0) {
-                // Selecciona típicamente la caja de texto del chat
-                const targetInput = inputs[inputs.length - 1];
-                targetInput.value = speechResult;
-                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
-                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        };
-
-        recognition.onerror = function(event) {
-            console.error("Error en dictado: " + event.error);
-        };
-
-        recognition.start();
-    }
-    </script>
-    """
-    components.html(dictado_voz_html, height=45)
-
     if btn_reproducir:
         audio_script = f"""
         <script>
@@ -213,12 +169,32 @@ with col_chat:
     if st.session_state.ultimo_usuario:
         st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
 
+    # Botones de acceso táctico rápido (para disparar protocolos y saludos sin escribir)
+    col_q1, col_q2, col_q3 = st.columns(3)
+    with col_q1:
+        btn_q_hola = st.button("👋 Saludar")
+    with col_q2:
+        btn_q_emerg = st.button("🚨 Emergencia")
+    with col_q3:
+        btn_q_seg = st.button("🛡️ Seguridad")
+
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción o usa el dictado...")
+        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción táctica...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
+    # Lógica unificada de procesamiento de órdenes (tanto por formulario como por botones rápidos)
+    comando_ejecutar = None
     if boton_enviar and entrada_usuario:
-        texto = entrada_usuario.lower().strip()
+        comando_ejecutar = entrada_usuario
+    elif btn_q_hola:
+        comando_ejecutar = "Hola Jarvis, ¿cómo estás?"
+    elif btn_q_emerg:
+        comando_ejecutar = "Protocolo de emergencia"
+    elif btn_q_seg:
+        comando_ejecutar = "Protocolo de seguridad"
+
+    if comando_ejecutar:
+        texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
         
         if "protocolo de emergencia" in texto:
@@ -230,7 +206,7 @@ with col_chat:
                 prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
-                    f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
+                    f"{prompt_sistema}\nInstrucción: {comando_ejecutar}",
                     generation_config=generation_config
                 )
                 respuesta_ia = respuesta_modelo.text
@@ -243,9 +219,9 @@ with col_chat:
             elif "estado" in texto or "sistema" in texto:
                 respuesta_ia = f"Todo funciona al 100%, {titulo_jefa}. Lo cual es un milagro considerando cómo tratas a la tecnología."
             else:
-                respuesta_ia = f"Instrucción táctica '{entrada_usuario}' registrada, {nombre_jefa}. Haré como que entendí la genialidad detrás de esto."
+                respuesta_ia = f"Instrucción táctica '{comando_ejecutar}' registrada, {nombre_jefa}. Haré como que entendí la genialidad detrás de esto."
 
-        st.session_state.ultimo_usuario = entrada_usuario
+        st.session_state.ultimo_usuario = comando_ejecutar
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
