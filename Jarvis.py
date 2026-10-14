@@ -257,7 +257,7 @@ st.markdown("---")
 # MÓDULO: 🛰️ EL OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
 
 col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
 with col_map1:
@@ -265,7 +265,7 @@ with col_map1:
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
-    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="McDonalds Buin")
+    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="Santiago Centro")
 with col_map4:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_escanear = st.button("📡 Rastrear Objetivo en Mapa")
@@ -273,12 +273,12 @@ with col_map4:
 lat_val, lon_val = -33.7315, -70.7412
 lugar_encontrado_nombre = "Base Central Buin"
 
-# FUNCIÓN DE GEO-BÚSQUEDA EN TIEMPO REAL (NOMINATIM GEOCODING)
+# FUNCIÓN DE GEO-BÚSQUEDA EN TIEMPO REAL (LIBRE DE RESTRICCIONES)
 if busqueda_objetivo and btn_escanear:
     try:
         query_str = busqueda_objetivo
-        if "chile" not in query_str.lower() and "buin" not in query_str.lower():
-            query_str += " Buin Chile"
+        if "chile" not in query_str.lower():
+            query_str += " Chile"
         url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
         req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
         with urllib.request.urlopen(req, timeout=3) as resp:
@@ -286,7 +286,7 @@ if busqueda_objetivo and btn_escanear:
             if data_geo and len(data_geo) > 0:
                 lat_val = float(data_geo[0]['lat'])
                 lon_val = float(data_geo[0]['lon'])
-                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:40]
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:45]
     except Exception:
         pass
 elif "," in destino_input and "Buin" not in destino_input:
@@ -297,30 +297,35 @@ elif "," in destino_input and "Buin" not in destino_input:
     except:
         pass
 
-# Selección de dron o unidad para centrado táctico
+# Selección de locaciones estratégicas y unidades para centrado táctico
 col_drone_sel, col_radio = st.columns([2, 1])
 with col_drone_sel:
-    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Unidad / Dron:", [
+    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Destino / Unidad:", [
         "Foco en Objetivo Buscado / Manual",
-        "Base Central Búnker (-33.7315, -70.7412)",
-        "Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
-        "Drone-Beta 02 [Base Central] (-33.7315, -70.7412)",
-        "Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)",
-        "CCTV Cam-01 [Plaza de Buin] (-33.7330, -70.7350)",
-        "CCTV Cam-02 [Acceso Ruta 5 Sur] (-33.7400, -70.7500)"
+        "🏰 Base Búnker [Buin] (-33.7315, -70.7412)",
+        "🏙️ Santiago Centro [Región Metropolitana] (-33.4489, -70.6693)",
+        "🌲 Chiguayante [Concepción, Biobío] (-36.9183, -73.0286)",
+        "🌊 Valdivia [Los Ríos] (-39.8196, -73.2452)",
+        "🚁 Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
+        "🚘 Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)"
     ])
 with col_radio:
     radio_perimetro = st.slider("🚨 Radio Perímetro de Seguridad (km):", 1, 10, 3)
 
-if "Drone-Alpha" in unidad_foco:
+if "Santiago Centro" in unidad_foco:
+    lat_val, lon_val = -33.4489, -70.6693
+    lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
+elif "Chiguayante" in unidad_foco:
+    lat_val, lon_val = -36.9183, -73.0286
+    lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
+elif "Valdivia" in unidad_foco:
+    lat_val, lon_val = -39.8196, -73.2452
+    lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
+elif "Drone-Alpha" in unidad_foco:
     lat_val, lon_val = -33.7210, -70.7380
 elif "Unidad Móvil" in unidad_foco:
     lat_val, lon_val = -33.7450, -70.7480
-elif "CCTV Cam-01" in unidad_foco:
-    lat_val, lon_val = -33.7330, -70.7350
-elif "CCTV Cam-02" in unidad_foco:
-    lat_val, lon_val = -33.7400, -70.7500
-elif "Base Central" in unidad_foco:
+elif "Base Búnker" in unidad_foco:
     lat_val, lon_val = -33.7315, -70.7412
 
 if "Topográfico" in capa_seleccionada:
@@ -347,21 +352,20 @@ gods_eye_html = f"""
         body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
         {map_style_css}
         .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
-        .cctv-popup {{ color: #000; font-family: sans-serif; font-size: 11px; }}
     </style>
 </head>
 <body>
     <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | GOOGLE EARTH TARGET</div>
     <div id="map"></div>
     <script>
-        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 15);
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
         
         L.tileLayer('{url_capa}', {{
             maxZoom: 19,
             attribution: ''
         }}).addTo(map);
 
-        // Perímetro de Seguridad (Geo-Fence)
+        // Perímetro de Seguridad en Base Buin
         const geofence = L.circle([-33.7315, -70.7412], {{
             color: '#ff0055',
             fillColor: '#ff0055',
@@ -379,32 +383,17 @@ gods_eye_html = f"""
             fillOpacity: 1.0,
             weight: 3
         }}).addTo(map);
-        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO ENCONTRADO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
+        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
 
-        // Base Principal
+        // Base Principal Buin
         const baseMarker = L.circleMarker([-33.7315, -70.7412], {{
-            radius: 10,
+            radius: 9,
             color: '#ffffff',
             fillColor: '#00d2ff',
             fillOpacity: 0.9,
             weight: 2
         }}).addTo(map);
-
-        // Dron Alpha
-        const droneAlpha = L.circleMarker([-33.7210, -70.7380], {{
-            radius: 8,
-            color: '#00ffaa',
-            fillColor: '#00ffaa',
-            fillOpacity: 0.9,
-            weight: 2
-        }}).addTo(map);
-
-        // Cámaras CCTV Perimetrales
-        const cam01 = L.marker([-33.7330, -70.7350]).addTo(map);
-        cam01.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-01 (Plaza)</b></div>");
-
-        const cam02 = L.marker([-33.7400, -70.7500]).addTo(map);
-        cam02.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-02 (Ruta 5)</b></div>");
+        baseMarker.bindPopup("<b>🏰 Búnker Central [Buin]</b>");
 
     </script>
 </body>
@@ -429,7 +418,7 @@ with col_log:
     eventos_tacticos = [
         "Enlace Serafín-Sat 100% estable y optimizado.",
         "Barrido óptico completado sin anomalías en el sector.",
-        "Tráfico fluido detectado en Ruta 5 Sur (Acceso Buin).",
+        "Enlace interregional Chile establecido con éxito.",
         "Calibración de espectro térmico finalizada con éxito.",
         "Perímetro del búnker seguro. Sin intrusiones en la red."
     ]
@@ -440,19 +429,18 @@ with col_log:
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL M.E.C.A.</p>
             <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] {evento_actual}</p>
             <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
-            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Foco activo en lat: {lat_val}, lon: {lon_val}. Perímetro: {radio_perimetro} km.</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Foco activo en lat: {lat_val}, lon: {lon_val}.</p>
         </div>
     """
     st.markdown(log_html, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y RED NACIONAL (CHILE)</div>', unsafe_allow_html=True)
 drones_data = [
-    {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin", "Coordenadas": "-33.7210, -70.7380"},
-    {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central", "Coordenadas": "-33.7315, -70.7412"},
-    {"Unidad": "Unidad Móvil Terrestre", "Estado": "En Movimiento", "Batería": "62%", "Sector": "Ruta 5 Sur", "Coordenadas": "-33.7450, -70.7480"},
-    {"Unidad": "CCTV Cam-01", "Estado": "Transmitiendo", "Batería": "100%", "Sector": "Plaza de Buin", "Coordenadas": "-33.7330, -70.7350"},
-    {"Unidad": "CCTV Cam-02", "Estado": "Transmitiendo", "Batería": "100%", "Sector": "Acceso Ruta 5", "Coordenadas": "-33.7400, -70.7500"}
+    {"Nodo": "Base Central Búnker", "Región": "Metropolitana", "Ubicación": "Buin", "Estado": "Operativo"},
+    {"Nodo": "Santiago Centro", "Región": "Metropolitana", "Ubicación": "Santiago", "Estado": "Enlace Activo"},
+    {"Nodo": "Concepción / Chiguayante", "Región": "Biobío", "Ubicación": "Chiguayante", "Estado": "Monitoreo Satelital"},
+    {"Nodo": "Valdivia", "Región": "Los Ríos", "Ubicación": "Valdivia", "Estado": "Señal Estable"}
 ]
 st.dataframe(drones_data, use_container_width=True)
 
