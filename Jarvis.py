@@ -8,7 +8,7 @@ import time
 
 # Configuración de página en modo ancho
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónoma // Hologram Core", 
+    page_title="J.A.R.V.I.S. IA Autónoma // Núcleo Holográfico", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -84,23 +84,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 4.0 // VOICE HANDS-FREE</h1>', unsafe_allow_html=True)
-estado_ia_txt = "AI ENGINE: GEMINI ACTIVE" if cliente_ia else "AI ENGINE: LOCAL MODE"
-st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. NÚCLEO 4.0 // CONTROL POR VOZ</h1>', unsafe_allow_html=True)
+estado_ia_txt = "MOTOR IA: GEMINI ACTIVO" if cliente_ia else "MOTOR IA: MODO LOCAL"
+st.markdown(f'<div class="status-bar">ESTADO DEL NÚCLEO: EN LÍNEA &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
         <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
         <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
-        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100%</span></span>
+        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">ENLACE 100%</span></span>
     </div>
 """, unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.2])
 
 with col_telemetria:
-    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ SYSTEM TELEMETRY</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA DEL SISTEMA</div>', unsafe_allow_html=True)
     gauges_html = """
     <div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0;">
         <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">38%</div><span style="color: #ffffff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div>
@@ -111,7 +111,7 @@ with col_telemetria:
     components.html(gauges_html, height=90)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE & SATÉLITE</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE Y SATÉLITE</div>', unsafe_allow_html=True)
     globe_html = """
     <div style="display: flex; align-items: center; gap: 12px; padding: 2px 0;">
         <div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #003366 60%, #000511 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div>
@@ -168,7 +168,7 @@ with col_orbe:
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-        utterance.lang = 'es-ES';
+        utterance.lang = 'es-CL';
         window.speechSynthesis.speak(utterance);
     }}
 
@@ -204,7 +204,7 @@ with col_orbe:
     components.html(orb_component, height=350)
 
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONVERSATION CORE</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 NÚCLEO DE CONVERSACIÓN</div>', unsafe_allow_html=True)
     st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
     if st.session_state.ultimo_usuario:
@@ -249,7 +249,7 @@ st.markdown("---")
 # MÓDULO: 🛰️ EL OJO DE DIOS (CON BARRIDO SATELITAL Y DRONES)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & UNIDADES MÓVILES (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL Y UNIDADES MÓVILES (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
 col_map1, col_map2, col_map3 = st.columns([1.5, 1.2, 1.3])
 with col_map1:
@@ -357,7 +357,7 @@ with col_log:
     st.markdown(log_html, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO & DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
 drones_data = [
     {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin"},
     {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central"},
@@ -368,7 +368,7 @@ st.dataframe(drones_data, use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("---")
 
-with st.expander("👤 Identidad, Voz Neural & Seguridad del Búnker", expanded=False):
+with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
     if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
 
