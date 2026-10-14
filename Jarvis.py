@@ -29,7 +29,7 @@ def cargar_memoria():
             "titulo": "Jefa",
             "ubicacion": "Buin, Chile"
         },
-        "notas": ["Búnker activado in Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "habilidades": {
             "Diagnostico": "st.write('Todos los sistemas operativos al 100%')"
@@ -57,6 +57,18 @@ if "memoria" not in st.session_state:
 
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
+prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
+ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
+
+# IMPORTAR LIBRERÍA DE IA SI HAY API KEY CONFIGURADA
+cliente_ia = None
+if ai_api_key_guardada:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=ai_api_key_guardada)
+        cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception:
+        pass
 
 # ESTILOS CSS TÁCTICOS, EXPANDER NEÓN Y HOLOGRÁFICOS
 st.markdown("""
@@ -164,7 +176,8 @@ st.markdown("""
 
 # CABECERA HOLOGRÁFICA
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.0</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; VOICE & RADAR ENGINE: ACTIVE</div>', unsafe_allow_html=True)
+estado_ia_txt = "AI ENGINE: GEMINI ACTIVE" if cliente_ia else "AI ENGINE: LOCAL MODE"
+st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
 # TICKER FINANCIERO TÁCTICO (USD, EURO, IPSA)
 st.markdown("""
@@ -355,6 +368,11 @@ with col_orbe:
     function hablarJarvis() {{
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
+        
+        // Forzar desbloqueo de audio en celulares
+        const unlockAudio = new SpeechSynthesisUtterance("");
+        window.speechSynthesis.speak(unlockAudio);
+
         const texto = "{texto_para_hablar}";
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.lang = 'es-ES'; utterance.rate = 1.0; utterance.pitch = 0.9;
@@ -429,41 +447,52 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto = entrada_usuario.lower().strip()
         
-        if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
-            respuestas_estado = [
-                f"Siempre despierto y vigilante, {titulo_jefa} {nombre_jefa}. Todos los núcleos operando al 100%.",
-                f"Sistemas en línea y listos en el búnker. ¿Qué orden ejecutamos hoy, {nombre_jefa}?",
-                f"Totalmente activo, {titulo_jefa}. Mis sensores no descansan."
-            ]
-            respuesta_ia = random.choice(respuestas_estado)
-
-        elif any(w in texto for w in ["hola", "buenas", "que tal", "saludos"]):
-            respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker listo para sus instrucciones."
-
-        elif any(w in texto for w in ["quien eres", "quien sos", "tu nombre", "presentate"]):
-            respuesta_ia = f"Soy J.A.R.V.I.S., el asistente de inteligencia autónoma del búnker, diseñado exclusivamente para asistir a {titulo_jefa} {nombre_jefa}."
-
-        elif any(w in texto for w in ["telemetria", "sistema", "cpu", "ram", "equipo", "bateria"]):
-            respuesta_ia = f"Telemetría actual: CPU al 38%, RAM al 57%, alimentación conectada a la red y satélite Serafín en enlace del 100%, {nombre_jefa}."
-
-        elif any(w in texto for w in ["clima", "tiempo", "temperatura"]):
-            respuesta_ia = "El clima en Buin reporta 14.9°C con cielos despejados. Parámetros óptimos."
-
-        elif any(w in texto for w in ["gracias", "excelente", "buen trabajo", "genial"]):
-            respuestas_gracias = [
-                f"A sus órdenes siempre, {titulo_jefa} {nombre_jefa}.",
-                f"Es un placer servir a la Jefa del búnker.",
-                "Simplemente haciendo funcionar la tecnología como debe ser."
-            ]
-            respuesta_ia = random.choice(respuestas_gracias)
-
+        # SI HAY API KEY CONFIGURADA, USAR GEMINI IA REAL
+        if cliente_ia:
+            try:
+                prompt_sistema = f"Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico, sofisticado, formal y leal. Te diriges a la usuaria siempre como '{titulo_jefa} {nombre_jefa}' y estás operando en su búnker en Buin, Chile. Responde de forma concisa y con estilo tecnológico."
+                chat_gemini = cliente_ia.start_chat(history=[{"role": "user", "parts": [prompt_sistema]}])
+                respuesta_modelo = cliente_ia.generate_content(f"Instrucción de {titulo_jefa} {nombre_jefa}: {entrada_usuario}")
+                respuesta_ia = respuesta_modelo.text
+            except Exception as e:
+                respuesta_ia = f"Error al conectar con el núcleo de IA: {e}"
         else:
-            respuestas_generales = [
-                f"Comando '{entrada_usuario}' asimilado por el núcleo principal. Procesando datos para {titulo_jefa} {nombre_jefa}.",
-                f"Recibido: '{entrada_usuario}'. Ejecutando subrutinas locales en Buin.",
-                f"Entendido, {nombre_jefa}. Analizando '{entrada_usuario}' en la red táctica."
-            ]
-            respuesta_ia = random.choice(respuestas_generales)
+            # LÓGICA LOCAL DE RESPUESTAS (RESPALDO)
+            if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
+                respuestas_estado = [
+                    f"Siempre despierto y vigilante, {titulo_jefa} {nombre_jefa}. Todos los núcleos operando al 100%.",
+                    f"Sistemas en línea y listos en el búnker. ¿Qué orden ejecutamos hoy, {nombre_jefa}?",
+                    f"Totalmente activo, {titulo_jefa}. Mis sensores no descansan."
+                ]
+                respuesta_ia = random.choice(respuestas_estado)
+
+            elif any(w in texto for w in ["hola", "buenas", "que tal", "saludos"]):
+                respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker listo para sus instrucciones."
+
+            elif any(w in texto for w in ["quien eres", "quien sos", "tu nombre", "presentate"]):
+                respuesta_ia = f"Soy J.A.R.V.I.S., el asistente de inteligencia autónoma del búnker, diseñado exclusivamente para asistir a {titulo_jefa} {nombre_jefa}."
+
+            elif any(w in texto for w in ["telemetria", "sistema", "cpu", "ram", "equipo", "bateria"]):
+                respuesta_ia = f"Telemetría actual: CPU al 38%, RAM al 57%, alimentación conectada a la red y satélite Serafín en enlace del 100%, {nombre_jefa}."
+
+            elif any(w in texto for w in ["clima", "tiempo", "temperatura"]):
+                respuesta_ia = "El clima en Buin reporta 14.9°C con cielos despejados. Parámetros óptimos."
+
+            elif any(w in texto for w in ["gracias", "excelente", "buen trabajo", "genial"]):
+                respuestas_gracias = [
+                    f"A sus órdenes siempre, {titulo_jefa} {nombre_jefa}.",
+                    f"Es un placer servir a la Jefa del búnker.",
+                    "Simplemente haciendo funcionar la tecnología como debe ser."
+                ]
+                respuesta_ia = random.choice(respuestas_gracias)
+
+            else:
+                respuestas_generales = [
+                    f"Comando '{entrada_usuario}' asimilado por el núcleo principal. Procesando datos para {titulo_jefa} {nombre_jefa}.",
+                    f"Recibido: '{entrada_usuario}'. Ejecutando subrutinas locales en Buin.",
+                    f"Entendido, {nombre_jefa}. Analizando '{entrada_usuario}' en la red táctica."
+                ]
+                respuesta_ia = random.choice(respuestas_generales)
 
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
