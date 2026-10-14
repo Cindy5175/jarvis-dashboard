@@ -219,14 +219,13 @@ if "Topográfico" in capa_seleccionada:
 else:
     url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
-# Estilo dinámico para aplicar filtro de modo nocturno si está seleccionado
 map_style_css = """
-    #map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
 """
 if "Nocturno" in capa_seleccionada:
     map_style_css = """
-        #map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
-    """
+#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
+"""
 
 gods_eye_html = f"""
 <!DOCTYPE html>
@@ -270,17 +269,53 @@ components.html(gods_eye_html, height=400)
 col_clima, col_log = st.columns([1, 1.2])
 
 with col_clima:
-    st.markdown("""
+    st.markdown(
+        """
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
             <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
             <p style="color:#ffffff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
             <p style="color:#ffffff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
         </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    st.markdown(f"""
+    log_html = (
+        f"""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL</p>
-            <p style="
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Serafín-Sat 100% estable.</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Coordenadas actualizadas a lat: {lat_val}, lon: {lon_val}.</p>
+        </div>
+    """
+    )
+    st.markdown(log_html, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
+    if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
+    if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
+
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
+        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
+    with col_id2:
+        ai_key_actual = prefs_voz.get("ai_api_key", "")
+        ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
+    
+    if st.button("💾 Actualizar Configuración"):
+        if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
+        if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
+            
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        
+        guardar_memoria(st.session_state.memoria)
+        st.success("Configuración actualizada con éxito.")
+        st.rerun()
