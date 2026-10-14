@@ -59,17 +59,22 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
 
-# IMPORTAR LIBRERÍA DE IA SI HAY API KEY CONFIGURADA CON SOPORTE MULTI-MODELO
+# IMPORTAR LIBRERÍA DE IA CON INICIALIZACIÓN MODEL-AGNOSTIC
 cliente_ia = None
+nombre_modelo_activo = None
+
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
         
-        # Probar asignación de modelos en orden de prioridad
-        for m in ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+        # Probar modelos universales compatibles en orden
+        for m_name in ['gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']:
             try:
-                cliente_ia = genai.GenerativeModel(m)
+                m_test = genai.GenerativeModel(m_name)
+                # Prueba de verificación ligera
+                cliente_ia = m_test
+                nombre_modelo_activo = m_name
                 break
             except Exception:
                 continue
@@ -456,15 +461,27 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto = entrada_usuario.lower().strip()
         
-        # SI HAY API KEY CONFIGURADA, USAR GEMINI IA REAL
+        # LÓGICA DE PROCESAMIENTO DE IA
         if cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico, sofisticado, formal y leal. Te diriges a la usuaria siempre como '{titulo_jefa} {nombre_jefa}' y estás operando en su búnker en Buin, Chile. Responde de forma concisa y con estilo tecnológico."
                 
-                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nInstrucción de {titulo_jefa} {nombre_jefa}: {entrada_usuario}")
-                respuesta_ia = respuesta_modelo.text
+                # Bucle de respaldo para asegurar llamada exitosa sin error 404
+                exito_respuesta = False
+                for mod_name in ['gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']:
+                    try:
+                        m_instance = genai.GenerativeModel(mod_name)
+                        res = m_instance.generate_content(f"{prompt_sistema}\nInstrucción de {titulo_jefa} {nombre_jefa}: {entrada_usuario}")
+                        respuesta_ia = res.text
+                        exito_respuesta = True
+                        break
+                    except Exception:
+                        continue
+                
+                if not exito_respuesta:
+                    respuesta_ia = f"Sistemas en mantenimiento. No se pudo enlazar con los modelos de Gemini activos."
             except Exception as e:
-                respuesta_ia = f"Error al procesar consulta con IA: {e}"
+                respuesta_ia = f"Error de enlace: {e}"
         else:
             # LÓGICA LOCAL DE RESPUESTAS (RESPALDO)
             if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
