@@ -131,7 +131,7 @@ if "ultima_respuesta" not in st.session_state:
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
-# MANEJO DE COMANDOS DE VOZ Y PROTOCOLO DE EMERGENCIA
+# MANEJO DE COMANDOS DE VOZ, PROTOCOLO DE EMERGENCIA Y PROTOCOLO DE SEGURIDAD
 voz_capturada = st.query_params.get("voice_input", None)
 if voz_capturada:
     entrada_usuario = voz_capturada
@@ -142,6 +142,8 @@ if voz_capturada:
     
     if "protocolo de emergencia" in texto:
         respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+    elif "protocolo de seguridad" in texto:
+        respuesta_ia = f"Protocolo de seguridad activado, {titulo_jefa} {nombre_jefa}. Escudos perimetrales en Buin elevados, firewall reforzado y barrido óptico continuo en marcha."
     elif cliente_ia:
         try:
             prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
@@ -180,7 +182,6 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
-    # Botón para activar escucha por voz interactiva (corregido sin columnas con cero)
     activar_escucha_html = """
     <div style="text-align: center; margin-top: 5px;">
         <button onclick="iniciarEscuchaVoz()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar por Voz</button>
@@ -249,6 +250,8 @@ with col_chat:
         
         if "protocolo de emergencia" in texto:
             respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+        elif "protocolo de seguridad" in texto:
+            respuesta_ia = f"Protocolo de seguridad activado, {titulo_jefa} {nombre_jefa}. Escudos perimetrales en Buin elevados, firewall reforzado y barrido óptico continuo en marcha."
         elif cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
