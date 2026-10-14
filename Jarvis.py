@@ -69,6 +69,10 @@ if ai_api_key_guardada:
         except Exception:
             cliente_ia = None
 
+# INICIALIZAR ESTACIÓN DE MÚSICA EN SESSION STATE
+if "estacion_musica" not in st.session_state:
+    st.session_state.estacion_musica = "Stark Chill Synthwave (Foco)"
+
 # INICIALIZAR HISTORIAL DE CHAT ESTILO BURBUJAS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
@@ -137,22 +141,26 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA CORREGIDO CON ESTACIONES REALES
+# REPRODUCTOR DE MÚSICA CONECTADO AL ESTADO DE JARVIS
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA BÚNKER</div>', unsafe_allow_html=True)
-    playlist_sel = st.selectbox("Seleccionar Estación Sonora:", [
+    
+    opciones_estaciones = [
         "Stark Chill Synthwave (Foco)",
         "Lo-Fi Labs & Coffee",
         "Cyberpunk Electronic Beats",
         "Silent Night Buin"
-    ])
+    ]
     
-    # Enlaces directos y reales para cada estación musical
-    if "Synthwave" in playlist_sel:
+    playlist_sel = st.selectbox("Seleccionar Estación Sonora:", opciones_estaciones, index=opciones_estaciones.index(st.session_state.estacion_musica) if st.session_state.estacion_musica in opciones_estaciones else 0)
+    st.session_state.estacion_musica = playlist_sel
+
+    # Enlaces de reproducción
+    if "Synthwave" in st.session_state.estacion_musica:
         embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&loop=1"
-    elif "Lo-Fi" in playlist_sel:
+    elif "Lo-Fi" in st.session_state.estacion_musica:
         embed_url = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1"
-    elif "Cyberpunk" in playlist_sel:
+    elif "Cyberpunk" in st.session_state.estacion_musica:
         embed_url = "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=1&loop=1"
     else:
         embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&loop=1"
@@ -207,7 +215,7 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CHAT UNIFICADO CON BURBUJAS CONTINUAS HACIA ABAJO
+# CHAT UNIFICADO CON COMANDOS DE VOZ/TEXTO PARA MÚSICA
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
@@ -268,7 +276,22 @@ with col_chat:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
         
-        if cliente_ia:
+        # DETECCIÓN DE COMANDOS DE MÚSICA DIRECTOS
+        if "lofi" in texto or "lo-fi" in texto or "coffee" in texto:
+            st.session_state.estacion_musica = "Lo-Fi Labs & Coffee"
+            respuesta_ia = f"Estación Lo-Fi activada en el búnker, {nombre_jefa}. Café y beats para concentrarse."
+        elif "synthwave" in texto or "chill" in texto:
+            st.session_state.estacion_musica = "Stark Chill Synthwave (Foco)"
+            respuesta_ia = f"Frecuencia Synthwave enlazada, {nombre_jefa}. Estilo Stark garantizado."
+        elif "cyberpunk" in texto or "electronic" in texto or "beats" in texto:
+            st.session_state.estacion_musica = "Cyberpunk Electronic Beats"
+            respuesta_ia = f"Modo Cyberpunk encendido, {nombre_jefa}. No dejes que los neones te cieguen."
+        elif "silenciosa" in texto or "silent" in texto or "buin" in texto and "música" in texto:
+            st.session_state.estacion_musica = "Silent Night Buin"
+            respuesta_ia = f"Ambiente silencioso configurado para Buin, {nombre_jefa}."
+
+        # SI NO ES MÚSICA, INTENTAR CON GEMINI O RESPUESTAS LOCALES
+        if not respuesta_ia and cliente_ia:
             try:
                 prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
                 REGLAS DE CONVERSACIÓN:
