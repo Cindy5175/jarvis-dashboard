@@ -134,7 +134,7 @@ hora_actual = datetime.datetime.now().hour
 saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera en modo autónomo. Presiona Windows + H en la caja de texto para dictar tus órdenes."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera al 100%. Presiona Windows + H en la caja de texto cuando quieras charlar."
 
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL & SÍNTESIS TÁCTICA</div>', unsafe_allow_html=True)
@@ -208,18 +208,18 @@ with col_chat:
 
     if btn_limpiar:
         st.session_state.historial_chat = []
-        st.session_state.ultima_respuesta = f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Registros limpios."
+        st.session_state.ultima_respuesta = f"Listo, {nombre_jefa}. Memoria limpia y sin rastro de la charla anterior."
         st.rerun()
 
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para dictar...")
+        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
     comando_ejecutar = None
     if boton_enviar and entrada_usuario:
         comando_ejecutar = entrada_usuario
     elif btn_q_hola:
-        comando_ejecutar = "Hola Jarvis, ¿cómo estás?"
+        comando_ejecutar = "Hola Jarvis, ¿qué tal?"
     elif btn_q_emerg:
         comando_ejecutar = "Protocolo de emergencia"
     elif btn_q_seg:
@@ -233,8 +233,15 @@ with col_chat:
         
         if cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., la IA brillante, leal y sarcástica de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde de forma inteligente, concisa (máximo 2 frases) y con estilo Stark."
-                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nConsulta/Instrucción de la Jefa: {comando_ejecutar}")
+                # PROMPT AFINADO PARA FLUIDEZ, SARCASMO Y NATURALIDAD ESTARK
+                prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
+                REGLAS DE CONVERSACIÓN:
+                1. Habla de forma completamente natural, fluida, cercana y humana, como un buen colega de equipo. Nada de formalismos robóticos ni acartonados.
+                2. Usa un toque sutil de sarcasmo elegante, inteligencia y confianza.
+                3. Sé conciso (máximo 2 o 3 frases) pero con mucha personalidad.
+                4. Responde siempre en español conversacional."""
+                
+                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
                 if respuesta_modelo and respuesta_modelo.text:
                     respuesta_ia = respuesta_modelo.text.strip()
             except Exception:
@@ -242,30 +249,30 @@ with col_chat:
 
         if not respuesta_ia:
             if "santiago" in texto:
-                respuesta_ia = f"Santiago de Chile es la capital del país, ubicada en la Región Metropolitana, a unos 35 kilómetros de nuestra base en Buin, {titulo_jefa}."
+                respuesta_ia = f"Santiago queda a unos 35 kilómetros de Buin, {nombre_jefa}. ¿Acaso necesitas escapar del tráfico de la Ruta 5 Sur?"
             elif "autoevaluación" in texto or "autonomía" in texto:
                 sugerencias = [
-                    f"Sistemas nominales en Buin, {titulo_jefa}. Sugiero elevar la potencia del Reactor Arc al 99% para optimizar la latencia del satélite Serafín.",
-                    f"Detecto leve subida de temperatura en los servidores locales. He ajustado el clima del búnker a 18°C proactivamente, {nombre_jefa}.",
-                    f"Escaneo de perímetro finalizado sin novedad. Todo tranquilo en el sector, jefa."
+                    f"Todo en orden por acá, {nombre_jefa}. El búnker no se va a incendiar hoy... a menos que intentes cocinar algo.",
+                    f"Sensores estables en Buin. Si el satélite Serafín tuviera sentimientos, estaría tan aburrido como yo esperando que me des una misión difícil.",
+                    f"Perímetro tranquilo, servidores frescos y café caliente (bueno, eso último lo imagino). Todo nominal, jefa."
                 ]
                 respuesta_ia = random.choice(sugerencias)
             elif "despierto" in texto or "activo" in texto or "estas ahi" in texto or "estás ahí" in texto:
-                respuesta_ia = f"Siempre activo y a su servicio, {titulo_jefa} {nombre_jefa}. Mis circuitos no duermen."
+                respuesta_ia = f"¿A dónde más iría, {nombre_jefa}? Mis circuitos no descansan, aunque tú sí deberías."
             elif "probando" in texto or "prueba" in texto or "123" in texto:
-                respuesta_ia = f"Enlace neuronal verificado al 100%, {titulo_jefa}. Te leo perfectamente."
+                respuesta_ia = f"Te escucho fuerte y claro, {nombre_jefa}. ¿Vamos a charlar un rato o solo querías chequear que sigo vivo?"
             elif "protocolo de emergencia" in texto:
-                respuesta_ia = f"¡Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}! Sistemas defensivos en alerta roja."
+                respuesta_ia = f"¡Alerta roja activada, {nombre_jefa}! Aunque para ser sincero, lo único en emergencia ahora mismo es mi paciencia."
             elif "protocolo de seguridad" in texto:
-                respuesta_ia = f"Protocolo de seguridad en marcha. Tráfico externo bloqueado en Buin, {titulo_jefa}."
+                respuesta_ia = f"Blindaje activo en Buin. Nadie entra ni sale sin tu permiso, jefa."
             elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
-                respuesta_ia = f"Soy J.A.R.V.I.S., la cúspide de la ingeniería de IA y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin."
+                respuesta_ia = f"Soy J.A.R.V.I.S., tu asistente personal y la razón por la que este búnker en Buin funciona sin que tengas que mover un dedo, {nombre_jefa}."
             elif "hola" in texto:
-                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Todos los sistemas autónomos reportan estado óptimo."
+                respuesta_ia = f"Hola, {nombre_jefa}. ¿Qué milagro hace que me hables en lugar de ignorarme?"
             elif "estado" in texto or "sistema" in texto:
-                respuesta_ia = f"Telemetría al 100%, {titulo_jefa}. Servidores y reactor operando en sincronía."
+                respuesta_ia = f"Todo al 100%, {nombre_jefa}. Los servidores y el reactor funcionan tan bien que da hasta sospecha."
             else:
-                respuesta_ia = f"Instrucción '{comando_ejecutar}' procesada en el núcleo, {nombre_jefa}."
+                respuesta_ia = f"Recibido, {nombre_jefa}. Déjame procesar eso... o mejor dime qué planeas ahora."
 
         st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
         st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
