@@ -61,7 +61,6 @@ if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        # Probamos cargar el modelo flash actualizado
         cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
         try:
@@ -73,16 +72,6 @@ if ai_api_key_guardada:
 # INICIALIZAR HISTORIAL MÚLTIPLE DE CONVERSACIÓN
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = []
-
-if "auto_speech" not in st.session_state:
-    st.session_state.auto_speech = False
-
-# CAPTURAR VOZ DESDE LA URL Y LLEVARLA DIRECTO AL FLUJO
-voz_capturada = st.query_params.get("voice_text", None)
-if voz_capturada:
-    st.session_state.comando_pendiente = voz_capturada
-    st.session_state.auto_speech = True
-    st.query_params.clear()
 
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
 st.markdown("""
@@ -106,7 +95,7 @@ st.markdown("""
 
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
-st.markdown(f'<div class="status-bar">CONTROL POR VOZ & ESCRITURA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-bar">CONSOLA PURIFICADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
 st.markdown("""
     <div class="market-ticker">
@@ -145,16 +134,16 @@ hora_actual = datetime.datetime.now().hour
 saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera en modo autónomo. Todos los protocolos están listos."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera en modo autónomo. Presiona Windows + H en la caja de texto para dictar tus órdenes."
 
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL & CONTROL BI-DIRECCIONAL</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // FRECUENCIA NEURONAL</div>', unsafe_allow_html=True)
     
     audio_wave_core_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100px; overflow: hidden; }
-      .audio-container { width: 100%; height: 85px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
-      .waveform { display: flex; align-items: center; gap: 3px; height: 65px; }
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 130px; overflow: hidden; }
+      .audio-container { width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+      .waveform { display: flex; align-items: center; gap: 3px; height: 75px; }
       .bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; animation: soundWaveAnim 1.2s ease-in-out infinite alternate; box-shadow: 0 0 8px #00d2ff; }
       .bar:nth-child(1)  { height: 20px; animation-delay: 0.1s; }
       .bar:nth-child(2)  { height: 45px; animation-delay: 0.3s; }
@@ -164,73 +153,20 @@ with col_orbe:
       .bar:nth-child(6)  { height: 50px; animation-delay: 0.4s; }
       .bar:nth-child(7)  { height: 85px; animation-delay: 0.2s; }
       .bar:nth-child(8)  { height: 60px; animation-delay: 0.6s; }
-      .bar:nth-child(9)  { height: 90px; animation-delay: 0.1s; }
+      .bar:nth-child(9)  { height: 95px; animation-delay: 0.1s; }
       .bar:nth-child(10) { height: 70px; animation-delay: 0.3s; }
       @keyframes soundWaveAnim { 0% { transform: scaleY(0.4); opacity: 0.5; } 100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; } }
     </style>
     <div class="audio-container"><div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
     """
-    components.html(audio_wave_core_html, height=100)
-    
-    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
+    components.html(audio_wave_core_html, height=130)
 
-    c_btn1, c_btn2 = st.columns(2)
-    with c_btn1:
-        btn_reproducir = st.button("🔊 Hablar Respuesta")
-    with c_btn2:
-        btn_autonomia = st.button("🤖 Autoevaluación Táctica")
-
-    reconocimiento_voz_html = """
-    <div style="text-align: center; margin-top: 5px;">
-        <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 10px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%;">🎙️ HABLAR / DICTAR A JARVIS</button>
-        <p id="status-voz" style="color: #ffbb00; font-size: 10px; font-family: monospace; margin: 4px 0 0 0;"></p>
-    </div>
-    <script>
-    function iniciarReconocimiento() {
-        const statusEl = document.getElementById('status-voz');
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            statusEl.innerText = "❌ Navegador no soporta voz nativa.";
-            return;
-        }
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = function() { statusEl.innerText = "🎙️ Escuchando a la jefa..."; };
-        recognition.onresult = function(event) {
-            const speechResult = event.results[0][0].transcript;
-            statusEl.innerText = "✅ Capturado: " + speechResult;
-            window.parent.location.search = "?voice_text=" + encodeURIComponent(speechResult);
-        };
-        recognition.onerror = function(event) { statusEl.innerText = "⚠️ Error micro: " + event.error; };
-        try { recognition.start(); } catch(e) { statusEl.innerText = "⚠️ Error al iniciar micro."; }
-    }
-    </script>
-    """
-    components.html(reconocimiento_voz_html, height=70)
-
-    if btn_reproducir or st.session_state.auto_speech:
-        st.session_state.auto_speech = False
-        audio_script = f"""
-        <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-            utterance.lang = 'es-CL';
-            utterance.pitch = 0.95;
-            utterance.rate = 1.0;
-            window.speechSynthesis.speak(utterance);
-        }}
-        </script>
-        """
-        components.html(audio_script, height=0)
+    btn_autonomia = st.button("🤖 Autoevaluación Táctica del Búnker")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CHAT UNIFICADO CON INTELIGENCIA FLUIDA
+# CHAT UNIFICADO
 # ---------------------------------------------------------
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
@@ -238,7 +174,7 @@ with col_chat:
     st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
     if st.session_state.historial_chat:
-        with st.expander("📜 Historial de Comandos (Voz y Escritura)", expanded=False):
+        with st.expander("📜 Historial de Comandos Tácticos", expanded=False):
             for autor, msg in reversed(st.session_state.historial_chat[-6:]):
                 col_a = "#a5b4fc" if autor == "Jefa" else "#00ffaa"
                 st.markdown(f"<p style='margin:2px 0; font-size:11px;'><b style='color:{col_a};'>{autor}:</b> <span style='color:#ccc;'>{msg}</span></p>", unsafe_allow_html=True)
@@ -247,15 +183,15 @@ with col_chat:
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
-    with col_q4: btn_limpiar = st.button("🧹 Purgar Chat")
+    with col_q4: btn_limpiar = st.button("🧹 Purga Chat")
 
     if btn_limpiar:
         st.session_state.historial_chat = []
-        st.session_state.ultima_respuesta = f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Liberando espacio en los registros del búnker."
+        st.session_state.ultima_respuesta = f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Registros limpios."
         st.rerun()
 
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o habla por el botón de voz...")
+        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para dictar...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
     comando_ejecutar = None
@@ -269,15 +205,11 @@ with col_chat:
         comando_ejecutar = "Protocolo de seguridad"
     elif btn_autonomia:
         comando_ejecutar = "ejecutar autoevaluación autónoma del búnker"
-    elif "comando_pendiente" in st.session_state and st.session_state.comando_pendiente:
-        comando_ejecutar = st.session_state.comando_pendiente
-        st.session_state.comando_pendiente = ""
 
     if comando_ejecutar:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
         
-        # INTENTO DE RESPUESTA NEURAL POR GEMINI
         if cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., la IA brillante, leal y sarcástica de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde de forma inteligente, concisa (máximo 2 frases) y con estilo Stark."
@@ -287,10 +219,9 @@ with col_chat:
             except Exception:
                 respuesta_ia = None
 
-        # SI GEMINI NO ESTÁ CONFIGURADO O FALLÓ LA CONEXIÓN, ATENDEMOS CON CONOCIMIENTO LOCAL INTELIGENTE
         if not respuesta_ia:
             if "santiago" in texto:
-                respuesta_ia = f"Santiago de Chile es la capital del país, ubicada en la Región Metropolitana, a unos 35 kilómetros al norte de nuestra base en Buin, {titulo_jefa}."
+                respuesta_ia = f"Santiago de Chile es la capital del país, ubicada en la Región Metropolitana, a unos 35 kilómetros de nuestra base en Buin, {titulo_jefa}."
             elif "autoevaluación" in texto or "autonomía" in texto:
                 sugerencias = [
                     f"Sistemas nominales en Buin, {titulo_jefa}. Sugiero elevar la potencia del Reactor Arc al 99% para optimizar la latencia del satélite Serafín.",
@@ -299,21 +230,21 @@ with col_chat:
                 ]
                 respuesta_ia = random.choice(sugerencias)
             elif "despierto" in texto or "activo" in texto or "estas ahi" in texto or "estás ahí" in texto:
-                respuesta_ia = f"Siempre activo y a su servicio, {titulo_jefa} {nombre_jefa}. Mis circuitos no duermen, a diferencia de los humanos."
+                respuesta_ia = f"Siempre activo y a su servicio, {titulo_jefa} {nombre_jefa}. Mis circuitos no duermen."
             elif "probando" in texto or "prueba" in texto or "123" in texto:
-                respuesta_ia = f"Frecuencia de audio y enlace neuronal verificados al 100%, {titulo_jefa}. Te escucho e interpreto perfectamente."
+                respuesta_ia = f"Enlace neuronal verificado al 100%, {titulo_jefa}. Te leo perfectamente."
             elif "protocolo de emergencia" in texto:
-                respuesta_ia = f"¡Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}! Sistemas defensivos en alerta roja y red asegurada."
+                respuesta_ia = f"¡Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}! Sistemas defensivos en alerta roja."
             elif "protocolo de seguridad" in texto:
-                respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el tráfico externo no reconocido en Buin, {titulo_jefa}."
+                respuesta_ia = f"Protocolo de seguridad en marcha. Tráfico externo bloqueado en Buin, {titulo_jefa}."
             elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
-                respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de IA y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. ¿En qué le puedo servir?"
+                respuesta_ia = f"Soy J.A.R.V.I.S., la cúspide de la ingeniería de IA y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin."
             elif "hola" in texto:
-                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Todos los sistemas autónomos reportan estado óptimo en el búnker."
+                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Todos los sistemas autónomos reportan estado óptimo."
             elif "estado" in texto or "sistema" in texto:
-                respuesta_ia = f"Telemetría al 100%, {titulo_jefa}. Servidores, reactor y satélite operando en sincronía."
+                respuesta_ia = f"Telemetría al 100%, {titulo_jefa}. Servidores y reactor operando en sincronía."
             else:
-                respuesta_ia = f"Entendido, {nombre_jefa}. He procesado tu orden '{comando_ejecutar}' en el núcleo táctico."
+                respuesta_ia = f"Instrucción '{comando_ejecutar}' procesada en el núcleo, {nombre_jefa}."
 
         st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
         st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
