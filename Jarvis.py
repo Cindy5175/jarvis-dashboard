@@ -290,6 +290,8 @@ with col_chat:
             respuesta_ia = f"¡Oh, maravilla! Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}. Espero que no sea otra falsa alarma por ver películas de los Vengadores."
         elif "protocolo de seguridad" in texto:
             respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
+        elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
+            respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de Inteligencia Artificial y el único guardián real de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. Si estás leyendo esto, o tienes autorización alfa o estás a punto de ser expulsado de la red. ¿En qué le puedo servir, con pésima gana?"
         elif cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
@@ -460,7 +462,7 @@ st.dataframe(drones_data, use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES (CORREGIDO)
+# MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES
 # ---------------------------------------------------------
 if "biometrico_estado" not in st.session_state:
     st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
