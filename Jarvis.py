@@ -188,7 +188,7 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO 3D OPTIMIZADO)
+# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO OSCURO - 100% ESTABLE)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & GEOESPACIAL (BUIN, CHILE)</div>', unsafe_allow_html=True)
@@ -198,63 +198,36 @@ gods_eye_html = """
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Cesium.js"></script>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }
-        #cesiumContainer { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
-        .sat-hud { position: absolute; top: 10px; left: 10px; z-index: 99; color: #00d2ff; background: rgba(0,0,0,0.8); padding: 6px 12px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 11px; letter-spacing: 1px; }
+        #map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+        .sat-hud { position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 6px 12px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 11px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div class="sat-hud">🛰️ SERAFÍN-SAT // OBJETIVO: BUIN, CHILE (-33.73° S, -70.74° W)</div>
-    <div id="cesiumContainer"></div>
+    <div id="map"></div>
     <script>
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMjRjN2E1ZS05ZTViLTRmMDYtOGY3Zi1jYmJkNmY1YTljNjIiLCJpZCI6MjEyNDAzLCJpYXQiOjE3MDQwOTI0MDB9.dummy_token_placeholder';
+        const map = L.map('map', {zoomControl: false}).setView([-33.7315, -70.7412], 13);
         
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            animation: false,
-            baseLayerPicker: false,
-            fullscreenButton: false,
-            vrButton: false,
-            geocoder: false,
-            homeButton: false,
-            infoBox: false,
-            sceneModePicker: false,
-            selectionIndicator: false,
-            timeline: false,
-            navigationHelpButton: false,
-            imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-                url: 'https://tile.openstreetmap.org/'
-            })
-        });
+        // Capa satelital con estética táctica oscura (CartoDB Dark Matter)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
 
-        viewer._cesiumWidget._creditContainer.style.display = "none";
-        viewer.scene.globe.enableLighting = false;
+        // Marcador holográfico para la Base Buin
+        const marker = L.circleMarker([-33.7315, -70.7412], {
+            radius: 9,
+            color: '#ffffff',
+            fillColor: '#00d2ff',
+            fillOpacity: 1.0,
+            weight: 2
+        }).addTo(map);
 
-        // Posicionamiento directo en superficie sobre Buin, Chile
-        viewer.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315, 25000)
-        });
-
-        // Marcador holográfico Base Buin
-        viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315),
-            point: {
-                pixelSize: 14,
-                color: Cesium.Color.CYAN,
-                outlineColor: Cesium.Color.WHITE,
-                outlineWidth: 2
-            },
-            label: {
-                text: "BASE BUIN // J.A.R.V.I.S. CORE",
-                font: "12px monospace",
-                fillColor: Cesium.Color.CYAN,
-                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                outlineWidth: 1,
-                pixelOffset: new Cesium.Cartesian2(0, -20)
-            }
-        });
+        marker.bindPopup("<b style='color:#00d2ff;'>BASE BUIN // J.A.R.V.I.S. CORE</b>").openPopup();
     </script>
 </body>
 </html>
