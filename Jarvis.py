@@ -140,23 +140,25 @@ if "voz_escrita" not in st.session_state:
     st.session_state.voz_escrita = ""
 
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // GLOBO HOLOGRÁFICO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // GLOBO & ONDAS VOCALES</div>', unsafe_allow_html=True)
     
-    # GLOBO TERRAQUEO HOLOGRÁFICO 3D MEJORADO CON TEXTURA DE CONTINENTES FLUIDA
-    earth_globe_html = """
+    # GLOBO TERRAQUEO CON ONDAS DE AUDIO PULSANTES TIPO STARK
+    earth_waves_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 110px; overflow: hidden; }
-      .earth-container { perspective: 400px; width: 90px; height: 90px; position: relative; }
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 120px; overflow: hidden; }
+      .core-container { position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; }
+      
+      /* Globo terráqueo giratorio */
       .earth {
-        width: 90px;
-        height: 90px;
+        width: 75px;
+        height: 75px;
         border-radius: 50%;
         position: absolute;
         background: radial-gradient(circle at 30% 30%, #00f2fe 0%, #0077be 50%, #001133 90%);
-        box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 20px rgba(0, 210, 255, 0.8);
+        box-shadow: inset -12px -12px 25px rgba(0,0,0,0.9), 0 0 15px rgba(0, 210, 255, 0.8);
         overflow: hidden;
+        z-index: 3;
       }
-      /* Capa de continentes holográficos animados */
       .earth::after {
         content: "";
         position: absolute;
@@ -164,38 +166,40 @@ with col_orbe:
         background: linear-gradient(90deg, 
             transparent 0%, rgba(0,255,170,0.4) 20%, transparent 40%, 
             rgba(0,210,255,0.6) 60%, transparent 80%, rgba(0,255,170,0.4) 100%);
-        opacity: 0.8;
         animation: rotateContinents 8s linear infinite;
       }
-      /* Anillo de radar exterior */
-      .orbit-ring {
+
+      /* Ondas de audio / pulsos concéntricos (Ondas Stark) */
+      .sound-wave {
         position: absolute;
-        width: 108px;
-        height: 108px;
-        border: 1px solid rgba(0, 210, 255, 0.5);
-        border-top: 1px solid transparent;
+        border: 2px solid rgba(0, 255, 170, 0.6);
         border-radius: 50%;
-        top: -9px;
-        left: -9px;
-        animation: rotateOrbit 12s linear infinite reverse;
+        animation: pulseWave 2s ease-out infinite;
+        z-index: 1;
       }
+      .wave-1 { width: 85px; height: 85px; animation-delay: 0s; }
+      .wave-2 { width: 100px; height: 100px; animation-delay: 0.6s; }
+      .wave-3 { width: 115px; height: 115px; animation-delay: 1.2s; }
+
       @keyframes rotateContinents {
         0% { transform: translateX(0%); }
         100% { transform: translateX(33.33%); }
       }
-      @keyframes rotateOrbit {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      @keyframes pulseWave {
+        0% { transform: scale(0.8); opacity: 1; border-color: rgba(0, 255, 170, 0.9); }
+        100% { transform: scale(1.35); opacity: 0; border-color: rgba(0, 210, 255, 0.1); }
       }
     </style>
-    <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100px;">
-        <div class="earth-container">
-            <div class="orbit-ring"></div>
+    <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 115px;">
+        <div class="core-container" id="audioCore">
+            <div class="sound-wave wave-1"></div>
+            <div class="sound-wave wave-2"></div>
+            <div class="sound-wave wave-3"></div>
             <div class="earth"></div>
         </div>
     </div>
     """
-    components.html(earth_globe_html, height=110)
+    components.html(earth_waves_html, height=125)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
