@@ -265,7 +265,7 @@ with col_map1:
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
-    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="Santiago Centro")
+    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="Valdivia")
 with col_map4:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_escanear = st.button("📡 Rastrear Objetivo en Mapa")
@@ -273,8 +273,42 @@ with col_map4:
 lat_val, lon_val = -33.7315, -70.7412
 lugar_encontrado_nombre = "Base Central Buin"
 
-# FUNCIÓN DE GEO-BÚSQUEDA EN TIEMPO REAL (LIBRE DE RESTRICCIONES)
-if busqueda_objetivo and btn_escanear:
+# Selección de locaciones estratégicas y unidades para centrado táctico
+col_drone_sel, col_radio = st.columns([2, 1])
+with col_drone_sel:
+    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Destino / Unidad:", [
+        "Foco en Objetivo Buscado (Arriba)",
+        "🏰 Base Búnker [Buin] (-33.7315, -70.7412)",
+        "🏙️ Santiago Centro [Región Metropolitana] (-33.4489, -70.6693)",
+        "🌲 Chiguayante [Concepción, Biobío] (-36.9183, -73.0286)",
+        "🌊 Valdivia [Los Ríos] (-39.8196, -73.2452)",
+        "🚁 Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
+        "🚘 Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)"
+    ])
+with col_radio:
+    radio_perimetro = st.slider("🚨 Radio Perímetro de Seguridad (km):", 1, 10, 3)
+
+# LÓGICA DE JERARQUÍA CORREGIDA
+if unidad_foco != "Foco en Objetivo Buscado (Arriba)":
+    if "Santiago Centro" in unidad_foco:
+        lat_val, lon_val = -33.4489, -70.6693
+        lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
+    elif "Chiguayante" in unidad_foco:
+        lat_val, lon_val = -36.9183, -73.0286
+        lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
+    elif "Valdivia" in unidad_foco:
+        lat_val, lon_val = -39.8196, -73.2452
+        lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
+    elif "Drone-Alpha" in unidad_foco:
+        lat_val, lon_val = -33.7210, -70.7380
+        lugar_encontrado_nombre = "Drone-Alpha 01 [Norte Buin]"
+    elif "Unidad Móvil" in unidad_foco:
+        lat_val, lon_val = -33.7450, -70.7480
+        lugar_encontrado_nombre = "Unidad Móvil Terrestre [Ruta 5 Sur]"
+    elif "Base Búnker" in unidad_foco:
+        lat_val, lon_val = -33.7315, -70.7412
+        lugar_encontrado_nombre = "Base Central Buin"
+elif busqueda_objetivo and btn_escanear:
     try:
         query_str = busqueda_objetivo
         if "chile" not in query_str.lower():
@@ -296,37 +330,6 @@ elif "," in destino_input and "Buin" not in destino_input:
         lon_val = float(parts[1].strip())
     except:
         pass
-
-# Selección de locaciones estratégicas y unidades para centrado táctico
-col_drone_sel, col_radio = st.columns([2, 1])
-with col_drone_sel:
-    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Destino / Unidad:", [
-        "Foco en Objetivo Buscado / Manual",
-        "🏰 Base Búnker [Buin] (-33.7315, -70.7412)",
-        "🏙️ Santiago Centro [Región Metropolitana] (-33.4489, -70.6693)",
-        "🌲 Chiguayante [Concepción, Biobío] (-36.9183, -73.0286)",
-        "🌊 Valdivia [Los Ríos] (-39.8196, -73.2452)",
-        "🚁 Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
-        "🚘 Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)"
-    ])
-with col_radio:
-    radio_perimetro = st.slider("🚨 Radio Perímetro de Seguridad (km):", 1, 10, 3)
-
-if "Santiago Centro" in unidad_foco:
-    lat_val, lon_val = -33.4489, -70.6693
-    lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
-elif "Chiguayante" in unidad_foco:
-    lat_val, lon_val = -36.9183, -73.0286
-    lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
-elif "Valdivia" in unidad_foco:
-    lat_val, lon_val = -39.8196, -73.2452
-    lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
-elif "Drone-Alpha" in unidad_foco:
-    lat_val, lon_val = -33.7210, -70.7380
-elif "Unidad Móvil" in unidad_foco:
-    lat_val, lon_val = -33.7450, -70.7480
-elif "Base Búnker" in unidad_foco:
-    lat_val, lon_val = -33.7315, -70.7412
 
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
