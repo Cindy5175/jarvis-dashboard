@@ -23,7 +23,6 @@ def cargar_memoria():
                 return json.load(f)
         except Exception:
             pass
-    # Definimos la estructura base segura si el archivo no existe o está corrupto
     return {
         "usuario": {
             "nombre": "Cindy",
@@ -37,7 +36,6 @@ def cargar_memoria():
         "canales_multiplataforma": {
             "Telegram": {"estado": "Conectado", "bot_id": "@JarvisBunkerBot"}
         },
-        # Aseguramos que la estructura de voz exista desde el inicio
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
             "elevenlabs_api_key": "",
@@ -170,13 +168,11 @@ else:
     saludo_tiempo = "Buenas noches"
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Núcleo holográfico y módulo de voz depurados. Haz clic en el orbe para hablarme."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Todos los sistemas operativos. ¿En qué le puedo asistir?"
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
 with col_orbe:
-    # COMPONENTE CENTRAL: ORBE CON VOZ SINTETIZADA + DICTADO POR MICRÓFONO + MODULACIÓN VISUAL
-    # Limpiamos comillas del texto para evitar errores en JS
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
     
     orb_component = f"""
@@ -195,7 +191,7 @@ with col_orbe:
             <button onclick="activarMicrofono()" style="background-color: #00d2ff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.4);">🎤 Dictar Comando</button>
         </div>
 
-        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 8px; font-family: monospace;">[ SISTEMA DE VOZ IMPLECADLE, JEFA ]</p>
+        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 8px; font-family: monospace;">[ SISTEMA DE VOZ ONLINE, JEFA ]</p>
     </div>
 
     <style>
@@ -374,21 +370,45 @@ with col_chat:
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
     if boton_enviar and entrada_usuario:
-        texto_ingresado = entrada_usuario.lower()
+        texto = entrada_usuario.lower().strip()
         
-        if "hola" in texto_ingresado:
-            respuesta_ia = f"{saludo_tiempo}, {nombre_jefa}. Me alegra ver que los sistemas del búnker siguen en pie."
-        elif "telemetria" in texto_ingresado or "estado" in texto_ingresado:
-            respuesta_ia = f"Reporte de telemetría: CPU al 38%, memoria RAM estable y satélite Serafín en enlace del 100%, {titulo_jefa}."
-        elif "clima" in texto_ingresado:
-            respuesta_ia = "El clima en Buin marca 14.9 grados Celsius con cielos despejados. Ideal para operar."
-        else:
-            respuestas_sarcasticas = [
-                f"Analizando tu orden '{entrada_usuario}'... Menos mal que tengo paciencia infinita, {nombre_jefa}.",
-                f"Procesando '{entrada_usuario}'. Si esto sale mal, la responsabilidad recae sobre ti.",
-                f"Comando '{entrada_usuario}' registrado con éxito en los servidores centrales. ¿Algo más?"
+        # MOTOR DE RESPUESTAS CONVERSACIONAL Y MULTI-CATEGORÍA
+        if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
+            respuestas_estado = [
+                f"Siempre despierto y vigilante, {titulo_jefa} {nombre_jefa}. Todos los núcleos operando al 100%.",
+                f"Sistemas en línea y listos en el búnker. ¿Qué orden ejecutamos hoy, {nombre_jefa}?",
+                f"Totalmente activo, {titulo_jefa}. Mis sensores no descansan."
             ]
-            respuesta_ia = random.choice(respuestas_sarcasticas)
+            respuesta_ia = random.choice(respuestas_estado)
+
+        elif any(w in texto for w in ["hola", "buenas", "que tal", "saludos"]):
+            respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker listo para sus instrucciones."
+
+        elif any(w in texto for w in ["quien eres", "quien sos", "tu nombre", "presentate"]):
+            respuesta_ia = f"Soy J.A.R.V.I.S., el asistente de inteligencia autónoma del búnker, diseñado exclusivamente para asistir a {titulo_jefa} {nombre_jefa}."
+
+        elif any(w in texto for w in ["telemetria", "sistema", "cpu", "ram", "equipo", "bateria"]):
+            respuesta_ia = f"Telemetría actual: CPU al 38%, RAM al 57%, alimentación conectada a la red y satélite Serafín en enlace del 100%, {nombre_jefa}."
+
+        elif any(w in texto for w in ["clima", "tiempo", "temperatura"]):
+            respuesta_ia = "El clima en Buin reporta 14.9°C con cielos despejados. Parámetros óptimos."
+
+        elif any(w in texto for w in ["gracias", "excelente", "buen trabajo", "genial"]):
+            respuestas_gracias = [
+                f"A sus órdenes siempre, {titulo_jefa} {nombre_jefa}.",
+                f"Es un placer servir a la Jefa del búnker.",
+                "Simplemente haciendo funcionar la tecnología como debe ser."
+            ]
+            respuesta_ia = random.choice(respuestas_gracias)
+
+        else:
+            # Respuestas dinámicas avanzadas para preguntas o frases generales
+            respuestas_generales = [
+                f"Comando '{entrada_usuario}' asimilado por el núcleo principal. Procesando datos para {titulo_jefa} {nombre_jefa}.",
+                f"Recibido: '{entrada_usuario}'. Ejecutando subrutinas locales en Buin.",
+                f"Entendido, {nombre_jefa}. Analizando '{entrada_usuario}' en la red táctica."
+            ]
+            respuesta_ia = random.choice(respuestas_generales)
 
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
@@ -396,10 +416,9 @@ with col_chat:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS (CON RED DE SEGURIDAD)
+# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS
 st.markdown("---")
 with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expanded=False):
-    # Aseguramos que las keys de session_state para los inputs existan
     if "input_nombre" not in st.session_state:
         st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state:
@@ -410,7 +429,6 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expa
         nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
         nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
     with col_id2:
-        # Recuperamos datos de memoria de forma segura
         prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
         api_key_actual = prefs_voz.get("elevenlabs_api_key", "")
         voice_id_actual = prefs_voz.get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM")
@@ -419,24 +437,16 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expa
         voice_id_eleven = st.text_input("ElevenLabs Voice ID:", value=voice_id_actual)
     
     if st.button("💾 Actualizar Configuración"):
-        # --- RED DE SEGURIDAD CONTRA EL KEYERROR ---
-        # Aseguramos que la estructura completa exista antes de guardar
         if "usuario" not in st.session_state.memoria:
             st.session_state.memoria["usuario"] = {}
         if "preferencias_voz" not in st.session_state.memoria:
             st.session_state.memoria["preferencias_voz"] = {}
-        # --------------------------------------------
             
-        # Guardamos datos de identidad
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        
-        # Guardamos datos de voz (ahora es seguro)
         st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = api_key_eleven
         st.session_state.memoria["preferencias_voz"]["elevenlabs_voice_id"] = voice_id_eleven
         
-        # Persistimos en el archivo JSON
         guardar_memoria(st.session_state.memoria)
-        
         st.success("Sincronización biométrica y de voz completada con éxito.")
         st.rerun()
