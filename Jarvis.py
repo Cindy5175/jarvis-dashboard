@@ -4,7 +4,6 @@ import datetime
 import random
 import json
 import os
-import time
 import urllib.parse
 import urllib.request
 
@@ -66,10 +65,18 @@ if ai_api_key_guardada:
     except Exception as e:
         cliente_ia = None
 
-# CAPTURAR VOZ DESDE LA URL Y PROCESARLA AUTOMÁTICAMENTE
+# INICIALIZAR HISTORIAL MÚLTIPLE DE CONVERSACIÓN (ENLACE VOZ <-> ESCRITURA)
+if "historial_chat" not in st.session_state:
+    st.session_state.historial_chat = []
+
+if "auto_speech" not in st.session_state:
+    st.session_state.auto_speech = False
+
+# CAPTURAR VOZ DESDE LA URL Y LLEVARLA DIRECTO AL FLUJO
 voz_capturada = st.query_params.get("voice_text", None)
 if voz_capturada:
-    st.session_state.comando_voz_pendiente = voz_capturada
+    st.session_state.comando_pendiente = voz_capturada
+    st.session_state.auto_speech = True  # Si hablas, J.A.R.V.I.S. te responde hablando
     st.query_params.clear()
 
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
@@ -94,7 +101,7 @@ st.markdown("""
 
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
 estado_ia_txt = "MOTOR IA: GEMINI ACTIVO" if cliente_ia else "MOTOR IA: MODO LOCAL"
-st.markdown(f'<div class="status-bar">CONTROL POR VOZ &nbsp;|&nbsp; ESTADO: EN LÍNEA &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-bar">CONTROL POR VOZ & ESCRITURA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
 st.markdown("""
     <div class="market-ticker">
@@ -133,41 +140,17 @@ hora_actual = datetime.datetime.now().hour
 saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin sigue en pie, a pesar de mis pronósticos."
-if "ultimo_usuario" not in st.session_state:
-    st.session_state.ultimo_usuario = ""
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin opera en modo autónomo. Todos los protocolos están listos."
 
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL & CONTROL BI-DIRECCIONAL</div>', unsafe_allow_html=True)
     
     audio_wave_core_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 110px; overflow: hidden; }
-      .audio-container {
-        width: 100%;
-        height: 90px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%);
-        border: 1px solid rgba(0,210,255,0.4);
-        border-radius: 8px;
-        box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
-      }
-      .waveform {
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        height: 70px;
-      }
-      .bar {
-        width: 4px;
-        background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%);
-        border-radius: 2px;
-        animation: soundWaveAnim 1.2s ease-in-out infinite alternate;
-        box-shadow: 0 0 8px #00d2ff;
-      }
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100px; overflow: hidden; }
+      .audio-container { width: 100%; height: 85px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+      .waveform { display: flex; align-items: center; gap: 3px; height: 65px; }
+      .bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; animation: soundWaveAnim 1.2s ease-in-out infinite alternate; box-shadow: 0 0 8px #00d2ff; }
       .bar:nth-child(1)  { height: 20px; animation-delay: 0.1s; }
       .bar:nth-child(2)  { height: 45px; animation-delay: 0.3s; }
       .bar:nth-child(3)  { height: 65px; animation-delay: 0.2s; }
@@ -178,38 +161,23 @@ with col_orbe:
       .bar:nth-child(8)  { height: 60px; animation-delay: 0.6s; }
       .bar:nth-child(9)  { height: 90px; animation-delay: 0.1s; }
       .bar:nth-child(10) { height: 70px; animation-delay: 0.3s; }
-      .bar:nth-child(11) { height: 40px; animation-delay: 0.5s; }
-      .bar:nth-child(12) { height: 80px; animation-delay: 0.2s; }
-      .bar:nth-child(13) { height: 55px; animation-delay: 0.4s; }
-      .bar:nth-child(14) { height: 35px; animation-delay: 0.1s; }
-      .bar:nth-child(15) { height: 65px; animation-delay: 0.3s; }
-      .bar:nth-child(16) { height: 25px; animation-delay: 0.5s; }
-
-      @keyframes soundWaveAnim {
-        0% { transform: scaleY(0.4); opacity: 0.5; }
-        100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; }
-      }
+      @keyframes soundWaveAnim { 0% { transform: scaleY(0.4); opacity: 0.5; } 100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; } }
     </style>
-    <div class="audio-container">
-        <div class="waveform">
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        </div>
-    </div>
+    <div class="audio-container"><div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
     """
-    components.html(audio_wave_core_html, height=110)
+    components.html(audio_wave_core_html, height=100)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
-    col_btn_dummy1, col_btn_centro, col_btn_dummy2 = st.columns([0.25, 0.7, 0.05])
-    with col_btn_centro:
-        btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
-    
+    c_btn1, c_btn2 = st.columns(2)
+    with c_btn1:
+        btn_reproducir = st.button("🔊 Hablar Respuesta")
+    with c_btn2:
+        btn_autonomia = st.button("🤖 Autoevaluación Táctica")
+
     reconocimiento_voz_html = """
     <div style="text-align: center; margin-top: 5px;">
-        <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar Orden por Voz</button>
+        <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 10px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%;">🎙️ HABLAR / DICTAR A JARVIS</button>
         <p id="status-voz" style="color: #ffbb00; font-size: 10px; font-family: monospace; margin: 4px 0 0 0;"></p>
     </div>
     <script>
@@ -217,7 +185,7 @@ with col_orbe:
         const statusEl = document.getElementById('status-voz');
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            statusEl.innerText = "❌ Navegador no compatible con voz.";
+            statusEl.innerText = "❌ Navegador no soporta voz nativa.";
             return;
         }
         const recognition = new SpeechRecognition();
@@ -225,43 +193,30 @@ with col_orbe:
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        recognition.onstart = function() {
-            statusEl.innerText = "🎙️ Escuchando orden...";
-        };
-
+        recognition.onstart = function() { statusEl.innerText = "🎙️ Escuchando a la jefa..."; };
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
-            statusEl.innerText = "✅ Orden capturada: " + speechResult;
+            statusEl.innerText = "✅ Capturado: " + speechResult;
             window.parent.location.search = "?voice_text=" + encodeURIComponent(speechResult);
         };
-
-        recognition.onerror = function(event) {
-            statusEl.innerText = "⚠️ Error de micro: " + event.error;
-        };
-
-        recognition.onend = function() {
-            if(statusEl.innerText.includes("Escuchando")) {
-                statusEl.innerText = "⚠️ No se detectó audio.";
-            }
-        };
-
-        try {
-            recognition.start();
-        } catch(e) {
-            statusEl.innerText = "⚠️ Error al iniciar micro.";
-        }
+        recognition.onerror = function(event) { statusEl.innerText = "⚠️ Error micro: " + event.error; };
+        try { recognition.start(); } catch(e) { statusEl.innerText = "⚠️ Error al iniciar micro."; }
     }
     </script>
     """
-    components.html(reconocimiento_voz_html, height=75)
+    components.html(reconocimiento_voz_html, height=70)
 
-    if btn_reproducir:
+    # REPRODUCCIÓN AUTOMÁTICA O MANUAL DE VOZ
+    if btn_reproducir or st.session_state.auto_speech:
+        st.session_state.auto_speech = False
         audio_script = f"""
         <script>
         if ('speechSynthesis' in window) {{
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
             utterance.lang = 'es-CL';
+            utterance.pitch = 0.95;
+            utterance.rate = 1.0;
             window.speechSynthesis.speak(utterance);
         }}
         </script>
@@ -270,26 +225,31 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+# ---------------------------------------------------------
+# CHAT UNIFICADO (VOZ + ESCRITURA ENLAZADAS)
+# ---------------------------------------------------------
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 NÚCLEO DE CONVERSACIÓN</div>', unsafe_allow_html=True)
-    st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S. M.E.C.A.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
+    
+    # MOSTRAR ÚLTIMA RESPUESTA DESTACADA
+    st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
-    if st.session_state.ultimo_usuario:
-        st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
+    # MOSTRAR HISTORIAL RECIENTE
+    if st.session_state.historial_chat:
+        with st.expander("📜 Historial de Comandos (Voz y Escritura)", expanded=False):
+            for autor, msg in reversed(st.session_state.historial_chat[-6:]):
+                col_a = "#a5b4fc" if autor == "Jefa" else "#00ffaa"
+                st.markdown(f"<p style='margin:2px 0; font-size:11px;'><b style='color:{col_a};'>{autor}:</b> <span style='color:#ccc;'>{msg}</span></p>", unsafe_allow_html=True)
 
     col_q1, col_q2, col_q3 = st.columns(3)
-    with col_q1:
-        btn_q_hola = st.button("👋 Saludar")
-    with col_q2:
-        btn_q_emerg = st.button("🚨 Emergencia")
-    with col_q3:
-        btn_q_seg = st.button("🛡️ Seguridad")
+    with col_q1: btn_q_hola = st.button("👋 Saludar")
+    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
+    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
 
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción táctica...")
-        boton_enviar = st.form_submit_button(label="🚀 Transmitir")
+        entrada_usuario = st.text_input("", placeholder="Escribe o habla por el botón de voz...")
+        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
-    # DETERMINAR SI HAY COMANDO (POR TECLADO, BOTÓN RÁPIDO O POR VOZ AUTOMÁTICA)
     comando_ejecutar = None
     if boton_enviar and entrada_usuario:
         comando_ejecutar = entrada_usuario
@@ -299,23 +259,33 @@ with col_chat:
         comando_ejecutar = "Protocolo de emergencia"
     elif btn_q_seg:
         comando_ejecutar = "Protocolo de seguridad"
-    elif "comando_voz_pendiente" in st.session_state and st.session_state.comando_voz_pendiente:
-        comando_ejecutar = st.session_state.comando_voz_pendiente
-        st.session_state.comando_voz_pendiente = ""
+    elif btn_autonomia:
+        comando_ejecutar = "ejecutar autoevaluación autónoma del búnker"
+    elif "comando_pendiente" in st.session_state and st.session_state.comando_pendiente:
+        comando_ejecutar = st.session_state.comando_pendiente
+        st.session_state.comando_pendiente = ""
 
     if comando_ejecutar:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
         
-        if "protocolo de emergencia" in texto:
-            respuesta_ia = f"¡Oh, maravilla! Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}. Espero que no sea otra falsa alarma por ver películas de los Vengadores."
+        # 1. PROTOCOLOS ESPECIALES & AUTONOMÍA
+        if "autoevaluación" in texto or "autonomía" in texto:
+            sugerencias = [
+                f"Sistemas nominales en Buin, {titulo_jefa}. Sugiero elevar la potencia del Reactor Arc al 99% para optimizar la latencia del satélite Serafín.",
+                f"Detecto leve subida de temperatura en los servidores locales. He ajustado el clima del búnker a 18°C proactivamente, {nombre_jefa}.",
+                f"Escaneo de perímetro finalizado sin novedad. Todo tranquilo en el sector, jefa. El gato sigue vigilando desde la cima."
+            ]
+            respuesta_ia = random.choice(sugerencias)
+        elif "protocolo de emergencia" in texto:
+            respuesta_ia = f"¡Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}! Sistemas defensivos en alerta roja y red asegurada."
         elif "protocolo de seguridad" in texto:
-            respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
+            respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el tráfico externo no reconocido en Buin, {titulo_jefa}."
         elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
-            respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de Inteligencia Artificial y el único guardián real de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. Si estás leyendo esto, o tienes autorización alfa o estás a punto de ser expulsado de la red. ¿En qué le puedo servir, con pésima gana?"
+            respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de Inteligencia Artificial y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. ¿En qué le puedo servir?"
         elif cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} in Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., la IA leal, sarcástica y autónoma de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Muestra proactividad, propone soluciones tácticas y responde brevemente (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {comando_ejecutar}",
@@ -327,15 +297,18 @@ with col_chat:
                 
         if not respuesta_ia:
             if "hola" in texto:
-                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Me alegra ver que sobreviviste a otro día sin mi constante supervisión."
+                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Todos los sistemas autónomos reportan estado óptimo."
             elif "estado" in texto or "sistema" in texto:
-                respuesta_ia = f"Todo funciona al 100%, {titulo_jefa}. Lo cual es un milagro considerando cómo tratas a la tecnología."
+                respuesta_ia = f"Telemetría al 100%, {titulo_jefa}. Servidores, reactor y satélite operando en sincronía."
             else:
-                respuesta_ia = f"Instrucción táctica '{comando_ejecutar}' registrada, {nombre_jefa}. Haré como que entendí la genialidad detrás de esto."
+                respuesta_ia = f"Instrucción '{comando_ejecutar}' ejecutada en el núcleo, {nombre_jefa}. Sigo monitoreando en segundo plano."
 
-        st.session_state.ultimo_usuario = comando_ejecutar
+        # REGISTRAR EN HISTORIAL
+        st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
+        st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("---")
@@ -348,11 +321,11 @@ st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO
 
 col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
 with col_map1:
-    busqueda_objetivo = st.text_input("🔍 Escribe qué buscar (Ej: Valdivia, Concepcion):", value="Valdivia")
+    busqueda_objetivo = st.text_input("🔍 Buscar Ubicación (Ej: Valdivia):", value="Valdivia")
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
-    nodo_rapido = st.selectbox("⚡ Nodos Rápidos de Acceso:", [
+    nodo_rapido = st.selectbox("⚡ Nodos Rápidos:", [
         "--- Selecciona un Nodo ---",
         "🏰 Base Búnker [Buin]",
         "🏙️ Santiago Centro",
@@ -382,8 +355,7 @@ if nodo_rapido != "--- Selecciona un Nodo ---":
 elif busqueda_objetivo:
     try:
         query_str = busqueda_objetivo
-        if "chile" not in query_str.lower():
-            query_str += " Chile"
+        if "chile" not in query_str.lower(): query_str += " Chile"
         url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
         req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
         with urllib.request.urlopen(req, timeout=3) as resp:
@@ -395,18 +367,11 @@ elif busqueda_objetivo:
     except Exception:
         pass
 
-if "Topográfico" in capa_seleccionada:
-    url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-else:
-    url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if "Topográfico" in capa_seleccionada else "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
-map_style_css = """
-#map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
-"""
+map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }"
 if "Nocturno" in capa_seleccionada:
-    map_style_css = """
-#map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
-"""
+    map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }"
 
 gods_eye_html = f"""
 <!DOCTYPE html>
@@ -415,30 +380,23 @@ gods_eye_html = f"""
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
-        {map_style_css}
-        .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
-    </style>
+    <style> body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }} {map_style_css} .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }} </style>
 </head>
 <body>
-    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | GOOGLE EARTH TARGET</div>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | TARGET EN VIVO</div>
     <div id="map"></div>
     <script>
         const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
         L.tileLayer('{url_capa}', {{ maxZoom: 19, attribution: '' }}).addTo(map);
-        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{
-            radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3
-        }}).addTo(map);
+        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{ radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3 }}).addTo(map);
         targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
     </script>
 </body>
 </html>
 """
-components.html(gods_eye_html, height=440)
+components.html(gods_eye_html, height=400)
 
 col_clima, col_log = st.columns([1, 1.2])
-
 with col_clima:
     st.markdown("""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
@@ -450,54 +408,28 @@ with col_clima:
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas en la red."
-    eventos_tacticos = [
-        "Enlace Serafín-Sat 100% estable y optimizado.",
-        "Barrido óptico completado sin anomalías en el sector.",
-        "Enlace interregional Chile establecido con éxito.",
-        "Calibración de espectro térmico finalizada con éxito.",
-        "Perímetro del búnker seguro. Sin intrusiones en la red."
-    ]
-    evento_actual = random.choice(eventos_tacticos) if btn_escanear else "Enlace Serafín-Sat 100% estable."
-
+    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
     log_html = f"""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
-            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL M.E.C.A.</p>
-            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] {evento_actual}</p>
+            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p>
             <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
-            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Foco activo en lat: {lat_val}, lon: {lon_val}.</p>
         </div>
     """
     st.markdown(log_html, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y RED NACIONAL (CHILE)</div>', unsafe_allow_html=True)
-drones_data = [
-    {"Nodo": "Base Central Búnker", "Región": "Metropolitana", "Ubicación": "Buin", "Estado": "Operativo"},
-    {"Nodo": "Santiago Centro", "Región": "Metropolitana", "Ubicación": "Santiago", "Estado": "Enlace Activo"},
-    {"Nodo": "Concepción / Chiguayante", "Región": "Biobío", "Ubicación": "Chiguayante", "Estado": "Monitoreo Satelital"},
-    {"Nodo": "Valdivia", "Región": "Los Ríos", "Ubicación": "Valdivia", "Estado": "Señal Estable"}
-]
-st.dataframe(drones_data, use_container_width=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES
 # ---------------------------------------------------------
-if "biometrico_estado" not in st.session_state:
-    st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
-if "alerta_actual" not in st.session_state:
-    st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo."
+if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
+if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
-    st.session_state.misiones_lista = {
-        "Verificar búnker Buin": True, 
-        "Sincronizar satélite": False, 
-        "Actualizar IA": False
-    }
+    st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
 
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES DE ALTO RENDIMIENTO (STARK INDUSTRIES)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA // STARK INDUSTRIES</div>', unsafe_allow_html=True)
 
 j1, j2, j3, j4 = st.columns(4)
 
@@ -522,47 +454,32 @@ with j3:
 with j4:
     st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>4. 🚨 RADAR DE AMENAZAS</p>", unsafe_allow_html=True)
     st.markdown(f"<div style='background:#000; border:1px solid #00d2ff; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#00ffaa; min-height:45px; text-align:center;'>{st.session_state.alerta_actual}</div>", unsafe_allow_html=True)
-    
     if st.button("📡 Escanear Amenazas"):
         amenazas_posibles = [
             "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo.",
             "🟢 Satélite Serafín sin interferencia solar.",
             "🟡 Tráfico de red menor detectado en Santiago.",
-            "🟢 Temperatura óptima en servidores principales.",
             "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
         ]
         st.session_state.alerta_actual = random.choice(amenazas_posibles)
         st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
-st.markdown("---")
 
-# ---------------------------------------------------------
 # EXPANDER DE CONFIGURACIÓN
-# ---------------------------------------------------------
 with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
-    if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
-    if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
-
     col_id1, col_id2 = st.columns(2)
     with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
-        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
+        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
+        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
         ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
-        eleven_key_actual = prefs_voz.get("elevenlabs_api_key", "")
-        elevenlabs_api_key = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=eleven_key_actual)
     
     if st.button("💾 Actualizar Configuración"):
-        if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
-        if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
-            
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
         st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_api_key
-        
         guardar_memoria(st.session_state.memoria)
-        st.success("Configuración actualizada con éxito.")
+        st.success("Configuración actualizada.")
         st.rerun()
