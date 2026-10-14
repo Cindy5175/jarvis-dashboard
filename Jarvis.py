@@ -93,7 +93,7 @@ st.markdown("""
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
         <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
         <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
-        <span class="market-item">📡 SERAFÍN-SAT: <span class="market-value">LINK 100%</span></span>
+        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100%</span></span>
     </div>
 """, unsafe_allow_html=True)
 
@@ -187,6 +187,89 @@ with col_chat:
 
 st.markdown("---")
 
+# ---------------------------------------------------------
+# NUEVO MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO 3D)
+# ---------------------------------------------------------
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & GEOESPACIAL (BUIN, CHILE)</div>', unsafe_allow_html=True)
+
+gods_eye_html = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }
+        #cesiumContainer { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+        .sat-hud { position: absolute; top: 10px; left: 10px; z-index: 99; color: #00d2ff; background: rgba(0,0,0,0.8); padding: 6px 12px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 11px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="sat-hud">📡 SERAFÍN-SAT // OBJETIVO: BUIN, CHILE (-33.73° S, -70.74° W)</div>
+    <div id="cesiumContainer"></div>
+    <script>
+        // Token por defecto público de Cesium Ion
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMjRjN2E1ZS05ZTViLTRmMDYtOGY3Zi1jYmJkNmY1YTljNjIiLCJpZCI6MjEyNDAzLCJpYXQiOjE3MDQwOTI0MDB9.dummy_token_placeholder';
+        
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            animation: false,
+            baseLayerPicker: false,
+            fullscreenButton: false,
+            vrButton: false,
+            geocoder: false,
+            homeButton: false,
+            infoBox: false,
+            sceneModePicker: false,
+            selectionIndicator: false,
+            timeline: false,
+            navigationHelpButton: false,
+            imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+                url: 'https://tile.openstreetmap.org/'
+            })
+        });
+
+        // Ocultar marcas de agua y créditos innecesarios para estética limpia
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+
+        // Vuelo inicial directo a Buin, Chile (-33.7315, -70.7412)
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315, 15000),
+            orientation: {
+                heading: Cesium.Math.toRadians(0.0),
+                pitch: Cesium.Math.toRadians(-45.0),
+                roll: 0.0
+            }
+        });
+
+        // Marcador holográfico para la Base Buin
+        viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315),
+            point: {
+                pixelSize: 14,
+                color: Cesium.Color.CYAN,
+                outlineColor: Cesium.Color.WHITE,
+                outlineWidth: 2
+            },
+            label: {
+                text: "BASE BUIN // J.A.R.V.I.S. CORE",
+                font: "12px monospace",
+                fillColor: Cesium.Color.CYAN,
+                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                outlineWidth: 1,
+                pixelOffset: new Cesium.Cartesian2(0, -20)
+            }
+        });
+    </script>
+</body>
+</html>
+"""
+components.html(gods_eye_html, height=440)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("---")
+
 with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
     if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
@@ -204,7 +287,8 @@ with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expande
         if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
             
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
         
         guardar_memoria(st.session_state.memoria)
         st.success("Configuración actualizada con éxito.")
