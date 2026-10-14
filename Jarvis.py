@@ -252,19 +252,21 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (CON BARRIDO SATELITAL Y DRONES)
+# MÓDULO: 🛰️ EL OJO DE DIOS 4.0 (NÚCLEO TÁCTICO AVANZADO)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL Y UNIDADES MÓVILES (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, RECONOCIMIENTO BIOMÉTRICO & RED CCTV (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
-col_map1, col_map2, col_map3 = st.columns([1.5, 1.2, 1.3])
+col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.1, 1.1])
 with col_map1:
     destino_input = st.text_input("📍 Teletransporte / Coordenadas:", value="-33.7315, -70.7412 (Buin Base)")
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
+    busqueda_objetivo = st.text_input("🔍 Búsqueda / Reconocimiento:", placeholder="Nombre / Patente...")
+with col_map4:
     st.markdown("<br>", unsafe_allow_html=True)
-    btn_escanear = st.button("📡 Ejecutar Barrido Satelital")
+    btn_escanear = st.button("📡 Escaneo Biométrico & Satelital")
 
 lat_val, lon_val = -33.7315, -70.7412
 if "," in destino_input and "Buin" not in destino_input:
@@ -279,17 +281,40 @@ elif "santiago" in destino_input.lower():
 elif "valparaíso" in destino_input.lower() or "valparaiso" in destino_input.lower():
     lat_val, lon_val = -33.0472, -71.6127
 
+# Selección de dron o unidad para centrado táctico
+col_drone_sel, col_radio = st.columns([2, 1])
+with col_drone_sel:
+    unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Unidad / Dron:", [
+        "Base Central Búnker (-33.7315, -70.7412)",
+        "Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
+        "Drone-Beta 02 [Base Central] (-33.7315, -70.7412)",
+        "Unidad Móvil Terrestre [Ruta 5 Sur] (-33.7450, -70.7480)",
+        "CCTV Cam-01 [Plaza de Buin] (-33.7330, -70.7350)",
+        "CCTV Cam-02 [Acceso Ruta 5 Sur] (-33.7400, -70.7500)"
+    ])
+with col_radio:
+    radio_perimetro = st.slider("🚨 Radio Perímetro de Seguridad (km):", 1, 10, 3)
+
+if "Drone-Alpha" in unidad_foco:
+    lat_val, lon_val = -33.7210, -70.7380
+elif "Unidad Móvil" in unidad_foco:
+    lat_val, lon_val = -33.7450, -70.7480
+elif "CCTV Cam-01" in unidad_foco:
+    lat_val, lon_val = -33.7330, -70.7350
+elif "CCTV Cam-02" in unidad_foco:
+    lat_val, lon_val = -33.7400, -70.7500
+
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
 else:
     url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 map_style_css = """
-#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+#map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
 """
 if "Nocturno" in capa_seleccionada:
     map_style_css = """
-#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
+#map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
 """
 
 gods_eye_html = f"""
@@ -303,33 +328,73 @@ gods_eye_html = f"""
         body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
         {map_style_css}
         .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
+        .cctv-popup {{ color: #000; font-family: sans-serif; font-size: 11px; }}
     </style>
 </head>
 <body>
-    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W</div>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | RED CCTV: ACTIVA</div>
     <div id="map"></div>
     <script>
-        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 14);
         
         L.tileLayer('{url_capa}', {{
             maxZoom: 19,
             attribution: ''
         }}).addTo(map);
 
-        const marker = L.circleMarker([{lat_val}, {lon_val}], {{
-            radius: 10,
+        // Perímetro de Seguridad (Geo-Fence)
+        const geofence = L.circle([-33.7315, -70.7412], {{
+            color: '#ff0055',
+            fillColor: '#ff0055',
+            fillOpacity: 0.08,
+            radius: {radio_perimetro * 1000},
+            weight: 1,
+            dashArray: '5, 5'
+        }}).addTo(map);
+        geofence.bindPopup("<b style='color:#ff0055;'>🚨 PERÍMETRO DEFENSIVO M.E.C.A. (" + {radio_perimetro} + " KM)</b>");
+
+        // Base Principal
+        const baseMarker = L.circleMarker([-33.7315, -70.7412], {{
+            radius: 12,
             color: '#ffffff',
             fillColor: '#00d2ff',
             fillOpacity: 1.0,
+            weight: 3
+        }}).addTo(map);
+        baseMarker.bindPopup("<b style='color:#002244;'>🏰 BÚNKER CENTRAL // JEFATURA CINDY</b>").openPopup();
+
+        // Dron Alpha
+        const droneAlpha = L.circleMarker([-33.7210, -70.7380], {{
+            radius: 8,
+            color: '#00ffaa',
+            fillColor: '#00ffaa',
+            fillOpacity: 0.9,
             weight: 2
         }}).addTo(map);
+        droneAlpha.bindPopup("<b style='color:#004422;'>🚁 DRONE-ALPHA 01</b><br>Estado: En Patrulla Norte");
 
-        marker.bindPopup("<b style='color:#002244;'>OBJETIVO TÁCTICO // M.E.C.A. SAT</b>").openPopup();
+        // Unidad Terrestre
+        const unidadTerrestre = L.circleMarker([-33.7450, -70.7480], {{
+            radius: 8,
+            color: '#ffbb00',
+            fillColor: '#ffbb00',
+            fillOpacity: 0.9,
+            weight: 2
+        }}).addTo(map);
+        unidadTerrestre.bindPopup("<b style='color:#443300;'>🚘 UNIDAD MÓVIL TERRESTRE</b><br>Sector: Ruta 5 Sur");
+
+        // Cámaras CCTV Perimetrales
+        const cam01 = L.marker([-33.7330, -70.7350]).addTo(map);
+        cam01.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-01 (Plaza de Buin)</b><br><span style='color:green;'>● TRANSMITIENDO EN VIVO</span><br>Filtro: Térmico/Infrarrojo</div>");
+
+        const cam02 = L.marker([-33.7400, -70.7500]).addTo(map);
+        cam02.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-02 (Acceso Ruta 5)</b><br><span style='color:green;'>● TRANSMITIENDO EN VIVO</span><br>Escaneo Vehicular: Activo</div>");
+
     </script>
 </body>
 </html>
 """
-components.html(gods_eye_html, height=400)
+components.html(gods_eye_html, height=440)
 
 col_clima, col_log = st.columns([1, 1.2])
 
@@ -344,6 +409,7 @@ with col_clima:
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    coincidencia_txt = f"🔍 Coincidencia Biométrica para '{busqueda_objetivo}': 99.2% [Verificado]" if busqueda_objetivo else "Sin búsquedas activas en la red."
     eventos_tacticos = [
         "Enlace Serafín-Sat 100% estable y optimizado.",
         "Barrido óptico completado sin anomalías en el sector.",
@@ -357,7 +423,8 @@ with col_log:
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL M.E.C.A.</p>
             <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] {evento_actual}</p>
-            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Objetivo activo en lat: {lat_val}, lon: {lon_val}.</p>
+            <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Foco activo en lat: {lat_val}, lon: {lon_val}. Perímetro: {radio_perimetro} km.</p>
         </div>
     """
     st.markdown(log_html, unsafe_allow_html=True)
@@ -365,9 +432,11 @@ with col_log:
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
 drones_data = [
-    {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin"},
-    {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central"},
-    {"Unidad": "Unidad Móvil Terrestre", "Estado": "En Movimiento", "Batería": "62%", "Sector": "Ruta 5 Sur"}
+    {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin", "Coordenadas": "-33.7210, -70.7380"},
+    {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central", "Coordenadas": "-33.7315, -70.7412"},
+    {"Unidad": "Unidad Móvil Terrestre", "Estado": "En Movimiento", "Batería": "62%", "Sector": "Ruta 5 Sur", "Coordenadas": "-33.7450, -70.7480"},
+    {"Unidad": "CCTV Cam-01", "Estado": "Transmitiendo", "Batería": "100%", "Sector": "Plaza de Buin", "Coordenadas": "-33.7330, -70.7350"},
+    {"Unidad": "CCTV Cam-02", "Estado": "Transmitiendo", "Batería": "100%", "Sector": "Acceso Ruta 5", "Coordenadas": "-33.7400, -70.7500"}
 ]
 st.dataframe(drones_data, use_container_width=True)
 
