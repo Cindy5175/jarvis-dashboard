@@ -6,7 +6,7 @@ import json
 import os
 import subprocess
 
-# Configuración en modo ancho
+# Configuración de página en modo ancho
 st.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónoma // Hologram Core", 
     layout="wide",
@@ -37,7 +37,7 @@ def cargar_memoria():
             "Telegram": {"estado": "Conectado", "bot_id": "@JarvisBunkerBot"}
         },
         "preferencias_voz": {
-            "voz_activa": "Español (Reino Unido / Neutro)",
+            "voz_activa": "Español (Neutro)",
             "tono": "Sarcástico / Sofisticado"
         }
     }
@@ -55,7 +55,7 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS (#000000 + #00d2ff)
+# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
 st.markdown("""
     <style>
     .stApp, .main {
@@ -122,7 +122,7 @@ st.markdown("""
 
 # CABECERA HOLOGRÁFICA
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.0</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; LATENCIA: 12ms</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; VOICE MODULE: ACTIVE</div>', unsafe_allow_html=True)
 
 # DISPOSICIÓN EN 3 COLUMNAS
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.2])
@@ -157,28 +157,39 @@ with col_telemetria:
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP: $930.50</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+# LÓGICA DE RESPUESTA EN CHAT
+if "ultima_respuesta" not in st.session_state:
+    st.session_state.ultima_respuesta = f"Sistemas holográficos y de voz activos, {titulo_jefa} {nombre_jefa}. Haz clic en la esfera o envíame una orden."
+if "ultimo_usuario" not in st.session_state:
+    st.session_state.ultimo_usuario = ""
+
 with col_orbe:
-    orb_component = """
+    # EL ORBE INTERACTIVO CON VOZ Y ANIMACIÓN REACTIVA
+    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
+    
+    orb_component = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 320px;">
-        <div class="orb-container">
-            <div class="outer-ring"></div>
-            <div class="inner-core"></div>
+        <div class="orb-container" onclick="hablarJarvis()" style="cursor: pointer;" title="Haz clic para escuchar a J.A.R.V.I.S.">
+            <div id="ring" class="outer-ring"></div>
+            <div id="core" class="inner-core"></div>
         </div>
-        <div class="sound-wave">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        <div class="sound-wave" id="waveBox">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
         </div>
+        <p id="orbStatus" style="color: #00d2ff; font-size: 11px; margin-top: 10px; font-family: monospace;">[ TOCA EL ORBE PARA ESCUCHAR ME ]</p>
     </div>
 
     <style>
-    .orb-container {
+    .orb-container {{
         position: relative;
         width: 180px;
         height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
-    }
-    .outer-ring {
+    }}
+    .outer-ring {{
         position: absolute;
         width: 170px;
         height: 170px;
@@ -186,57 +197,111 @@ with col_orbe:
         border-radius: 50%;
         animation: rotateRing 12s linear infinite;
         box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-    }
-    .inner-core {
+        transition: all 0.3s ease;
+    }}
+    .inner-core {{
         width: 110px;
         height: 110px;
         background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%);
         border-radius: 50%;
         box-shadow: 0 0 35px #00d2ff, inset 0 0 15px #ffffff;
         animation: pulseCore 2.5s ease-in-out infinite alternate;
-    }
-    .sound-wave {
+        transition: all 0.3s ease;
+    }}
+    .speaking-core {{
+        background: radial-gradient(circle, #00ffff 0%, #0088cc 70%, #001122 100%) !important;
+        box-shadow: 0 0 60px #00ffff, inset 0 0 25px #ffffff !important;
+        animation: pulseFast 0.8s ease-in-out infinite alternate !important;
+    }}
+    .speaking-ring {{
+        border-color: #00ffff !important;
+        box-shadow: 0 0 30px #00ffff !important;
+        animation: rotateRing 3s linear infinite !important;
+    }}
+    .sound-wave {{
         display: flex;
         gap: 5px;
-        margin-top: 25px;
-    }
-    .sound-wave span {
+        margin-top: 15px;
+    }}
+    .bar {{
         width: 4px;
-        height: 20px;
+        height: 8px;
         background-color: #00d2ff;
         border-radius: 2px;
-        animation: wave 1.2s ease-in-out infinite alternate;
-    }
-    .sound-wave span:nth-child(2) { animation-delay: 0.2s; }
-    .sound-wave span:nth-child(3) { animation-delay: 0.4s; }
-    .sound-wave span:nth-child(4) { animation-delay: 0.6s; }
-    .sound-wave span:nth-child(5) { animation-delay: 0.4s; }
-    .sound-wave span:nth-child(6) { animation-delay: 0.2s; }
+        transition: all 0.2s ease;
+    }}
+    .active-wave .bar {{
+        animation: wave 0.6s ease-in-out infinite alternate;
+    }}
+    .active-wave .bar:nth-child(2) {{ animation-delay: 0.1s; }}
+    .active-wave .bar:nth-child(3) {{ animation-delay: 0.2s; }}
+    .active-wave .bar:nth-child(4) {{ animation-delay: 0.3s; }}
+    .active-wave .bar:nth-child(5) {{ animation-delay: 0.2s; }}
+    .active-wave .bar:nth-child(6) {{ animation-delay: 0.1s; }}
 
-    @keyframes rotateRing {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    @keyframes pulseCore {
-        0% { transform: scale(0.92); box-shadow: 0 0 20px #00d2ff; }
-        100% { transform: scale(1.08); box-shadow: 0 0 45px #00d2ff; }
-    }
-    @keyframes wave {
-        0% { height: 6px; }
-        100% { height: 28px; }
-    }
+    @keyframes rotateRing {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    @keyframes pulseCore {{
+        0% {{ transform: scale(0.92); box-shadow: 0 0 20px #00d2ff; }}
+        100% {{ transform: scale(1.08); box-shadow: 0 0 45px #00d2ff; }}
+    }}
+    @keyframes pulseFast {{
+        0% {{ transform: scale(0.88); }}
+        100% {{ transform: scale(1.15); }}
+    }}
+    @keyframes wave {{
+        0% {{ height: 6px; }}
+        100% {{ height: 32px; }}
+    }}
     </style>
+
+    <script>
+    function hablarJarvis() {{
+        if (!('speechSynthesis' in window)) {{
+            alert("Sintetizador de voz no disponible en este navegador.");
+            return;
+        }}
+
+        window.speechSynthesis.cancel(); // Cancelar audios anteriores
+
+        const texto = "{texto_para_hablar}";
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.0;
+        utterance.pitch = 0.9;
+
+        const ring = document.getElementById("ring");
+        const core = document.getElementById("core");
+        const waveBox = document.getElementById("waveBox");
+        const orbStatus = document.getElementById("orbStatus");
+
+        utterance.onstart = function() {{
+            core.classList.add("speaking-core");
+            ring.classList.add("speaking-ring");
+            waveBox.classList.add("active-wave");
+            orbStatus.innerText = "⚡ [ J.A.R.V.I.S. HABLANDO ]";
+            orbStatus.style.color = "#00ffff";
+        }};
+
+        utterance.onend = function() {{
+            core.classList.remove("speaking-core");
+            ring.classList.remove("speaking-ring");
+            waveBox.classList.remove("active-wave");
+            orbStatus.innerText = "[ TOCA EL ORBE PARA REPRODUCIR ]";
+            orbStatus.style.color = "#00d2ff";
+        }};
+
+        window.speechSynthesis.speak(utterance);
+    }}
+    </script>
     """
     components.html(orb_component, height=330)
 
 with col_chat:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">💬 CONVERSATION CORE</div>', unsafe_allow_html=True)
-
-    if "ultima_respuesta" not in st.session_state:
-        st.session_state.ultima_respuesta = f"Sistemas holográficos en línea, {titulo_jefa} {nombre_jefa}. ¿Qué orden ejecutamos hoy?"
-    if "ultimo_usuario" not in st.session_state:
-        st.session_state.ultimo_usuario = ""
 
     st.markdown(f"""
         <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
@@ -260,11 +325,10 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto_ingresado = entrada_usuario.lower()
         
-        # Respuestas inteligentes y personalizadas según lo que escribas
         if "hola" in texto_ingresado:
             respuesta_ia = f"Hola, {nombre_jefa}. Me alegra ver que los sistemas del búnker siguen en pie."
         elif "clima" in texto_ingresado:
-            respuesta_ia = "El clima en Buin marca 14.9 °C con cielos despejados. Ideal para operar."
+            respuesta_ia = "El clima en Buin marca 14.9 grados Celsius con cielos despejados. Ideal para operar."
         elif "ayuda" in texto_ingresado or "que puedes hacer" in texto_ingresado:
             respuesta_ia = f"Tengo control de telemetría, notas persistentes, pasarelas y ejecución local, {titulo_jefa}."
         else:
