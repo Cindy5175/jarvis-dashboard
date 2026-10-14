@@ -5,6 +5,8 @@ import random
 import json
 import os
 import time
+import urllib.parse
+import urllib.request
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -252,39 +254,54 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS 4.0 (NÚCLEO TÁCTICO AVANZADO)
+# MÓDULO: 🛰️ EL OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, RECONOCIMIENTO BIOMÉTRICO & RED CCTV (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
-col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.1, 1.1])
+col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
 with col_map1:
-    destino_input = st.text_input("📍 Teletransporte / Coordenadas:", value="-33.7315, -70.7412 (Buin Base)")
+    destino_input = st.text_input("📍 Coordenadas / Base Manual:", value="-33.7315, -70.7412 (Buin Base)")
 with col_map2:
     capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
 with col_map3:
-    busqueda_objetivo = st.text_input("🔍 Búsqueda / Reconocimiento:", placeholder="Nombre / Patente...")
+    busqueda_objetivo = st.text_input("🔍 Buscar Objetivo / Lugar (Maps/Earth):", value="McDonalds Buin")
 with col_map4:
     st.markdown("<br>", unsafe_allow_html=True)
-    btn_escanear = st.button("📡 Escaneo Biométrico & Satelital")
+    btn_escanear = st.button("📡 Rastrear Objetivo en Mapa")
 
 lat_val, lon_val = -33.7315, -70.7412
-if "," in destino_input and "Buin" not in destino_input:
+lugar_encontrado_nombre = "Base Central Buin"
+
+# FUNCIÓN DE GEO-BÚSQUEDA EN TIEMPO REAL (NOMINATIM GEOCODING)
+if busqueda_objetivo and btn_escanear:
+    try:
+        query_str = busqueda_objetivo
+        if "chile" not in query_str.lower() and "buin" not in query_str.lower():
+            query_str += " Buin Chile"
+        url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
+        req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data_geo = json.loads(resp.read().decode())
+            if data_geo and len(data_geo) > 0:
+                lat_val = float(data_geo[0]['lat'])
+                lon_val = float(data_geo[0]['lon'])
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:40]
+    except Exception:
+        pass
+elif "," in destino_input and "Buin" not in destino_input:
     try:
         parts = destino_input.split(",")
         lat_val = float(parts[0].strip())
         lon_val = float(parts[1].strip())
     except:
         pass
-elif "santiago" in destino_input.lower():
-    lat_val, lon_val = -33.4489, -70.6693
-elif "valparaíso" in destino_input.lower() or "valparaiso" in destino_input.lower():
-    lat_val, lon_val = -33.0472, -71.6127
 
 # Selección de dron o unidad para centrado táctico
 col_drone_sel, col_radio = st.columns([2, 1])
 with col_drone_sel:
     unidad_foco = st.selectbox("🎯 Centrar Cámara Satelital en Unidad / Dron:", [
+        "Foco en Objetivo Buscado / Manual",
         "Base Central Búnker (-33.7315, -70.7412)",
         "Drone-Alpha 01 [Norte Buin] (-33.7210, -70.7380)",
         "Drone-Beta 02 [Base Central] (-33.7315, -70.7412)",
@@ -303,6 +320,8 @@ elif "CCTV Cam-01" in unidad_foco:
     lat_val, lon_val = -33.7330, -70.7350
 elif "CCTV Cam-02" in unidad_foco:
     lat_val, lon_val = -33.7400, -70.7500
+elif "Base Central" in unidad_foco:
+    lat_val, lon_val = -33.7315, -70.7412
 
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -332,10 +351,10 @@ gods_eye_html = f"""
     </style>
 </head>
 <body>
-    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | RED CCTV: ACTIVA</div>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | GOOGLE EARTH TARGET</div>
     <div id="map"></div>
     <script>
-        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 14);
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 15);
         
         L.tileLayer('{url_capa}', {{
             maxZoom: 19,
@@ -351,17 +370,25 @@ gods_eye_html = f"""
             weight: 1,
             dashArray: '5, 5'
         }}).addTo(map);
-        geofence.bindPopup("<b style='color:#ff0055;'>🚨 PERÍMETRO DEFENSIVO M.E.C.A. (" + {radio_perimetro} + " KM)</b>");
 
-        // Base Principal
-        const baseMarker = L.circleMarker([-33.7315, -70.7412], {{
+        // Marcador del Objetivo Rastreado
+        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{
             radius: 12,
             color: '#ffffff',
-            fillColor: '#00d2ff',
+            fillColor: '#ffbb00',
             fillOpacity: 1.0,
             weight: 3
         }}).addTo(map);
-        baseMarker.bindPopup("<b style='color:#002244;'>🏰 BÚNKER CENTRAL // JEFATURA CINDY</b>").openPopup();
+        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO ENCONTRADO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
+
+        // Base Principal
+        const baseMarker = L.circleMarker([-33.7315, -70.7412], {{
+            radius: 10,
+            color: '#ffffff',
+            fillColor: '#00d2ff',
+            fillOpacity: 0.9,
+            weight: 2
+        }}).addTo(map);
 
         // Dron Alpha
         const droneAlpha = L.circleMarker([-33.7210, -70.7380], {{
@@ -371,24 +398,13 @@ gods_eye_html = f"""
             fillOpacity: 0.9,
             weight: 2
         }}).addTo(map);
-        droneAlpha.bindPopup("<b style='color:#004422;'>🚁 DRONE-ALPHA 01</b><br>Estado: En Patrulla Norte");
-
-        // Unidad Terrestre
-        const unidadTerrestre = L.circleMarker([-33.7450, -70.7480], {{
-            radius: 8,
-            color: '#ffbb00',
-            fillColor: '#ffbb00',
-            fillOpacity: 0.9,
-            weight: 2
-        }}).addTo(map);
-        unidadTerrestre.bindPopup("<b style='color:#443300;'>🚘 UNIDAD MÓVIL TERRESTRE</b><br>Sector: Ruta 5 Sur");
 
         // Cámaras CCTV Perimetrales
         const cam01 = L.marker([-33.7330, -70.7350]).addTo(map);
-        cam01.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-01 (Plaza de Buin)</b><br><span style='color:green;'>● TRANSMITIENDO EN VIVO</span><br>Filtro: Térmico/Infrarrojo</div>");
+        cam01.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-01 (Plaza)</b></div>");
 
         const cam02 = L.marker([-33.7400, -70.7500]).addTo(map);
-        cam02.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-02 (Acceso Ruta 5)</b><br><span style='color:green;'>● TRANSMITIENDO EN VIVO</span><br>Escaneo Vehicular: Activo</div>");
+        cam02.bindPopup("<div class='cctv-popup'><b>📹 CCTV CAM-02 (Ruta 5)</b></div>");
 
     </script>
 </body>
@@ -409,7 +425,7 @@ with col_clima:
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    coincidencia_txt = f"🔍 Coincidencia Biométrica para '{busqueda_objetivo}': 99.2% [Verificado]" if busqueda_objetivo else "Sin búsquedas activas en la red."
+    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas en la red."
     eventos_tacticos = [
         "Enlace Serafín-Sat 100% estable y optimizado.",
         "Barrido óptico completado sin anomalías en el sector.",
