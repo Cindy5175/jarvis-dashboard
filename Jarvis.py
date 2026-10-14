@@ -131,84 +131,34 @@ if "ultima_respuesta" not in st.session_state:
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
-# Manejo de entrada por voz del navegador
-voz_capturada = st.query_params.get("voice_input", None)
-if voz_capturada:
-    entrada_usuario = voz_capturada
-    st.query_params.clear()
-    
-    texto = entrada_usuario.lower().strip()
-    respuesta_ia = None
-    if cliente_ia:
-        try:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
-            generation_config = {"max_output_tokens": 120, "temperature": 0.3}
-            respuesta_modelo = cliente_ia.generate_content(
-                f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
-                generation_config=generation_config
-            )
-            respuesta_ia = respuesta_modelo.text
-        except Exception:
-            pass
-            
-    if not respuesta_ia:
-        if "hola" in texto:
-            respuesta_ia = f"¡Hola, {titulo_jefa} {nombre_jefa}! Sistemas M.E.C.A. operativos y en línea desde el búnker en Buin."
-        else:
-            respuesta_ia = f"Comando por voz '{entrada_usuario}' registrado y procesado por M.E.C.A., {nombre_jefa}."
-
-    st.session_state.ultimo_usuario = entrada_usuario
-    st.session_state.ultima_respuesta = respuesta_ia
-    st.rerun()
-
 with col_orbe:
-    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
     
-    orb_component = f"""
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px;">
-        <div onclick="hablarJarvis()" style="cursor: pointer; width: 90px; height: 90px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 30px #00d2ff;"></div>
-        <button onclick="iniciarEscuchaVoz()" style="margin-top: 12px; background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🎙️ Activar Escucha Continua</button>
-        <button onclick="hablarJarvis()" style="margin-top: 6px; background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🔊 Reproducir Voz</button>
+    orbe_visual_html = """
+    <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
+        <div style="width: 80px; height: 80px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 25px #00d2ff;"></div>
     </div>
-    <script>
-    function hablarJarvis() {{
-        if (!('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-        utterance.lang = 'es-CL';
-        window.speechSynthesis.speak(utterance);
-    }}
-
-    function iniciarEscuchaVoz() {{
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {{
-            alert("Tu navegador no soporta reconocimiento de voz nativo.");
-            return;
-        }}
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = function() {{
-            console.log("J.A.R.V.I.S. M.E.C.A. escuchando...");
-        }};
-
-        recognition.onresult = function(event) {{
-            const speechResult = event.results[0][0].transcript;
-            console.log("Voz detectada: " + speechResult);
-            window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
-        }};
-
-        recognition.onerror = function(event) {{
-            console.error("Error de voz: " + event.error);
-        }};
-
-        recognition.start();
-    }}
-    </script>
     """
-    components.html(orb_component, height=350)
+    components.html(orbe_visual_html, height=110)
+    
+    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
+
+    btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
+    
+    if btn_reproducir:
+        audio_script = f"""
+        <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+            utterance.lang = 'es-CL';
+            window.speechSynthesis.speak(utterance);
+        }}
+        </script>
+        """
+        components.html(audio_script, height=0)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 NÚCLEO DE CONVERSACIÓN</div>', unsafe_allow_html=True)
@@ -237,7 +187,6 @@ with col_chat:
             except Exception:
                 pass
                 
-        # PROTOCOLO DE RESPALDO LOCAL SI LA API SE SATURA O NO ESTÁ DISPONIBLE
         if not respuesta_ia:
             if "hola" in texto:
                 respuesta_ia = f"¡Hola, {titulo_jefa} {nombre_jefa}! Sistemas M.E.C.A. operativos y en línea desde el búnker en Buin."
@@ -279,7 +228,6 @@ with col_map4:
 lat_val, lon_val = -33.7315, -70.7412
 lugar_encontrado_nombre = "Base Central Buin"
 
-# LÓGICA DE BÚSQUEDA DIRECTA Y ABSOLUTA
 if nodo_rapido != "--- Selecciona un Nodo ---":
     if "Santiago Centro" in nodo_rapido:
         lat_val, lon_val = -33.4489, -70.6693
@@ -308,8 +256,6 @@ elif busqueda_objetivo:
                 lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:45]
     except Exception:
         pass
-
-radio_perimetro = 3
 
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -348,7 +294,6 @@ gods_eye_html = f"""
             attribution: ''
         }}).addTo(map);
 
-        // Marcador del Objetivo Rastreado
         const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{
             radius: 12,
             color: '#ffffff',
