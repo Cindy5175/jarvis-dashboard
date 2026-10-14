@@ -140,66 +140,70 @@ if "voz_escrita" not in st.session_state:
     st.session_state.voz_escrita = ""
 
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // GLOBO & ONDAS VOCALES</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
     
-    # GLOBO TERRAQUEO CON ONDAS DE AUDIO PULSANTES TIPO STARK
-    earth_waves_html = """
+    # NÚCLEO CON ONDA DE AUDIO ESTILO STARK (DINÁMICA Y BRILLANTE)
+    audio_wave_core_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 120px; overflow: hidden; }
-      .core-container { position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; }
-      
-      /* Globo terráqueo giratorio */
-      .earth {
-        width: 75px;
-        height: 75px;
-        border-radius: 50%;
-        position: absolute;
-        background: radial-gradient(circle at 30% 30%, #00f2fe 0%, #0077be 50%, #001133 90%);
-        box-shadow: inset -12px -12px 25px rgba(0,0,0,0.9), 0 0 15px rgba(0, 210, 255, 0.8);
-        overflow: hidden;
-        z-index: 3;
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 110px; overflow: hidden; }
+      .audio-container {
+        width: 100%;
+        height: 90px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, rgba(0,0,0,0.9) 80%);
+        border: 1px solid rgba(0,210,255,0.4);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
       }
-      .earth::after {
-        content: "";
-        position: absolute;
-        top: 0; left: -100%; width: 300%; height: 100%;
-        background: linear-gradient(90deg, 
-            transparent 0%, rgba(0,255,170,0.4) 20%, transparent 40%, 
-            rgba(0,210,255,0.6) 60%, transparent 80%, rgba(0,255,170,0.4) 100%);
-        animation: rotateContinents 8s linear infinite;
+      .waveform {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 70px;
       }
+      .bar {
+        width: 4px;
+        background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%);
+        border-radius: 2px;
+        animation: soundWaveAnim 1.2s ease-in-out infinite alternate;
+        box-shadow: 0 0 8px #00d2ff;
+      }
+      /* Alturas y retrasos dinámicos para simular onda de voz real */
+      .bar:nth-child(1)  { height: 20px; animation-delay: 0.1s; }
+      .bar:nth-child(2)  { height: 45px; animation-delay: 0.3s; }
+      .bar:nth-child(3)  { height: 65px; animation-delay: 0.2s; }
+      .bar:nth-child(4)  { height: 30px; animation-delay: 0.5s; }
+      .bar:nth-child(5)  { height: 75px; animation-delay: 0.1s; }
+      .bar:nth-child(6)  { height: 50px; animation-delay: 0.4s; }
+      .bar:nth-child(7)  { height: 85px; animation-delay: 0.2s; }
+      .bar:nth-child(8)  { height: 60px; animation-delay: 0.6s; }
+      .bar:nth-child(9)  { height: 90px; animation-delay: 0.1s; }
+      .bar:nth-child(10) { height: 70px; animation-delay: 0.3s; }
+      .bar:nth-child(11) { height: 40px; animation-delay: 0.5s; }
+      .bar:nth-child(12) { height: 80px; animation-delay: 0.2s; }
+      .bar:nth-child(13) { height: 55px; animation-delay: 0.4s; }
+      .bar:nth-child(14) { height: 35px; animation-delay: 0.1s; }
+      .bar:nth-child(15) { height: 65px; animation-delay: 0.3s; }
+      .bar:nth-child(16) { height: 25px; animation-delay: 0.5s; }
 
-      /* Ondas de audio / pulsos concéntricos (Ondas Stark) */
-      .sound-wave {
-        position: absolute;
-        border: 2px solid rgba(0, 255, 170, 0.6);
-        border-radius: 50%;
-        animation: pulseWave 2s ease-out infinite;
-        z-index: 1;
-      }
-      .wave-1 { width: 85px; height: 85px; animation-delay: 0s; }
-      .wave-2 { width: 100px; height: 100px; animation-delay: 0.6s; }
-      .wave-3 { width: 115px; height: 115px; animation-delay: 1.2s; }
-
-      @keyframes rotateContinents {
-        0% { transform: translateX(0%); }
-        100% { transform: translateX(33.33%); }
-      }
-      @keyframes pulseWave {
-        0% { transform: scale(0.8); opacity: 1; border-color: rgba(0, 255, 170, 0.9); }
-        100% { transform: scale(1.35); opacity: 0; border-color: rgba(0, 210, 255, 0.1); }
+      @keyframes soundWaveAnim {
+        0% { transform: scaleY(0.4); opacity: 0.5; }
+        100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; }
       }
     </style>
-    <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 115px;">
-        <div class="core-container" id="audioCore">
-            <div class="sound-wave wave-1"></div>
-            <div class="sound-wave wave-2"></div>
-            <div class="sound-wave wave-3"></div>
-            <div class="earth"></div>
+    <div class="audio-container">
+        <div class="waveform">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
         </div>
     </div>
     """
-    components.html(earth_waves_html, height=125)
+    components.html(audio_wave_core_html, height=110)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
