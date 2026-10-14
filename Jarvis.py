@@ -1,9 +1,6 @@
 # ---------------------------------------------------------
 # MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES DE ALTO RENDIMIENTO
 # ---------------------------------------------------------
-st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES DE ALTO RENDIMIENTO (STARK INDUSTRIES)</div>', unsafe_allow_html=True)
-
 if "biometrico_estado" not in st.session_state:
     st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state:
@@ -14,6 +11,9 @@ if "misiones_lista" not in st.session_state:
         "Sincronizar satélite": False, 
         "Actualizar IA": False
     }
+
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA // 4 JUGUETES DE ALTO RENDIMIENTO (STARK INDUSTRIES)</div>', unsafe_allow_html=True)
 
 j1, j2, j3, j4 = st.columns(4)
 
