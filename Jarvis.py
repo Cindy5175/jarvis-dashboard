@@ -131,41 +131,6 @@ if "ultima_respuesta" not in st.session_state:
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
-# MANEJO DE COMANDOS DE VOZ Y PROTOCOLOS CON SARCASMO TARK
-voz_capturada = st.query_params.get("voice_input", None)
-if voz_capturada:
-    entrada_usuario = voz_capturada
-    st.query_params.clear()
-    
-    texto = entrada_usuario.lower().strip()
-    respuesta_ia = None
-    
-    if "protocolo de emergencia" in texto:
-        respuesta_ia = f"¡Oh, maravilla! Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}. Espero que no sea otra falsa alarma por ver películas de los Vengadores."
-    elif "protocolo de seguridad" in texto:
-        respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
-    elif cliente_ia:
-        try:
-            prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
-            generation_config = {"max_output_tokens": 120, "temperature": 0.4}
-            respuesta_modelo = cliente_ia.generate_content(
-                f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
-                generation_config=generation_config
-            )
-            respuesta_ia = respuesta_modelo.text
-        except Exception:
-            pass
-            
-    if not respuesta_ia:
-        if "hola" in texto:
-            respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Me alegra ver que sobreviviste a otro día sin mi constante supervisión."
-        else:
-            respuesta_ia = f"Comando '{entrada_usuario}' procesado con éxito, {nombre_jefa}. ¿Alguna otra brillante ocurrencia para hoy?"
-
-    st.session_state.ultimo_usuario = entrada_usuario
-    st.session_state.ultima_respuesta = respuesta_ia
-    st.rerun()
-
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
     
@@ -182,12 +147,13 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
-    activar_escucha_html = """
+    # Dictado por voz inteligente que busca la caja de texto de Streamlit en la página principal
+    dictado_voz_html = """
     <div style="text-align: center; margin-top: 5px;">
-        <button onclick="iniciarEscuchaVoz()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar por Voz</button>
+        <button onclick="dictarAlChat()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar a la Caja de Chat</button>
     </div>
     <script>
-    function iniciarEscuchaVoz() {
+    function dictarAlChat() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             alert("Tu navegador no soporta reconocimiento de voz nativo.");
@@ -199,24 +165,31 @@ with col_orbe:
         recognition.maxAlternatives = 1;
 
         recognition.onstart = function() {
-            console.log("J.A.R.V.I.S. M.E.C.A. escuchando...");
+            console.log("Escuchando dictado...");
         };
 
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
-            console.log("Voz detectada: " + speechResult);
-            window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
+            // Busca el input de texto principal de Streamlit en la ventana superior (parent)
+            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
+            if (inputs.length > 0) {
+                // Selecciona típicamente la caja de texto del chat
+                const targetInput = inputs[inputs.length - 1];
+                targetInput.value = speechResult;
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         };
 
         recognition.onerror = function(event) {
-            console.error("Error de voz: " + event.error);
+            console.error("Error en dictado: " + event.error);
         };
 
         recognition.start();
     }
     </script>
     """
-    components.html(activar_escucha_html, height=45)
+    components.html(dictado_voz_html, height=45)
 
     if btn_reproducir:
         audio_script = f"""
@@ -241,7 +214,7 @@ with col_chat:
         st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
 
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción...")
+        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción o usa el dictado...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
     if boton_enviar and entrada_usuario:
