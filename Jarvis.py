@@ -66,10 +66,10 @@ if ai_api_key_guardada:
     except Exception as e:
         cliente_ia = None
 
-# CAPTURAR VOZ DESDE LA URL Y LLEVARLA AL INPUT
+# CAPTURAR VOZ DESDE LA URL Y PROCESARLA AUTOMÁTICAMENTE
 voz_capturada = st.query_params.get("voice_text", None)
 if voz_capturada:
-    st.session_state.voz_escrita = voz_capturada
+    st.session_state.comando_voz_pendiente = voz_capturada
     st.query_params.clear()
 
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
@@ -136,8 +136,6 @@ if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin sigue en pie, a pesar de mis pronósticos."
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
-if "voz_escrita" not in st.session_state:
-    st.session_state.voz_escrita = ""
 
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
@@ -287,13 +285,11 @@ with col_chat:
     with col_q3:
         btn_q_seg = st.button("🛡️ Seguridad")
 
-    texto_por_defecto = st.session_state.voz_escrita
-    st.session_state.voz_escrita = ""
-
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", value=texto_por_defecto, placeholder="Escribe tu instrucción táctica...")
+        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción táctica...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
+    # DETERMINAR SI HAY COMANDO (POR TECLADO, BOTÓN RÁPIDO O POR VOZ AUTOMÁTICA)
     comando_ejecutar = None
     if boton_enviar and entrada_usuario:
         comando_ejecutar = entrada_usuario
@@ -303,6 +299,9 @@ with col_chat:
         comando_ejecutar = "Protocolo de emergencia"
     elif btn_q_seg:
         comando_ejecutar = "Protocolo de seguridad"
+    elif "comando_voz_pendiente" in st.session_state and st.session_state.comando_voz_pendiente:
+        comando_ejecutar = st.session_state.comando_voz_pendiente
+        st.session_state.comando_voz_pendiente = ""
 
     if comando_ejecutar:
         texto = comando_ejecutar.lower().strip()
@@ -316,7 +315,7 @@ with col_chat:
             respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de Inteligencia Artificial y el único guardián real de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. Si estás leyendo esto, o tienes autorización alfa o estás a punto de ser expulsado de la red. ¿En qué le puedo servir, con pésima gana?"
         elif cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} in Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {comando_ejecutar}",
@@ -342,7 +341,7 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
+# MÓDULO: 🛰️ OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
