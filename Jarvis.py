@@ -53,14 +53,14 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
 
-# CONFIGURACIÓN DIRECTA DE GEMINI
+# CONFIGURACIÓN DIRECTA DE GEMINI CON EL MODELO ACTUAL
 cliente_ia = None
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        # Usamos directamente el modelo estándar flash
-        cliente_ia = genai.GenerativeModel('gemini-2.5-flash')
+        # Usando el modelo actual indicado por el sistema
+        cliente_ia = genai.GenerativeModel('gemini-3.8-flash')
     except Exception as e:
         cliente_ia = None
 
