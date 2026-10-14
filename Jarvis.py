@@ -5,7 +5,6 @@ import random
 import json
 import os
 import time
-import requests
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -33,7 +32,7 @@ def cargar_memoria():
         "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
-            "voz_activa": "ElevenLabs Neural",
+            "voz_activa": "Español (Neutro)",
             "elevenlabs_api_key": "",
             "elevenlabs_voice_id": "21m00Tcm4TlvDq8ikWAM",
             "ai_api_key": ""
@@ -54,8 +53,6 @@ nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
-elevenlabs_key = prefs_voz.get("elevenlabs_api_key", "")
-elevenlabs_voice = prefs_voz.get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM")
 
 # CONFIGURACIÓN DIRECTA DE GEMINI
 cliente_ia = None
@@ -87,17 +84,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.5 // EXPANDED TACTICAL</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 4.0 // VOICE HANDS-FREE</h1>', unsafe_allow_html=True)
 estado_ia_txt = "AI ENGINE: GEMINI ACTIVE" if cliente_ia else "AI ENGINE: LOCAL MODE"
 st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
-# 📈 BARRA FINANCIERA TRADICIONAL (Sin cripto)
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
         <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
         <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
-        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100% (STABLE)</span></span>
+        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">LINK 100%</span></span>
     </div>
 """, unsafe_allow_html=True)
 
@@ -133,58 +129,77 @@ if "ultima_respuesta" not in st.session_state:
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
+# Manejo de entrada por voz del navegador
+voz_capturada = st.query_params.get("voice_input", None)
+if voz_capturada:
+    entrada_usuario = voz_capturada
+    # Limpiamos el parámetro para evitar bucles
+    st.query_params.clear()
+    
+    texto = entrada_usuario.lower().strip()
+    if cliente_ia:
+        try:
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
+            generation_config = {"max_output_tokens": 120, "temperature": 0.3}
+            respuesta_modelo = cliente_ia.generate_content(
+                f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
+                generation_config=generation_config
+            )
+            respuesta_ia = respuesta_modelo.text
+        except Exception as e:
+            respuesta_ia = f"Error de núcleo: {e}"
+    else:
+        respuesta_ia = f"Comando por voz '{entrada_usuario}' procesado en Buin, {nombre_jefa}."
+
+    st.session_state.ultimo_usuario = entrada_usuario
+    st.session_state.ultima_respuesta = respuesta_ia
+    st.rerun()
+
 with col_orbe:
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
     
-    # 🎙️ Lógica de ElevenLabs integrada (si hay API key, intenta reproducir audio neural)
-    audio_script_eleven = ""
-    if elevenlabs_key:
-        audio_script_eleven = f"""
-        async function reproducirElevenLabs() {{
-            try {{
-                const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/{elevenlabs_voice}', {{
-                    method: 'POST',
-                    headers: {{
-                        'xi-api-key': '{elevenlabs_key}',
-                        'Content-Type': 'application/json'
-                    }},
-                    body: JSON.stringify({{
-                        text: "{texto_para_hablar}",
-                        model_id: "eleven_multilingual_v2"
-                    }})
-                }});
-                if (response.ok) {{
-                    const blob = await response.blob();
-                    const audioUrl = URL.createObjectURL(blob);
-                    const audio = new Audio(audioUrl);
-                    audio.play();
-                    return;
-                }}
-            }} catch(e) {{}}
-            // Fallback a voz nativa si falla ElevenLabs
-            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-            utterance.lang = 'es-ES';
-            window.speechSynthesis.speak(utterance);
-        }}
-        """
-    else:
-        audio_script_eleven = f"""
-        function reproducirElevenLabs() {{
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
-            utterance.lang = 'es-ES';
-            window.speechSynthesis.speak(utterance);
-        }}
-        """
-
     orb_component = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px;">
-        <div onclick="reproducirElevenLabs()" style="cursor: pointer; width: 100px; height: 100px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 35px #00d2ff;"></div>
-        <button onclick="reproducirElevenLabs()" style="margin-top: 15px; background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🔊 Reproducir Voz Neural</button>
+        <div onclick="hablarJarvis()" style="cursor: pointer; width: 90px; height: 90px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 30px #00d2ff;"></div>
+        <button onclick="iniciarEscuchaVoz()" style="margin-top: 12px; background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🎙️ Activar Escucha Continua</button>
+        <button onclick="hablarJarvis()" style="margin-top: 6px; background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;">🔊 Reproducir Voz</button>
     </div>
     <script>
-    {audio_script_eleven}
+    function hablarJarvis() {{
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+        utterance.lang = 'es-ES';
+        window.speechSynthesis.speak(utterance);
+    }}
+
+    function iniciarEscuchaVoz() {{
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {{
+            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            return;
+        }}
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {{
+            console.log("J.A.R.V.I.S. escuchando...");
+        }};
+
+        recognition.onresult = function(event) {{
+            const speechResult = event.results[0][0].transcript;
+            console.log("Voz detectada: " + speechResult);
+            window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
+        }};
+
+        recognition.onerror = function(event) {{
+            console.error("Error de voz: " + event.error);
+        }};
+
+        recognition.start();
+    }}
     </script>
     """
     components.html(orb_component, height=350)
@@ -205,20 +220,24 @@ with col_chat:
         
         if cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., asistente de inteligencia artificial leal, sofisticado y formal. Te diriges a la usuaria como '{titulo_jefa} {nombre_jefa}' en su búnker en Buin, Chile. Responde de forma concisa."
-                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nInstrucción: {entrada_usuario}")
+                prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
+                generation_config = {"max_output_tokens": 120, "temperature": 0.3}
+                respuesta_modelo = cliente_ia.generate_content(
+                    f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
+                    generation_config=generation_config
+                )
                 respuesta_ia = respuesta_modelo.text
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "quota" in err_str.lower():
-                    respuesta_ia = f"Jefa, hemos alcanzado temporalmente el límite de consultas gratuitas por minuto de la API de Gemini. Esperemos 20 segundos y volvemos a transmitir."
+                    respuesta_ia = f"Jefa, límite de cuota alcanzado temporalmente. Esperemos unos segundos."
                 else:
-                    respuesta_ia = f"Error temporal en el núcleo Gemini: {e}"
+                    respuesta_ia = f"Error temporal: {e}"
         else:
-            if "hola" in texto or "saludos" in texto:
+            if "hola" in texto:
                 respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker operativo."
             else:
-                respuesta_ia = f"Comando '{entrada_usuario}' registrado y procesado en el búnker de Buin, {nombre_jefa}."
+                respuesta_ia = f"Comando '{entrada_usuario}' procesado en Buin, {nombre_jefa}."
 
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
@@ -338,7 +357,6 @@ with col_log:
     """
     st.markdown(log_html, unsafe_allow_html=True)
 
-# 🛰️ SUBMÓDULO: RASTREO DE DRONES Y UNIDADES MÓVILES
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO & DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
 drones_data = [
@@ -351,8 +369,7 @@ st.dataframe(drones_data, use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("---")
 
-# 👤 CONFIGURACIÓN AVANZADA, VOZ ELEVENLABS & SEGURIDAD PIN
-with st.expander("👤 Identidad, Voz Neural (ElevenLabs) & Seguridad del Búnker", expanded=False):
+with st.expander("👤 Identidad, Voz Neural & Seguridad del Búnker", expanded=False):
     if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
     if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
 
@@ -360,14 +377,13 @@ with st.expander("👤 Identidad, Voz Neural (ElevenLabs) & Seguridad del Búnke
     with col_id1:
         nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
         nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
-        pin_bunker = st.text_input("PIN de Acceso Búnker:", type="password", value="1234")
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
         ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
         eleven_key_actual = prefs_voz.get("elevenlabs_api_key", "")
-        elevenlabs_api_key = st.text_input("ElevenLabs API Key (Voz Neural):", type="password", value=eleven_key_actual)
+        elevenlabs_api_key = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=eleven_key_actual)
     
-    if st.button("💾 Actualizar Configuración y Credenciales"):
+    if st.button("💾 Actualizar Configuración"):
         if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
         if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
             
@@ -377,5 +393,5 @@ with st.expander("👤 Identidad, Voz Neural (ElevenLabs) & Seguridad del Búnke
         st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_api_key
         
         guardar_memoria(st.session_state.memoria)
-        st.success("Configuración y credenciales neurales actualizadas con éxito.")
+        st.success("Configuración actualizada con éxito.")
         st.rerun()
