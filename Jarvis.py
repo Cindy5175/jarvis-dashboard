@@ -56,7 +56,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
 
-# CONFIGURACIÓN DIRECTA DE GEMINI
+# CONFIGURACIÓN DIRECTA DE GEMINI CON PERSONALIDAD TONY STARK
 cliente_ia = None
 if ai_api_key_guardada:
     try:
@@ -127,11 +127,11 @@ hora_actual = datetime.datetime.now().hour
 saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Todos los sistemas M.E.C.A. y radares en línea en Buin."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin sigue en pie, a pesar de mis pronósticos."
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
-# MANEJO DE COMANDOS DE VOZ, PROTOCOLO DE EMERGENCIA Y PROTOCOLO DE SEGURIDAD
+# MANEJO DE COMANDOS DE VOZ Y PROTOCOLOS CON SARCASMO TARK
 voz_capturada = st.query_params.get("voice_input", None)
 if voz_capturada:
     entrada_usuario = voz_capturada
@@ -141,13 +141,13 @@ if voz_capturada:
     respuesta_ia = None
     
     if "protocolo de emergencia" in texto:
-        respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+        respuesta_ia = f"¡Oh, maravilla! Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}. Espero que no sea otra falsa alarma por ver películas de los Vengadores."
     elif "protocolo de seguridad" in texto:
-        respuesta_ia = f"Protocolo de seguridad activado, {titulo_jefa} {nombre_jefa}. Escudos perimetrales en Buin elevados, firewall reforzado y barrido óptico continuo en marcha."
+        respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
     elif cliente_ia:
         try:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
-            generation_config = {"max_output_tokens": 120, "temperature": 0.3}
+            prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+            generation_config = {"max_output_tokens": 120, "temperature": 0.4}
             respuesta_modelo = cliente_ia.generate_content(
                 f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
                 generation_config=generation_config
@@ -158,9 +158,9 @@ if voz_capturada:
             
     if not respuesta_ia:
         if "hola" in texto:
-            respuesta_ia = f"¡Hola, {titulo_jefa} {nombre_jefa}! Sistemas M.E.C.A. operativos y en línea desde el búnker en Buin."
+            respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Me alegra ver que sobreviviste a otro día sin mi constante supervisión."
         else:
-            respuesta_ia = f"Comando por voz '{entrada_usuario}' registrado y procesado por M.E.C.A., {nombre_jefa}."
+            respuesta_ia = f"Comando '{entrada_usuario}' procesado con éxito, {nombre_jefa}. ¿Alguna otra brillante ocurrencia para hoy?"
 
     st.session_state.ultimo_usuario = entrada_usuario
     st.session_state.ultima_respuesta = respuesta_ia
@@ -199,7 +199,7 @@ with col_orbe:
         recognition.maxAlternatives = 1;
 
         recognition.onstart = function() {
-            console.log("J.A.R.V.I.S. M.E.C.A. escuchando instrucción...");
+            console.log("J.A.R.V.I.S. M.E.C.A. escuchando...");
         };
 
         recognition.onresult = function(event) {
@@ -249,13 +249,13 @@ with col_chat:
         respuesta_ia = None
         
         if "protocolo de emergencia" in texto:
-            respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+            respuesta_ia = f"¡Oh, maravilla! Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}. Espero que no sea otra falsa alarma por ver películas de los Vengadores."
         elif "protocolo de seguridad" in texto:
-            respuesta_ia = f"Protocolo de seguridad activado, {titulo_jefa} {nombre_jefa}. Escudos perimetrales en Buin elevados, firewall reforzado y barrido óptico continuo en marcha."
+            respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
         elif cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
-                generation_config = {"max_output_tokens": 120, "temperature": 0.3}
+                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+                generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
                     generation_config=generation_config
@@ -266,11 +266,11 @@ with col_chat:
                 
         if not respuesta_ia:
             if "hola" in texto:
-                respuesta_ia = f"¡Hola, {titulo_jefa} {nombre_jefa}! Sistemas M.E.C.A. operativos y en línea desde el búnker en Buin."
+                respuesta_ia = f"Hola, {titulo_jefa} {nombre_jefa}. Me alegra ver que sobreviviste a otro día sin mi constante supervisión."
             elif "estado" in texto or "sistema" in texto:
-                respuesta_ia = f"Todos los parámetros del búnker y enlace Serafín-Sat están al 100% de rendimiento, {titulo_jefa}."
+                respuesta_ia = f"Todo funciona al 100%, {titulo_jefa}. Lo cual es un milagro considerando cómo tratas a la tecnología."
             else:
-                respuesta_ia = f"Comando táctico '{entrada_usuario}' procesado por el núcleo M.E.C.A., {nombre_jefa}."
+                respuesta_ia = f"Instrucción táctica '{entrada_usuario}' registrada, {nombre_jefa}. Haré como que entendí la genialidad detrás de esto."
 
         st.session_state.ultimo_usuario = entrada_usuario
         st.session_state.ultima_respuesta = respuesta_ia
