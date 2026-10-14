@@ -187,7 +187,7 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (CON MODO NOCTURNO OPTIMIZADO)
+# MÓDULO: 🛰️ EL OJO DE DIOS (CON BARRIDO SATELITAL DINÁMICO)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & CLIMA (BUIN, CHILE)</div>', unsafe_allow_html=True)
@@ -282,15 +282,24 @@ with col_clima:
 
 with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    log_html = (
-        f"""
+    
+    # Eventos dinámicos simulados al presionar el barrido satelital
+    eventos_tacticos = [
+        "Enlace Serafín-Sat 100% estable y optimizado.",
+        "Barrido óptico completado sin anomalías en el sector.",
+        "Tráfico fluido detectado en Ruta 5 Sur (Acceso Buin).",
+        "Calibración de espectro térmico finalizada con éxito.",
+        "Perímetro del búnker seguro. Sin intrusiones en la red."
+    ]
+    evento_actual = random.choice(eventos_tacticos) if btn_escanear else "Enlace Serafín-Sat 100% estable."
+
+    log_html = f"""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL</p>
-            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Serafín-Sat 100% estable.</p>
-            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Coordenadas actualizadas a lat: {lat_val}, lon: {lon_val}.</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] {evento_actual}</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Objetivo activo en lat: {lat_val}, lon: {lon_val}.</p>
         </div>
     """
-    )
     st.markdown(log_html, unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
