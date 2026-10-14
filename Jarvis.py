@@ -188,7 +188,7 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO OSCURO - 100% ESTABLE)
+# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO LIBRE 100%)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & GEOESPACIAL (BUIN, CHILE)</div>', unsafe_allow_html=True)
@@ -212,22 +212,22 @@ gods_eye_html = """
     <script>
         const map = L.map('map', {zoomControl: false}).setView([-33.7315, -70.7412], 13);
         
-        // Capa satelital con estética táctica oscura (CartoDB Dark Matter)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Capa estándar de OpenStreetMap 100% libre y sin restricciones de API Key
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            subdomains: 'abcd'
+            attribution: ''
         }).addTo(map);
 
         // Marcador holográfico para la Base Buin
         const marker = L.circleMarker([-33.7315, -70.7412], {
-            radius: 9,
+            radius: 10,
             color: '#ffffff',
             fillColor: '#00d2ff',
             fillOpacity: 1.0,
             weight: 2
         }).addTo(map);
 
-        marker.bindPopup("<b style='color:#00d2ff;'>BASE BUIN // J.A.R.V.I.S. CORE</b>").openPopup();
+        marker.bindPopup("<b style='color:#002244;'>BASE BUIN // J.A.R.V.I.S. CORE</b>").openPopup();
     </script>
 </body>
 </html>
