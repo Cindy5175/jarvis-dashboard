@@ -187,12 +187,11 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS + 4 PUNTOS TÁCTICOS INTEGRADOS
+# MÓDULO: 🛰️ EL OJO DE DIOS (CON MODO NOCTURNO OPTIMIZADO)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & CLIMA (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
-# Controles interactivos en Streamlit para el Ojo de Dios
 col_map1, col_map2, col_map3 = st.columns([1.5, 1.2, 1.3])
 with col_map1:
     destino_input = st.text_input("📍 Teletransporte / Coordenadas:", value="-33.7315, -70.7412 (Buin Base)")
@@ -202,7 +201,6 @@ with col_map3:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_escanear = st.button("📡 Ejecutar Barrido Satelital")
 
-# Coordenadas por defecto (Buin)
 lat_val, lon_val = -33.7315, -70.7412
 if "," in destino_input and "Buin" not in destino_input:
     try:
@@ -216,13 +214,19 @@ elif "santiago" in destino_input.lower():
 elif "valparaíso" in destino_input.lower() or "valparaiso" in destino_input.lower():
     lat_val, lon_val = -33.0472, -71.6127
 
-# Selección de URLs de capas de mapas tácticos
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-elif "Nocturno" in capa_seleccionada:
-    url_capa = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 else:
     url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+# Estilo dinámico para aplicar filtro de modo nocturno si está seleccionado
+map_style_css = """
+    #map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+"""
+if "Nocturno" in capa_seleccionada:
+    map_style_css = """
+        #map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
+    """
 
 gods_eye_html = f"""
 <!DOCTYPE html>
@@ -233,7 +237,7 @@ gods_eye_html = f"""
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
-        #map {{ width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }}
+        {map_style_css}
         .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
     </style>
 </head>
@@ -263,7 +267,6 @@ gods_eye_html = f"""
 """
 components.html(gods_eye_html, height=400)
 
-# Panel inferior con Clima en vivo y Log de Radares simulado
 col_clima, col_log = st.columns([1, 1.2])
 
 with col_clima:
@@ -280,34 +283,4 @@ with col_log:
     st.markdown(f"""
         <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL</p>
-            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Serafín-Sat 100% estable.</p>
-            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Coordenadas actualizadas a lat: {lat_val}, lon: {lon_val}.</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown("---")
-
-with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
-    if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
-    if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
-
-    col_id1, col_id2 = st.columns(2)
-    with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
-        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
-    with col_id2:
-        ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
-    
-    if st.button("💾 Actualizar Configuración"):
-        if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
-        if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
-            
-        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        
-        guardar_memoria(st.session_state.memoria)
-        st.success("Configuración actualizada con éxito.")
-        st.rerun()
+            <p style="
