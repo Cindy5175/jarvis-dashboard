@@ -8,7 +8,7 @@ import time
 
 # Configuración de página en modo ancho
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónoma // Núcleo Holográfico", 
+    page_title="J.A.R.V.I.S. // M.E.C.A. 4.0", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -84,7 +84,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // IA AUTÓNOMA 4.0</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
 estado_ia_txt = "MOTOR IA: GEMINI ACTIVO" if cliente_ia else "MOTOR IA: MODO LOCAL"
 st.markdown(f'<div class="status-bar">CONTROL POR VOZ &nbsp;|&nbsp; ESTADO: EN LÍNEA &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
@@ -125,7 +125,7 @@ hora_actual = datetime.datetime.now().hour
 saludo_tiempo = "Buenos días" if hora_actual < 12 else ("Buenas tardes" if hora_actual < 20 else "Buenas noches")
 
 if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Todos los sistemas y radares en línea en Buin."
+    st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Todos los sistemas M.E.C.A. y radares en línea en Buin."
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
@@ -138,7 +138,7 @@ if voz_capturada:
     texto = entrada_usuario.lower().strip()
     if cliente_ia:
         try:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
             generation_config = {"max_output_tokens": 120, "temperature": 0.3}
             respuesta_modelo = cliente_ia.generate_content(
                 f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
@@ -146,9 +146,9 @@ if voz_capturada:
             )
             respuesta_ia = respuesta_modelo.text
         except Exception as e:
-            respuesta_ia = f"Error de núcleo: {e}"
+            respuesta_ia = f"Error de núcleo M.E.C.A.: {e}"
     else:
-        respuesta_ia = f"Comando por voz '{entrada_usuario}' procesado en Buin, {nombre_jefa}."
+        respuesta_ia = f"Comando por voz '{entrada_usuario}' procesado en Buin por M.E.C.A., {nombre_jefa}."
 
     st.session_state.ultimo_usuario = entrada_usuario
     st.session_state.ultima_respuesta = respuesta_ia
@@ -184,7 +184,7 @@ with col_orbe:
         recognition.maxAlternatives = 1;
 
         recognition.onstart = function() {{
-            console.log("J.A.R.V.I.S. escuchando...");
+            console.log("J.A.R.V.I.S. M.E.C.A. escuchando...");
         }};
 
         recognition.onresult = function(event) {{
@@ -205,7 +205,7 @@ with col_orbe:
 
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 NÚCLEO DE CONVERSACIÓN</div>', unsafe_allow_html=True)
-    st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S. M.E.C.A.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
     if st.session_state.ultimo_usuario:
         st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
@@ -219,7 +219,7 @@ with col_chat:
         
         if cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.3}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
@@ -234,7 +234,7 @@ with col_chat:
                     respuesta_ia = f"Error temporal: {e}"
         else:
             if "hola" in texto:
-                respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker operativo."
+                respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker M.E.C.A. operativo."
             else:
                 respuesta_ia = f"Comando '{entrada_usuario}' procesado en Buin, {nombre_jefa}."
 
@@ -276,4 +276,121 @@ elif "valparaíso" in destino_input.lower() or "valparaiso" in destino_input.low
 if "Topográfico" in capa_seleccionada:
     url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
 else:
-    url_cap
+    url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+map_style_css = """
+#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+"""
+if "Nocturno" in capa_seleccionada:
+    map_style_css = """
+#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }
+"""
+
+gods_eye_html = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
+        {map_style_css}
+        .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
+    </style>
+</head>
+<body>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W</div>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
+        
+        L.tileLayer('{url_capa}', {{
+            maxZoom: 19,
+            attribution: ''
+        }}).addTo(map);
+
+        const marker = L.circleMarker([{lat_val}, {lon_val}], {{
+            radius: 10,
+            color: '#ffffff',
+            fillColor: '#00d2ff',
+            fillOpacity: 1.0,
+            weight: 2
+        }}).addTo(map);
+
+        marker.bindPopup("<b style='color:#002244;'>OBJETIVO TÁCTICO // M.E.C.A. SAT</b>").openPopup();
+    </script>
+</body>
+</html>
+"""
+components.html(gods_eye_html, height=400)
+
+col_clima, col_log = st.columns([1, 1.2])
+
+with col_clima:
+    st.markdown("""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
+            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
+            <p style="color:#ffffff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#ffffff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_log:
+    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    eventos_tacticos = [
+        "Enlace Serafín-Sat 100% estable y optimizado.",
+        "Barrido óptico completado sin anomalías en el sector.",
+        "Tráfico fluido detectado en Ruta 5 Sur (Acceso Buin).",
+        "Calibración de espectro térmico finalizada con éxito.",
+        "Perímetro del búnker seguro. Sin intrusiones en la red."
+    ]
+    evento_actual = random.choice(eventos_tacticos) if btn_escanear else "Enlace Serafín-Sat 100% estable."
+
+    log_html = f"""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
+            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL M.E.C.A.</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] {evento_actual}</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Objetivo activo en lat: {lat_val}, lon: {lon_val}.</p>
+        </div>
+    """
+    st.markdown(log_html, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🚁 UNIDADES DE RECONOCIMIENTO Y DRONES ACTIVOS (BUIN)</div>', unsafe_allow_html=True)
+drones_data = [
+    {"Unidad": "Drone-Alpha 01", "Estado": "En Patrulla", "Batería": "84%", "Sector": "Norte Buin"},
+    {"Unidad": "Drone-Beta 02", "Estado": "En Estación", "Batería": "100%", "Sector": "Base Central"},
+    {"Unidad": "Unidad Móvil Terrestre", "Estado": "En Movimiento", "Batería": "62%", "Sector": "Ruta 5 Sur"}
+]
+st.dataframe(drones_data, use_container_width=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
+    if "input_nombre" not in st.session_state: st.session_state.input_nombre = nombre_jefa
+    if "input_titulo" not in st.session_state: st.session_state.input_titulo = titulo_jefa
+
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
+        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
+    with col_id2:
+        ai_key_actual = prefs_voz.get("ai_api_key", "")
+        ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
+        eleven_key_actual = prefs_voz.get("elevenlabs_api_key", "")
+        elevenlabs_api_key = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=eleven_key_actual)
+    
+    if st.button("💾 Actualizar Configuración"):
+        if "usuario" not in st.session_state.memoria: st.session_state.memoria["usuario"] = {}
+        if "preferencias_voz" not in st.session_state.memoria: st.session_state.memoria["preferencias_voz"] = {}
+            
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_api_key
+        
+        guardar_memoria(st.session_state.memoria)
+        st.success("Configuración actualizada con éxito.")
+        st.rerun()
