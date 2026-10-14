@@ -142,44 +142,46 @@ if "voz_escrita" not in st.session_state:
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // GLOBO HOLOGRÁFICO</div>', unsafe_allow_html=True)
     
-    # GLOBO TERRAQUEO HOLOGRÁFICO GIRATORIO 3D (ESTILO TONY STARK)
+    # GLOBO TERRAQUEO HOLOGRÁFICO 3D MEJORADO CON TEXTURA DE CONTINENTES FLUIDA
     earth_globe_html = """
     <style>
       body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 110px; overflow: hidden; }
-      .earth-container { perspective: 300px; width: 90px; height: 90px; }
+      .earth-container { perspective: 400px; width: 90px; height: 90px; position: relative; }
       .earth {
         width: 90px;
         height: 90px;
-        background: radial-gradient(circle at 30% 30%, #00f2fe 0%, #4facfe 35%, #004e92 70%, #000428 100%);
         border-radius: 50%;
-        position: relative;
-        box-shadow: inset -12px -12px 25px rgba(0,0,0,0.8), 0 0 25px rgba(0, 210, 255, 0.7);
-        animation: rotateEarth 10s linear infinite;
+        position: absolute;
+        background: radial-gradient(circle at 30% 30%, #00f2fe 0%, #0077be 50%, #001133 90%);
+        box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 20px rgba(0, 210, 255, 0.8);
         overflow: hidden;
       }
-      /* Líneas de longitud/latitud holográficas simuladas */
-      .earth::before {
+      /* Capa de continentes holográficos animados */
+      .earth::after {
         content: "";
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.15) 9px, transparent 10px),
-                    repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(0,255,170,0.2) 13px, transparent 14px);
-        border-radius: 50%;
+        top: 0; left: -100%; width: 300%; height: 100%;
+        background: linear-gradient(90deg, 
+            transparent 0%, rgba(0,255,170,0.4) 20%, transparent 40%, 
+            rgba(0,210,255,0.6) 60%, transparent 80%, rgba(0,255,170,0.4) 100%);
+        opacity: 0.8;
+        animation: rotateContinents 8s linear infinite;
       }
-      /* Anillo orbital táctico exterior */
+      /* Anillo de radar exterior */
       .orbit-ring {
         position: absolute;
-        width: 112px;
-        height: 112px;
-        border: 1px dashed rgba(0, 210, 255, 0.4);
+        width: 108px;
+        height: 108px;
+        border: 1px solid rgba(0, 210, 255, 0.5);
+        border-top: 1px solid transparent;
         border-radius: 50%;
-        top: -11px;
-        left: -11px;
-        animation: rotateOrbit 15s linear infinite reverse;
+        top: -9px;
+        left: -9px;
+        animation: rotateOrbit 12s linear infinite reverse;
       }
-      @keyframes rotateEarth {
-        0% { background-position: 0 0; }
-        100% { background-position: 180px 0; }
+      @keyframes rotateContinents {
+        0% { transform: translateX(0%); }
+        100% { transform: translateX(33.33%); }
       }
       @keyframes rotateOrbit {
         0% { transform: rotate(0deg); }
