@@ -65,7 +65,7 @@ if ai_api_key_guardada:
     except Exception as e:
         cliente_ia = None
 
-# INICIALIZAR HISTORIAL MÚLTIPLE DE CONVERSACIÓN (ENLACE VOZ <-> ESCRITURA)
+# INICIALIZAR HISTORIAL MÚLTIPLE DE CONVERSACIÓN
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = []
 
@@ -225,7 +225,7 @@ with col_orbe:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CHAT UNIFICADO (VOZ + ESCRITURA ENLAZADAS)
+# CHAT UNIFICADO (CON MÓDULO DE AUTOLIMPIADO / PURGA)
 # ---------------------------------------------------------
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
@@ -238,10 +238,18 @@ with col_chat:
                 col_a = "#a5b4fc" if autor == "Jefa" else "#00ffaa"
                 st.markdown(f"<p style='margin:2px 0; font-size:11px;'><b style='color:{col_a};'>{autor}:</b> <span style='color:#ccc;'>{msg}</span></p>", unsafe_allow_html=True)
 
-    col_q1, col_q2, col_q3 = st.columns(3)
+    # BOTONES RÁPIDOS Y MÓDULO DE PURGA / AUTOLIMPIADO
+    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
+    with col_q4: btn_limpiar = st.button("🧹 Purgar Chat")
+
+    # ACCIÓN DE AUTOLIMPIADO
+    if btn_limpiar:
+        st.session_state.historial_chat = []
+        st.session_state.ultima_respuesta = f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Liberando espacio en los registros del búnker."
+        st.rerun()
 
     with st.form(key="form_chat", clear_on_submit=True):
         entrada_usuario = st.text_input("", placeholder="Escribe o habla por el botón de voz...")
@@ -362,7 +370,6 @@ elif busqueda_objetivo:
             if data_geo and len(data_geo) > 0:
                 lat_val = float(data_geo[0]['lat'])
                 lon_val = float(data_geo[0]['lon'])
-                # AMPLIADO A 80 CARACTERES PARA QUE NO SE CORTE EL NOMBRE
                 lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
     except Exception:
         pass
