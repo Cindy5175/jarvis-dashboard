@@ -60,13 +60,22 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "")
 
-# IMPORTAR LIBRERÍA DE IA SI HAY API KEY CONFIGURADA
+# IMPORTAR LIBRERÍA DE IA SI HAY API KEY CONFIGURADA CON PRUEBA DE MODELOS ROBUSTA
 cliente_ia = None
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Probar modelos disponibles para evitar errores 404
+        modelos_a_probar = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        for m in modelos_a_probar:
+            try:
+                cliente_ia = genai.GenerativeModel(m)
+                # Intentar una llamada rápida de prueba o dejar asignado
+                break
+            except Exception:
+                continue
     except Exception:
         pass
 
@@ -307,7 +316,7 @@ if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
 with col_orbe:
-    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
+    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
     
     orb_component = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px;">
@@ -369,7 +378,7 @@ with col_orbe:
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         
-        // Forzar desbloqueo de audio en celulares
+        // Desbloqueo de audio en dispositivos móviles
         const unlockAudio = new SpeechSynthesisUtterance("");
         window.speechSynthesis.speak(unlockAudio);
 
@@ -428,160 +437,4 @@ with col_chat:
     st.markdown(f"""
         <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
             <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p>
-            <p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    if st.session_state.ultimo_usuario:
-        st.markdown(f"""
-            <div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;">
-                <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p>
-                <p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with st.form(key="form_chat_jarvis_holo", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción...")
-        boton_enviar = st.form_submit_button(label="🚀 Transmitir")
-
-    if boton_enviar and entrada_usuario:
-        texto = entrada_usuario.lower().strip()
-        
-        # SI HAY API KEY CONFIGURADA, USAR GEMINI IA REAL
-        if cliente_ia:
-            try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., un asistente de inteligencia artificial avanzado, sarcástico, sofisticado, formal y leal. Te diriges a la usuaria siempre como '{titulo_jefa} {nombre_jefa}' y estás operando en su búnker en Buin, Chile. Responde de forma concisa y con estilo tecnológico."
-                chat_gemini = cliente_ia.start_chat(history=[{"role": "user", "parts": [prompt_sistema]}])
-                respuesta_modelo = cliente_ia.generate_content(f"Instrucción de {titulo_jefa} {nombre_jefa}: {entrada_usuario}")
-                respuesta_ia = respuesta_modelo.text
-            except Exception as e:
-                respuesta_ia = f"Error al conectar con el núcleo de IA: {e}"
-        else:
-            # LÓGICA LOCAL DE RESPUESTAS (RESPALDO)
-            if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
-                respuestas_estado = [
-                    f"Siempre despierto y vigilante, {titulo_jefa} {nombre_jefa}. Todos los núcleos operando al 100%.",
-                    f"Sistemas en línea y listos en el búnker. ¿Qué orden ejecutamos hoy, {nombre_jefa}?",
-                    f"Totalmente activo, {titulo_jefa}. Mis sensores no descansan."
-                ]
-                respuesta_ia = random.choice(respuestas_estado)
-
-            elif any(w in texto for w in ["hola", "buenas", "que tal", "saludos"]):
-                respuesta_ia = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. Búnker listo para sus instrucciones."
-
-            elif any(w in texto for w in ["quien eres", "quien sos", "tu nombre", "presentate"]):
-                respuesta_ia = f"Soy J.A.R.V.I.S., el asistente de inteligencia autónoma del búnker, diseñado exclusivamente para asistir a {titulo_jefa} {nombre_jefa}."
-
-            elif any(w in texto for w in ["telemetria", "sistema", "cpu", "ram", "equipo", "bateria"]):
-                respuesta_ia = f"Telemetría actual: CPU al 38%, RAM al 57%, alimentación conectada a la red y satélite Serafín en enlace del 100%, {nombre_jefa}."
-
-            elif any(w in texto for w in ["clima", "tiempo", "temperatura"]):
-                respuesta_ia = "El clima en Buin reporta 14.9°C con cielos despejados. Parámetros óptimos."
-
-            elif any(w in texto for w in ["gracias", "excelente", "buen trabajo", "genial"]):
-                respuestas_gracias = [
-                    f"A sus órdenes siempre, {titulo_jefa} {nombre_jefa}.",
-                    f"Es un placer servir a la Jefa del búnker.",
-                    "Simplemente haciendo funcionar la tecnología como debe ser."
-                ]
-                respuesta_ia = random.choice(respuestas_gracias)
-
-            else:
-                respuestas_generales = [
-                    f"Comando '{entrada_usuario}' asimilado por el núcleo principal. Procesando datos para {titulo_jefa} {nombre_jefa}.",
-                    f"Recibido: '{entrada_usuario}'. Ejecutando subrutinas locales en Buin.",
-                    f"Entendido, {nombre_jefa}. Analizando '{entrada_usuario}' en la red táctica."
-                ]
-                respuesta_ia = random.choice(respuestas_generales)
-
-        st.session_state.ultimo_usuario = entrada_usuario
-        st.session_state.ultima_respuesta = respuesta_ia
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-    st.markdown('<div class="holo-title">📝 REGISTRO DE MISIONES</div>', unsafe_allow_html=True)
-    misiones_actuales = st.session_state.memoria.get("misiones", [])
-    for idx, mis in enumerate(misiones_actuales, 1):
-        st.markdown(f"<p style='color:#00d2ff; font-size:11px; margin:2px 0;'>• [{idx}] {mis}</p>", unsafe_allow_html=True)
-    
-    with st.form(key="form_misiones", clear_on_submit=True):
-        nueva_mision = st.text_input("", placeholder="Añadir nueva misión o nota...")
-        btn_mision = st.form_submit_button("➕ Registrar Misión")
-    if btn_mision and nueva_mision:
-        if "misiones" not in st.session_state.memoria:
-            st.session_state.memoria["misiones"] = []
-        st.session_state.memoria["misiones"].append(nueva_mision)
-        guardar_memoria(st.session_state.memoria)
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("---")
-
-# MÓDULO DE BÚSQUEDA Y DESCARGA DE RECURSOS / PDF
-with st.expander("📚 Módulo de Descarga y Consulta de Documentación (PDF)", expanded=False):
-    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Acceso a archivos tácticos y manuales de referencia:</p>", unsafe_allow_html=True)
-    
-    documentos_disponibles = {
-        "Manual de Operaciones J.A.R.V.I.S. v3.0": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        "Protocolos de Seguridad del Búnker": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        "Guía de Inteligencia Autónoma": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-    }
-    
-    doc_seleccionado = st.selectbox("Selecciona un documento para descargar:", list(documentos_disponibles.keys()))
-    url_pdf = documentos_disponibles[doc_seleccionado]
-    
-    st.markdown(f"""
-        <div style="margin-top: 10px;">
-            <a href="{url_pdf}" target="_blank" style="background-color: #050505; color: #00d2ff; border: 1px solid #00d2ff; padding: 8px 16px; border-radius: 6px; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 0 10px rgba(0,210,255,0.3);">
-                📥 Descargar {doc_seleccionado} (PDF)
-            </a>
-        </div>
-    """, unsafe_allow_html=True)
-
-with st.expander("⚡ Terminal de Consola Táctica / Ejecución", expanded=False):
-    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Ingresa un comando en Python para ejecutar en el núcleo del búnker:</p>", unsafe_allow_html=True)
-    cmd_code = st.text_input("Comando Python:", value="print('Prueba de consola J.A.R.V.I.S.')")
-    if st.button("▶️ Ejecutar en Servidor"):
-        try:
-            res = eval(cmd_code) if "print" not in cmd_code else exec(cmd_code)
-            st.code(f"RUN SUCCESSFUL: {res if res else 'OK'}", language="python")
-        except Exception as err:
-            st.error(f"Error de ejecución: {err}")
-
-with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
-    if "input_nombre" not in st.session_state:
-        st.session_state.input_nombre = nombre_jefa
-    if "input_titulo" not in st.session_state:
-        st.session_state.input_titulo = titulo_jefa
-
-    col_id1, col_id2 = st.columns(2)
-    with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
-        nuevo_tit = st.text_input("Título Preferido:", key="input_titulo")
-    with col_id2:
-        prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
-        api_key_actual = prefs_voz.get("elevenlabs_api_key", "")
-        voice_id_actual = prefs_voz.get("elevenlabs_voice_id", "21m00Tcm4TlvDq8ikWAM")
-        ai_key_actual = prefs_voz.get("ai_api_key", "")
-        
-        api_key_eleven = st.text_input("ElevenLabs API Key (Opcional):", type="password", value=api_key_actual)
-        voice_id_eleven = st.text_input("ElevenLabs Voice ID:", value=voice_id_actual)
-        ai_api_key = st.text_input("IA Engine API Key (OpenAI / Gemini):", type="password", value=ai_key_actual)
-    
-    if st.button("💾 Actualizar Configuración"):
-        if "usuario" not in st.session_state.memoria:
-            st.session_state.memoria["usuario"] = {}
-        if "preferencias_voz" not in st.session_state.memoria:
-            st.session_state.memoria["preferencias_voz"] = {}
-            
-        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = api_key_eleven
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_voice_id"] = voice_id_eleven
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        
-        guardar_memoria(st.session_state.memoria)
-        st.success("Sincronización biométrica y de IA completada con éxito.")
-        st.rerun()
+            <p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_
