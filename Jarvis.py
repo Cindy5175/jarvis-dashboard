@@ -56,7 +56,7 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
+# ESTILOS CSS TÁCTICOS, EXPANDER NEÓN Y HOLOGRÁFICOS
 st.markdown("""
     <style>
     .stApp, .main {
@@ -118,6 +118,24 @@ st.markdown("""
         background-color: #00d2ff !important;
         color: #000000 !important;
     }
+
+    /* ESTILO AZUL NEÓN PARA LOS DESPLEGABLES (st.expander) */
+    div[data-testid="stExpander"] {
+        background-color: #050505 !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 12px rgba(0, 210, 255, 0.25) !important;
+    }
+    div[data-testid="stExpander"] details summary {
+        background-color: #050505 !important;
+        color: #00d2ff !important;
+        font-weight: bold !important;
+    }
+    div[data-testid="stExpander"] details summary p, 
+    div[data-testid="stExpander"] details summary svg {
+        color: #00d2ff !important;
+        fill: #00d2ff !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -153,9 +171,69 @@ with col_telemetria:
 
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">📍 BASE & SATÉLITE</div>', unsafe_allow_html=True)
-    st.markdown(f"<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Ubicación: {st.session_state.memoria['usuario'].get('ubicacion', 'Buin, Chile')}</p>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Serafín-Sat: Órbita Estable</p>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP: $930.50</p>", unsafe_allow_html=True)
+    
+    # COMPONENTE GLOBO TERRÁQUEO GIRATORIO CON PIN EN BUIN, CHILE
+    globe_html = """
+    <div style="display: flex; align-items: center; gap: 12px; padding: 5px 0;">
+        <div class="globe-container">
+            <div class="globe">
+                <div class="buin-pin" title="Ubicación: Buin, Chile"></div>
+            </div>
+        </div>
+        <div>
+            <p style='color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;'>🌍 Ubicación: Buin, Chile</p>
+            <p style='color:#00d2ff; font-size:11px; margin:2px 0;'>🛰️ Serafín-Sat: Enlace 100%</p>
+            <p style='color:#00d2ff; font-size:11px; margin:2px 0;'>💵 USD/CLP: $930.50</p>
+        </div>
+    </div>
+
+    <style>
+    .globe-container {
+        width: 60px;
+        height: 60px;
+        perspective: 400px;
+    }
+    .globe {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #003366 60%, #000511 100%);
+        border: 1px solid #00d2ff;
+        box-shadow: 0 0 12px rgba(0, 210, 255, 0.6), inset -5px -5px 10px rgba(0, 0, 0, 0.8);
+        position: relative;
+        overflow: hidden;
+    }
+    .globe::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px dashed rgba(0, 210, 255, 0.4);
+        animation: rotateGlobe 8s linear infinite;
+    }
+    .buin-pin {
+        position: absolute;
+        top: 65%;
+        left: 30%;
+        width: 6px;
+        height: 6px;
+        background-color: #ff0055;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #ff0055;
+        animation: pulsePin 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes rotateGlobe {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @keyframes pulsePin {
+        0% { transform: scale(0.8); box-shadow: 0 0 4px #ff0055; }
+        100% { transform: scale(1.5); box-shadow: 0 0 12px #ff0055; }
+    }
+    </style>
+    """
+    components.html(globe_html, height=75)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # LÓGICA DE RESPUESTA Y SALUDOS DINÁMICOS SEGÚN HORA DEL DÍA
@@ -372,7 +450,6 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto = entrada_usuario.lower().strip()
         
-        # MOTOR DE RESPUESTAS CONVERSACIONAL Y MULTI-CATEGORÍA
         if any(w in texto for w in ["despierto", "despierta", "activo", "estas ahi", "me escuchas", "online"]):
             respuestas_estado = [
                 f"Siempre despierto y vigilante, {titulo_jefa} {nombre_jefa}. Todos los núcleos operando al 100%.",
@@ -402,7 +479,6 @@ with col_chat:
             respuesta_ia = random.choice(respuestas_gracias)
 
         else:
-            # Respuestas dinámicas avanzadas para preguntas o frases generales
             respuestas_generales = [
                 f"Comando '{entrada_usuario}' asimilado por el núcleo principal. Procesando datos para {titulo_jefa} {nombre_jefa}.",
                 f"Recibido: '{entrada_usuario}'. Ejecutando subrutinas locales en Buin.",
@@ -416,7 +492,7 @@ with col_chat:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y ELEVENLABS
+# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD CON ESTILOS AZUL NEÓN
 st.markdown("---")
 with st.expander("👤 Identidad & Conexión de Voz Avanzada (ElevenLabs)", expanded=False):
     if "input_nombre" not in st.session_state:
