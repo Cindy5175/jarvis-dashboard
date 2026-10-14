@@ -162,7 +162,6 @@ with col_chat:
     if boton_enviar and entrada_usuario:
         texto = entrada_usuario.lower().strip()
         
-        # PROCESAMIENTO CON IA REAL Y CONTROL DE CUOTA (429)
         if cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., asistente de inteligencia artificial leal, sofisticado y formal. Te diriges a la usuaria como '{titulo_jefa} {nombre_jefa}' en su búnker en Buin, Chile. Responde de forma concisa."
@@ -188,12 +187,44 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO LIBRE 100%)
+# MÓDULO: 🛰️ EL OJO DE DIOS + 4 PUNTOS TÁCTICOS INTEGRADOS
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & GEOESPACIAL (BUIN, CHILE)</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & CLIMA (BUIN, CHILE)</div>', unsafe_allow_html=True)
 
-gods_eye_html = """
+# Controles interactivos en Streamlit para el Ojo de Dios
+col_map1, col_map2, col_map3 = st.columns([1.5, 1.2, 1.3])
+with col_map1:
+    destino_input = st.text_input("📍 Teletransporte / Coordenadas:", value="-33.7315, -70.7412 (Buin Base)")
+with col_map2:
+    capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
+with col_map3:
+    st.markdown("<br>", unsafe_allow_html=True)
+    btn_escanear = st.button("📡 Ejecutar Barrido Satelital")
+
+# Coordenadas por defecto (Buin)
+lat_val, lon_val = -33.7315, -70.7412
+if "," in destino_input and "Buin" not in destino_input:
+    try:
+        parts = destino_input.split(",")
+        lat_val = float(parts[0].strip())
+        lon_val = float(parts[1].strip())
+    except:
+        pass
+elif "santiago" in destino_input.lower():
+    lat_val, lon_val = -33.4489, -70.6693
+elif "valparaíso" in destino_input.lower() or "valparaiso" in destino_input.lower():
+    lat_val, lon_val = -33.0472, -71.6127
+
+# Selección de URLs de capas de mapas tácticos
+if "Topográfico" in capa_seleccionada:
+    url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+elif "Nocturno" in capa_seleccionada:
+    url_capa = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+else:
+    url_capa = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+gods_eye_html = f"""
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -201,40 +232,60 @@ gods_eye_html = """
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }
-        #map { width: 100%; height: 420px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
-        .sat-hud { position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 6px 12px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 11px; letter-spacing: 1px; }
+        body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }}
+        #map {{ width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }}
+        .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }}
     </style>
 </head>
 <body>
-    <div class="sat-hud">🛰️ SERAFÍN-SAT // OBJETIVO: BUIN, CHILE (-33.73° S, -70.74° W)</div>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W</div>
     <div id="map"></div>
     <script>
-        const map = L.map('map', {zoomControl: false}).setView([-33.7315, -70.7412], 13);
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
         
-        // Capa estándar de OpenStreetMap 100% libre y sin restricciones de API Key
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('{url_capa}', {{
             maxZoom: 19,
             attribution: ''
-        }).addTo(map);
+        }}).addTo(map);
 
-        // Marcador holográfico para la Base Buin
-        const marker = L.circleMarker([-33.7315, -70.7412], {
+        const marker = L.circleMarker([{lat_val}, {lon_val}], {{
             radius: 10,
             color: '#ffffff',
             fillColor: '#00d2ff',
             fillOpacity: 1.0,
             weight: 2
-        }).addTo(map);
+        }}).addTo(map);
 
-        marker.bindPopup("<b style='color:#002244;'>BASE BUIN // J.A.R.V.I.S. CORE</b>").openPopup();
+        marker.bindPopup("<b style='color:#002244;'>OBJETIVO TÁCTICO // J.A.R.V.I.S. SAT</b>").openPopup();
     </script>
 </body>
 </html>
 """
-components.html(gods_eye_html, height=440)
-st.markdown('</div>', unsafe_allow_html=True)
+components.html(gods_eye_html, height=400)
 
+# Panel inferior con Clima en vivo y Log de Radares simulado
+col_clima, col_log = st.columns([1, 1.2])
+
+with col_clima:
+    st.markdown("""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
+            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
+            <p style="color:#ffffff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#ffffff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_log:
+    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    st.markdown(f"""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
+            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG DE ESCANEO PERIMETRAL</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Serafín-Sat 100% estable.</p>
+            <p style="color:#ffffff; margin:2px 0;">[{hora_log}] Coordenadas actualizadas a lat: {lat_val}, lon: {lon_val}.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("---")
 
 with st.expander("👤 Identidad & Conexión de Voz Avanzada / IA Core", expanded=False):
