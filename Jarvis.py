@@ -60,7 +60,7 @@ if ai_api_key_guardada:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
         # Usamos directamente el modelo estándar flash
-        cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
+        cliente_ia = genai.GenerativeModel('gemini-2.5-flash')
     except Exception as e:
         cliente_ia = None
 
