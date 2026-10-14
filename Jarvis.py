@@ -140,7 +140,6 @@ if voz_capturada:
     texto = entrada_usuario.lower().strip()
     respuesta_ia = None
     
-    # DETECCIÓN DEL PROTOCOLO DE EMERGENCIA POR VOZ
     if "protocolo de emergencia" in texto:
         respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
     elif cliente_ia:
@@ -181,42 +180,42 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
-    # Botón para activar escucha por voz interactiva en el navegador
-    col_mic_d1, col_mic_c, col_mic_d2 = st.columns([0.2, 0.8, 0.0])
-    with col_mic_c:
-        activar_escucha_html = """
+    # Botón para activar escucha por voz interactiva (corregido sin columnas con cero)
+    activar_escucha_html = """
+    <div style="text-align: center; margin-top: 5px;">
         <button onclick="iniciarEscuchaVoz()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar por Voz</button>
-        <script>
-        function iniciarEscuchaVoz() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Tu navegador no soporta reconocimiento de voz nativo.");
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            recognition.onstart = function() {
-                console.log("J.A.R.V.I.S. M.E.C.A. escuchando instrucción...");
-            };
-
-            recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                console.log("Voz detectada: " + speechResult);
-                window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
-            };
-
-            recognition.onerror = function(event) {
-                console.error("Error de voz: " + event.error);
-            };
-
-            recognition.start();
+    </div>
+    <script>
+    function iniciarEscuchaVoz() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            return;
         }
-        </script>
-        """
-        components.html(activar_escucha_html, height=45)
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {
+            console.log("J.A.R.V.I.S. M.E.C.A. escuchando instrucción...");
+        };
+
+        recognition.onresult = function(event) {
+            const speechResult = event.results[0][0].transcript;
+            console.log("Voz detectada: " + speechResult);
+            window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Error de voz: " + event.error);
+        };
+
+        recognition.start();
+    }
+    </script>
+    """
+    components.html(activar_escucha_html, height=45)
 
     if btn_reproducir:
         audio_script = f"""
