@@ -140,14 +140,60 @@ if "voz_escrita" not in st.session_state:
     st.session_state.voz_escrita = ""
 
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO TÁCTICO // GLOBO HOLOGRÁFICO</div>', unsafe_allow_html=True)
     
-    orbe_visual_html = """
-    <div style="display: flex; justify-content: center; align-items: center; height: 100px; width: 100%;">
-        <div style="width: 80px; height: 80px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 25px #00d2ff; margin-left: 35px;"></div>
+    # GLOBO TERRAQUEO HOLOGRÁFICO GIRATORIO 3D (ESTILO TONY STARK)
+    earth_globe_html = """
+    <style>
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 110px; overflow: hidden; }
+      .earth-container { perspective: 300px; width: 90px; height: 90px; }
+      .earth {
+        width: 90px;
+        height: 90px;
+        background: radial-gradient(circle at 30% 30%, #00f2fe 0%, #4facfe 35%, #004e92 70%, #000428 100%);
+        border-radius: 50%;
+        position: relative;
+        box-shadow: inset -12px -12px 25px rgba(0,0,0,0.8), 0 0 25px rgba(0, 210, 255, 0.7);
+        animation: rotateEarth 10s linear infinite;
+        overflow: hidden;
+      }
+      /* Líneas de longitud/latitud holográficas simuladas */
+      .earth::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.15) 9px, transparent 10px),
+                    repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(0,255,170,0.2) 13px, transparent 14px);
+        border-radius: 50%;
+      }
+      /* Anillo orbital táctico exterior */
+      .orbit-ring {
+        position: absolute;
+        width: 112px;
+        height: 112px;
+        border: 1px dashed rgba(0, 210, 255, 0.4);
+        border-radius: 50%;
+        top: -11px;
+        left: -11px;
+        animation: rotateOrbit 15s linear infinite reverse;
+      }
+      @keyframes rotateEarth {
+        0% { background-position: 0 0; }
+        100% { background-position: 180px 0; }
+      }
+      @keyframes rotateOrbit {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100px;">
+        <div class="earth-container">
+            <div class="orbit-ring"></div>
+            <div class="earth"></div>
+        </div>
     </div>
     """
-    components.html(orbe_visual_html, height=110)
+    components.html(earth_globe_html, height=110)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
@@ -155,7 +201,6 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
-    # Botón de dictado inteligente por voz que recarga con el texto listo para escribir en el chat
     reconocimiento_voz_html = """
     <div style="text-align: center; margin-top: 5px;">
         <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar Orden por Voz</button>
@@ -178,7 +223,6 @@ with col_orbe:
 
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
-            console.log("Voz capturada: " + speechResult);
             window.parent.location.search = "?voice_text=" + encodeURIComponent(speechResult);
         };
 
@@ -214,7 +258,6 @@ with col_chat:
     if st.session_state.ultimo_usuario:
         st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
 
-    # Botones de acceso táctico rápido
     col_q1, col_q2, col_q3 = st.columns(3)
     with col_q1:
         btn_q_hola = st.button("👋 Saludar")
@@ -223,9 +266,8 @@ with col_chat:
     with col_q3:
         btn_q_seg = st.button("🛡️ Seguridad")
 
-    # El input toma automáticamente lo dictado por voz si existe
     texto_por_defecto = st.session_state.voz_escrita
-    st.session_state.voz_escrita = "" # Limpiar tras usar
+    st.session_state.voz_escrita = ""
 
     with st.form(key="form_chat", clear_on_submit=True):
         entrada_usuario = st.text_input("", value=texto_por_defecto, placeholder="Escribe tu instrucción táctica...")
@@ -251,7 +293,7 @@ with col_chat:
             respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
         elif cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} in Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {comando_ejecutar}",
