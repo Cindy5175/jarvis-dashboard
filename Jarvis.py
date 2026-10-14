@@ -188,7 +188,7 @@ with col_chat:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# NUEVO MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO 3D)
+# MÓDULO: 🛰️ EL OJO DE DIOS (VISOR TÁCTICO 3D OPTIMIZADO)
 # ---------------------------------------------------------
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
 st.markdown('<div class="holo-title">🛰️ OJO DE DIOS // ENLACE TÁCTICO SATELITAL & GEOESPACIAL (BUIN, CHILE)</div>', unsafe_allow_html=True)
@@ -207,10 +207,9 @@ gods_eye_html = """
     </style>
 </head>
 <body>
-    <div class="sat-hud">📡 SERAFÍN-SAT // OBJETIVO: BUIN, CHILE (-33.73° S, -70.74° W)</div>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // OBJETIVO: BUIN, CHILE (-33.73° S, -70.74° W)</div>
     <div id="cesiumContainer"></div>
     <script>
-        // Token por defecto público de Cesium Ion
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMjRjN2E1ZS05ZTViLTRmMDYtOGY3Zi1jYmJkNmY1YTljNjIiLCJpZCI6MjEyNDAzLCJpYXQiOjE3MDQwOTI0MDB9.dummy_token_placeholder';
         
         const viewer = new Cesium.Viewer('cesiumContainer', {
@@ -230,20 +229,15 @@ gods_eye_html = """
             })
         });
 
-        // Ocultar marcas de agua y créditos innecesarios para estética limpia
         viewer._cesiumWidget._creditContainer.style.display = "none";
+        viewer.scene.globe.enableLighting = false;
 
-        // Vuelo inicial directo a Buin, Chile (-33.7315, -70.7412)
-        viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315, 15000),
-            orientation: {
-                heading: Cesium.Math.toRadians(0.0),
-                pitch: Cesium.Math.toRadians(-45.0),
-                roll: 0.0
-            }
+        // Posicionamiento directo en superficie sobre Buin, Chile
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315, 25000)
         });
 
-        // Marcador holográfico para la Base Buin
+        // Marcador holográfico Base Buin
         viewer.entities.add({
             position: Cesium.Cartesian3.fromDegrees(-70.7412, -33.7315),
             point: {
