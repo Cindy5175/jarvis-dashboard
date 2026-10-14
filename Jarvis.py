@@ -31,7 +31,7 @@ def cargar_memoria():
             "titulo": "Jefa",
             "ubicacion": "Buin, Chile"
         },
-        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "notas": ["Búnker activado in Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
@@ -76,7 +76,7 @@ st.markdown("""
     .market-item { color: #00d2ff; }
     .market-value { color: #00ffaa; font-weight: bold; }
     .holo-card { background-color: #050505; border: 1px solid #00d2ff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
-    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
     .stTextInput input, .stTextArea textarea, .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     div.stButton > button, div.stFormSubmitButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
@@ -135,7 +135,7 @@ with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
     
     orbe_visual_html = """
-    <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
+    <div style="display: flex; justify-content: center; align-items: center; height: 100px; width: 100%;">
         <div style="width: 80px; height: 80px; background: radial-gradient(circle, #00d2ff 0%, #005580 70%, #000000 100%); border-radius: 50%; box-shadow: 0 0 25px #00d2ff;"></div>
     </div>
     """
@@ -143,7 +143,10 @@ with col_orbe:
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
-    btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
+    # Contenedor para centrar el botón de voz exactamente debajo de la esfera
+    col_btn_dummy1, col_btn_centro, col_btn_dummy2 = st.columns([0.1, 0.8, 0.1])
+    with col_btn_centro:
+        btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
     if btn_reproducir:
         audio_script = f"""
