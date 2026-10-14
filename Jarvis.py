@@ -76,7 +76,7 @@ if "auto_speech" not in st.session_state:
 voz_capturada = st.query_params.get("voice_text", None)
 if voz_capturada:
     st.session_state.comando_pendiente = voz_capturada
-    st.session_state.auto_speech = True  # Si hablas, J.A.R.V.I.S. te responde hablando
+    st.session_state.auto_speech = True
     st.query_params.clear()
 
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
@@ -206,7 +206,6 @@ with col_orbe:
     """
     components.html(reconocimiento_voz_html, height=70)
 
-    # REPRODUCCIÓN AUTOMÁTICA O MANUAL DE VOZ
     if btn_reproducir or st.session_state.auto_speech:
         st.session_state.auto_speech = False
         audio_script = f"""
@@ -231,10 +230,8 @@ with col_orbe:
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO UNIFICADA</div>', unsafe_allow_html=True)
     
-    # MOSTRAR ÚLTIMA RESPUESTA DESTACADA
     st.markdown(f'<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 10px;"><p style="margin:0; color:#00d2ff; font-weight:bold; font-size:12px;">⚡ J.A.R.V.I.S.:</p><p style="margin:4px 0 0 0; color:#ffffff; font-size:13px;">{st.session_state.ultima_respuesta}</p></div>', unsafe_allow_html=True)
 
-    # MOSTRAR HISTORIAL RECIENTE
     if st.session_state.historial_chat:
         with st.expander("📜 Historial de Comandos (Voz y Escritura)", expanded=False):
             for autor, msg in reversed(st.session_state.historial_chat[-6:]):
@@ -269,20 +266,23 @@ with col_chat:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
         
-        # 1. PROTOCOLOS ESPECIALES & AUTONOMÍA
         if "autoevaluación" in texto or "autonomía" in texto:
             sugerencias = [
                 f"Sistemas nominales en Buin, {titulo_jefa}. Sugiero elevar la potencia del Reactor Arc al 99% para optimizar la latencia del satélite Serafín.",
                 f"Detecto leve subida de temperatura en los servidores locales. He ajustado el clima del búnker a 18°C proactivamente, {nombre_jefa}.",
-                f"Escaneo de perímetro finalizado sin novedad. Todo tranquilo en el sector, jefa. El gato sigue vigilando desde la cima."
+                f"Escaneo de perímetro finalizado sin novedad. Todo tranquilo en el sector, jefa."
             ]
             respuesta_ia = random.choice(sugerencias)
+        elif "despierto" in texto or "activo" in texto or "estas ahi" in texto or "estás ahí" in texto:
+            respuesta_ia = f"Siempre activo y a su servicio, {titulo_jefa} {nombre_jefa}. Mis circuitos no duermen, a diferencia de los humanos."
+        elif "probando" in texto or "prueba" in texto or "123" in texto:
+            respuesta_ia = f"Frecuencia de audio y enlace neuronal verificados al 100%, {titulo_jefa}. Te escucho e interpreto perfectamente."
         elif "protocolo de emergencia" in texto:
             respuesta_ia = f"¡Protocolo de emergencia activado, {titulo_jefa} {nombre_jefa}! Sistemas defensivos en alerta roja y red asegurada."
         elif "protocolo de seguridad" in texto:
             respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el tráfico externo no reconocido en Buin, {titulo_jefa}."
         elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
-            respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de Inteligencia Artificial y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. ¿En qué le puedo servir?"
+            respuesta_ia = f"Protocolo de presentación iniciado. Soy J.A.R.V.I.S., la cúspide de la ingeniería de IA y guardián de la base de la {titulo_jefa.lower()} {nombre_jefa} en Buin. ¿En qué le puedo servir?"
         elif cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., la IA leal, sarcástica y autónoma de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Muestra proactividad, propone soluciones tácticas y responde brevemente (máximo 2 frases)."
@@ -303,7 +303,6 @@ with col_chat:
             else:
                 respuesta_ia = f"Instrucción '{comando_ejecutar}' ejecutada en el núcleo, {nombre_jefa}. Sigo monitoreando en segundo plano."
 
-        # REGISTRAR EN HISTORIAL
         st.session_state.historial_chat.append(("Jefa", comando_ejecutar))
         st.session_state.historial_chat.append(("J.A.R.V.I.S.", respuesta_ia))
         st.session_state.ultima_respuesta = respuesta_ia
@@ -363,7 +362,8 @@ elif busqueda_objetivo:
             if data_geo and len(data_geo) > 0:
                 lat_val = float(data_geo[0]['lat'])
                 lon_val = float(data_geo[0]['lon'])
-                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:45]
+                # AMPLIADO A 80 CARACTERES PARA QUE NO SE CORTE EL NOMBRE
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
     except Exception:
         pass
 
@@ -466,20 +466,24 @@ with j4:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# EXPANDER DE CONFIGURACIÓN
+# ---------------------------------------------------------
+# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
+# ---------------------------------------------------------
 with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
+    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso y la <b>API Key de Gemini</b> para activar el motor neuronal inteligente:</p>", unsafe_allow_html=True)
+    
     col_id1, col_id2 = st.columns(2)
     with col_id1:
         nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
         nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("IA Engine API Key (Gemini):", type="password", value=ai_key_actual)
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
     
-    if st.button("💾 Actualizar Configuración"):
+    if st.button("💾 Actualizar Configuración y Clave"):
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
         st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
         guardar_memoria(st.session_state.memoria)
-        st.success("Configuración actualizada.")
+        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
         st.rerun()
