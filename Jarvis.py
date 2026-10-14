@@ -66,6 +66,12 @@ if ai_api_key_guardada:
     except Exception as e:
         cliente_ia = None
 
+# CAPTURAR VOZ DESDE LA URL Y LLEVARLA AL INPUT
+voz_capturada = st.query_params.get("voice_text", None)
+if voz_capturada:
+    st.session_state.voz_escrita = voz_capturada
+    st.query_params.clear()
+
 # ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
 st.markdown("""
     <style>
@@ -82,7 +88,7 @@ st.markdown("""
     div.stButton > button, div.stFormSubmitButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; }
     div[data-testid="stExpander"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; }
-    div[data-testid="stExpander"] details summary { background-color: #00d2ff !important; color: #00d2ff !important; font-weight: bold !important; }
+    div[data-testid="stExpander"] details summary { background-color: #050505 !important; color: #00d2ff !important; font-weight: bold !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -130,6 +136,8 @@ if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = f"{saludo_tiempo}, {titulo_jefa} {nombre_jefa}. El búnker en Buin sigue en pie, a pesar de mis pronósticos."
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
+if "voz_escrita" not in st.session_state:
+    st.session_state.voz_escrita = ""
 
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
@@ -147,6 +155,43 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
+    # Botón de dictado inteligente por voz que recarga con el texto listo para escribir en el chat
+    reconocimiento_voz_html = """
+    <div style="text-align: center; margin-top: 5px;">
+        <button onclick="iniciarReconocimiento()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar Orden por Voz</button>
+    </div>
+    <script>
+    function iniciarReconocimiento() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {
+            console.log("J.A.R.V.I.S. escuchando comando de voz...");
+        };
+
+        recognition.onresult = function(event) {
+            const speechResult = event.results[0][0].transcript;
+            console.log("Voz capturada: " + speechResult);
+            window.parent.location.search = "?voice_text=" + encodeURIComponent(speechResult);
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Error de reconocimiento de voz: " + event.error);
+        };
+
+        recognition.start();
+    }
+    </script>
+    """
+    components.html(reconocimiento_voz_html, height=45)
+
     if btn_reproducir:
         audio_script = f"""
         <script>
@@ -169,7 +214,7 @@ with col_chat:
     if st.session_state.ultimo_usuario:
         st.markdown(f'<div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;"><p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p><p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p></div>', unsafe_allow_html=True)
 
-    # Botones de acceso táctico rápido (para disparar protocolos y saludos sin escribir)
+    # Botones de acceso táctico rápido
     col_q1, col_q2, col_q3 = st.columns(3)
     with col_q1:
         btn_q_hola = st.button("👋 Saludar")
@@ -178,11 +223,14 @@ with col_chat:
     with col_q3:
         btn_q_seg = st.button("🛡️ Seguridad")
 
+    # El input toma automáticamente lo dictado por voz si existe
+    texto_por_defecto = st.session_state.voz_escrita
+    st.session_state.voz_escrita = "" # Limpiar tras usar
+
     with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe tu instrucción táctica...")
+        entrada_usuario = st.text_input("", value=texto_por_defecto, placeholder="Escribe tu instrucción táctica...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
-    # Lógica unificada de procesamiento de órdenes (tanto por formulario como por botones rápidos)
     comando_ejecutar = None
     if boton_enviar and entrada_usuario:
         comando_ejecutar = entrada_usuario
@@ -203,7 +251,7 @@ with col_chat:
             respuesta_ia = f"Protocolo de seguridad en marcha. He bloqueado el acceso a cualquiera que intente robarnos el Wi-Fi en Buin, {titulo_jefa}."
         elif cliente_ia:
             try:
-                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} en Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., la IA sarcástica, brillante y leal de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa} in Buin, Chile. Responde con elegancia, un toque sutil de sarcasmo tipo Tony Stark y máxima brevedad (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.4}
                 respuesta_modelo = cliente_ia.generate_content(
                     f"{prompt_sistema}\nInstrucción: {comando_ejecutar}",
