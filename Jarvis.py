@@ -131,6 +131,40 @@ if "ultima_respuesta" not in st.session_state:
 if "ultimo_usuario" not in st.session_state:
     st.session_state.ultimo_usuario = ""
 
+# MANEJO DE COMANDOS DE VOZ Y PROTOCOLO DE EMERGENCIA
+voz_capturada = st.query_params.get("voice_input", None)
+if voz_capturada:
+    entrada_usuario = voz_capturada
+    st.query_params.clear()
+    
+    texto = entrada_usuario.lower().strip()
+    respuesta_ia = None
+    
+    # DETECCIÓN DEL PROTOCOLO DE EMERGENCIA POR VOZ
+    if "protocolo de emergencia" in texto:
+        respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+    elif cliente_ia:
+        try:
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
+            generation_config = {"max_output_tokens": 120, "temperature": 0.3}
+            respuesta_modelo = cliente_ia.generate_content(
+                f"{prompt_sistema}\nInstrucción: {entrada_usuario}",
+                generation_config=generation_config
+            )
+            respuesta_ia = respuesta_modelo.text
+        except Exception:
+            pass
+            
+    if not respuesta_ia:
+        if "hola" in texto:
+            respuesta_ia = f"¡Hola, {titulo_jefa} {nombre_jefa}! Sistemas M.E.C.A. operativos y en línea desde el búnker en Buin."
+        else:
+            respuesta_ia = f"Comando por voz '{entrada_usuario}' registrado y procesado por M.E.C.A., {nombre_jefa}."
+
+    st.session_state.ultimo_usuario = entrada_usuario
+    st.session_state.ultima_respuesta = respuesta_ia
+    st.rerun()
+
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 NÚCLEO VOCAL M.E.C.A.</div>', unsafe_allow_html=True)
     
@@ -147,6 +181,43 @@ with col_orbe:
     with col_btn_centro:
         btn_reproducir = st.button("🔊 Reproducir Respuesta por Voz")
     
+    # Botón para activar escucha por voz interactiva en el navegador
+    col_mic_d1, col_mic_c, col_mic_d2 = st.columns([0.2, 0.8, 0.0])
+    with col_mic_c:
+        activar_escucha_html = """
+        <button onclick="iniciarEscuchaVoz()" style="background-color: #050505; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; width: 100%;">🎙️ Dictar por Voz</button>
+        <script>
+        function iniciarEscuchaVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta reconocimiento de voz nativo.");
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                console.log("J.A.R.V.I.S. M.E.C.A. escuchando instrucción...");
+            };
+
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                console.log("Voz detectada: " + speechResult);
+                window.location.search = "?voice_input=" + encodeURIComponent(speechResult);
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Error de voz: " + event.error);
+            };
+
+            recognition.start();
+        }
+        </script>
+        """
+        components.html(activar_escucha_html, height=45)
+
     if btn_reproducir:
         audio_script = f"""
         <script>
@@ -177,7 +248,9 @@ with col_chat:
         texto = entrada_usuario.lower().strip()
         respuesta_ia = None
         
-        if cliente_ia:
+        if "protocolo de emergencia" in texto:
+            respuesta_ia = f"¡Atención, {titulo_jefa} {nombre_jefa}! Protocolo de emergencia activado. Conmutando satélite Serafín a canales encriptados y asegurando el búnker en Buin."
+        elif cliente_ia:
             try:
                 prompt_sistema = f"Eres J.A.R.V.I.S., IA táctica M.E.C.A. de {titulo_jefa} {nombre_jefa} en Buin. Responde con máxima brevedad y precisión militar (máximo 2 frases)."
                 generation_config = {"max_output_tokens": 120, "temperature": 0.3}
