@@ -124,14 +124,13 @@ st.markdown("""
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. CORE 3.0</h1>', unsafe_allow_html=True)
 st.markdown(f'<div class="status-bar">CORE STATUS: ONLINE &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; LATENCIA: 12ms</div>', unsafe_allow_html=True)
 
-# DISPOSICIÓN EN 3 COLUMNAS COMO LA INTERFAZ "MAYA AI"
+# DISPOSICIÓN EN 3 COLUMNAS
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.2])
 
 with col_telemetria:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">⚙️ SYSTEM TELEMETRY</div>', unsafe_allow_html=True)
     
-    # Medidores Circulares en HTML/CSS
     gauges_html = """
     <div style="display: flex; justify-content: space-around; align-items: center; padding: 10px 0;">
         <div style="text-align: center;">
@@ -153,13 +152,12 @@ with col_telemetria:
 
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">📍 BASE & SATÉLITE</div>', unsafe_allow_html=True)
-    st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Ubicación: Buin, Chile</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Ubicación: {st.session_state.memoria['usuario'].get('ubicacion', 'Buin, Chile')}</p>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>Serafín-Sat: Órbita Estable</p>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00d2ff; font-size:12px; margin:2px 0;'>USD/CLP: $930.50</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_orbe:
-    # COMPONENTE CENTRAL: ORBE HOLOGRÁFICO CON ANIMACIÓN CSS
     orb_component = """
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 320px;">
         <div class="orb-container">
@@ -236,7 +234,7 @@ with col_chat:
     st.markdown('<div class="holo-title">💬 CONVERSATION CORE</div>', unsafe_allow_html=True)
 
     if "ultima_respuesta" not in st.session_state:
-        st.session_state.ultima_respuesta = f"Sistemas holográficos en línea, {titulo_jefa} {nombre_jefa}."
+        st.session_state.ultima_respuesta = f"Sistemas holográficos en línea, {titulo_jefa} {nombre_jefa}. ¿Qué orden ejecutamos hoy?"
     if "ultimo_usuario" not in st.session_state:
         st.session_state.ultimo_usuario = ""
 
@@ -250,7 +248,7 @@ with col_chat:
     if st.session_state.ultimo_usuario:
         st.markdown(f"""
             <div style="background-color: #000000; border: 1px solid #1f293d; border-radius: 8px; padding: 8px; margin-bottom: 10px;">
-                <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {nombre_jefa}:</p>
+                <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👩‍💻 {titulo_jefa} {nombre_jefa}:</p>
                 <p style="margin:2px 0 0 0; color:#ffffff; font-size:12px;">{st.session_state.ultimo_usuario}</p>
             </div>
         """, unsafe_allow_html=True)
@@ -260,18 +258,30 @@ with col_chat:
         boton_enviar = st.form_submit_button(label="🚀 Transmitir")
 
     if boton_enviar and entrada_usuario:
-        respuestas = [
-            f"Procesando comando: '{entrada_usuario}'. Todo bajo control, {nombre_jefa}.",
-            f"Ejecutando '{entrada_usuario}' en el núcleo secundario.",
-            f"Instrucción '{entrada_usuario}' recibida y guardada en memoria."
-        ]
+        texto_ingresado = entrada_usuario.lower()
+        
+        # Respuestas inteligentes y personalizadas según lo que escribas
+        if "hola" in texto_ingresado:
+            respuesta_ia = f"Hola, {nombre_jefa}. Me alegra ver que los sistemas del búnker siguen en pie."
+        elif "clima" in texto_ingresado:
+            respuesta_ia = "El clima en Buin marca 14.9 °C con cielos despejados. Ideal para operar."
+        elif "ayuda" in texto_ingresado or "que puedes hacer" in texto_ingresado:
+            respuesta_ia = f"Tengo control de telemetría, notas persistentes, pasarelas y ejecución local, {titulo_jefa}."
+        else:
+            respuestas_sarcasticas = [
+                f"Analizando tu orden '{entrada_usuario}'... Menos mal que tengo paciencia infinita, {nombre_jefa}.",
+                f"Procesando '{entrada_usuario}'. Si esto sale mal, la responsabilidad recae sobre ti.",
+                f"Comando '{entrada_usuario}' registrado con éxito en los servidores centrales. ¿Algo más?"
+            ]
+            respuesta_ia = random.choice(respuestas_sarcasticas)
+
         st.session_state.ultimo_usuario = entrada_usuario
-        st.session_state.ultima_respuesta = random.choice(respuestas)
+        st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y HERRAMIENTAS
+# SECCIÓN INFERIOR: CONFIGURACIÓN DE IDENTIDAD Y MEMORIA
 st.markdown("---")
 with st.expander("👤 Identidad & Memoria Persistente", expanded=False):
     if "input_nombre" not in st.session_state:
