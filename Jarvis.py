@@ -128,6 +128,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Extraemos los datos actuales del usuario desde la memoria
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
@@ -334,15 +335,24 @@ with col_der:
     st.markdown("<h3 class='neon-text'>👤 0. Identidad del Usuario / Protocolo Biométrico</h3>", unsafe_allow_html=True)
     
     with st.expander("🔑 Configurar Perfil de Usuario", expanded=False):
-        input_nombre = st.text_input("Tu Nombre:", value=nombre_jefa)
-        input_titulo = st.text_input("Título preferido (ej: Jefa, Comandante, Doctora):", value=titulo_jefa)
+        # Sincronización con session_state para actualización instantánea
+        if "input_nombre" not in st.session_state:
+            st.session_state.input_nombre = nombre_jefa
+        if "input_titulo" not in st.session_state:
+            st.session_state.input_titulo = titulo_jefa
+
+        nuevo_nom = st.text_input("Tu Nombre:", key="input_nombre")
+        nuevo_tit = st.text_input("Título preferido (ej: Jefa, Comandante, Doctora):", key="input_titulo")
+        
         if st.button("💾 Actualizar Perfil Biométrico"):
             if "usuario" not in st.session_state.memoria:
                 st.session_state.memoria["usuario"] = {}
-            st.session_state.memoria["usuario"]["nombre"] = input_nombre
-            st.session_state.memoria["usuario"]["titulo"] = input_titulo
+            
+            st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+            st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+            
             guardar_memoria(st.session_state.memoria)
-            st.success(f"Perfil de {input_titulo} {input_nombre} actualizado en memoria.")
+            st.success(f"Perfil de {nuevo_tit} {nuevo_nom} actualizado con éxito en el núcleo.")
             st.rerun()
 
     st.markdown("<h3 class='neon-text'>🧠 1. Memoria Persistente Autónoma</h3>", unsafe_allow_html=True)
