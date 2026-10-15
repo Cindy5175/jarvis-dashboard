@@ -214,12 +214,11 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: ORDEN ESTRICTO MANUAL SIN FORMULARIO NATIVO
+# CONSOLA DE MANDO: DIVIDIDA EN DOS TARJETAS LIMPIAS (1. HISTORIAL ARRIBA / 2. CONTROLES Y ENTRADA ABAJO)
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGOS</div>', unsafe_allow_html=True)
-    
-    # 1. EL HISTORIAL DE BURBUJAS ARRIBA CON SU SCROLL
-    chat_container = st.container(height=130)
+    # TARJETA 1: HISTORIAL DE BURBUJAS (ARRIBA)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // HISTORIAL DE DIÁLOGO</div>', unsafe_allow_html=True)
+    chat_container = st.container(height=140)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -242,21 +241,23 @@ with col_chat:
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
-
-    # 2. LOS BOTONES DE ACCESO RÁPIDO AL MEDIO
+    # TARJETA 2: ACCESOS RÁPIDOS (MEDIO) Y CAJA DE TEXTO (ABABAJO)
+    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ COMANDOS & TRANSMISIÓN TÁCTICA</div>', unsafe_allow_html=True)
+    
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
-
-    # 3. LA CAJA DE TEXTO Y EL BOTÓN DE TRANSMISIÓN AL FONDO DE TODO
+    st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+    
     entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...", key="input_chat_manual")
     btn_transmitir = st.button("🚀 Transmitir Instrucción")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if btn_limpiar:
         st.session_state.historial_chat = [
@@ -339,8 +340,6 @@ with col_chat:
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -503,7 +502,7 @@ with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=
         nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave hier...")
     
     if st.button("💾 Actualizar Configuración y Clave"):
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
