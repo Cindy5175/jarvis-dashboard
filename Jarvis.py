@@ -148,11 +148,10 @@ with col_orbe:
     st.markdown('<div class="holo-title">📻 AMBIENTE ACÚSTICO // RADIO TÁCTICA EN VIVO</div>', unsafe_allow_html=True)
     
     estaciones_radio = {
-        "⚡ Synthwave Radio (Cyberpunk / Retrowave)": "https://stream.synthwave.radio/stream",
-        "🎧 Lo-Fi Beats (Estudio / Relax Búnker)": "https://iloradio.loradio.org/stream/1/",
-        "🌌 Chillout Ambient Space": "https://stream.psychicradio.net:8443/stream"
+        "⚡ Synthwave Radio": "https://stream.synthwave.radio/stream",
+        "🎧 Chillout Ambient": "https://icecast.raveair.com/chillout",
+        "🌌 Lo-Fi Radio": "https://radio.streemlion.com:3010/stream"
     }
-    
     estacion_activa = st.selectbox("Seleccionar Frecuencia de Audio:", list(estaciones_radio.keys()))
     url_stream = estaciones_radio[estacion_activa]
 
