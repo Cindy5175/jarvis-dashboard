@@ -141,7 +141,7 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA CONECTADO AL ESTADO DE JARVIS
+# REPRODUCTOR DE MÚSICA
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA BÚNKER</div>', unsafe_allow_html=True)
     
@@ -155,7 +155,6 @@ with col_orbe:
     playlist_sel = st.selectbox("Seleccionar Estación Sonora:", opciones_estaciones, index=opciones_estaciones.index(st.session_state.estacion_musica) if st.session_state.estacion_musica in opciones_estaciones else 0)
     st.session_state.estacion_musica = playlist_sel
 
-    # Enlaces de reproducción
     if "Synthwave" in st.session_state.estacion_musica:
         embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&loop=1"
     elif "Lo-Fi" in st.session_state.estacion_musica:
@@ -215,11 +214,23 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CHAT UNIFICADO CON COMANDOS DE VOZ/TEXTO PARA MÚSICA
+# CONSOLA DE MANDO REORDENADA: CAJA DE TEXTO Y BOTONES ARRIBA, BURBUJAS ABAJO CON SCROLL
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    chat_container = st.container(height=340)
+    # 1. BOTONES Y CAJA DE ENTRADA ARRIBA (SIEMPRE A MANO)
+    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
+    with col_q1: btn_q_hola = st.button("👋 Saludar")
+    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
+    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
+    with col_q4: btn_limpiar = st.button("🧹 Purga")
+
+    with st.form(key="form_chat", clear_on_submit=True):
+        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
+        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
+
+    # 2. HISTORIAL DE BURBUJAS DENTRO DE UN CONTENEDOR CON SCROLL HACIA ABAJO
+    chat_container = st.container(height=260)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,22 +254,12 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
-    with col_q1: btn_q_hola = st.button("👋 Saludar")
-    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
-    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
-    with col_q4: btn_limpiar = st.button("🧹 Purga Chat")
-
     if btn_limpiar:
         st.session_state.historial_chat = [
             {"remitente": "jarvis", "texto": f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Registros limpios."}
         ]
         st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
         st.rerun()
-
-    with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
-        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
     comando_ejecutar = None
     if boton_enviar and entrada_usuario:
@@ -290,7 +291,6 @@ with col_chat:
             st.session_state.estacion_musica = "Silent Night Buin"
             respuesta_ia = f"Ambiente silencioso configurado para Buin, {nombre_jefa}."
 
-        # SI NO ES MÚSICA, INTENTAR CON GEMINI O RESPUESTAS LOCALES
         if not respuesta_ia and cliente_ia:
             try:
                 prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
