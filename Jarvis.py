@@ -80,7 +80,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN (FORZANDO SELECTORES NEGRO Y AZUL NEÓN)
+# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO DE SELECTBOX NEGRO/AZUL
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,11 +92,17 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* FORZAR SELECTBOX Y ENTRADAS A NEGRO CON BORDE NEÓN */
-    div[data-baseweb="select"] > div, div.stSelectbox div[data-baseweb="select"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
-    span[data-baseweb="tag"], div[data-baseweb="menu"] { background-color: #000000 !important; color: #00d2ff !important; }
-    ul[data-baseweb="menu"] li { background-color: #000000 !important; color: #00d2ff !important; }
-    ul[data-baseweb="menu"] li:hover { background-color: #001133 !important; color: #00ffff !important; }
+    /* FORZAR SELECTORES A NEGRO Y AZUL NEÓN */
+    div[data-baseweb="select"] > div {
+        background-color: #000000 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 8px rgba(0,210,255,0.3) !important;
+    }
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div {
+        color: #00d2ff !important;
+    }
     
     .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
@@ -112,6 +118,23 @@ st.markdown("""
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
+
+# SCRIPT JS PARA FORZAR EL SELECTBOX A NEGRO ABSOLUTO
+components.html("""
+<script>
+const observer = new MutationObserver(() => {
+    parent.document.querySelectorAll('div[data-baseweb="select"] > div').forEach(el => {
+        el.style.backgroundColor = '#000000';
+        el.style.color = '#00d2ff';
+        el.style.borderColor = '#00d2ff';
+    });
+    parent.document.querySelectorAll('div[data-baseweb="select"] span').forEach(el => {
+        el.style.color = '#00d2ff';
+    });
+});
+observer.observe(parent.document.body, { childList: true, subtree: true });
+</script>
+""", height=0)
 
 # TELETIPO FINANCIERO Y DE MERCADOS
 st.markdown("""
@@ -148,15 +171,15 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE YOUTUBE EN PANTALLA PEQUEÑA (ESTILO NEÓN NEGRO)
+# REPRODUCTOR DE YOUTUBE (RESTABILITAS TODAS LAS OPCIONES: SYNTHWAVE, LO-FI, CYBERPUNK)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE EN VIVO (BÚNKER)</div>', unsafe_allow_html=True)
     
     canales_yt = {
         "⚡ Synthwave Radio 24/7": "4xDzrJKXOOY",
-        "🎧 Lo-Fi Girl Beats Live": "jfKfPfyJRdk",
-        "🌌 Cyberpunk Ambient Stream": "5qap5aO4i9A"
+        "🎧 Lo-Fi Beats (Estudio Búnker)": "jfKfPfyJRdk",
+        "🌆 Cyberpunk Ambient Stream": "5qap5aO4i9A"
     }
     
     estacion_yt = st.selectbox("Seleccionar Frecuencia de Video/Audio:", list(canales_yt.keys()))
