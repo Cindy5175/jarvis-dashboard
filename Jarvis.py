@@ -3,7 +3,6 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
-import urllib.request
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -38,11 +37,26 @@ if "memoria" not in st.session_state:
 
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
+prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
+
+# 🔑 PUEDES PEGAR TU API KEY DE GEMINI AQUÍ DIRECTAMENTE SI LO PREFIERES (o dejarla en jarvis_memory.json)
+API_KEY_DIRECTA = prefs_voz.get("ai_api_key", "").strip()
+
+# CONFIGURACIÓN DEL CLIENTE DE GOOGLE GEMINI EN LA NUBE
+cliente_gemini = None
+if API_KEY_DIRECTA:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=API_KEY_DIRECTA)
+        # Usamos el modelo estándar y estable para respuestas fluidas
+        cliente_gemini = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        pass
 
 # INICIALIZAR HISTORIAL DE CHAT
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin 100% operativo. Procesadores al máximo, café listo y mi sarcasmo calibrado al nivel adecuado. Dígame qué hacemos primero y lo ponemos en marcha de inmediato."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin 100% operativo en la nube. Procesadores al máximo, café listo y mi sarcasmo calibrado al nivel adecuado. Dígame qué hacemos primero y lo ponemos en marcha de inmediato."}
     ]
 
 if "ultima_respuesta" not in st.session_state:
@@ -51,25 +65,20 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# FUNCIÓN OLLAMA LOCAL DIRECTA Y SEGURA
-def consultar_ollama_seguro(prompt_sistema, mensaje_usuario):
-    url = "http://localhost:11434/api/generate"
+# FUNCIÓN DE INTELIGENCIA NUBE (GEMINI)
+def consultar_gemini_nube(prompt_sistema, mensaje_usuario):
+    if not cliente_gemini:
+        return f"Alerta en el búnker, {titulo_jefa}: No se detecta una API Key de Gemini configurada. Por favor ingrese su clave en el archivo de preferencias para activar el enlace satelital."
+    
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
-    payload = {
-        "model": "llama3.2:latest",
-        "prompt": prompt_completo,
-        "stream": False,
-        "options": {"temperature": 0.5}
-    }
     try:
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=20) as response:
-            resultado = json.loads(response.read().decode('utf-8'))
-            return resultado.get("response", "").strip()
-    except Exception:
-        # Fallback inteligente si Ollama local no responde
-        return f"Sistema en línea, {titulo_jefa}. He procesado su instrucción en el búnker, aunque el enlace local tuvo una pequeña pausa."
+        respuesta = cliente_gemini.generate_content(prompt_completo)
+        if respuesta and respuesta.text:
+            return respuesta.text.strip()
+    except Exception as e:
+        return f"Error de enlace con la nube de Gemini: {e}"
+    
+    return f"Instrucción recibida en el búnker, {titulo_jefa}."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -92,19 +101,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA Autonoma ( M.E.C.A 4.0 )</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA Autonoma ( M.E.C.A 4.0 NUBE )</h1>', unsafe_allow_html=True)
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
 with col_telemetria:
-    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA DEL SISTEMA</div>', unsafe_allow_html=True)
-    gauges_html = '<div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;"><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">38%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">57%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div></div>'
+    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA NUBE</div>', unsafe_allow_html=True)
+    gauges_html = '<div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;"><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">15%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">42%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div></div>'
     components.html(gauges_html, height=90)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE Y SATÉLITE</div>', unsafe_allow_html=True)
-    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Serafín-Sat: Órbita Estable</p></div></div>'
+    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Enlace Nube: Activo</p></div></div>'
     components.html(globe_html, height=65)
 
     reloj_chileno_html = """
@@ -171,7 +180,6 @@ with col_orbe:
 with col_chat:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     
-    # Mostrar historial reciente limpio
     for item in st.session_state.historial_chat[-4:]:
         remitente = item["remitente"]
         msg = item["texto"]
@@ -182,7 +190,6 @@ with col_chat:
 
     st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
     
-    # ENTRADA DE TEXTO DIRECTA SIN FORMULARIOS COMPLEJOS PARA EVITAR BLOQUEOS
     entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...")
     
     b_col1, b_col2 = st.columns(2)
@@ -201,13 +208,12 @@ with col_chat:
 
     if enviar_clic and entrada_usuario:
         texto_usuario = entrada_usuario.strip()
-        
-        # 1. Registrar mensaje de la jefa
         st.session_state.historial_chat.append({"remitente": "jefa", "texto": texto_usuario})
 
-        # 2. Comandos físicos rápidos en Windows
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
+        
+        # 1. Comandos físicos rápidos en Windows
         if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
@@ -218,12 +224,11 @@ with col_chat:
             subprocess.Popen(["start", "chrome"], shell=True)
             respuesta_ia = f"Desplegando navegador web, {titulo_jefa}."
 
-        # 3. Si no es comando físico, consultar a Ollama local
+        # 2. Si no es comando físico, consultar directo a Gemini Cloud
         if not respuesta_ia:
-            prompt_sistema = f"""Eres J.A.R.V.I.S., asistente inteligente con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante y breve (máximo 2 frases)."""
-            respuesta_ia = consultar_ollama_seguro(prompt_sistema, texto_usuario)
+            prompt_sistema = f"""Eres J.A.R.V.I.S., asistente inteligente con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."""
+            respuesta_ia = consultar_gemini_nube(prompt_sistema, texto_usuario)
 
-        # 4. Guardar respuesta y actualizar interfaz
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
