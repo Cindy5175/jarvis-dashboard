@@ -95,7 +95,7 @@ st.markdown("""
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
     .stTextInput input, .stTextArea textarea, .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
-    div.stButton > button, div.stFormSubmitButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
+    div.stButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; }
     div[data-testid="stExpander"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; }
     div[data-testid="stExpander"] details summary { background-color: #050505 !important; color: #00d2ff !important; font-weight: bold !important; }
@@ -106,7 +106,7 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
-# TELETIPO FINANCIERO Y DE MERCADOS (SIN CRIPTO)
+# TELETIPO FINANCIERO Y DE MERCADOS
 st.markdown("""
     <div class="market-ticker">
         <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
@@ -214,12 +214,12 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: ORDEN EXACTO (BURBUJAS ARRIBA -> BOTONES MEDIO -> CAJA DE TEXTO ABAJO)
+# CONSOLA DE MANDO: ORDEN ESTRICTO MANUAL SIN FORMULARIO NATIVO
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGOS</div>', unsafe_allow_html=True)
     
-    # 1. HISTORIAL DE BURBUJAS CON SCROLL EN LA PARTE SUPERIOR
-    chat_container = st.container(height=140)
+    # 1. EL HISTORIAL DE BURBUJAS ARRIBA CON SU SCROLL
+    chat_container = st.container(height=130)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,17 +243,20 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    # 2. BOTONES DE COMANDOS RÁPIDOS EN EL MEDIO
+    st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+
+    # 2. LOS BOTONES DE ACCESO RÁPIDO AL MEDIO
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    # 3. CAJA DE ENTRADA Y BOTÓN DE TRANSMISIÓN ANCLADOS ABAJO
-    with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
-        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
+    st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+
+    # 3. LA CAJA DE TEXTO Y EL BOTÓN DE TRANSMISIÓN AL FONDO DE TODO
+    entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...", key="input_chat_manual")
+    btn_transmitir = st.button("🚀 Transmitir Instrucción")
 
     if btn_limpiar:
         st.session_state.historial_chat = [
@@ -263,7 +266,7 @@ with col_chat:
         st.rerun()
 
     comando_ejecutar = None
-    if boton_enviar and entrada_usuario:
+    if btn_transmitir and entrada_usuario:
         comando_ejecutar = entrada_usuario
     elif btn_q_hola:
         comando_ejecutar = "Hola Jarvis, ¿qué tal?"
@@ -271,8 +274,6 @@ with col_chat:
         comando_ejecutar = "Protocolo de emergencia"
     elif btn_q_seg:
         comando_ejecutar = "Protocolo de seguridad"
-    elif btn_autonomia:
-        comando_ejecutar = "ejecutar autoevaluación autónoma del búnker"
 
     if comando_ejecutar:
         texto = comando_ejecutar.lower().strip()
