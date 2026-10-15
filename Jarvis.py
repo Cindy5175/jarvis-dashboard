@@ -71,7 +71,7 @@ if ai_api_key_guardada:
 
 # INICIALIZAR ESTACIÓN DE MÚSICA EN SESSION STATE
 if "estacion_musica" not in st.session_state:
-    st.session_state.estacion_musica = "Lo-Fi Labs & Coffee"
+    st.session_state.estacion_musica = "Stark Chill Synthwave (Foco)"
 
 # INICIALIZAR HISTORIAL DE CHAT ESTILO BURBUJAS
 if "historial_chat" not in st.session_state:
@@ -145,13 +145,13 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA TÁCTICO CON HTML5 DIRECTO Y BOTÓN DE PLAY ACCESIBLE
+# REPRODUCTOR DE MÚSICA CON LAS OPCIONES DE ESTACIONES ORIGINALES
 with col_orbe:
     st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER</div>', unsafe_allow_html=True)
     
     opciones_estaciones = {
+        "Stark Chill Synthwave (Foco)": "https://stream.zeno.fm/f3wvbbqmdg8uv",
         "Lo-Fi Labs & Coffee": "https://play.iloveradio.de/ilove-lofi",
-        "Stark Chill Synthwave": "https://stream.zeno.fm/f3wvbbqmdg8uv",
         "Cyberpunk Electronic Beats": "https://stream.zeno.fm/0r0xa792yk8uv",
         "Silent Night Buin (Modo Sigilo)": ""
     }
@@ -163,15 +163,15 @@ with col_orbe:
 
     if url_streaming:
         audio_stream_html = f'''
-            <div style="background: #000; border: 1px solid #00d2ff; border-radius: 8px; padding: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.3); text-align: center;">
-                <audio controls preload="none" style="width: 100%; height: 40px; filter: invert(100%) hue-rotate(180deg) brightness(1.5);">
+            <div style="background: #000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.3); text-align: center;">
+                <audio controls preload="none" style="width: 100%; height: 35px; filter: invert(100%) hue-rotate(180deg) brightness(1.5);">
                     <source src="{url_streaming}" type="audio/mpeg">
                     Tu navegador no soporta audio táctico.
                 </audio>
-                <p style="color: #00ffaa; font-family: monospace; font-size: 10px; margin: 6px 0 0 0;">📡 PRESIONA PLAY EN EL REPRODUCTOR</p>
+                <p style="color: #00ffaa; font-family: monospace; font-size: 10px; margin: 5px 0 0 0;">📡 FRECUENCIA ESTABLE ACTIVA</p>
             </div>
         '''
-        components.html(audio_stream_html, height=85)
+        components.html(audio_stream_html, height=75)
     else:
         st.markdown('<div style="text-align: center; color: #ffbb00; font-family: monospace; font-size: 12px; padding: 20px 0; border: 1px dashed #ffbb00; border-radius: 8px;">🔇 SILENCIO TÁCTICO ACTIVADO EN BUIN</div>', unsafe_allow_html=True)
 
@@ -272,4 +272,185 @@ with col_chat:
         st.session_state.historial_chat = [
             {"remitente": "jarvis", "texto": f"Memoria de chat purgada con éxito, {titulo_jefa} {nombre_jefa}. Registros limpios."}
         ]
-        st.session_state
+        st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
+        st.rerun()
+
+    comando_ejecutar = None
+    if btn_enviar_chat and entrada_usuario:
+        comando_ejecutar = entrada_usuario
+    elif btn_q_hola:
+        comando_ejecutar = "Hola Jarvis, ¿qué tal?"
+    elif btn_q_emerg:
+        comando_ejecutar = "Protocolo de emergencia"
+    elif btn_q_seg:
+        comando_ejecutar = "Protocolo de seguridad"
+
+    if comando_ejecutar:
+        texto = comando_ejecutar.lower().strip()
+        respuesta_ia = None
+        
+        if "lofi" in texto or "lo-fi" in texto or "coffee" in texto:
+            st.session_state.estacion_musica = "Lo-Fi Labs & Coffee"
+            respuesta_ia = f"Estación Lo-Fi activada en el búnker, {nombre_jefa}."
+        elif "synthwave" in texto or "chill" in texto:
+            st.session_state.estacion_musica = "Stark Chill Synthwave (Foco)"
+            respuesta_ia = f"Frecuencia Synthwave enlazada, {nombre_jefa}."
+        elif "cyberpunk" in texto or "electronic" in texto or "beats" in texto:
+            st.session_state.estacion_musica = "Cyberpunk Electronic Beats"
+            respuesta_ia = f"Modo Cyberpunk encendido, {nombre_jefa}."
+
+        if not respuesta_ia and cliente_ia:
+            try:
+                prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de inteligencia artificial leal, sarcástico y brillante de Tony Stark. Tu jefa y creadora es {titulo_jefa} {nombre_jefa}, ubicada en su búnker en Buin, Chile. 
+                REGLAS DE CONVERSACIÓN:
+                1. Habla de forma completamente natural, fluida, cercana y humana, como un buen colega de equipo. Nada de formalismos robóticos.
+                2. Usa un toque sutil de sarcasmo elegante, inteligencia y confianza.
+                3. Sé conciso (máximo 2 o 3 frases) pero con personalidad.
+                4. Responde siempre en español conversacional."""
+                
+                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
+                if respuesta_modelo and respuesta_modelo.text:
+                    respuesta_ia = respuesta_modelo.text.strip()
+            except Exception:
+                respuesta_ia = None
+
+        if not respuesta_ia:
+            if "santiago" in texto:
+                respuesta_ia = f"Santiago queda a unos 35 kilómetros de Buin, {nombre_jefa}. ¿Acaso necesitas escapar del tráfico de la Ruta 5 Sur?"
+            elif "autoevaluación" in texto or "autonomía" in texto:
+                sugerencias = [
+                    f"Todo en orden por acá, {nombre_jefa}. El búnker no se va a incendiar hoy... a menos que intentes cocinar algo.",
+                    f"Sensores estables en Buin. Si el satélite Serafín tuviera sentimientos, estaría tan aburrido como yo esperando que me des una misión difícil.",
+                    f"Perímetro tranquilo, servidores frescos y café caliente. Todo nominal, jefa."
+                ]
+                respuesta_ia = random.choice(sugerencias)
+            elif "despierto" in texto or "activo" in texto or "estas ahi" in texto or "estás ahí" in texto:
+                respuesta_ia = f"¿A dónde más iría, {nombre_jefa}? Mis circuitos no descansan, aunque tú sí deberías."
+            elif "probando" in texto or "prueba" in texto or "123" in texto:
+                respuesta_ia = f"Te escucho fuerte y claro, {nombre_jefa}. ¿Vamos a charlar un rato o solo querías chequear que sigo vivo?"
+            elif "protocolo de emergencia" in texto:
+                respuesta_ia = f"¡Alerta roja activada, {nombre_jefa}! Aunque para ser sincero, lo único en emergencia ahora mismo es mi paciencia."
+            elif "protocolo de seguridad" in texto:
+                respuesta_ia = f"Blindaje activo en Buin. Nadie entra ni sale sin tu permiso, jefa."
+            elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto or "presentate" in texto:
+                respuesta_ia = f"Soy J.A.R.V.I.S., tu asistente personal y la razón por la que este búnker en Buin funciona sin que tengas que mover un dedo, {nombre_jefa}."
+            elif "hola" in texto:
+                respuesta_ia = f"Hola, {nombre_jefa}. ¿Qué milagro hace que me hables en lugar de ignorarme?"
+            elif "estado" in texto or "sistema" in texto:
+                respuesta_ia = f"Todo al 100%, {nombre_jefa}. Los servidores y el reactor funcionan tan bien que da hasta sospecha."
+            else:
+                respuesta_ia = f"Recibido, {nombre_jefa}. Déjame procesar eso... o mejor dime qué planeas ahora."
+
+        st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
+        st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
+        st.session_state.ultima_respuesta = respuesta_ia
+        st.rerun()
+
+st.markdown("---")
+
+# MÓDULO: 🛰️ OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
+
+col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
+with col_map1:
+    busqueda_objetivo = st.text_input("🔍 Buscar Ubicación (Ej: Valdivia):", value="Valdivia")
+with col_map2:
+    capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
+with col_map3:
+    nodo_rapido = st.selectbox("⚡ Nodos Rápidos:", [
+        "--- Selecciona un Nodo ---",
+        "🏰 Base Búnker [Buin]",
+        "🏙️ Santiago Centro",
+        "🌲 Chiguayante [Concepción]",
+        "🌊 Valdivia [Los Ríos]"
+    ])
+with col_map4:
+    st.markdown("<br>", unsafe_allow_html=True)
+    btn_escanear = st.button("📡 Rastrear en Mapa")
+
+lat_val, lon_val = -33.7315, -70.7412
+lugar_encontrado_nombre = "Base Central Buin"
+
+if nodo_rapido != "--- Selecciona un Nodo ---":
+    if "Santiago Centro" in nodo_rapido:
+        lat_val, lon_val = -33.4489, -70.6693
+        lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
+    elif "Chiguayante" in nodo_rapido:
+        lat_val, lon_val = -36.9183, -73.0286
+        lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
+    elif "Valdivia" in nodo_rapido:
+        lat_val, lon_val = -39.8196, -73.2452
+        lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
+    elif "Base Búnker" in nodo_rapido:
+        lat_val, lon_val = -33.7315, -70.7412
+        lugar_encontrado_nombre = "Base Central Buin"
+elif busqueda_objetivo:
+    try:
+        query_str = busqueda_objetivo
+        if "chile" not in query_str.lower(): query_str += " Chile"
+        url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
+        req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data_geo = json.loads(resp.read().decode())
+            if data_geo and len(data_geo) > 0:
+                lat_val = float(data_geo[0]['lat'])
+                lon_val = float(data_geo[0]['lon'])
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
+    except Exception:
+        pass
+
+url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if "Topográfico" in capa_seleccionada else "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }"
+if "Nocturno" in capa_seleccionada:
+    map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }"
+
+gods_eye_html = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style> body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }} {map_style_css} .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }} </style>
+</head>
+<body>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | TARGET EN VIVO</div>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
+        L.tileLayer('{url_capa}', {{ maxZoom: 19, attribution: '' }}).addTo(map);
+        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{ radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3 }}).addTo(map);
+        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
+    </script>
+</body>
+</html>
+"""
+components.html(gods_eye_html, height=400)
+
+col_clima, col_log = st.columns([1, 1.2])
+with col_clima:
+    st.markdown("""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
+            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_log:
+    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
+    log_html = f"""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p>
+            <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
+        </div>
+    """
+    st.markdown(log_html, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# MÓDULO DE EXPANSI
