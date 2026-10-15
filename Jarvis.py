@@ -113,12 +113,17 @@ def ejecutar_orden_sistema(texto_comando):
         return f"Error ejecutando la orden física en el sistema: {e}"
     return None
 
+# CONFIGURACIÓN DEL CLIENTE IA (GEMINI 4 ARGON DE RESPALDO EN LA NUBE)
 cliente_ia = None
 if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
+        # Intentamos conectar con Gemini 4 Argon, con respaldo a flash si es necesario
+        try:
+            cliente_ia = genai.GenerativeModel('gemini-4-argon')
+        except Exception:
+            cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
     except Exception:
         pass
 
@@ -157,24 +162,8 @@ st.markdown("""
     .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
     
-    /* FORZAR ANCHO AL 100% EN CONTENEDORES Y BOTONES DE FORMULARIO */
-    div[data-testid="stFormSubmitButton"] {
-        width: 100% !important;
-    }
-    div[data-testid="stFormSubmitButton"] > button { 
-        background-color: #000000 !important; 
-        color: #00d2ff !important; 
-        border: 1px solid #00d2ff !important; 
-        border-radius: 6px !important; 
-        font-weight: bold !important; 
-        width: 100% !important; 
-        box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; 
-    }
-    div[data-testid="stFormSubmitButton"] > button:hover { 
-        background-color: #00d2ff !important; 
-        color: #000000 !important; 
-        box-shadow: 0 0 15px #00d2ff !important; 
-    }
+    div.stButton > button, button[kind="secondaryFormSubmit"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
+    div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -386,7 +375,7 @@ with col_chat:
             
             respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar, modo_complejo=es_complejo)
 
-        # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
+        # 3. RESPALDO CON GEMINI 4 ARGON EN LA NUBE SI ESTÁ CONFIGURADO
         if not respuesta_ia and cliente_ia:
             try:
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
