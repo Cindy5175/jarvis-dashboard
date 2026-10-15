@@ -91,8 +91,8 @@ st.markdown("""
     .market-ticker { background: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; font-family: monospace; font-size: 12px; }
     .market-item { color: #00d2ff; }
     .market-value { color: #00ffaa; font-weight: bold; }
-    .holo-card { background-color: #050505; border: 1px solid #00d2ff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
-    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
+    .holo-card { background-color: #050505; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
+    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
     .stTextInput input, .stTextArea textarea, .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     div.stButton > button, div.stFormSubmitButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
@@ -214,36 +214,36 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: BURBUJAS CON SCROLL ARRIBA (ALTURA PERFECTA) Y CONTROLES ABAJO
+# CONSOLA DE MANDO: BURBUJAS COMPACTAS ARRIBA Y CONTROLES ABAJO SIN ESPACIOS VACÍOS
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. HISTORIAL DE BURBUJAS CON SCROLL (OCUPA LA PARTE SUPERIOR)
-    chat_container = st.container(height=160)
+    # 1. HISTORIAL DE BURBUJAS CON SCROLL COMPACTO (ALTURA AJUSTADA A 110)
+    chat_container = st.container(height=110)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
             msg = item["texto"]
             if remitente == "jefa":
                 st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 10px 10px 0 10px; padding: 10px; max-width: 85%; color: #ffffff; font-size: 13px;">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 6px;">
+                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 10px 10px 0 10px; padding: 8px; max-width: 85%; color: #ffffff; font-size: 13px;">
                             <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👤 {titulo_jefa} {nombre_jefa}:</p>
-                            <p style="margin:4px 0 0 0;">{msg}</p>
+                            <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
             else:
                 st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-start; margin-bottom: 8px;">
-                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 10px 10px 10px 0; padding: 10px; max-width: 85%; color: #ffffff; font-size: 13px; box-shadow: 0 0 8px rgba(0,210,255,0.15);">
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 6px;">
+                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 10px 10px 10px 0; padding: 8px; max-width: 85%; color: #ffffff; font-size: 13px; box-shadow: 0 0 8px rgba(0,210,255,0.15);">
                             <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:11px;">⚡ J.A.R.V.I.S.:</p>
-                            <p style="margin:4px 0 0 0;">{msg}</p>
+                            <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
 
-    # 2. BOTONES Y CAJA DE ENTRADA ANCLADOS ABAJO DENTRO DE LA MISMA TARJETA
+    # 2. BOTONES Y CAJA DE ENTRADA PEGADOS ABAJO
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
