@@ -82,28 +82,31 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS (CON PARCHE PARA OSCURECER EL CHAT NATIVO)
+# ESTILOS CSS TÁCTICOS NEÓN (FONDO NEGRO Y AZUL NEÓN TOTAL)
 st.markdown("""
     <style>
-    .stApp, .main { background-color: #000000 !important; color: #ffffff; }
-    .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; }
+    .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
+    .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
     .status-bar { text-align: center; color: #00d2ff; font-size: 13px; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; }
-    .market-ticker { background: #050505; border: 1px solid #00d2ff; border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; font-family: monospace; font-size: 12px; }
+    .market-ticker { background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
     .market-item { color: #00d2ff; }
     .market-value { color: #00ffaa; font-weight: bold; }
-    .holo-card { background-color: #050505; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
-    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
+    .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* OSCURECER EL CHAT INPUT NATIVO PARA QUE COMBINE */
-    div[data-testid="stChatInput"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
-    div[data-testid="stChatInput"] textarea { background-color: #050505 !important; color: #00d2ff !important; }
+    /* FORZAR AZUL NEÓN EN TODO EL CHAT NATIVO */
+    div[data-testid="stChatInput"] { background-color: #000000 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 12px rgba(0, 210, 255, 0.4) !important; }
+    div[data-testid="stChatInput"] textarea { background-color: #000000 !important; color: #00d2ff !important; }
     
-    .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
+    .stSelectbox select, .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
-    div.stButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
-    div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; }
-    div[data-testid="stExpander"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; }
-    div[data-testid="stExpander"] details summary { background-color: #050505 !important; color: #00d2ff !important; font-weight: bold !important; }
+    
+    /* BOTONES TÁCTICOS NEÓN */
+    div.stButton > button { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
+    div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
+    
+    div[data-testid="stExpander"] { background-color: #000000 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
+    div[data-testid="stExpander"] details summary { background-color: #000000 !important; color: #00d2ff !important; font-weight: bold !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -127,10 +130,10 @@ col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 with col_telemetria:
     st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA DEL SISTEMA</div>', unsafe_allow_html=True)
     gauges_html = """
-    <div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0;">
-        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">38%</div><span style="color: #ffffff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div>
-        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">57%</div><span style="color: #ffffff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div>
-        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #ffffff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div>
+    <div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;">
+        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">38%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div>
+        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">57%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div>
+        <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div>
     </div>
     """
     components.html(gauges_html, height=90)
@@ -138,8 +141,8 @@ with col_telemetria:
 
     st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE Y SATÉLITE</div>', unsafe_allow_html=True)
     globe_html = """
-    <div style="display: flex; align-items: center; gap: 12px; padding: 2px 0;">
-        <div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #003366 60%, #000511 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div>
         <div><p style='color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;'>🌍 Ubicación: Buin, Chile</p><p style='color:#00d2ff; font-size:11px; margin:2px 0;'>🛰️ Serafín-Sat: Órbita Estable</p></div>
     </div>
     """
@@ -169,7 +172,7 @@ with col_orbe:
     else:
         embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&loop=1"
 
-    components.html(f'<iframe width="100%" height="110" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px; border:1px solid #00d2ff;"></iframe>', height=125)
+    components.html(f'<iframe width="100%" height="110" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px; border:1px solid #00d2ff; box-shadow: 0 0 10px rgba(0,210,255,0.3);"></iframe>', height=125)
 
     st.markdown('<div class="holo-title" style="margin-top:10px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
@@ -219,7 +222,7 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO FINAL OPTIMIZADA
+# CONSOLA DE MANDO NEÓN PERFECTA
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
     
@@ -232,8 +235,8 @@ with col_chat:
             if remitente == "jefa":
                 st.markdown(f'''
                     <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
-                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #ffffff; font-size: 12px;">
-                            <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>
+                        <div style="background-color: #001133; border: 1px solid #00d2ff; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.2);">
+                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>
                             <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
                     </div>
@@ -241,7 +244,7 @@ with col_chat:
             else:
                 st.markdown(f'''
                     <div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">
-                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #ffffff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.15);">
+                        <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.3);">
                             <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">⚡ J.A.R.V.I.S.:</p>
                             <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
@@ -428,10 +431,10 @@ components.html(gods_eye_html, height=400)
 col_clima, col_log = st.columns([1, 1.2])
 with col_clima:
     st.markdown("""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px;">
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
-            <p style="color:#ffffff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
-            <p style="color:#ffffff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -439,7 +442,7 @@ with col_log:
     hora_log = datetime.datetime.now().strftime("%H:%M:%S")
     coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
     log_html = f"""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px;">
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
             <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p>
             <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p>
             <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
@@ -449,7 +452,7 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (UBICADOS ABAJO DEL TODO)
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
