@@ -142,29 +142,32 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (CON LOGO OFICIAL Y BOTÓN TÁCTICO)
+# RADIO EN STREAMING DIRECTO (SIN ANUNCIOS NI CUENTAS)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-    # Logo oficial SVG de Spotify integrado en el título
-    logo_spotify_svg = '<svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; fill: #1DB954; margin-right: 6px;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.72.48-1.08.24-2.94-1.8-6.6-2.22-10.92-1.22-.42.099-.84-.18-.93-.6-.09-.42.18-.84.6-.93 4.68-1.08 8.76-.6 12.06 1.56.36.24.48.72.27 1.05zm1.44-3.84c-.3.45-.9.6-1.35.3-3.36-2.04-8.4-2.64-12.3-1.44-.54.18-1.14-.12-1.32-.66-.18-.54.12-1.14.66-1.32 4.44-1.38 10.02-.72 13.92 1.68.45.3.6.9.39 1.44zm.12-3.96C14.88 7.8 8.64 7.62 5.04 8.7c-.66.198-1.38-.18-1.56-.84-.198-.66.18-1.38.84-1.56 4.02-1.2 10.92-.96 15.3 1.62.6.36.78 1.14.42 1.74-.36.6-1.14.78-1.74.42z"/></svg>'
-    st.markdown(f'<div class="holo-title">{logo_spotify_svg} AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title">📻 AMBIENTE ACÚSTICO // RADIO TÁCTICA EN VIVO</div>', unsafe_allow_html=True)
     
-    opciones_spotify = {
-        "⚡ Synthwave & Electrónica": "https://open.spotify.com/playlist/37i9dQZF1DXdLENR312A35",
-        "🎧 Instrumental / Lo-Fi Beats": "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgSPKQ"
+    estaciones_radio = {
+        "⚡ Synthwave Radio (Cyberpunk / Retrowave)": "https://stream.synthwave.radio/stream",
+        "🎧 Lo-Fi Beats (Estudio / Relax Búnker)": "https://iloradio.loradio.org/stream/1/",
+        "🌌 Chillout Ambient Space": "https://stream.psychicradio.net:8443/stream"
     }
     
-    estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
-    url_playlist = opciones_spotify[estacion_sp]
+    estacion_activa = st.selectbox("Seleccionar Frecuencia de Audio:", list(estaciones_radio.keys()))
+    url_stream = estaciones_radio[estacion_activa]
 
-    st.markdown(
-        f'<div style="text-align: center; margin: 15px 0;">'
-        f'<a href="{url_playlist}" target="_blank" style="background-color: #1DB954; color: #000000; padding: 12px 24px; border-radius: 25px; font-weight: bold; text-decoration: none; font-size: 14px; box-shadow: 0 0 15px rgba(29,185,84,0.6); display: inline-block;">🟢 Abrir {estacion_sp} en Spotify</a>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
+    # Reproductor HTML5 nativo limpio y ultraliviano
+    player_html = f"""
+    <div style="background: #000; padding: 10px; border: 1px solid #00d2ff; border-radius: 8px; text-align: center; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+        <audio controls autoplay style="width: 100%; height: 35px; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%);">
+            <source src="{url_stream}" type="audio/mpeg">
+            Tu navegador no soporta el flujo de audio táctico.
+        </audio>
+    </div>
+    """
+    components.html(player_html, height=60)
 
-    st.markdown('<div class="holo-title" style="margin-top:15px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="margin-top:12px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
     <style>
       body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }
@@ -286,7 +289,7 @@ with col_chat:
                 1. Habla 100% como un compañero humano astuto, fluido, brillante y con un toque de humor o sarcasmo elegante.
                 2. JAMÁS des respuestas robóticas, rígidas o tipo 'manual de usuario'. Sé cercano y conversacional.
                 3. Sé breve y directo (1 a 3 frases máximo).
-                4. Si te hablan de música, electrónica, synthwave o lo-fi, responde con entusiasmo conectando los terminales de audio de Spotify."""
+                4. Si te hablan de música, electrónica, synthwave o lo-fi, responde con entusiasmo conectando la radio del búnker."""
                 
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
                 if respuesta_modelo and respuesta_modelo.text:
@@ -296,7 +299,7 @@ with col_chat:
 
         if not respuesta_ia:
             if "música" in texto or "musica" in texto or "canción" in texto or "cancion" in texto or "synthwave" in texto or "instrumental" in texto or "lo-fi" in texto or "electro" in texto:
-                respuesta_ia = f"Entendido, {nombre_jefa}. Conectando los terminales de Spotify al sistema de audio del búnker. ¡A disfrutar el ritmo!"
+                respuesta_ia = f"Sintonizando la frecuencia en vivo, {nombre_jefa}. Suba el volumen y disfrute del streaming táctico."
             elif "santiago" in texto:
                 respuestas_stgo = [
                     f"Santiago sigue ahí a 35 kilómetros, {nombre_jefa}. Con bastante tráfico, si me preguntas.",
