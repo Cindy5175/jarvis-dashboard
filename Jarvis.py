@@ -480,4 +480,157 @@ components.html(gods_eye_html, height=400)
 col_clima, col_log = st.columns([1, 1.2])
 with col_clima:
     st.markdown("""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size:
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
+            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_log:
+    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
+    st.markdown(f'<div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);"><p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p><p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p><p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p></div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO, NOTAS Y MISIONES (ABAJO DE TODO)
+if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
+if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
+if "misiones_lista" not in st.session_state:
+    st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
+
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA, NOTAS Y MISIONES // STARK INDUSTRIES</div>', unsafe_allow_html=True)
+
+j1, j2, j3, j4 = st.columns(4)
+
+with j1:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>1. 🧬 ESCÁNER BIOMÉTRICO</p>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:11px; color:#ffbb00; margin-bottom:8px;'>{st.session_state.biometrico_estado}</div>", unsafe_allow_html=True)
+    if st.button("👁️ Escanear Huella"):
+        st.session_state.biometrico_estado = f"✅ ACCESO CONCEDIDO: {titulo_jefa.upper()} {nombre_jefa.upper()}"
+        st.rerun()
+
+with j2:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>2. ⚡ REACTOR & CLIMA</p>", unsafe_allow_html=True)
+    nivel_reactor = st.slider("Potencia Reactor Arc (%)", 50, 100, 98, key="slider_arc")
+    temp_bunker = st.select_slider("Clima Búnker (°C)", options=[16, 18, 20, 22, 24], value=20, key="slider_temp")
+    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:10px; color:#00ffaa;'>Núcleo al {nivel_reactor}% | Temp: {temp_bunker}°C</div>", unsafe_allow_html=True)
+
+with j3:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 CALENDARIO & MISIONES</p>", unsafe_allow_html=True)
+    for mision, estado in st.session_state.misiones_lista.items():
+        st.session_state.misiones_lista[mision] = st.checkbox(mision, value=estado, key=f"mission_{mision}")
+
+with j4:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>4. 🚨 RADAR DE AMENAZAS</p>", unsafe_allow_html=True)
+    st.markdown(f"<div style='background:#000; border:1px solid #00d2ff; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#00ffaa; min-height:45px; text-align:center;'>{st.session_state.alerta_actual}</div>", unsafe_allow_html=True)
+    if st.button("📡 Escanear Amenazas"):
+        amenazas_posibles = [
+            "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo.",
+            "🟢 Satélite Serafín sin interferencia solar.",
+            "🟡 Tráfico de red menor detectado en Santiago.",
+            "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
+        ]
+        st.session_state.alerta_actual = random.choice(amenazas_posibles)
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# MÓDULOS ACTIVOS: GESTOR DE NOTAS RÁPIDAS Y INYECTOR DE MISIONES PERSISTENTES
+col_nota_rapida, col_inyector_mision = st.columns(2)
+
+with col_nota_rapida:
+    st.markdown('<div class="holo-card"><div class="holo-title">📝 REGISTRO DE NOTAS RÁPIDAS (MEMORIA PERSISTENTE)</div>', unsafe_allow_html=True)
+    nueva_nota = st.text_input("Escribe una nota para el búnker:", placeholder="Ej: Comprar café para la base...")
+    if st.button("💾 Guardar Nota en Memoria"):
+        if nueva_nota.strip():
+            if "notas" not in st.session_state.memoria:
+                st.session_state.memoria["notas"] = []
+            st.session_state.memoria["notas"].append(nueva_nota.strip())
+            guardar_memoria(st.session_state.memoria)
+            st.success("¡Nota registrada en jarvis_memory.json con éxito!")
+            st.rerun()
+    
+    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Notas Guardadas Actuales:</p>", unsafe_allow_html=True)
+    notas_actuales = st.session_state.memoria.get("notas", [])
+    for nota in notas_actuales[-4:]:  # Mostrar las últimas 4 notas
+        st.markdown(f"<p style='color:#00ffaa; font-size:11px; margin:2px 0; font-family:monospace;'>• {nota}</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_inyector_mision:
+    st.markdown('<div class="holo-card"><div class="holo-title">🎯 INYECTOR DE NUEVA MISIÓN TÁCTICA</div>', unsafe_allow_html=True)
+    nueva_mision_txt = st.text_input("Asignar nueva misión:", placeholder="Ej: Revisar sensores exteriores...")
+    if st.button("🚀 Inyectar Misión"):
+        if nueva_mision_txt.strip():
+            st.session_state.misiones_lista[nueva_mision_txt.strip()] = False
+            st.success(f"¡Misión '{nueva_mision_txt}' añadida al panel táctico!")
+            st.rerun()
+            
+    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Estado de Red Táctica:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#00ffaa; font-size:11px; font-family:monospace;'>✔ Todos los subsistemas operando en armonía sin anomalías.</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------------------------------------------------------
+# BLOQUE: RESTO DE JUGUETES TÁCTICOS (FALCON EYE, VOZ, BÓVEDA)
+# -------------------------------------------------------------------
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🎮 STARK TACTICAL SUITE // MÓDULOS DE CONTROL</div>', unsafe_allow_html=True)
+
+col_j1, col_j2 = st.columns(2)
+
+with col_j1:
+    # 1. "Ojo de Halcón": Monitor de Red & Latencia
+    st.markdown('<div style="border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 12px; background: #000;">', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="font-size:12px; text-align:left;">🌐 1. OJO DE HALCÓN // MONITOR DE RED</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div style="font-family: monospace; font-size: 11px; color: #00d2ff;">
+            📡 Ping Satelital Serafín: <span style="color:#00ffaa; font-weight:bold;">12 ms</span> | 🔒 Encriptación: <span style="color:#00ffaa;">AES-256-GCM</span><br>
+            📊 Tráfico Entrante: <span style="color:#00d2ff;">1.2 GB/s</span> | 📤 Tráfico Saliente: <span style="color:#00d2ff;">850 MB/s</span><br>
+            🟢 Paquetes Perdidos: <span style="color:#00ffaa;">0.00%</span> | Estado Red Buin: <span style="color:#00ffaa; font-weight:bold;">ÓPTIMO</span>
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_j2:
+    # 3. Analizador & Frecuencia Vocal
+    st.markdown('<div style="border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; margin-bottom: 12px; background: #000;">', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="font-size:12px; text-align:left;">🎙️ 2. ANALIZADOR & FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div style="font-family: monospace; font-size: 11px; color: #00d2ff; margin-bottom: 6px;">
+            🎚️ Ganancia Micrófono: <span style="color:#00ffaa;">+4.5 dB</span> | 🔇 Cancelación de Ruido: <span style="color:#00ffaa;">ACTIVA</span><br>
+            🗣️ Entrada Vocal Detectada: <span style="color:#00ffff; font-weight:bold;">Sello Biométrico Confirmado (Cindy)</span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    espectro_html = """
+    <div style="display:flex; justify-content:center; align-items:flex-end; gap:4px; height:35px; background:#000; border:1px solid #00d2ff; border-radius:4px; padding:4px;">
+        <div style="width:6px; height:40%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
+        <div style="width:6px; height:70%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+        <div style="width:6px; height:100%; background:#00ffaa; box-shadow: 0 0 6px #00ffaa;"></div>
+        <div style="width:6px; height:50%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
+        <div style="width:6px; height:85%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+        <div style="width:6px; height:30%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
+        <div style="width:6px; height:90%; background:#00ffaa; box-shadow: 0 0 6px #00ffaa;"></div>
+        <div style="width:6px; height:60%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+    </div>
+    """
+    components.html(espectro_html, height=45)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# 4. Bóveda Holográfica de Accesos Rápidos
+st.markdown('<div style="border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; background: #000; margin-top: 10px;">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title" style="font-size:12px; text-align:left;">📂 3. BÓVEDA HOLOGRÁFICA DE ACCESOS RÁPIDOS</div>', unsafe_allow_html=True)
+st.markdown("<p style='font-size:11px; color:#00d2ff; margin-bottom:6px;'>Accesos rápidos directos a herramientas tácticas del búnker:</p>", unsafe_allow_html=True)
+
+b_col1, b_col2, b_col3 = st.columns(3)
+with b_col1:
+    st.markdown('<a href="https://maps.google.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">🗺️ Google Maps</button></a>', unsafe_allow_html=True)
+with b_col2:
+    st.markdown('<a href="https://weather.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">🌤️ Clima Satelital</button></a>', unsafe_allow_html=True)
+with b_col3:
+    st.markdown('<a href="https://youtube.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">📺 YouTube Live</button></a>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=
