@@ -6,6 +6,7 @@ import json
 import os
 import urllib.parse
 import urllib.request
+import urllib.error
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -56,7 +57,25 @@ prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "").strip()
 elevenlabs_key = prefs_voz.get("elevenlabs_api_key", "").strip()
 
-# CONFIGURACIÓN DIRECTA DE GEMINI
+# CONFIGURACIÓN DE IA (OLLAMA LOCAL + GEMINI DE RESPALDO)
+def consultar_ollama_local(prompt_sistema, mensaje_usuario):
+    """Consulta al servidor local de Ollama (Llama 3)"""
+    url = "http://localhost:11434/api/generate"
+    prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
+    payload = {
+        "model": "llama3",
+        "prompt": prompt_completo,
+        "stream": False
+    }
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            resultado = json.loads(response.read().decode('utf-8'))
+            return resultado.get("response", "").strip()
+    except Exception:
+        return None
+
 cliente_ia = None
 if ai_api_key_guardada:
     try:
@@ -116,7 +135,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
-estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
+estado_ia_txt = "MOTOR IA: OLLAMA (LLAMA 3) LOCAL ACTIVO"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
 # SCRIPT JS PARA ANULAR LOS ESTILOS BLANCOS DEL NAVEGADOR EN SELECTORES
@@ -344,21 +363,25 @@ with col_chat:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
 
+        prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+        INSTRUCCIONES DE PERSONALIDAD Y TONO:
+        1. Habla 100% como un compañero humano astuto, fluido, brillante y con un toque de humor o sarcasmo elegante.
+        2. JAMÁS des respuestas robóticas, rígidas o tipo 'manual de usuario'. Sé cercano y conversacional.
+        3. Sé breve y directo (1 a 3 frases máximo)."""
+
+        # 1. INTENTAR CONSULTAR A OLLAMA LOCAL (Llama 3)
+        respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
+
+        # 2. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
         if not respuesta_ia and cliente_ia:
             try:
-                prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
-                INSTRUCCIONES DE PERSONALIDAD Y TONO:
-                1. Habla 100% como un compañero humano astuto, fluido, brillante y con un toque de humor o sarcasmo elegante.
-                2. JAMÁS des respuestas robóticas, rígidas o tipo 'manual de usuario'. Sé cercano y conversacional.
-                3. Sé breve y directo (1 a 3 frases máximo).
-                4. Si te hablan de música, electrónica, synthwave o lo-fi, responde con entusiasmo conectando el canal de YouTube."""
-                
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
                 if respuesta_modelo and respuesta_modelo.text:
                     respuesta_ia = respuesta_modelo.text.strip()
             except Exception:
                 respuesta_ia = None
 
+        # 3. RESPALDO LOCAL SI OLLAMA O GEMINI FALLAN
         if not respuesta_ia:
             if "música" in texto or "musica" in texto or "canción" in texto or "cancion" in texto or "synthwave" in texto or "instrumental" in texto or "electro" in texto:
                 respuesta_ia = f"Conectando el canal audiovisual en vivo, {nombre_jefa}. Disfrute de la transmisión en el búnker."
@@ -499,97 +522,3 @@ if "biometrico_estado" not in st.session_state: st.session_state.biometrico_esta
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
     st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
-
-st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA, NOTAS Y MISIONES // STARK INDUSTRIES</div>', unsafe_allow_html=True)
-
-j1, j2, j3, j4 = st.columns(4)
-
-with j1:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>1. 🧬 ESCÁNER BIOMÉTRICO</p>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:11px; color:#ffbb00; margin-bottom:8px;'>{st.session_state.biometrico_estado}</div>", unsafe_allow_html=True)
-    if st.button("👁️ Escanear Huella"):
-        st.session_state.biometrico_estado = f"✅ ACCESO CONCEDIDO: {titulo_jefa.upper()} {nombre_jefa.upper()}"
-        st.rerun()
-
-with j2:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>2. ⚡ REACTOR & CLIMA</p>", unsafe_allow_html=True)
-    nivel_reactor = st.slider("Potencia Reactor Arc (%)", 50, 100, 98, key="slider_arc")
-    temp_bunker = st.select_slider("Clima Búnker (°C)", options=[16, 18, 20, 22, 24], value=20, key="slider_temp")
-    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:10px; color:#00ffaa;'>Núcleo al {nivel_reactor}% | Temp: {temp_bunker}°C</div>", unsafe_allow_html=True)
-
-with j3:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 CALENDARIO & MISIONES</p>", unsafe_allow_html=True)
-    for mision, estado in st.session_state.misiones_lista.items():
-        st.session_state.misiones_lista[mision] = st.checkbox(mision, value=estado, key=f"mission_{mision}")
-
-with j4:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>4. 🚨 RADAR DE AMENAZAS</p>", unsafe_allow_html=True)
-    st.markdown(f"<div style='background:#000; border:1px solid #00d2ff; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#00ffaa; min-height:45px; text-align:center;'>{st.session_state.alerta_actual}</div>", unsafe_allow_html=True)
-    if st.button("📡 Escanear Amenazas"):
-        amenazas_posibles = [
-            "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo.",
-            "🟢 Satélite Serafín sin interferencia solar.",
-            "🟡 Tráfico de red menor detectado en Santiago.",
-            "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
-        ]
-        st.session_state.alerta_actual = random.choice(amenazas_posibles)
-        st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# MÓDULOS ACTIVOS: GESTOR DE NOTAS RÁPIDAS Y INYECTOR DE MISIONES PERSISTENTES
-col_nota_rapida, col_inyector_mision = st.columns(2)
-
-with col_nota_rapida:
-    st.markdown('<div class="holo-card"><div class="holo-title">📝 REGISTRO DE NOTAS RÁPIDAS (MEMORIA PERSISTENTE)</div>', unsafe_allow_html=True)
-    nueva_nota = st.text_input("Escribe una nota para el búnker:", placeholder="Ej: Comprar café para la base...")
-    if st.button("💾 Guardar Nota en Memoria"):
-        if nueva_nota.strip():
-            if "notas" not in st.session_state.memoria:
-                st.session_state.memoria["notas"] = []
-            st.session_state.memoria["notas"].append(nueva_nota.strip())
-            guardar_memoria(st.session_state.memoria)
-            st.success("¡Nota registrada en jarvis_memory.json con éxito!")
-            st.rerun()
-    
-    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Notas Guardadas Actuales:</p>", unsafe_allow_html=True)
-    notas_actuales = st.session_state.memoria.get("notas", [])
-    for nota in notas_actuales[-4:]:  # Mostrar las últimas 4 notas
-        st.markdown(f"<p style='color:#00ffaa; font-size:11px; margin:2px 0; font-family:monospace;'>• {nota}</p>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_inyector_mision:
-    st.markdown('<div class="holo-card"><div class="holo-title">🎯 INYECTOR DE NUEVA MISIÓN TÁCTICA</div>', unsafe_allow_html=True)
-    nueva_mision_txt = st.text_input("Asignar nueva misión:", placeholder="Ej: Revisar sensores exteriores...")
-    if st.button("🚀 Inyectar Misión"):
-        if nueva_mision_txt.strip():
-            st.session_state.misiones_lista[nueva_mision_txt.strip()] = False
-            st.success(f"¡Misión '{nueva_mision_txt}' añadida al panel táctico!")
-            st.rerun()
-            
-    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Estado de Red Táctica:</p>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#00ffaa; font-size:11px; font-family:monospace;'>✔ Todos los subsistemas operando en armonía sin anomalías.</p>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
-with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
-    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso, la <b>API Key de Gemini</b> y ElevenLabs si deseas voz neural avanzada:</p>", unsafe_allow_html=True)
-    
-    col_id1, col_id2 = st.columns(2)
-    with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
-        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
-        elevenlabs_input = st.text_input("🔑 ElevenLabs API Key (Opcional):", type="password", value=elevenlabs_key)
-    with col_id2:
-        ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
-    
-    if st.button("💾 Actualizar Configuración y Clave"):
-        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_input
-        guardar_memoria(st.session_state.memoria)
-        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
-        st.rerun()
