@@ -82,7 +82,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS
+# ESTILOS CSS TÁCTICOS Y HOLOGRÁFICOS (CON PARCHE PARA OSCURECER EL CHAT NATIVO)
 st.markdown("""
     <style>
     .stApp, .main { background-color: #000000 !important; color: #ffffff; }
@@ -93,7 +93,12 @@ st.markdown("""
     .market-value { color: #00ffaa; font-weight: bold; }
     .holo-card { background-color: #050505; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
-    .stTextInput input, .stTextArea textarea, .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
+    
+    /* OSCURECER EL CHAT INPUT NATIVO PARA QUE COMBINE */
+    div[data-testid="stChatInput"] { background-color: #050505 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
+    div[data-testid="stChatInput"] textarea { background-color: #050505 !important; color: #00d2ff !important; }
+    
+    .stSelectbox select { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     div.stButton > button { background-color: #050505 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; }
@@ -214,7 +219,7 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO NATIVA Y COMPACTA (SIN BOTÓN DE TRANSMISIÓN SUELTO)
+# CONSOLA DE MANDO FINAL OPTIMIZADA
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
     
@@ -250,7 +255,7 @@ with col_chat:
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    # 3. Caja de texto nativa abajo del todo
+    # 3. Caja de chat nativa abajo
     entrada_usuario = st.chat_input("Escribe o presiona [Windows + H] para charlar...")
 
     st.markdown('</div>', unsafe_allow_html=True)
