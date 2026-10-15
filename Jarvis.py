@@ -80,7 +80,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN (TOTALMENTE NEGRO Y AZUL NEÓN)
+# ESTILOS CSS TÁCTICOS NEÓN (FORZANDO SELECTORES NEGRO Y AZUL NEÓN)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,8 +92,14 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    .stSelectbox select, .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
-    label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
+    /* FORZAR SELECTBOX Y ENTRADAS A NEGRO CON BORDE NEÓN */
+    div[data-baseweb="select"] > div, div.stSelectbox div[data-baseweb="select"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
+    span[data-baseweb="tag"], div[data-baseweb="menu"] { background-color: #000000 !important; color: #00d2ff !important; }
+    ul[data-baseweb="menu"] li { background-color: #000000 !important; color: #00d2ff !important; }
+    ul[data-baseweb="menu"] li:hover { background-color: #001133 !important; color: #00ffff !important; }
+    
+    .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
+    label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
     
     div.stButton > button, button[kind="secondaryFormSubmit"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
@@ -142,7 +148,7 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE YOUTUBE EN PANTALLA PEQUEÑA (STREAMING DIRECTO)
+# REPRODUCTOR DE YOUTUBE EN PANTALLA PEQUEÑA (ESTILO NEÓN NEGRO)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE EN VIVO (BÚNKER)</div>', unsafe_allow_html=True)
