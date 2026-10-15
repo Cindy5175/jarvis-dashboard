@@ -214,12 +214,12 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO COMPACTA Y SIN HUECOS
+# CONSOLA DE MANDO NATIVA Y COMPACTA (SIN BOTÓN DE TRANSMISIÓN SUELTO)
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
     
-    # 1. Historial de burbujas compacto
-    chat_container = st.container(height=110)
+    # 1. Historial de burbujas arriba
+    chat_container = st.container(height=130)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,16 +243,15 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    # 2. Botones de acceso rápido
+    # 2. Botones de acceso rápido al medio
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    # 3. Caja de texto y botón de transmisión pegados inmediatamente abajo
-    entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...", key="input_chat_manual")
-    btn_transmitir = st.button("🚀 Transmitir Instrucción")
+    # 3. Caja de texto nativa abajo del todo
+    entrada_usuario = st.chat_input("Escribe o presiona [Windows + H] para charlar...")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -264,7 +263,7 @@ with col_chat:
         st.rerun()
 
     comando_ejecutar = None
-    if btn_transmitir and entrada_usuario:
+    if entrada_usuario:
         comando_ejecutar = entrada_usuario
     elif btn_q_hola:
         comando_ejecutar = "Hola Jarvis, ¿qué tal?"
