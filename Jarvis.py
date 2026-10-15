@@ -287,7 +287,7 @@ with col_chat:
                 3. Sé breve y directo (1 a 3 frases máximo).
                 4. Si te hablan de música o ocio, responde sugiriendo temazos o consultando preferencias con estilo."""
                 
-                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\Mensaje de la Jefa: {comando_ejecutar}")
+                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
                 if respuesta_modelo and respuesta_modelo.text:
                     respuesta_ia = respuesta_modelo.text.strip()
             except Exception:
@@ -351,3 +351,35 @@ lat_val, lon_val = -33.7315, -70.7412
 lugar_encontrado_nombre = "Base Central Buin"
 
 if nodo_rapido != "--- Selecciona un Nodo ---":
+    if "Santiago Centro" in nodo_rapido:
+        lat_val, lon_val = -33.4489, -70.6693
+        lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
+    elif "Chiguayante" in nodo_rapido:
+        lat_val, lon_val = -36.9183, -73.0286
+        lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
+    elif "Valdivia" in nodo_rapido:
+        lat_val, lon_val = -39.8196, -73.2452
+        lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
+    elif "Base Búnker" in nodo_rapido:
+        lat_val, lon_val = -33.7315, -70.7412
+        lugar_encontrado_nombre = "Base Central Buin"
+elif busqueda_objetivo:
+    try:
+        query_str = busqueda_objetivo
+        if "chile" not in query_str.lower(): query_str += " Chile"
+        url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
+        req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data_geo = json.loads(resp.read().decode())
+            if data_geo and len(data_geo) > 0:
+                lat_val = float(data_geo[0]['lat'])
+                lon_val = float(data_geo[0]['lon'])
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
+    except Exception:
+        pass
+
+url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if "Topográfico" in capa_seleccionada else "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }"
+if "Nocturno" in capa_seleccionada:
+    map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
