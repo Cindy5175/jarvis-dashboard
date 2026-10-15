@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as stimport streamlit as st
 import streamlit.components.v1 as components
 import datetime
 import random
@@ -114,7 +114,7 @@ if ai_api_key_guardada:
         except Exception:
             cliente_ia = None
 
-# INICIALIZAR ESTADOS DE PESTAÑAS Y HISTORIAL
+# INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué orden ejecutamos hoy?"
     st.session_state.historial_chat = [
@@ -171,7 +171,7 @@ with col_bio:
 
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
-# MOSTRAR CONTENIDO DINÁMICO SEGÚN EL BOTÓN SUPERIOR PRESIONADO
+# GESTIÓN DE VISTAS (INICIO VS MÓDULOS ESPECIALES)
 if st.session_state.vista_activa == "clima":
     st.markdown('<div class="holo-card"><div class="holo-title">🌦️ MÓDULO DE CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
     clima_ampliado_html = """
@@ -322,4 +322,311 @@ else:
         components.html(audio_wave_core_html, height=70)
         
         texto_limpio = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
-        texto_para
+        texto_para_hablar = " ".join(texto_limpio.splitlines())
+        
+        auto_voice_script = f"""
+        <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+            utterance.lang = 'es-CL';
+            utterance.pitch = 0.95;
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }}
+        </script>
+        """
+        components.html(auto_voice_script, height=0)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col_chat:
+        st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+        
+        # MOSTRAR ÚLTIMOS MENSAJES DEL HISTORIAL
+        for item in st.session_state.historial_chat[-2:]:
+            remitente = item["remitente"]
+            msg = item["texto"]
+            if remitente == "jarvis":
+                st.markdown(f'<div style="background-color: #111a2e; border-left: 3px solid #00d2ff; padding: 10px; border-radius: 4px; margin-bottom: 10px; color: #00d2ff; font-size: 13px;">{msg}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="background-color: #0b1320; border-right: 3px solid #00ffaa; padding: 10px; border-radius: 4px; margin-bottom: 10px; color: #00ffaa; font-size: 13px; text-align: right;">{msg}</div>', unsafe_allow_html=True)
+
+        st.markdown('<p style="color:#00d2ff; font-size:12px; font-weight:bold; margin-bottom:4px;">Instrucciones para JARVIS...</p>', unsafe_allow_html=True)
+        
+        with st.form(key="form_chat_ordenado", clear_on_submit=True):
+            entrada_usuario = st.text_input("", placeholder="Escribe un comando táctico...")
+            
+            # BOTÓN DE ENVIAR Y BOTÓN DE PURGA AL LADO
+            col_f1, col_f2 = st.columns([3, 1])
+            with col_f1:
+                btn_enviar_chat = st.form_submit_button("🚀 Enviar Comando")
+            with col_f2:
+                btn_limpiar_chat = st.form_submit_button("🧹 Purga")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        if btn_limpiar_chat:
+            st.session_state.historial_chat = [
+                {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa en el búnker."}
+            ]
+            st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
+            st.rerun()
+
+        comando_ejecutar = None
+        if btn_enviar_chat and entrada_usuario:
+            comando_ejecutar = entrada_usuario
+
+        if comando_ejecutar:
+            texto = comando_ejecutar.lower().strip()
+            respuesta_ia = None
+
+            # 1. EJECUTAR ORDEN FÍSICA EN EL SISTEMA
+            respuesta_ia = ejecutar_orden_sistema(comando_ejecutar)
+
+            # 2. CONSULTAR A OLLAMA LOCAL (Llama 3)
+            if not respuesta_ia:
+                prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+                INSTRUCCIONES:
+                1. Habla 100% como un compañero humano astuto y brillante con toque de humor elegante.
+                2. Sé breve y directo (1 a 3 frases máximo)."""
+                respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
+
+            # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
+            if not respuesta_ia and cliente_ia:
+                try:
+                    respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
+                    if respuesta_modelo and respuesta_modelo.text:
+                        respuesta_ia = respuesta_modelo.text.strip()
+                except Exception:
+                    respuesta_ia = None
+
+            # 4. RESPALDO LOCAL FINAL
+            if not respuesta_ia:
+                if "hola" in texto:
+                    respuesta_ia = f"¡Hola, {nombre_jefa}! ¿Qué aplicación o comando ejecutamos ahora?"
+                else:
+                    respuesta_ia = f"Orden procesada en el búnker, {nombre_jefa}."
+
+            st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
+            st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
+            st.session_state.ultima_respuesta = respuesta_ia
+            st.rerun()
+
+st.markdown("---")
+import streamlit.components.v1 as components
+import datetime
+import random
+import json
+import os
+import subprocess
+import urllib.parse
+import urllib.request
+import urllib.error
+
+# Configuración de página en modo ancho
+st.set_page_config(
+    page_title="J.A.R.V.I.S. // M.E.C.A. 4.0", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ARCHIVO DE MEMORIA PERSISTENTE LOCAL
+MEMORY_FILE = "jarvis_memory.json"
+
+def cargar_memoria():
+    if os.path.exists(MEMORY_FILE):
+        try:
+            with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "usuario": {
+            "nombre": "Cindy",
+            "titulo": "Jefa",
+            "ubicacion": "Buin, Chile"
+        },
+        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
+        "preferencias_voz": {
+            "voz_activa": "Español (Neutro)",
+            "elevenlabs_api_key": "",
+            "elevenlabs_voice_id": "21m00Tcm4TlvDq8ikWAM",
+            "ai_api_key": ""
+        }
+    }
+
+def guardar_memoria(memoria):
+    try:
+        with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(memoria, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        st.error(f"Error guardando memoria: {e}")
+
+if "memoria" not in st.session_state:
+    st.session_state.memoria = cargar_memoria()
+
+nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
+titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
+prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
+ai_api_key_guardada = prefs_voz.get("ai_api_key", "").strip()
+elevenlabs_key = prefs_voz.get("elevenlabs_api_key", "").strip()
+
+# CONFIGURACIÓN DE IA (OLLAMA LOCAL + GEMINI DE RESPALDO)
+def consultar_ollama_local(prompt_sistema, mensaje_usuario):
+    """Consulta al servidor local de Ollama (Llama 3)"""
+    url = "http://localhost:11434/api/generate"
+    prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
+    payload = {
+        "model": "llama3",
+        "prompt": prompt_completo,
+        "stream": False
+    }
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            resultado = json.loads(response.read().decode('utf-8'))
+            return resultado.get("response", "").strip()
+    except Exception:
+        return None
+
+# FUNCIÓN PARA EJECUTAR ÓRDENES REALES EN EL SISTEMA
+def ejecutar_orden_sistema(texto_comando):
+    """Ejecuta comandos en Windows basados en la solicitud de la jefa"""
+    texto = texto_comando.lower()
+    try:
+        if "bloc de notas" in texto or "notepad" in texto:
+            subprocess.Popen(["notepad.exe"])
+            return f"Abriendo el Bloc de notas de inmediato, {titulo_jefa} {nombre_jefa}."
+        elif "calculadora" in texto or "calc" in texto:
+            subprocess.Popen(["calc.exe"])
+            return f"Lanzando la calculadora, {titulo_jefa}."
+        elif "chrome" in texto or "navegador" in texto:
+            subprocess.Popen(["start", "chrome"], shell=True)
+            return f"Abriendo el navegador web, {titulo_jefa}."
+        elif "explorador" in texto or "archivos" in texto:
+            subprocess.Popen(["explorer.exe"])
+            return f"Desplegando el explorador de archivos en pantalla, {titulo_jefa}."
+        elif "terminal" in texto or "powershell" in texto or "consola" in texto:
+            subprocess.Popen(["powershell.exe"])
+            return f"Nueva terminal de comandos desplegada, {titulo_jefa}."
+    except Exception as e:
+        return f"Error ejecutando la orden física en el sistema: {e}"
+    return None
+
+cliente_ia = None
+if ai_api_key_guardada:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=ai_api_key_guardada)
+        cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception:
+        try:
+            import google.generativeai as genai
+            cliente_ia = genai.GenerativeModel('gemini-pro')
+        except Exception:
+            cliente_ia = None
+
+# INICIALIZAR ESTADOS
+if "historial_chat" not in st.session_state:
+    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué orden ejecutamos hoy?"
+    st.session_state.historial_chat = [
+        {"remitente": "jarvis", "texto": saludo_inicial}
+    ]
+
+if "ultima_respuesta" not in st.session_state:
+    st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
+
+if "vista_activa" not in st.session_state:
+    st.session_state.vista_activa = "inicio"
+
+# ESTILOS CSS TÁCTICOS NEÓN
+st.markdown("""
+    <style>
+    .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
+    .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
+    .status-bar { text-align: center; color: #00d2ff; font-size: 13px; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; }
+    .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+    .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
+    
+    div[data-baseweb="select"], div[data-baseweb="select"] > div {
+        background-color: #000000 !important;
+        border-color: #00d2ff !important;
+        color: #00d2ff !important;
+        box-shadow: 0 0 10px rgba(0,210,255,0.3) !important;
+    }
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div {
+        background-color: #000000 !important;
+        color: #00d2ff !important;
+    }
+    
+    .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
+    label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
+    
+    div.stButton > button, button[kind="secondaryFormSubmit"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
+    div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
+    
+    div[data-testid="stExpander"] { background-color: #000000 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
+    div[data-testid="stExpander"] details summary { background-color: #000000 !important; color: #00d2ff !important; font-weight: bold !important; }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA Autonoma ( M.E.C.A 4.0 )</h1>', unsafe_allow_html=True)
+
+# BARRA SUPERIOR CON PESTAÑAS TÁCTICAS CENTRADAS HACIA LA IZQUIERDA
+col_espacio_izq, col_clima, col_bio, col_espacio_der = st.columns([0.5, 1, 1, 1.5])
+with col_clima:
+    if st.button("🌦️ Control y Clima"):
+        st.session_state.vista_activa = "clima"
+with col_bio:
+    if st.button("🧬 Biometría"):
+        st.session_state.vista_activa = "biometria"
+
+st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
+
+# GESTIÓN DE VISTAS (INICIO VS MÓDULOS ESPECIALES)
+if st.session_state.vista_activa == "clima":
+    st.markdown('<div class="holo-card"><div class="holo-title">🌦️ MÓDULO DE CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
+    clima_ampliado_html = """
+    <div style="background: #000000; padding: 15px; font-family: monospace; color: #00d2ff; text-align: center;">
+        <div style="font-size: 28px; font-weight: bold; color: #00ffff; margin-bottom: 8px;">14,9 °C</div>
+        <div style="font-size: 14px; margin-bottom: 6px;">📍 Ubicación: Buin, Santiago Metropolitan Region, Chile</div>
+        <div style="font-size: 13px; color: #00ffaa;">Viento: 6,5 km/h | Humedad: 62% | Estado: Cielo Despejado / Estable</div>
+        <div style="font-size: 12px; margin-top: 10px; color: #88ccff;">Satélite Serafín reporta condiciones óptimas para operaciones en superficie.</div>
+    </div>
+    """
+    components.html(clima_ampliado_html, height=130)
+    if st.button("🔙 Volver al Centro de Mando Principal"):
+        st.session_state.vista_activa = "inicio"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif st.session_state.vista_activa == "biometria":
+    st.markdown('<div class="holo-card"><div class="holo-title">🧬 MÓDULO BIOMÉTRICO // ESTADO DE LA JEFA</div>', unsafe_allow_html=True)
+    biometria_html = f"""
+    <div style="background: #000000; padding: 15px; font-family: monospace; color: #00d2ff; text-align: center;">
+        <div style="font-size: 18px; font-weight: bold; color: #00ffff; margin-bottom: 8px;">Titular: {titulo_jefa} {nombre_jefa}</div>
+        <div style="font-size: 14px; margin-bottom: 6px;">❤️ Ritmo Cardíaco: 72 BPM (Estable)</div>
+        <div style="font-size: 14px; margin-bottom: 6px;">🧠 Actividad Neural: Enlaces sinápticos óptimos</div>
+        <div style="font-size: 13px; color: #00ffaa;">Nivel de Alerta: 100% Sincronizado con IA M.E.C.A 4.0</div>
+    </div>
+    """
+    components.html(biometria_html, height=130)
+    if st.button("🔙 Volver al Centro de Mando Principal"):
+        st.session_state.vista_activa = "inicio"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+else:
+    # DEFINICIÓN DE COLUMNAS PRINCIPALES
+    col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
+
+    with col_telemetria:
+        st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA DEL SISTEMA</div>', unsafe_allow_html=True)
+        gauges_html = """
+        <div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;">
+            <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">38%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div>
+            <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">57%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div>
+            <div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d
