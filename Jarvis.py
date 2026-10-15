@@ -214,24 +214,11 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: CONTROLES FIJOS ARRIBA Y BURBUJAS ABAJO CON SCROLL
+# CONSOLA DE MANDO: BURBUJAS CON SCROLL ARRIBA Y CONTROLES ABAJO (ESTILO CHAT REAL)
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. CONTROLES FIJOS EN LA PARTE SUPERIOR
-    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
-    with col_q1: btn_q_hola = st.button("👋 Saludar")
-    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
-    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
-    with col_q4: btn_limpiar = st.button("🧹 Purga")
-
-    with st.form(key="form_chat", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
-        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
-
-    st.markdown("---")
-
-    # 2. HISTORIAL DE BURBUJAS CONTENIDO EN LA PARTE INFERIOR CON SCROLL PROPIO
+    # 1. HISTORIAL DE BURBUJAS CON SCROLL INTERNO EN LA PARTE SUPERIOR DE LA TARJETA
     chat_container = st.container(height=220)
     with chat_container:
         for item in st.session_state.historial_chat:
@@ -255,6 +242,19 @@ with col_chat:
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 2. CONTROLES Y CAJA DE ENTRADA EN LA PARTE INFERIOR
+    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
+    with col_q1: btn_q_hola = st.button("👋 Saludar")
+    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
+    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
+    with col_q4: btn_limpiar = st.button("🧹 Purga")
+
+    with st.form(key="form_chat", clear_on_submit=True):
+        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
+        boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
     if btn_limpiar:
         st.session_state.historial_chat = [
