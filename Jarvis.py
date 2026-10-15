@@ -157,8 +157,21 @@ st.markdown("""
     .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
     
-    div.stButton > button, button[kind="secondaryFormSubmit"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
-    div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
+    /* FORZAR ANCHO EXACTO AL 100% EN LOS BOTONES DE LOS FORMULARIOS */
+    div.stFormSubmitButton > button, div.stButton > button, button[kind="secondaryFormSubmit"] { 
+        background-color: #000000 !important; 
+        color: #00d2ff !important; 
+        border: 1px solid #00d2ff !important; 
+        border-radius: 6px !important; 
+        font-weight: bold !important; 
+        width: 100% !important; 
+        box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; 
+    }
+    div.stFormSubmitButton > button:hover, div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { 
+        background-color: #00d2ff !important; 
+        color: #000000 !important; 
+        box-shadow: 0 0 15px #00d2ff !important; 
+    }
     </style>
 """, unsafe_allow_html=True)
 
