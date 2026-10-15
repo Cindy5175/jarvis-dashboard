@@ -214,12 +214,12 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: BURBUJAS CON SCROLL ARRIBA Y CONTROLES ABAJO (ESTILO CHAT REAL)
+# CONSOLA DE MANDO: BURBUJAS CON SCROLL ARRIBA (ALTURA PERFECTA) Y CONTROLES ABAJO
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. HISTORIAL DE BURBUJAS CON SCROLL INTERNO EN LA PARTE SUPERIOR DE LA TARJETA
-    chat_container = st.container(height=220)
+    # 1. HISTORIAL DE BURBUJAS CON SCROLL (OCUPA LA PARTE SUPERIOR)
+    chat_container = st.container(height=160)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,9 +243,7 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    # 2. CONTROLES Y CAJA DE ENTRADA EN LA PARTE INFERIOR
+    # 2. BOTONES Y CAJA DE ENTRADA ANCLADOS ABAJO DENTRO DE LA MISMA TARJETA
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
