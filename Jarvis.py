@@ -80,7 +80,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN (FORZANDO SELECTOR A NEGRO Y AZUL NEÓN)
+# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO DE SELECTBOX NEGRO/AZUL
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -120,6 +120,23 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
+# SCRIPT JS PARA FORZAR EL SELECTBOX A NEGRO ABSOLUTO
+components.html("""
+<script>
+const observer = new MutationObserver(() => {
+    parent.document.querySelectorAll('div[data-baseweb="select"] > div').forEach(el => {
+        el.style.backgroundColor = '#000000';
+        el.style.color = '#00d2ff';
+        el.style.borderColor = '#00d2ff';
+    });
+    parent.document.querySelectorAll('div[data-baseweb="select"] span').forEach(el => {
+        el.style.color = '#00d2ff';
+    });
+});
+observer.observe(parent.document.body, { childList: true, subtree: true });
+</script>
+""", height=0)
+
 # TELETIPO FINANCIERO Y DE MERCADOS
 st.markdown("""
     <div class="market-ticker">
@@ -155,14 +172,13 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE YOUTUBE (CON VIDEOS 100% ESTABLES Y SIN ERRORES DE DIRECTO)
+# REPRODUCTOR DE YOUTUBE (SYNTHWAVE Y CYBERPUNK ESTABLES)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-    st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE EN VIVO (BÚNKER)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE TÁCTICO (BÚNKER)</div>', unsafe_allow_html=True)
     
     canales_yt = {
-        "⚡ Synthwave Radio (Mix 24/7 Estándar)": "4xDzrJKXOOY",
-        "🎧 Lo-Fi Beats (Estudio Búnker)": "5qap5aO4i9A",
+        "⚡ Synthwave Radio (Mix 24/7)": "4xDzrJKXOOY",
         "🌆 Cyberpunk Ambient Stream": "MV_3Dpw-BRY"
     }
     
@@ -311,7 +327,7 @@ with col_chat:
                 respuesta_ia = None
 
         if not respuesta_ia:
-            if "música" in texto or "musica" in texto or "canción" in texto or "cancion" in texto or "synthwave" in texto or "instrumental" in texto or "lo-fi" in texto or "electro" in texto:
+            if "música" in texto or "musica" in texto or "canción" in texto or "cancion" in texto or "synthwave" in texto or "instrumental" in texto or "electro" in texto:
                 respuesta_ia = f"Conectando el canal audiovisual en vivo, {nombre_jefa}. Disfrute de la transmisión en el búnker."
             elif "santiago" in texto:
                 respuestas_stgo = [
