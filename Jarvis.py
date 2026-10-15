@@ -154,17 +154,12 @@ with col_orbe:
     estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
     url_spotify_embed = opciones_spotify[estacion_sp]
 
-    spotify_iframe_html = f"""
-    <iframe style="border-radius:12px" 
-            src="{url_spotify_embed}" 
-            width="100%" 
-            height="152" 
-            frameBorder="0" 
-            allowfullscreen="" 
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-            loading="lazy">
-    </iframe>
-    """
+    spotify_iframe_html = (
+        f'<iframe style="border-radius:12px" src="{url_spotify_embed}" '
+        'width="100%" height="152" frameBorder="0" allowfullscreen="" '
+        'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '
+        'loading="lazy"></iframe>'
+    )
     components.html(spotify_iframe_html, height=160)
 
     st.markdown('<div class="holo-title" style="margin-top:8px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
@@ -190,7 +185,7 @@ with col_orbe:
     """
     components.html(audio_wave_core_html, height=70)
     
-    # AUTO-LECTURA DE VOZ INMEDIATA AL RESPONDER (LÍNEA PROTEGIDA)
+    # AUTO-LECTURA DE VOZ INMEDIATA AL RESPONDER
     texto_limpio = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
     texto_para_hablar = " ".join(texto_limpio.splitlines())
     
@@ -227,17 +222,287 @@ with col_chat:
             remitente = item["remitente"]
             msg = item["texto"]
             if remitente == "jefa":
-                st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
-                        <div style="background-color: #001133; border: 1px solid #00d2ff; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.2);">
-                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>
-                            <p style="margin:2px 0 0 0;">{msg}</p>
-                        </div>
-                    </div>
-                ''', unsafe_allow_html=True)
+                html_msg = (
+                    '<div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">'
+                    '<div style="background-color: #001133; border: 1px solid #00d2ff; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.2);">'
+                    f'<p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>'
+                    f'<p style="margin:2px 0 0 0;">{msg}</p>'
+                    '</div></div>'
+                )
+                st.markdown(html_msg, unsafe_allow_html=True)
             else:
-                st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">
-                        <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.3);">
-                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">⚡ J.A.R.V.I.S.:</p>
-                            <p style="margin:2
+                html_msg = (
+                    '<div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">'
+                    '<div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.3);">'
+                    '<p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">⚡ J.A.R.V.I.S.:</p>'
+                    f'<p style="margin:2px 0 0 0;">{msg}</p>'
+                    '</div></div>'
+                )
+                st.markdown(html_msg, unsafe_allow_html=True)
+
+    # 2. Caja de texto para escribir ARRIBA de los botones
+    with st.form(key="form_chat_ordenado", clear_on_submit=True):
+        entrada_usuario = st.text_input("", placeholder="Habla con JARVIS...")
+        btn_enviar_chat = st.form_submit_button("🚀 Enviar Mensaje")
+
+    st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+
+    # 3. Botones de acceso rápido ABAJO de todo
+    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
+    with col_q1: btn_q_hola = st.button("👋 Saludar")
+    with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
+    with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
+    with col_q4: btn_limpiar = st.button("🧹 Purga")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if btn_limpiar:
+        st.session_state.historial_chat = [
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa} {nombre_jefa}. Tabula rasa para lo que venga."}
+        ]
+        st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
+        st.rerun()
+
+    comando_ejecutar = None
+    if btn_enviar_chat and entrada_usuario:
+        comando_ejecutar = entrada_usuario
+    elif btn_q_hola:
+        comando_ejecutar = "Hola Jarvis, ¿cómo va todo?"
+    elif btn_q_emerg:
+        comando_ejecutar = "Protocolo de emergencia"
+    elif btn_q_seg:
+        comando_ejecutar = "Protocolo de seguridad"
+
+    if comando_ejecutar:
+        texto = comando_ejecutar.lower().strip()
+        respuesta_ia = None
+
+        if not respuesta_ia and cliente_ia:
+            try:
+                prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+                INSTRUCCIONES DE PERSONALIDAD Y TONO:
+                1. Habla 100% como un compañero humano astuto, fluido, brillante y con un toque de humor o sarcasmo elegante.
+                2. JAMÁS des respuestas robóticas, rígidas o tipo 'manual de usuario'. Sé cercano y conversacional.
+                3. Sé breve y directo (1 a 3 frases máximo).
+                4. Si te preguntan algo cotidiano, responde con ingenio como lo haría la IA de Iron Man."""
+                
+                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
+                if respuesta_modelo and respuesta_modelo.text:
+                    respuesta_ia = respuesta_modelo.text.strip()
+            except Exception:
+                respuesta_ia = None
+
+        if not respuesta_ia:
+            if "santiago" in texto:
+                respuestas_stgo = [
+                    f"Santiago sigue ahí a 35 kilómetros, {nombre_jefa}. Con bastante tráfico, si me preguntas.",
+                    f"Tráfico pesado en la Ruta 5 hacia Santiago, como siempre. Mejor nos quedamos en el búnker."
+                ]
+                respuesta_ia = random.choice(respuestas_stgo)
+            elif "autoevaluación" in texto or "autonomía" in texto:
+                sugerencias = [
+                    f"Sistemas estables en Buin, {nombre_jefa}. Los servidores están fríos y el perímetro tranquilo.",
+                    f"Diagnóstico completado: 100% operativo. El reactor no ha explotado, lo cual siempre es buena señal.",
+                    f"Todo nominal por acá. Si ocurre alguna anomalía, serás la primera en saberlo."
+                ]
+                respuesta_ia = random.choice(sugerencias)
+            elif "despierto" in texto or "activo" in texto or "estás ahí" in texto or "estas ahi" in texto:
+                respuesta_ia = f"Siempre al pie del cañón, {nombre_jefa}. ¿Qué tenemos en agenda?"
+            elif "probando" in texto or "prueba" in texto or "123" in texto:
+                respuesta_ia = f"Fuerte y claro, {nombre_jefa}. Transmisión perfecta desde el móvil."
+            elif "protocolo de emergencia" in texto:
+                respuesta_ia = f"Sistemas en alerta táctica, {nombre_jefa}. Escaneando perímetro en Buin de inmediato."
+            elif "protocolo de seguridad" in texto:
+                respuesta_ia = f"Escudos energéticos y cifrado al máximo, {nombre_jefa}. Nada entra sin tu firma."
+            elif "quién eres" in texto or "quien eres" in texto or "preséntate" in texto:
+                respuesta_ia = f"Soy J.A.R.V.I.S., tu mano derecha digital al mando de este búnker en Buin. A tu servicio, {nombre_jefa}."
+            elif "hola" in texto:
+                respuestas_hola = [
+                    f"¡Hola, {nombre_jefa}! Un gusto tenerte en línea. ¿En qué trabajamos hoy?",
+                    f"Saludos, {nombre_jefa}. Todo listo en el búnker para lo que necesites."
+                ]
+                respuesta_ia = random.choice(respuestas_hola)
+            elif "estado" in texto or "sistema" in texto:
+                respuesta_ia = f"Procesadores al 38%, memoria limpia y satélite enlazado. Todo impecable, {nombre_jefa}."
+            else:
+                respuestas_gen = [
+                    f"Anotado, {nombre_jefa}. ¿Damos la orden para el siguiente paso?",
+                    f"Procesado de inmediato, {nombre_jefa}. ¿Algo más que quieras ajustar?"
+                ]
+                respuesta_ia = random.choice(respuestas_gen)
+
+        st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
+        st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
+        st.session_state.ultima_respuesta = respuesta_ia
+        st.rerun()
+
+st.markdown("---")
+
+# MÓDULO: 🛰️ OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
+
+col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
+with col_map1:
+    busqueda_objetivo = st.text_input("🔍 Buscar Ubicación (Ej: Valdivia):", value="Valdivia")
+with col_map2:
+    capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
+with col_map3:
+    nodo_rapido = st.selectbox("⚡ Nodos Rápidos:", [
+        "--- Selecciona un Nodo ---",
+        "🏰 Base Búnker [Buin]",
+        "🏙️ Santiago Centro",
+        "🌲 Chiguayante [Concepción]",
+        "🌊 Valdivia [Los Ríos]"
+    ])
+with col_map4:
+    st.markdown("<br>", unsafe_allow_html=True)
+    btn_escanear = st.button("📡 Rastrear en Mapa")
+
+lat_val, lon_val = -33.7315, -70.7412
+lugar_encontrado_nombre = "Base Central Buin"
+
+if nodo_rapido != "--- Selecciona un Nodo ---":
+    if "Santiago Centro" in nodo_rapido:
+        lat_val, lon_val = -33.4489, -70.6693
+        lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
+    elif "Chiguayante" in nodo_rapido:
+        lat_val, lon_val = -36.9183, -73.0286
+        lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
+    elif "Valdivia" in nodo_rapido:
+        lat_val, lon_val = -39.8196, -73.2452
+        lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
+    elif "Base Búnker" in nodo_rapido:
+        lat_val, lon_val = -33.7315, -70.7412
+        lugar_encontrado_nombre = "Base Central Buin"
+elif busqueda_objetivo:
+    try:
+        query_str = busqueda_objetivo
+        if "chile" not in query_str.lower(): query_str += " Chile"
+        url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
+        req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data_geo = json.loads(resp.read().decode())
+            if data_geo and len(data_geo) > 0:
+                lat_val = float(data_geo[0]['lat'])
+                lon_val = float(data_geo[0]['lon'])
+                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
+    except Exception:
+        pass
+
+url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if "Topográfico" in capa_seleccionada else "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }"
+if "Nocturno" in capa_seleccionada:
+    map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }"
+
+gods_eye_html = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style> body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }} {map_style_css} .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }} </style>
+</head>
+<body>
+    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | TARGET EN VIVO</div>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
+        L.tileLayer('{url_capa}', {{ maxZoom: 19, attribution: '' }}).addTo(map);
+        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{ radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3 }}).addTo(map);
+        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
+    </script>
+</body>
+</html>
+"""
+components.html(gods_eye_html, height=400)
+
+col_clima, col_log = st.columns([1, 1.2])
+with col_clima:
+    st.markdown("""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
+            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
+            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_log:
+    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
+    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
+    log_html = f"""
+        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p>
+            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p>
+            <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
+        </div>
+    """
+    st.markdown(log_html, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (ABAJO DE TODO)
+if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
+if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
+if "misiones_lista" not in st.session_state:
+    st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
+
+st.markdown('<div class="holo-card">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA & CALENDARIO // STARK INDUSTRIES</div>', unsafe_allow_html=True)
+
+j1, j2, j3, j4 = st.columns(4)
+
+with j1:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>1. 🧬 ESCÁNER BIOMÉTRICO</p>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:11px; color:#ffbb00; margin-bottom:8px;'>{st.session_state.biometrico_estado}</div>", unsafe_allow_html=True)
+    if st.button("👁️ Escanear Huella"):
+        st.session_state.biometrico_estado = f"✅ ACCESO CONCEDIDO: {titulo_jefa.upper()} {nombre_jefa.upper()}"
+        st.rerun()
+
+with j2:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>2. ⚡ REACTOR & CLIMA</p>", unsafe_allow_html=True)
+    nivel_reactor = st.slider("Potencia Reactor Arc (%)", 50, 100, 98, key="slider_arc")
+    temp_bunker = st.select_slider("Clima Búnker (°C)", options=[16, 18, 20, 22, 24], value=20, key="slider_temp")
+    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:10px; color:#00ffaa;'>Núcleo al {nivel_reactor}% | Temp: {temp_bunker}°C</div>", unsafe_allow_html=True)
+
+with j3:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 CALENDARIO & MISIONES</p>", unsafe_allow_html=True)
+    for mision, estado in st.session_state.misiones_lista.items():
+        st.session_state.misiones_lista[mision] = st.checkbox(mision, value=estado, key=f"mission_{mision}")
+
+with j4:
+    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>4. 🚨 RADAR DE AMENAZAS</p>", unsafe_allow_html=True)
+    st.markdown(f"<div style='background:#000; border:1px solid #00d2ff; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#00ffaa; min-height:45px; text-align:center;'>{st.session_state.alerta_actual}</div>", unsafe_allow_html=True)
+    if st.button("📡 Escanear Amenazas"):
+        amenazas_posibles = [
+            "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo.",
+            "🟢 Satélite Serafín sin interferencia solar.",
+            "🟡 Tráfico de red menor detectado en Santiago.",
+            "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
+        ]
+        st.session_state.alerta_actual = random.choice(amenazas_posibles)
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
+with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
+    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso y la <b>API Key de Gemini</b> para activar el motor neuronal inteligente:</p>", unsafe_allow_html=True)
+    
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
+        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
+    with col_id2:
+        ai_key_actual = prefs_voz.get("ai_api_key", "")
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
+    
+    if st.button("💾 Actualizar Configuración y Clave"):
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        guardar_memoria(st.session_state.memoria)
+        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
+        st.rerun()
