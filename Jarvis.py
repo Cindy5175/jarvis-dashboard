@@ -80,7 +80,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO ABSOLUTO DE MENÚS FLOTANTES
+# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO ABSOLUTO DE SELECTORES
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,15 +92,14 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* FORZAR SELECTOR Y MENÚ DESPLEGABLE A NEGRO Y AZUL NEÓN */
-    div.stSelectbox [data-baseweb="select"] {
+    /* FORZAR SELECTOR Y COMPONENTES DE SELECCIÓN A NEGRO Y AZUL NEÓN */
+    div[data-baseweb="select"], div[data-baseweb="select"] > div {
         background-color: #000000 !important;
-        border: 1px solid #00d2ff !important;
-        border-radius: 8px !important;
+        border-color: #00d2ff !important;
         color: #00d2ff !important;
         box-shadow: 0 0 10px rgba(0,210,255,0.3) !important;
     }
-    div.stSelectbox [data-baseweb="select"] * {
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div {
         background-color: #000000 !important;
         color: #00d2ff !important;
     }
@@ -120,20 +119,24 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
-# SCRIPT JS AVANZADO PARA FORZAR EL MENÚ DESPLEGABLE FLOTANTE A NEGRO Y AZUL NEÓN
+# SCRIPT JS PARA ANULAR LOS ESTILOS BLANCOS DEL NAVEGADOR EN SELECTORES
 components.html("""
 <script>
 const observer = new MutationObserver(() => {
-    // Forzar caja principal del selectbox
+    parent.document.querySelectorAll('div[data-baseweb="select"]').forEach(el => {
+        el.style.backgroundColor = '#000000';
+        el.style.color = '#00d2ff';
+        el.style.borderColor = '#00d2ff';
+    });
     parent.document.querySelectorAll('div[data-baseweb="select"] > div').forEach(el => {
         el.style.backgroundColor = '#000000';
         el.style.color = '#00d2ff';
         el.style.borderColor = '#00d2ff';
     });
-    parent.document.querySelectorAll('div[data-baseweb="select"] span').forEach(el => {
+    parent.document.querySelectorAll('div[data-baseweb="select"] span, div[data-baseweb="select"] div').forEach(el => {
+        el.style.backgroundColor = '#000000';
         el.style.color = '#00d2ff';
     });
-    // Forzar menú flotante desplegable y sus ítems
     parent.document.querySelectorAll('div[data-baseweb="menu"], ul[role="listbox"]').forEach(el => {
         el.style.backgroundColor = '#000000';
         el.style.color = '#00d2ff';
@@ -444,99 +447,4 @@ gods_eye_html = f"""
         const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
         L.tileLayer('{url_capa}', {{ maxZoom: 19, attribution: '' }}).addTo(map);
         const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{ radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3 }}).addTo(map);
-        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
-    </script>
-</body>
-</html>
-"""
-components.html(gods_eye_html, height=400)
-
-col_clima, col_log = st.columns([1, 1.2])
-with col_clima:
-    st.markdown("""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
-            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
-            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
-            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col_log:
-    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
-    log_html = f"""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
-            <p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p>
-            <p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p>
-            <p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p>
-        </div>
-    """
-    st.markdown(log_html, unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (ABAJO DE TODO)
-if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
-if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
-if "misiones_lista" not in st.session_state:
-    st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
-
-st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA & CALENDARIO // STARK INDUSTRIES</div>', unsafe_allow_html=True)
-
-j1, j2, j3, j4 = st.columns(4)
-
-with j1:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>1. 🧬 ESCÁNER BIOMÉTRICO</p>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:11px; color:#ffbb00; margin-bottom:8px;'>{st.session_state.biometrico_estado}</div>", unsafe_allow_html=True)
-    if st.button("👁️ Escanear Huella"):
-        st.session_state.biometrico_estado = f"✅ ACCESO CONCEDIDO: {titulo_jefa.upper()} {nombre_jefa.upper()}"
-        st.rerun()
-
-with j2:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>2. ⚡ REACTOR & CLIMA</p>", unsafe_allow_html=True)
-    nivel_reactor = st.slider("Potencia Reactor Arc (%)", 50, 100, 98, key="slider_arc")
-    temp_bunker = st.select_slider("Clima Búnker (°C)", options=[16, 18, 20, 22, 24], value=20, key="slider_temp")
-    st.markdown(f"<div style='text-align:center; font-family:monospace; font-size:10px; color:#00ffaa;'>Núcleo al {nivel_reactor}% | Temp: {temp_bunker}°C</div>", unsafe_allow_html=True)
-
-with j3:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>3. 📋 CALENDARIO & MISIONES</p>", unsafe_allow_html=True)
-    for mision, estado in st.session_state.misiones_lista.items():
-        st.session_state.misiones_lista[mision] = st.checkbox(mision, value=estado, key=f"mission_{mision}")
-
-with j4:
-    st.markdown("<p style='color:#00d2ff; font-size:13px; font-weight:bold; text-align:center;'>4. 🚨 RADAR DE AMENAZAS</p>", unsafe_allow_html=True)
-    st.markdown(f"<div style='background:#000; border:1px solid #00d2ff; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#00ffaa; min-height:45px; text-align:center;'>{st.session_state.alerta_actual}</div>", unsafe_allow_html=True)
-    if st.button("📡 Escanear Amenazas"):
-        amenazas_posibles = [
-            "🟢 Perímetro seguro en Buin. Gato durmiendo en el techo.",
-            "🟢 Satélite Serafín sin interferencia solar.",
-            "🟡 Tráfico de red menor detectado en Santiago.",
-            "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
-        ]
-        st.session_state.alerta_actual = random.choice(amenazas_posibles)
-        st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
-with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
-    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso, la <b>API Key de Gemini</b> y ElevenLabs si deseas voz neural avanzada:</p>", unsafe_allow_html=True)
-    
-    col_id1, col_id2 = st.columns(2)
-    with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
-        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
-        elevenlabs_input = st.text_input("🔑 ElevenLabs API Key (Opcional):", type="password", value=elevenlabs_key)
-    with col_id2:
-        ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
-    
-    if st.button("💾 Actualizar Configuración y Clave"):
-        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_input
-        guardar_memoria(st.session_state.memoria)
-        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
-        st.rerun()
+        targetMarker.
