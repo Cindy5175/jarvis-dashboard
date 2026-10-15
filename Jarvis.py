@@ -214,49 +214,50 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: DIVIDIDA EN DOS TARJETAS LIMPIAS (1. HISTORIAL ARRIBA / 2. CONTROLES Y ENTRADA ABAJO)
+# CONSOLA DE MANDO UNIFICADA: TODO EN UNA SOLA TARJETA SIN HUECOS (BURBUJAS ARRIBA -> BOTONES MEDIO -> CAJA ABAJO)
 with col_chat:
-    # TARJETA 1: HISTORIAL DE BURBUJAS (ARRIBA)
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // HISTORIAL DE DIÁLOGO</div>', unsafe_allow_html=True)
-    chat_container = st.container(height=140)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
+    
+    # 1. Historial de burbujas con scroll arriba
+    chat_container = st.container(height=120)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
             msg = item["texto"]
             if remitente == "jefa":
                 st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 6px;">
-                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 10px 10px 0 10px; padding: 8px; max-width: 85%; color: #ffffff; font-size: 13px;">
-                            <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:11px;">👤 {titulo_jefa} {nombre_jefa}:</p>
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
+                        <div style="background-color: #0d1b2a; border: 1px solid #a5b4fc; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #ffffff; font-size: 12px;">
+                            <p style="margin:0; color:#a5b4fc; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>
                             <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
             else:
                 st.markdown(f'''
-                    <div style="display: flex; justify-content: flex-start; margin-bottom: 6px;">
-                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 10px 10px 10px 0; padding: 8px; max-width: 85%; color: #ffffff; font-size: 13px; box-shadow: 0 0 8px rgba(0,210,255,0.15);">
-                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:11px;">⚡ J.A.R.V.I.S.:</p>
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">
+                        <div style="background-color: #050505; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #ffffff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.15);">
+                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">⚡ J.A.R.V.I.S.:</p>
                             <p style="margin:2px 0 0 0;">{msg}</p>
                         </div>
                     </div>
                 ''', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # TARJETA 2: ACCESOS RÁPIDOS (MEDIO) Y CAJA DE TEXTO (ABABAJO)
-    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ COMANDOS & TRANSMISIÓN TÁCTICA</div>', unsafe_allow_html=True)
-    
+    st.markdown("<hr style='margin: 8px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
+
+    # 2. Botones de acceso rápido en el medio
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
-    
+    st.markdown("<div style='margin-top: 4px;'></div>", unsafe_allow_html=True)
+
+    # 3. Caja de entrada y botón de transmisión abajo del todo
     entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...", key="input_chat_manual")
     btn_transmitir = st.button("🚀 Transmitir Instrucción")
-    
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     if btn_limpiar:
@@ -502,7 +503,7 @@ with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=
         nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
     with col_id2:
         ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave hier...")
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
     
     if st.button("💾 Actualizar Configuración y Clave"):
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
