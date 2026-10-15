@@ -214,11 +214,11 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO REORDENADA: CAJA DE TEXTO Y BOTONES ARRIBA, BURBUJAS ABAJO CON SCROLL
+# CONSOLA DE MANDO CORRECTA: BOTONES Y CAJA ARRIBA, BURBUJAS ABAJO CON SCROLL INTERNO FIJO
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. BOTONES Y CAJA DE ENTRADA ARRIBA (SIEMPRE A MANO)
+    # 1. BOTONES RÁPIDOS Y CAJA DE ENTRADA FIJOS ARRIBA
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
@@ -229,8 +229,8 @@ with col_chat:
         entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
 
-    # 2. HISTORIAL DE BURBUJAS DENTRO DE UN CONTENEDOR CON SCROLL HACIA ABAJO
-    chat_container = st.container(height=260)
+    # 2. HISTORIAL DE BURBUJAS DENTRO DEL CONTENEDOR CON SCROLL (ABAJO)
+    chat_container = st.container(height=240)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
