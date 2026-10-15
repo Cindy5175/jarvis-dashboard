@@ -190,5 +190,54 @@ with col_orbe:
     """
     components.html(audio_wave_core_html, height=70)
     
-    # AUTO-LECTURA DE VOZ INMEDIATA AL RESPONDER
-    texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n
+    # AUTO-LECTURA DE VOZ INMEDIATA AL RESPONDER (LÍNEA PROTEGIDA)
+    texto_limpio = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
+    texto_para_hablar = " ".join(texto_limpio.splitlines())
+    
+    auto_voice_script = f"""
+    <script>
+    if ('speechSynthesis' in window) {{
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("{texto_para_hablar}");
+        utterance.lang = 'es-CL';
+        utterance.pitch = 0.95;
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+    }}
+    </script>
+    """
+    components.html(auto_voice_script, height=0)
+
+    c_btn1, c_btn2 = st.columns(2)
+    with c_btn1:
+        btn_reproducir = st.button("🔊 Hablar Respuesta")
+    with c_btn2:
+        btn_autonomia = st.button("🤖 Autoevaluación Táctica")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# CONSOLA DE MANDO ORDENADA: CHAT ARRIBA -> BOTONES ABAJO
+with col_chat:
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
+    
+    # 1. Historial de burbujas arriba
+    chat_container = st.container(height=130)
+    with chat_container:
+        for item in st.session_state.historial_chat:
+            remitente = item["remitente"]
+            msg = item["texto"]
+            if remitente == "jefa":
+                st.markdown(f'''
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
+                        <div style="background-color: #001133; border: 1px solid #00d2ff; border-radius: 8px 8px 0 8px; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 6px rgba(0,210,255,0.2);">
+                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">👤 {titulo_jefa} {nombre_jefa}:</p>
+                            <p style="margin:2px 0 0 0;">{msg}</p>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">
+                        <div style="background-color: #000000; border: 1px solid #00d2ff; border-radius: 8px 8px 8px 0; padding: 6px 10px; max-width: 85%; color: #00d2ff; font-size: 12px; box-shadow: 0 0 8px rgba(0,210,255,0.3);">
+                            <p style="margin:0; color:#00d2ff; font-weight:bold; font-size:10px;">⚡ J.A.R.V.I.S.:</p>
+                            <p style="margin:2
