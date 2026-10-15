@@ -482,14 +482,14 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (ABAJO DE TODO)
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO, NOTAS Y MISIONES (ABAJO DE TODO)
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
     st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
 
 st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA & CALENDARIO // STARK INDUSTRIES</div>', unsafe_allow_html=True)
+st.markdown('<div class="holo-title">🛠️ MÓDULO DE EXPANSIÓN TÁCTICA, NOTAS Y MISIONES // STARK INDUSTRIES</div>', unsafe_allow_html=True)
 
 j1, j2, j3, j4 = st.columns(4)
 
@@ -525,6 +525,40 @@ with j4:
         st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
+
+# NUEVOS MÓDULOS ACTIVOS: GESTOR DE NOTAS RÁPIDAS Y INYECTOR DE MISIONES PERSISTENTES
+col_nota_rapida, col_inyector_mision = st.columns(2)
+
+with col_nota_rapida:
+    st.markdown('<div class="holo-card"><div class="holo-title">📝 REGISTRO DE NOTAS RÁPIDAS (MEMORIA PERSISTENTE)</div>', unsafe_allow_html=True)
+    nueva_nota = st.text_input("Escribe una nota para el búnker:", placeholder="Ej: Comprar café para la base...")
+    if st.button("💾 Guardar Nota en Memoria"):
+        if nueva_nota.strip():
+            if "notas" not in st.session_state.memoria:
+                st.session_state.memoria["notas"] = []
+            st.session_state.memoria["notas"].append(nueva_nota.strip())
+            guardar_memoria(st.session_state.memoria)
+            st.success("¡Nota registrada en jarvis_memory.json con éxito!")
+            st.rerun()
+    
+    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Notas Guardadas Actuales:</p>", unsafe_allow_html=True)
+    notas_actuales = st.session_state.memoria.get("notas", [])
+    for nota in notas_actuales[-4:]:  # Mostrar las últimas 4 notas
+        st.markdown(f"<p style='color:#00ffaa; font-size:11px; margin:2px 0; font-family:monospace;'>• {nota}</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_inyector_mision:
+    st.markdown('<div class="holo-card"><div class="holo-title">🎯 INYECTOR DE NUEVA MISIÓN TÁCTICA</div>', unsafe_allow_html=True)
+    nueva_mision_txt = st.text_input("Asignar nueva misión:", placeholder="Ej: Revisar sensores exteriores...")
+    if st.button("🚀 Inyectar Misión"):
+        if nueva_mision_txt.strip():
+            st.session_state.misiones_lista[nueva_mision_txt.strip()] = False
+            st.success(f"¡Misión '{nueva_mision_txt}' añadida al panel táctico!")
+            st.rerun()
+            
+    st.markdown("<p style='color:#00d2ff; font-size:12px; font-weight:bold; margin-top:8px;'>Estado de Red Táctica:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#00ffaa; font-size:11px; font-family:monospace;'>✔ Todos los subsistemas operando en armonía sin anomalías.</p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
 with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
