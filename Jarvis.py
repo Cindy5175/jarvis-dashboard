@@ -80,7 +80,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO DE SELECTBOX NEGRO/AZUL
+# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO ABSOLUTO DE MENÚS FLOTANTES
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,7 +92,7 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* FORZAR SELECTOR Y DROPDOWN A NEGRO Y AZUL NEÓN */
+    /* FORZAR SELECTOR Y MENÚ DESPLEGABLE A NEGRO Y AZUL NEÓN */
     div.stSelectbox [data-baseweb="select"] {
         background-color: #000000 !important;
         border: 1px solid #00d2ff !important;
@@ -120,16 +120,27 @@ st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL
 estado_ia_txt = "MOTOR IA: GEMINI NEURAL ACTIVO" if cliente_ia else "MOTOR IA: SINTESIS LOCAL HÍBRIDA"
 st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
 
-# SCRIPT JS PARA FORZAR EL SELECTBOX A NEGRO ABSOLUTO
+# SCRIPT JS AVANZADO PARA FORZAR EL MENÚ DESPLEGABLE FLOTANTE A NEGRO Y AZUL NEÓN
 components.html("""
 <script>
 const observer = new MutationObserver(() => {
+    // Forzar caja principal del selectbox
     parent.document.querySelectorAll('div[data-baseweb="select"] > div').forEach(el => {
         el.style.backgroundColor = '#000000';
         el.style.color = '#00d2ff';
         el.style.borderColor = '#00d2ff';
     });
     parent.document.querySelectorAll('div[data-baseweb="select"] span').forEach(el => {
+        el.style.color = '#00d2ff';
+    });
+    // Forzar menú flotante desplegable y sus ítems
+    parent.document.querySelectorAll('div[data-baseweb="menu"], ul[role="listbox"]').forEach(el => {
+        el.style.backgroundColor = '#000000';
+        el.style.color = '#00d2ff';
+        el.style.borderColor = '#00d2ff';
+    });
+    parent.document.querySelectorAll('li[role="option"], div[role="option"]').forEach(el => {
+        el.style.backgroundColor = '#000000';
         el.style.color = '#00d2ff';
     });
 });
