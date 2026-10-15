@@ -57,12 +57,11 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "").strip()
 
-# ARQUITECTURA OLLAMA LOCAL: CONEXIÓN CON LOS MODELOS INSTALADOS
+# ARQUITECTURA OLLAMA LOCAL: RESPUESTA DIRECTA Y ÁGIL
 def consultar_ollama_local(prompt_sistema, mensaje_usuario, modo_complejo=False):
-    """Consulta al servidor local de Ollama usando los nombres exactos detectados"""
+    """Consulta al servidor local de Ollama usando el modelo ágil y estable"""
     url = "http://localhost:11434/api/generate"
-    # Si es complejo usamos llama3:latest, si es rápido usamos llama3.2:latest
-    modelo_activo = "llama3:latest" if modo_complejo else "llama3.2:latest"
+    modelo_activo = "llama3.2:latest"
     
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload = {
@@ -70,25 +69,17 @@ def consultar_ollama_local(prompt_sistema, mensaje_usuario, modo_complejo=False)
         "prompt": prompt_completo,
         "stream": False,
         "options": {
-            "temperature": 0.7 if modo_complejo else 0.4
+            "temperature": 0.5
         }
     }
     data = json.dumps(payload).encode('utf-8')
     req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
     try:
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             return resultado.get("response", "").strip()
-    except Exception:
-        try:
-            payload["model"] = "llama3:latest"
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=10) as response:
-                resultado = json.loads(response.read().decode('utf-8'))
-                return resultado.get("response", "").strip()
-        except Exception:
-            return None
+    except Exception as e:
+        return f"Error de enlace con Ollama local: {e}"
 
 # FUNCIÓN PARA EJECUTAR ÓRDENES REALES EN EL SISTEMA
 def ejecutar_orden_sistema(texto_comando):
@@ -127,7 +118,7 @@ if ai_api_key_guardada:
     except Exception:
         pass
 
-# INICIALIZAR ESTADOS
+# INICIALIZAR ESTADOS CON LA OPCIÓN B
 if "historial_chat" not in st.session_state:
     saludo_inicial = f"¡Hola, {titulo_jefa}! Búnker de Buin 100% operativo. Procesadores al máximo, café listo y mi sarcasmo calibrado al nivel adecuado. Dígame qué hacemos primero y lo ponemos en marcha de inmediato."
     st.session_state.historial_chat = [
@@ -362,30 +353,26 @@ with col_chat:
         # 1. EJECUTAR ORDEN FÍSICA EN EL SISTEMA
         respuesta_ia = ejecutar_orden_sistema(comando_ejecutar)
 
-        # DETECTAR SI ES UNA TAREA COMPLEJA PARA USAR EL MOTOR PROFUNDO DE OLLAMA
-        palabras_complejas = ["programa", "código", "analiza", "explica", "calcula", "estrategia", "física", "algoritmo"]
-        es_complejo = any(p in texto for p in palabras_complejas) or len(texto) > 40
-
-        # 2. CONSULTAR A OLLAMA LOCAL (CON LOS NOMBRES EXACTOS DE TUS MODELOS)
+        # 2. CONSULTAR A OLLAMA LOCAL
         if not respuesta_ia:
             prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y con el inconfundible sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
             INSTRUCCIONES:
             1. Responde de forma brillante, rápida y con toques de humor irónico o sarcasmo fino (estilo Tony Stark hacia Pepper o Jarvis).
             2. Sé breve y directo (1 a 3 frases máximo)."""
             
-            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar, modo_complejo=es_complejo)
+            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
 
-        # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
-        if not respuesta_ia and cliente_ia:
+        # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO Y OLLAMA FALLÓ
+        if (not respuesta_ia or "Error" in respuesta_ia) and cliente_ia:
             try:
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
                 if respuesta_modelo and respuesta_modelo.text:
                     respuesta_ia = respuesta_modelo.text.strip()
             except Exception:
-                respuesta_ia = None
+                pass
 
-        # 4. RESPALDO LOCAL FINAL
-        if not respuesta_ia:
+        # 4. RESPALDO FINAL SI AMBOS FALLAN
+        if not respuesta_ia or "Error" in respuesta_ia:
             if "hola" in texto:
                 respuesta_ia = f"Hola, {nombre_jefa}. ¿Qué milagro requiere mi atención hoy en el búnker?"
             else:
