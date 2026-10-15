@@ -56,26 +56,41 @@ nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 prefs_voz = st.session_state.memoria.get("preferencias_voz", {})
 ai_api_key_guardada = prefs_voz.get("ai_api_key", "").strip()
-elevenlabs_key = prefs_voz.get("elevenlabs_api_key", "").strip()
 
-# CONFIGURACIÓN DE IA (OLLAMA LOCAL + GEMINI DE RESPALDO)
-def consultar_ollama_local(prompt_sistema, mensaje_usuario):
-    """Consulta al servidor local de Ollama (Llama 3)"""
+# ARQUITECTURA OLLAMA LOCAL: DOBLE VÍA (FLUJO RÁPIDO + RAZONAMIENTO COMPLEJO)
+def consultar_ollama_local(prompt_sistema, mensaje_usuario, modo_complejo=False):
+    """Consulta al servidor local de Ollama (Llama 3 con doble motor: fluido o razonamiento profundo)"""
     url = "http://localhost:11434/api/generate"
+    
+    # Selecciona el modelo según la complejidad requerida
+    modelo_activo = "llama3:latest" if modo_complejo else "llama3"
+    
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload = {
-        "model": "llama3",
+        "model": modelo_activo,
         "prompt": prompt_completo,
-        "stream": False
+        "stream": False,
+        "options": {
+            "temperature": 0.7 if modo_complejo else 0.4
+        }
     }
     data = json.dumps(payload).encode('utf-8')
     req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=15) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             return resultado.get("response", "").strip()
     except Exception:
-        return None
+        # Fallback automático al modelo base si el específico no responde
+        try:
+            payload["model"] = "llama3"
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(req, timeout=10) as response:
+                resultado = json.loads(response.read().decode('utf-8'))
+                return resultado.get("response", "").strip()
+        except Exception:
+            return None
 
 # FUNCIÓN PARA EJECUTAR ÓRDENES REALES EN EL SISTEMA
 def ejecutar_orden_sistema(texto_comando):
@@ -84,19 +99,19 @@ def ejecutar_orden_sistema(texto_comando):
     try:
         if "bloc de notas" in texto or "notepad" in texto:
             subprocess.Popen(["notepad.exe"])
-            return f"Abriendo el Bloc de notas de inmediato, {titulo_jefa} {nombre_jefa}."
+            return f"Abriendo el Bloc de notas de inmediato, {titulo_jefa} {nombre_jefa}. ¿Anotando otra genialidad?"
         elif "calculadora" in texto or "calc" in texto:
             subprocess.Popen(["calc.exe"])
-            return f"Lanzando la calculadora, {titulo_jefa}."
+            return f"Lanzando la calculadora, {titulo_jefa}. Supongo que verificar mis cálculos no está de más."
         elif "chrome" in texto or "navegador" in texto:
             subprocess.Popen(["start", "chrome"], shell=True)
-            return f"Abriendo el navegador web, {titulo_jefa}."
+            return f"Abriendo el navegador web, {titulo_jefa}. Despliéguese el internet ante ti."
         elif "explorador" in texto or "archivos" in texto:
             subprocess.Popen(["explorer.exe"])
             return f"Desplegando el explorador de archivos en pantalla, {titulo_jefa}."
         elif "terminal" in texto or "powershell" in texto or "consola" in texto:
             subprocess.Popen(["powershell.exe"])
-            return f"Nueva terminal de comandos desplegada, {titulo_jefa}."
+            return f"Nueva terminal de comandos desplegada, {titulo_jefa}. Cuidado con romper el multiverso."
     except Exception as e:
         return f"Error ejecutando la orden física en el sistema: {e}"
     return None
@@ -108,15 +123,11 @@ if ai_api_key_guardada:
         genai.configure(api_key=ai_api_key_guardada)
         cliente_ia = genai.GenerativeModel('gemini-1.5-flash')
     except Exception:
-        try:
-            import google.generativeai as genai
-            cliente_ia = genai.GenerativeModel('gemini-pro')
-        except Exception:
-            cliente_ia = None
+        pass
 
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
-    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué orden ejecutamos hoy?"
+    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué travesura o tarea seria resolvemos hoy?"
     st.session_state.historial_chat = [
         {"remitente": "jarvis", "texto": saludo_inicial}
     ]
@@ -132,7 +143,6 @@ st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
     .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
-    .status-bar { text-align: center; color: #00d2ff; font-size: 13px; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; }
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
@@ -152,9 +162,6 @@ st.markdown("""
     
     div.stButton > button, button[kind="secondaryFormSubmit"] { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
     div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
-    
-    div[data-testid="stExpander"] { background-color: #000000 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; margin-bottom: 10px !important; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
-    div[data-testid="stExpander"] details summary { background-color: #000000 !important; color: #00d2ff !important; font-weight: bold !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -218,7 +225,6 @@ with col_telemetria:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_orbe:
-    # BOTONES SUPERIORES DE LA COLUMNA CENTRAL (CLIMA, BIOMETRÍA, YOUTUBE)
     bc1, bc2, bc3 = st.columns(3)
     with bc1:
         if st.button("🌦️ Clima"):
@@ -233,7 +239,6 @@ with col_orbe:
             st.session_state.modo_central = "multimedia"
             st.rerun()
 
-    # CONTENIDO DINÁMICO DE LA COLUMNA CENTRAL
     if st.session_state.modo_central == "clima":
         st.markdown('<div class="holo-card"><div class="holo-title">🌦️ CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
         clima_ampliado_html = """
@@ -283,7 +288,6 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ORBE / FRECUENCIA VOCAL ABAJO
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     
@@ -344,17 +348,18 @@ with col_chat:
     with st.form(key="form_chat_ordenado", clear_on_submit=True):
         entrada_usuario = st.text_input("", placeholder="Escribe un comando táctico...")
         
-        col_f1, col_f2 = st.columns([3, 1])
+        # PURGA LIGERAMENTE A LA IZQUIERDA DEL BOTÓN DE ENVÍO
+        col_f1, col_f2, col_f3 = st.columns([1, 2, 2])
         with col_f1:
-            btn_enviar_chat = st.form_submit_button("🚀 Enviar Comando")
-        with col_f2:
             btn_limpiar_chat = st.form_submit_button("🧹 Purga")
+        with col_f3:
+            btn_enviar_chat = st.form_submit_button("🚀 Enviar")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
     if btn_limpiar_chat:
         st.session_state.historial_chat = [
-            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa en el búnker."}
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa... aunque espero que lo que borraste no fuera importante."}
         ]
         st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
         st.rerun()
@@ -370,13 +375,18 @@ with col_chat:
         # 1. EJECUTAR ORDEN FÍSICA EN EL SISTEMA
         respuesta_ia = ejecutar_orden_sistema(comando_ejecutar)
 
-        # 2. CONSULTAR A OLLAMA LOCAL (Llama 3)
+        # DETECTAR SI ES UNA TAREA COMPLEJA PARA USAR EL MOTOR PROFUNDO DE OLLAMA
+        palabras_complejas = ["programa", "código", "analiza", "explica", "calcula", "estrategia", "física", "algoritmo"]
+        es_complejo = any(p in texto for p in palabras_complejas) or len(texto) > 40
+
+        # 2. CONSULTAR A OLLAMA LOCAL (CON TONO TONY STARK Y DOBLE MOTOR)
         if not respuesta_ia:
-            prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+            prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y con el inconfundible sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
             INSTRUCCIONES:
-            1. Habla 100% como un compañero humano astuto y brillante con toque de humor elegante.
+            1. Responde de forma brillante, rápida y con toques de humor irónico o sarcasmo fino (estilo Tony Stark hacia Pepper o Jarvis).
             2. Sé breve y directo (1 a 3 frases máximo)."""
-            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
+            
+            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar, modo_complejo=es_complejo)
 
         # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
         if not respuesta_ia and cliente_ia:
@@ -390,9 +400,9 @@ with col_chat:
         # 4. RESPALDO LOCAL FINAL
         if not respuesta_ia:
             if "hola" in texto:
-                respuesta_ia = f"¡Hola, {nombre_jefa}! ¿Qué aplicación o comando ejecutamos ahora?"
+                respuesta_ia = f"Hola, {nombre_jefa}. ¿Qué milagro requiere mi atención hoy en el búnker?"
             else:
-                respuesta_ia = f"Orden procesada en el búnker, {nombre_jefa}."
+                respuesta_ia = f"Orden procesada en el búnker, {nombre_jefa}. A veces me sorprende que todo funcione a la primera."
 
         st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
