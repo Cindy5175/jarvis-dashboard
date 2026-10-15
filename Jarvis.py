@@ -141,14 +141,14 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (SYNTHWAVE / ELECTRÓNICA / INSTRUMENTAL)
+# REPRODUCTOR DE MÚSICA SPOTIFY (PISTAS ESTABLES INTEGRADAS)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER 🟢 SPOTIFY</div>', unsafe_allow_html=True)
     
     opciones_spotify = {
-        "⚡ Synthwave & Electrónica Moderna": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A35?utm_source=generator&theme=0",
-        "🎧 Instrumental / Focus Beats": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgSPKQ?utm_source=generator&theme=0"
+        "⚡ Synthwave & Electrónica": "https://open.spotify.com/embed/track/2tUBqZG2AbRi7Q0BIrVrEj?utm_source=generator",
+        "🎧 Instrumental Moderna / Lo-Fi": "https://open.spotify.com/embed/track/0hVWtDePIKHAh9Z62vB2m5?utm_source=generator"
     }
     
     estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
