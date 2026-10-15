@@ -94,10 +94,6 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* FORZAR AZUL NEÓN EN TODO EL CHAT NATIVO */
-    div[data-testid="stChatInput"] { background-color: #000000 !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 12px rgba(0, 210, 255, 0.4) !important; }
-    div[data-testid="stChatInput"] textarea { background-color: #000000 !important; color: #00d2ff !important; }
-    
     .stSelectbox select, .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     
@@ -222,7 +218,7 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO NEÓN PERFECTA
+# CONSOLA DE MANDO ORDENADA: CHAT ARRIBA -> BOTONES ABAJO
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
     
@@ -251,15 +247,19 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    # 2. Botones de acceso rápido al medio
+    # 2. Caja de texto para escribir ARRIBA de los botones
+    with st.form(key="form_chat_ordenado", clear_on_submit=True):
+        entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
+        btn_enviar_chat = st.form_submit_button("🚀 Enviar Mensaje")
+
+    st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+
+    # 3. Botones de acceso rápido ABAJO de todo
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
-
-    # 3. Caja de chat nativa abajo
-    entrada_usuario = st.chat_input("Escribe o presiona [Windows + H] para charlar...")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -271,7 +271,7 @@ with col_chat:
         st.rerun()
 
     comando_ejecutar = None
-    if entrada_usuario:
+    if btn_enviar_chat and entrada_usuario:
         comando_ejecutar = entrada_usuario
     elif btn_q_hola:
         comando_ejecutar = "Hola Jarvis, ¿qué tal?"
@@ -452,7 +452,7 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (UBICADOS ABAJO DEL TODO)
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
@@ -511,7 +511,7 @@ with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=
     if st.button("💾 Actualizar Configuración y Clave"):
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_key_actual
         guardar_memoria(st.session_state.memoria)
         st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
         st.rerun()
