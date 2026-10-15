@@ -214,12 +214,12 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO UNIFICADA: TODO EN UNA SOLA TARJETA SIN HUECOS (BURBUJAS ARRIBA -> BOTONES MEDIO -> CAJA ABAJO)
+# CONSOLA DE MANDO COMPACTA Y SIN HUECOS
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
     
-    # 1. Historial de burbujas con scroll arriba
-    chat_container = st.container(height=120)
+    # 1. Historial de burbujas compacto
+    chat_container = st.container(height=110)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,18 +243,14 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    st.markdown("<hr style='margin: 8px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
-
-    # 2. Botones de acceso rápido en el medio
+    # 2. Botones de acceso rápido
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
-    st.markdown("<div style='margin-top: 4px;'></div>", unsafe_allow_html=True)
-
-    # 3. Caja de entrada y botón de transmisión abajo del todo
+    # 3. Caja de texto y botón de transmisión pegados inmediatamente abajo
     entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...", key="input_chat_manual")
     btn_transmitir = st.button("🚀 Transmitir Instrucción")
 
