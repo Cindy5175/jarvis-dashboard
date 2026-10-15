@@ -119,7 +119,6 @@ if ai_api_key_guardada:
     try:
         import google.generativeai as genai
         genai.configure(api_key=ai_api_key_guardada)
-        # Intentamos conectar con Gemini 4 Argon, con respaldo a flash si es necesario
         try:
             cliente_ia = genai.GenerativeModel('gemini-4-argon')
         except Exception:
@@ -127,9 +126,9 @@ if ai_api_key_guardada:
     except Exception:
         pass
 
-# INICIALIZAR ESTADOS
+# INICIALIZAR ESTADOS CON EL NUEVO SALUDO (OPCIÓN B)
 if "historial_chat" not in st.session_state:
-    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. Usa Win + H para dictar y presiona Enter para enviar."
+    saludo_inicial = f"¡Hola, {titulo_jefa}! Búnker de Buin 100% operativo. Procesadores al máximo, café listo y mi sarcasmo calibrado al nivel adecuado. Dígame qué hacemos primero y lo ponemos en marcha de inmediato."
     st.session_state.historial_chat = [
         {"remitente": "jarvis", "texto": saludo_inicial}
     ]
