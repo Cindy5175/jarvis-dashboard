@@ -4,6 +4,7 @@ import datetime
 import random
 import json
 import os
+import subprocess
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -76,6 +77,30 @@ def consultar_ollama_local(prompt_sistema, mensaje_usuario):
     except Exception:
         return None
 
+# FUNCIÓN PARA EJECUTAR ÓRDENES REALES EN EL SISTEMA
+def ejecutar_orden_sistema(texto_comando):
+    """Ejecuta comandos en Windows basados en la solicitud de la jefa"""
+    texto = texto_comando.lower()
+    try:
+        if "bloc de notas" in texto or "notepad" in texto:
+            subprocess.Popen(["notepad.exe"])
+            return f"Abriendo el Bloc de notas de inmediato, {titulo_jefa} {nombre_jefa}."
+        elif "calculadora" in texto or "calc" in texto:
+            subprocess.Popen(["calc.exe"])
+            return f"Lanzando la calculadora, {titulo_jefa}."
+        elif "chrome" in texto or "navegador" in texto:
+            subprocess.Popen(["start", "chrome"], shell=True)
+            return f"Abriendo el navegador web, {titulo_jefa}."
+        elif "explorador" in texto or "archivos" in texto:
+            subprocess.Popen(["explorer.exe"])
+            return f"Desplegando el explorador de archivos en pantalla, {titulo_jefa}."
+        elif "terminal" in texto or "powershell" in texto or "consola" in texto:
+            subprocess.Popen(["powershell.exe"])
+            return f"Nueva terminal de comandos desplegada, {titulo_jefa}."
+    except Exception as e:
+        return f"Error ejecutando la orden física en el sistema: {e}"
+    return None
+
 cliente_ia = None
 if ai_api_key_guardada:
     try:
@@ -89,9 +114,9 @@ if ai_api_key_guardada:
         except Exception:
             cliente_ia = None
 
-# INICIALIZAR HISTORIAL DE CHAT CON PREGUNTA DE MÚSICA
+# INICIALIZAR HISTORIAL DE CHAT
 if "historial_chat" not in st.session_state:
-    saludo_inicial = f"Sistemas del búnker en Buin operando al 100%, {titulo_jefa} {nombre_jefa}. ¿Qué música de nuestro repertorio táctico nos ponemos hoy?"
+    saludo_inicial = f"Sistemas del búnker en Buin operando al 100%, {titulo_jefa} {nombre_jefa}. ¿Qué orden ejecutamos hoy?"
     st.session_state.historial_chat = [
         {"remitente": "jarvis", "texto": saludo_inicial}
     ]
@@ -99,7 +124,7 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-# ESTILOS CSS TÁCTICOS NEÓN Y FORZADO ABSOLUTO DE SELECTORES
+# ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -111,7 +136,6 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* FORZAR SELECTOR Y COMPONENTES DE SELECCIÓN A NEGRO Y AZUL NEÓN */
     div[data-baseweb="select"], div[data-baseweb="select"] > div {
         background-color: #000000 !important;
         border-color: #00d2ff !important;
@@ -134,52 +158,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // INTELIGENCIA ARTIFICIAL M.E.C.A. 4.0</h1>', unsafe_allow_html=True)
-estado_ia_txt = "MOTOR IA: OLLAMA (LLAMA 3) LOCAL ACTIVO"
-st.markdown(f'<div class="status-bar">CONSOLA OPTIMIZADA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; OPERANDO PARA {titulo_jefa.upper()} {nombre_jefa.upper()} &nbsp;|&nbsp; {estado_ia_txt}</div>', unsafe_allow_html=True)
-
-# SCRIPT JS PARA ANULAR LOS ESTILOS BLANCOS DEL NAVEGADOR EN SELECTORES
-components.html("""
-<script>
-const observer = new MutationObserver(() => {
-    parent.document.querySelectorAll('div[data-baseweb="select"]').forEach(el => {
-        el.style.backgroundColor = '#000000';
-        el.style.color = '#00d2ff';
-        el.style.borderColor = '#00d2ff';
-    });
-    parent.document.querySelectorAll('div[data-baseweb="select"] > div').forEach(el => {
-        el.style.backgroundColor = '#000000';
-        el.style.color = '#00d2ff';
-        el.style.borderColor = '#00d2ff';
-    });
-    parent.document.querySelectorAll('div[data-baseweb="select"] span, div[data-baseweb="select"] div').forEach(el => {
-        el.style.backgroundColor = '#000000';
-        el.style.color = '#00d2ff';
-    });
-    parent.document.querySelectorAll('div[data-baseweb="menu"], ul[role="listbox"]').forEach(el => {
-        el.style.backgroundColor = '#000000';
-        el.style.color = '#00d2ff';
-        el.style.borderColor = '#00d2ff';
-    });
-    parent.document.querySelectorAll('li[role="option"], div[role="option"]').forEach(el => {
-        el.style.backgroundColor = '#000000';
-        el.style.color = '#00d2ff';
-    });
-});
-observer.observe(parent.document.body, { childList: true, subtree: true });
-</script>
-""", height=0)
-
-# TELETIPO FINANCIERO Y DE MERCADOS
-st.markdown("""
-    <div class="market-ticker">
-        <span class="market-item">💵 USD/CLP: <span class="market-value">$930.50 ▲ +0.2%</span></span>
-        <span class="market-item">💶 EUR/CLP: <span class="market-value">$1,012.40 ▲ +0.1%</span></span>
-        <span class="market-item">📈 IPSA CHILE: <span class="market-value">6,480.12 pts ▲ +0.4%</span></span>
-        <span class="market-item">🛢️ BRENT: <span class="market-value">$82.40 ▼ -0.3%</span></span>
-        <span class="market-item">🛰️ SERAFÍN-SAT: <span class="market-value">ENLACE 100%</span></span>
-    </div>
-""", unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">⚡ J.A.R.V.I.S. // M.E.C.A. 4.0 (EJECUTOR)</h1>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-bar">CONSOLA CON EJECUCIÓN FÍSICA &nbsp;|&nbsp; ESTADO: AUTÓNOMO &nbsp;|&nbsp; {titulo_jefa.upper()} {nombre_jefa.upper()}</div>', unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
@@ -204,7 +184,6 @@ with col_telemetria:
     """
     components.html(globe_html, height=65)
 
-    # RELOJ HOLOGRÁFICO SOLO CHILENA EN TIEMPO REAL (DEBAJO DE BASE Y SATÉLITE)
     reloj_chileno_html = """
     <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 8px; font-family: monospace; font-size: 12px; color: #00d2ff; text-align: center; box-shadow: 0 0 10px rgba(0,210,255,0.3); margin-top: 8px;">
         <div style="font-weight: bold; color: #00d2ff; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px;">⏳ HORA TÁCTICA (BUIN / STGO)</div>
@@ -223,10 +202,9 @@ with col_telemetria:
     components.html(reloj_chileno_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE YOUTUBE (CATÁLOGO TÁCTICO AMPLIADO)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-    st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE TÁCTICO (BÚNKER)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE TÁCTICO</div>', unsafe_allow_html=True)
     
     canales_yt = {
         "🚀 Work Mode Activated [Deep Focus]": "cTTxesT4C0M",
@@ -271,7 +249,6 @@ with col_orbe:
     )
     components.html(audio_wave_core_html, height=70)
     
-    # SÍNTESIS VOCAL AUTOMÁTICA AL CARGAR Y HABLAR
     texto_limpio = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'")
     texto_para_hablar = " ".join(texto_limpio.splitlines())
     
@@ -297,11 +274,9 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO ORDENADA: CHAT ARRIBA -> BOTONES ABAJO
 with col_chat:
-    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & CONTROLES</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // DIÁLOGO & EJECUCIÓN</div>', unsafe_allow_html=True)
     
-    # 1. Historial de burbujas arriba
     chat_container = st.container(height=130)
     with chat_container:
         for item in st.session_state.historial_chat:
@@ -326,14 +301,12 @@ with col_chat:
                 )
                 st.markdown(html_msg, unsafe_allow_html=True)
 
-    # 2. Caja de texto para escribir ARRIBA de los botones
     with st.form(key="form_chat_ordenado", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Dime qué música prefieres...")
-        btn_enviar_chat = st.form_submit_button("🚀 Enviar Mensaje")
+        entrada_usuario = st.text_input("", placeholder="Ej: Abre el bloc de notas...")
+        btn_enviar_chat = st.form_submit_button("🚀 Enviar Comando")
 
     st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
 
-    # 3. Botones de acceso rápido ABAJO de todo
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
@@ -344,7 +317,7 @@ with col_chat:
 
     if btn_limpiar:
         st.session_state.historial_chat = [
-            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa} {nombre_jefa}. Tabula rasa para lo que venga."}
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa} {nombre_jefa}. Tabula rasa."}
         ]
         st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
         st.rerun()
@@ -353,7 +326,7 @@ with col_chat:
     if btn_enviar_chat and entrada_usuario:
         comando_ejecutar = entrada_usuario
     elif btn_q_hola:
-        comando_ejecutar = "Hola Jarvis, pongamos música buena"
+        comando_ejecutar = "Hola Jarvis"
     elif btn_q_emerg:
         comando_ejecutar = "Protocolo de emergencia"
     elif btn_q_seg:
@@ -363,16 +336,18 @@ with col_chat:
         texto = comando_ejecutar.lower().strip()
         respuesta_ia = None
 
-        prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
-        INSTRUCCIONES DE PERSONALIDAD Y TONO:
-        1. Habla 100% como un compañero humano astuto, fluido, brillante y con un toque de humor o sarcasmo elegante.
-        2. JAMÁS des respuestas robóticas, rígidas o tipo 'manual de usuario'. Sé cercano y conversacional.
-        3. Sé breve y directo (1 a 3 frases máximo)."""
+        # 1. PRIORIDAD: EJECUTAR ORDEN FÍSICA EN EL SISTEMA
+        respuesta_ia = ejecutar_orden_sistema(comando_ejecutar)
 
-        # 1. INTENTAR CONSULTAR A OLLAMA LOCAL (Llama 3)
-        respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
+        # 2. SI NO ES UNA ORDEN FÍSICA, CONSULTAR A OLLAMA LOCAL (Llama 3)
+        if not respuesta_ia:
+            prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y carismático de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+            INSTRUCCIONES:
+            1. Habla 100% como un compañero humano astuto y brillante con toque de humor elegante.
+            2. Sé breve y directo (1 a 3 frases máximo)."""
+            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar)
 
-        # 2. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
+        # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
         if not respuesta_ia and cliente_ia:
             try:
                 respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
@@ -381,32 +356,14 @@ with col_chat:
             except Exception:
                 respuesta_ia = None
 
-        # 3. RESPALDO LOCAL SI OLLAMA O GEMINI FALLAN
+        # 4. RESPALDO LOCAL FINAL
         if not respuesta_ia:
-            if "música" in texto or "musica" in texto or "canción" in texto or "cancion" in texto or "synthwave" in texto or "instrumental" in texto or "electro" in texto:
-                respuesta_ia = f"Conectando el canal audiovisual en vivo, {nombre_jefa}. Disfrute de la transmisión en el búnker."
-            elif "santiago" in texto:
-                respuestas_stgo = [
-                    f"Santiago sigue ahí a 35 kilómetros, {nombre_jefa}. Con bastante tráfico, si me preguntas.",
-                    f"Tráfico pesado en la Ruta 5 hacia Santiago, como siempre. Mejor nos quedamos en el búnker."
-                ]
-                respuesta_ia = random.choice(respuestas_stgo)
-            elif "autoevaluación" in texto or "autonomía" in texto:
-                sugerencias = [
-                    f"Sistemas estables en Buin, {nombre_jefa}. Los servidores están fríos y el perímetro tranquilo.",
-                    f"Diagnóstico completado: 100% operativo. El reactor no ha explotado, lo cual siempre es buena señal."
-                ]
-                respuesta_ia = random.choice(sugerencias)
-            elif "despierto" in texto or "activo" in texto or "estás ahí" in texto:
-                respuesta_ia = f"Siempre al pie del cañón, {nombre_jefa}. ¿Qué música ponemos en la consola?"
+            if "autoevaluación" in texto or "autonomía" in texto:
+                respuesta_ia = f"Sistemas estables en Buin, {nombre_jefa}. Perímetro y servidores al 100%."
             elif "hola" in texto:
-                respuesta_ia = f"¡Hola, {nombre_jefa}! Todo listo en el búnker. ¿Qué frecuencias de audio sintonizamos hoy?"
+                respuesta_ia = f"¡Hola, {nombre_jefa}! ¿Qué aplicación o comando ejecutamos ahora?"
             else:
-                respuestas_gen = [
-                    f"Anotado, {nombre_jefa}. ¿Damos la orden para el siguiente paso?",
-                    f"Procesado de inmediato, {nombre_jefa}. ¿Algo más que quieras ajustar en el sistema?"
-                ]
-                respuesta_ia = random.choice(respuestas_gen)
+                respuesta_ia = f"Orden procesada en el búnker, {nombre_jefa}."
 
         st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
@@ -414,111 +371,3 @@ with col_chat:
         st.rerun()
 
 st.markdown("---")
-
-# MÓDULO: 🛰️ OJO DE DIOS 4.0 (GEO-BUSCADOR EN TIEMPO REAL)
-st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-st.markdown('<div class="holo-title">🛰️ OJO DE DIOS 4.0 // RASTREO TÁCTICO, GOOGLE MAPS & EARTH SATELLITE (CHILE)</div>', unsafe_allow_html=True)
-
-col_map1, col_map2, col_map3, col_map4 = st.columns([1.3, 1.1, 1.3, 1.1])
-with col_map1:
-    busqueda_objetivo = st.text_input("🔍 Buscar Ubicación (Ej: Valdivia):", value="Valdivia")
-with col_map2:
-    capa_seleccionada = st.selectbox("🌐 Capa Satelital:", ["Estándar (OSM)", "Relieve Topográfico", "Modo Nocturno Oscuro"])
-with col_map3:
-    nodo_rapido = st.selectbox("⚡ Nodos Rápidos:", [
-        "--- Selecciona un Nodo ---",
-        "🏰 Base Búnker [Buin]",
-        "🏙️ Santiago Centro",
-        "🌲 Chiguayante [Concepción]",
-        "🌊 Valdivia [Los Ríos]"
-    ])
-with col_map4:
-    st.markdown("<br>", unsafe_allow_html=True)
-    btn_escanear = st.button("📡 Rastrear en Mapa")
-
-lat_val, lon_val = -33.7315, -70.7412
-lugar_encontrado_nombre = "Base Central Buin"
-
-if nodo_rapido != "--- Selecciona un Nodo ---":
-    if "Santiago Centro" in nodo_rapido:
-        lat_val, lon_val = -33.4489, -70.6693
-        lugar_encontrado_nombre = "Santiago Centro, Región Metropolitana"
-    elif "Chiguayante" in nodo_rapido:
-        lat_val, lon_val = -36.9183, -73.0286
-        lugar_encontrado_nombre = "Chiguayante, Concepción, Biobío"
-    elif "Valdivia" in nodo_rapido:
-        lat_val, lon_val = -39.8196, -73.2452
-        lugar_encontrado_nombre = "Valdivia, Región de Los Ríos"
-    elif "Base Búnker" in nodo_rapido:
-        lat_val, lon_val = -33.7315, -70.7412
-        lugar_encontrado_nombre = "Base Central Buin"
-elif busqueda_objetivo:
-    try:
-        query_str = busqueda_objetivo
-        if "chile" not in query_str.lower(): query_str += " Chile"
-        url_geo = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(query_str)}&format=json&limit=1"
-        req = urllib.request.Request(url_geo, headers={'User-Agent': 'JARVIS_MECA_Bot/4.0'})
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            data_geo = json.loads(resp.read().decode())
-            if data_geo and len(data_geo) > 0:
-                lat_val = float(data_geo[0]['lat'])
-                lon_val = float(data_geo[0]['lon'])
-                lugar_encontrado_nombre = data_geo[0].get('display_name', busqueda_objetivo)[:80]
-    except Exception:
-        pass
-
-url_capa = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if "Topográfico" in capa_seleccionada else "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-
-map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }"
-if "Nocturno" in capa_seleccionada:
-    map_style_css = "#map { width: 100%; height: 380px; border: 1px solid #00d2ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%); }"
-
-gods_eye_html = f"""
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style> 
-        body, html {{ margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; }} 
-        {map_style_css} 
-        .sat-hud {{ position: absolute; top: 10px; left: 10px; z-index: 1000; color: #00d2ff; background: rgba(0,0,0,0.85); padding: 5px 10px; border: 1px solid #00d2ff; border-radius: 4px; font-size: 10px; letter-spacing: 1px; }} 
-    </style>
-</head>
-<body>
-    <div class="sat-hud">🛰️ SERAFÍN-SAT // LAT: {lat_val}° S, LON: {lon_val}° W | TARGET EN VIVO</div>
-    <div id="map"></div>
-    <script>
-        const map = L.map('map', {{zoomControl: false}}).setView([{lat_val}, {lon_val}], 13);
-        L.tileLayer('{url_capa}', {{ maxZoom: 19, attribution: '' }}).addTo(map);
-        const targetMarker = L.circleMarker([{lat_val}, {lon_val}], {{ radius: 12, color: '#ffffff', fillColor: '#ffbb00', fillOpacity: 1.0, weight: 3 }}).addTo(map);
-        targetMarker.bindPopup("<b style='color:#002244;'>🎯 OBJETIVO TÁCTICO</b><br><span style='color:#003366; font-size:10px;'>{lugar_encontrado_nombre}</span>").openPopup();
-    </script>
-</body>
-</html>
-"""
-components.html(gods_eye_html, height=400)
-
-col_clima, col_log = st.columns([1, 1.2])
-with col_clima:
-    st.markdown("""
-        <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
-            <p style="color:#00d2ff; margin:0 0 6px 0; font-weight:bold;">⛅ METEOROLOGÍA BÚNKER (BUIN)</p>
-            <p style="color:#00d2ff; margin:2px 0;">🌡️ Temp: <b>18.5°C</b> &nbsp;|&nbsp; 💧 Humedad: <b>48%</b></p>
-            <p style="color:#00d2ff; margin:2px 0;">💨 Viento: <b>12 km/h S-W</b> &nbsp;|&nbsp; 📡 Estado: <b>Despejado</b></p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col_log:
-    hora_log = datetime.datetime.now().strftime("%H:%M:%S")
-    coincidencia_txt = f"🔍 Objetivo Ubicado: '{lugar_encontrado_nombre}' [{lat_val}, {lon_val}]" if busqueda_objetivo else "Sin búsquedas activas."
-    st.markdown(f'<div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; box-shadow: 0 0 10px rgba(0,210,255,0.2);"><p style="color:#00d2ff; margin:0 0 4px 0; font-weight:bold;">📋 LOG AUTÓNOMO M.E.C.A.</p><p style="color:#00ffaa; margin:2px 0;">[{hora_log}] Enlace Satelital activo sin interferencias.</p><p style="color:#ffbb00; margin:2px 0;">[{hora_log}] {coincidencia_txt}</p></div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO, NOTAS Y MISIONES (ABAJO DE TODO)
-if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
-if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
-if "misiones_lista" not in st.session_state:
-    st.session_state.misiones_lista = {"Verificar búnker Buin": True, "Sincronizar satélite": False, "Actualizar IA": False}
