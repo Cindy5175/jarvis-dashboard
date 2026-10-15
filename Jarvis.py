@@ -132,9 +132,6 @@ if "historial_chat" not in st.session_state:
 if "ultima_respuesta" not in st.session_state:
     st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
-if "modo_central" not in st.session_state:
-    st.session_state.modo_central = "multimedia"
-
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
     <style>
@@ -222,74 +219,32 @@ with col_telemetria:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_orbe:
-    bc1, bc2, bc3 = st.columns(3)
-    with bc1:
-        if st.button("🌦️ Clima"):
-            st.session_state.modo_central = "clima"
-            st.rerun()
-    with bc2:
-        if st.button("🧬 Biometría"):
-            st.session_state.modo_central = "biometria"
-            st.rerun()
-    with bc3:
-        if st.button("📺 YouTube"):
-            st.session_state.modo_central = "multimedia"
-            st.rerun()
+    # MÓDULO CLIMA TÁCTICO
+    st.markdown('<div class="holo-card"><div class="holo-title">🌦️ CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
+    clima_ampliado_html = """
+    <div style="background: #000000; padding: 12px; font-family: monospace; color: #00d2ff; text-align: center;">
+        <div style="font-size: 26px; font-weight: bold; color: #00ffff; margin-bottom: 6px;">14,9 °C</div>
+        <div style="font-size: 13px; margin-bottom: 4px;">📍 Buin, Santiago, Chile</div>
+        <div style="font-size: 12px; color: #00ffaa;">Viento: 6,5 km/h | Humedad: 62%</div>
+        <div style="font-size: 11px; margin-top: 6px; color: #88ccff;">Satélite Serafín: Cielo Despejado.</div>
+    </div>
+    """
+    components.html(clima_ampliado_html, height=115)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.session_state.modo_central == "clima":
-        st.markdown('<div class="holo-card"><div class="holo-title">🌦️ CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
-        clima_ampliado_html = """
-        <div style="background: #000000; padding: 12px; font-family: monospace; color: #00d2ff; text-align: center;">
-            <div style="font-size: 26px; font-weight: bold; color: #00ffff; margin-bottom: 6px;">14,9 °C</div>
-            <div style="font-size: 13px; margin-bottom: 4px;">📍 Buin, Santiago, Chile</div>
-            <div style="font-size: 12px; color: #00ffaa;">Viento: 6,5 km/h | Humedad: 62%</div>
-            <div style="font-size: 11px; margin-top: 6px; color: #88ccff;">Satélite Serafín: Cielo Despejado.</div>
-        </div>
-        """
-        components.html(clima_ampliado_html, height=115)
-        st.markdown('</div>', unsafe_allow_html=True)
+    # MÓDULO BIOMÉTRICO
+    st.markdown('<div class="holo-card"><div class="holo-title">🧬 MÓDULO BIOMÉTRICO</div>', unsafe_allow_html=True)
+    biometria_html = f"""
+    <div style="background: #000000; padding: 12px; font-family: monospace; color: #00d2ff; text-align: center;">
+        <div style="font-size: 16px; font-weight: bold; color: #00ffff; margin-bottom: 6px;">Titular: {titulo_jefa} {nombre_jefa}</div>
+        <div style="font-size: 13px; margin-bottom: 4px;">❤️ Ritmo Cardíaco: 72 BPM (Estable)</div>
+        <div style="font-size: 13px; color: #00ffaa;">Nivel de Alerta: 100% Sincronizado</div>
+    </div>
+    """
+    components.html(biometria_html, height=115)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    elif st.session_state.modo_central == "biometria":
-        st.markdown('<div class="holo-card"><div class="holo-title">🧬 MÓDULO BIOMÉTRICO</div>', unsafe_allow_html=True)
-        biometria_html = f"""
-        <div style="background: #000000; padding: 12px; font-family: monospace; color: #00d2ff; text-align: center;">
-            <div style="font-size: 16px; font-weight: bold; color: #00ffff; margin-bottom: 6px;">Titular: {titulo_jefa} {nombre_jefa}</div>
-            <div style="font-size: 13px; margin-bottom: 4px;">❤️ Ritmo Cardíaco: 72 BPM (Estable)</div>
-            <div style="font-size: 13px; color: #00ffaa;">Nivel de Alerta: 100% Sincronizado</div>
-        </div>
-        """
-        components.html(biometria_html, height=115)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    else:
-        st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-        st.markdown('<div class="holo-title">📺 AMBIENTE ACÚSTICO // YOUTUBE TÁCTICO</div>', unsafe_allow_html=True)
-        
-        canales_yt = {
-            "🚀 Work Mode Activated [Deep Focus]": "cTTxesT4C0M",
-            "⚡ Synthwave Radio (Mix 24/7)": "4xDzrJKXOOY",
-            "🌆 Cyberpunk Ambient Stream": "MV_3Dpw-BRY",
-            "🎧 Frecuencia Táctica 1": "eUAd5f936Yg",
-            "🎶 Frecuencia Táctica 2": "ICowQ2EcZeA",
-            "🎵 Frecuencia Táctica 3": "yvLVycZs3rA",
-            "🔊 Frecuencia Táctica 4": "3W5poTvJPQU",
-            "📡 Frecuencia Táctica 5": "nzXcvdhFzBY"
-        }
-        
-        estacion_yt = st.selectbox("Seleccionar Frecuencia de Video/Audio:", list(canales_yt.keys()))
-        video_id = canales_yt[estacion_yt]
-
-        youtube_iframe_html = f"""
-        <div style="background: #000; border: 1px solid #00d2ff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 12px rgba(0,210,255,0.3);">
-            <iframe width="100%" height="135" src="https://www.youtube.com/embed/{video_id}?autoplay=0&enablejsapi=1" 
-            title="YouTube video player" frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen></iframe>
-        </div>
-        """
-        components.html(youtube_iframe_html, height=145)
-        st.markdown('</div>', unsafe_allow_html=True)
-
+    # FRECUENCIA VOCAL & ORBE HOLOGRÁFICO
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     
