@@ -623,3 +623,51 @@ with col_j2:
     <div style="display:flex; justify-content:center; align-items:flex-end; gap:4px; height:35px; background:#000; border:1px solid #00d2ff; border-radius:4px; padding:4px;">
         <div style="width:6px; height:40%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
         <div style="width:6px; height:70%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+        <div style="width:6px; height:100%; background:#00ffaa; box-shadow: 0 0 6px #00ffaa;"></div>
+        <div style="width:6px; height:50%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
+        <div style="width:6px; height:85%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+        <div style="width:6px; height:30%; background:#00d2ff; box-shadow: 0 0 6px #00d2ff;"></div>
+        <div style="width:6px; height:90%; background:#00ffaa; box-shadow: 0 0 6px #00ffaa;"></div>
+        <div style="width:6px; height:60%; background:#00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+    </div>
+    """
+    components.html(espectro_html, height=45)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# 4. Bóveda Holográfica de Accesos Rápidos
+st.markdown('<div style="border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; background: #000; margin-top: 10px;">', unsafe_allow_html=True)
+st.markdown('<div class="holo-title" style="font-size:12px; text-align:left;">📂 3. BÓVEDA HOLOGRÁFICA DE ACCESOS RÁPIDOS</div>', unsafe_allow_html=True)
+st.markdown("<p style='font-size:11px; color:#00d2ff; margin-bottom:6px;'>Accesos rápidos directos a herramientas tácticas del búnker:</p>", unsafe_allow_html=True)
+
+b_col1, b_col2, b_col3 = st.columns(3)
+with b_col1:
+    st.markdown('<a href="https://maps.google.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">🗺️ Google Maps</button></a>', unsafe_allow_html=True)
+with b_col2:
+    st.markdown('<a href="https://weather.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">🌤️ Clima Satelital</button></a>', unsafe_allow_html=True)
+with b_col3:
+    st.markdown('<a href="https://youtube.com" target="_blank" style="text-decoration:none;"><button style="background:#000; color:#00d2ff; border:1px solid #00d2ff; border-radius:6px; padding:6px; font-size:11px; font-weight:bold; width:100%; cursor:pointer;">📺 YouTube Live</button></a>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
+with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
+    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso, la <b>API Key de Gemini</b> y ElevenLabs si deseas voz neural avanzada:</p>", unsafe_allow_html=True)
+    
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
+        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
+        elevenlabs_input = st.text_input("🔑 ElevenLabs API Key (Opcional):", type="password", value=elevenlabs_key)
+    with col_id2:
+        ai_key_actual = prefs_voz.get("ai_api_key", "")
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
+    
+    if st.button("💾 Actualizar Configuración y Clave"):
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_input
+        guardar_memoria(st.session_state.memoria)
+        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
+        st.rerun()
