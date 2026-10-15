@@ -185,31 +185,23 @@ with col_telemetria:
     """
     components.html(globe_html, height=65)
 
-    # RELOJ HOLOGRÁFICO MUNDIAL FUNCIONAL EN TIEMPO REAL (DEBAJO DE BASE Y SATÉLITE)
-    reloj_mundial_html = """
-    <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 8px; font-family: monospace; font-size: 11px; color: #00d2ff; text-align: center; box-shadow: 0 0 10px rgba(0,210,255,0.3); margin-top: 8px;">
-        <div style="font-weight: bold; color: #00d2ff; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px;">⏳ RELOJ HOLOGRÁFICO TÁCTICO</div>
-        🇨🇱 Buin/Stgo: <b id="clock-buin" style="color:#00ffff;">--:--:--</b> | 🇺🇸 N. York: <b id="clock-ny" style="color:#00d2ff;">--:--:--</b><br>
-        🇬🇧 Londres: <b id="clock-lon" style="color:#00d2ff;">--:--:--</b> | 🇯🇵 Tokio: <b id="clock-tok" style="color:#00d2ff;">--:--:--</b>
+    # RELOJ HOLOGRÁFICO SOLO CHILENA EN TIEMPO REAL (DEBAJO DE BASE Y SATÉLITE)
+    reloj_chileno_html = """
+    <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 8px; font-family: monospace; font-size: 12px; color: #00d2ff; text-align: center; box-shadow: 0 0 10px rgba(0,210,255,0.3); margin-top: 8px;">
+        <div style="font-weight: bold; color: #00d2ff; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px;">⏳ HORA TÁCTICA (BUIN / STGO)</div>
+        🇨🇱 <b id="clock-buin" style="color:#00ffff; font-size: 14px;">--:--:--</b>
     </div>
     <script>
-    function updateClocks() {
+    function updateClock() {
         const now = new Date();
-        
-        function formatTime(timeZone) {
-            return now.toLocaleTimeString('en-GB', { timeZone: timeZone, hour12: false });
-        }
-        
-        document.getElementById('clock-buin').innerText = formatTime('America/Santiago');
-        document.getElementById('clock-ny').innerText = formatTime('America/New_York');
-        document.getElementById('clock-lon').innerText = formatTime('Europe/London');
-        document.getElementById('clock-tok').innerText = formatTime('Asia/Tokyo');
+        const timeString = now.toLocaleTimeString('en-GB', { timeZone: 'America/Santiago', hour12: false });
+        document.getElementById('clock-buin').innerText = timeString;
     }
-    setInterval(updateClocks, 1000);
-    updateClocks();
+    setInterval(updateClock, 1000);
+    updateClock();
     </script>
     """
-    components.html(reloj_mundial_html, height=75)
+    components.html(reloj_chileno_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # REPRODUCTOR DE YOUTUBE (CATÁLOGO TÁCTICO AMPLIADO)
