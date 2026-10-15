@@ -11,7 +11,7 @@ import urllib.error
 
 # Configuración de página en modo ancho
 st.set_page_config(
-    page_title="IA Autonoma // M.E.C.A. 4.0", 
+    page_title="J.A.R.V.I.S. // M.E.C.A. 4.0", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -116,7 +116,7 @@ if ai_api_key_guardada:
 
 # INICIALIZAR HISTORIAL DE CHAT
 if "historial_chat" not in st.session_state:
-    saludo_inicial = f"Sistema en línea, {titulo_jefa}. IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué orden ejecutamos hoy?"
+    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. ¿Qué orden ejecutamos hoy?"
     st.session_state.historial_chat = [
         {"remitente": "jarvis", "texto": saludo_inicial}
     ]
@@ -155,9 +155,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">IA Autonoma ( M.E.C.A 4.0 )</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA Autonoma ( M.E.C.A 4.0 )</h1>', unsafe_allow_html=True)
 
-# BARRA SUPERIOR CON PESTAÑAS TÁCTICAS (SIMPLIFICADA Y SEGURA)
+# BARRA SUPERIOR CON PESTAÑAS TÁCTICAS
 col_info_izq, col_pestanas_der = st.columns([1.2, 1])
 with col_info_izq:
     st.markdown('<div style="color: #00d2ff; font-weight: bold; font-size: 13px; padding-top: 8px;">🔵 JARVIS IA &nbsp;&nbsp;|&nbsp;&nbsp; 📍 [Buin, Chile]</div>', unsafe_allow_html=True)
