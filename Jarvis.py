@@ -30,7 +30,7 @@ def cargar_memoria():
             "titulo": "Jefa",
             "ubicacion": "Buin, Chile"
         },
-        "notas": ["Búnker activado in Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
@@ -142,28 +142,27 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (PLAYLISTS OFICIALES LIMPIAS SIN ANUNCIOS)
+# REPRODUCTOR DE MÚSICA SPOTIFY (BOTÓN DIRECTO BLINDADO CONTRA ERRORES)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER 🟢 SPOTIFY</div>', unsafe_allow_html=True)
     
     opciones_spotify = {
-        "⚡ Synthwave Radio (Playlist Oficial)": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A35?utm_source=generator&theme=0",
-        "🎧 Chillout / Lo-Fi Beats": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgSPKQ?utm_source=generator&theme=0"
+        "⚡ Synthwave & Electrónica": "https://open.spotify.com/playlist/37i9dQZF1DXdLENR312A35",
+        "🎧 Instrumental Moderna / Lo-Fi": "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgSPKQ"
     }
     
     estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
-    url_spotify_embed = opciones_spotify[estacion_sp]
+    url_playlist = opciones_spotify[estacion_sp]
 
-    spotify_iframe_html = (
-        f'<iframe style="border-radius:12px" src="{url_spotify_embed}" '
-        'width="100%" height="152" frameBorder="0" allowfullscreen="" '
-        'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '
-        'loading="lazy"></iframe>'
+    st.markdown(
+        f'<div style="text-align: center; margin: 12px 0;">'
+        f'<a href="{url_playlist}" target="_blank" style="background-color: #1DB954; color: #000000; padding: 10px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; font-size: 13px; box-shadow: 0 0 12px rgba(29,185,84,0.5); display: inline-block;">🟢 Abrir {estacion_sp} en Spotify</a>'
+        f'</div>',
+        unsafe_allow_html=True
     )
-    components.html(spotify_iframe_html, height=160)
 
-    st.markdown('<div class="holo-title" style="margin-top:8px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="margin-top:12px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
     <style>
       body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }
