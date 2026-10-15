@@ -124,7 +124,7 @@ if ai_api_key_guardada:
 
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
-    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. Presiona Win + H en tu teclado para dictarme cualquier comando por voz."
+    saludo_inicial = f"Sistema en línea, {titulo_jefa}. J.A.R.V.I.S. // IA Autónoma M.E.C.A 4.0 operando al 100% en Buin. Usa Win + H para dictar y presiona Enter para enviar."
     st.session_state.historial_chat = [
         {"remitente": "jarvis", "texto": saludo_inicial}
     ]
@@ -340,7 +340,69 @@ with col_chat:
         else:
             st.markdown(f'<div style="background-color: #0b1320; border-right: 3px solid #00ffaa; padding: 10px; border-radius: 4px; margin-bottom: 10px; color: #00ffaa; font-size: 13px; text-align: right;">{msg}</div>', unsafe_allow_html=True)
 
-    st.markdown('<p style="color:#00d2ff; font-size:12px; font-weight:bold; margin-bottom:4px;">Instrucciones para JARVIS (Usa Win + H para dictar)...</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#00d2ff; font-size:12px; font-weight:bold; margin-bottom:4px;">Instrucciones para JARVIS (Win + H para dictar, Enter para enviar)...</p>', unsafe_allow_html=True)
     
     with st.form(key="form_chat_ordenado", clear_on_submit=True):
-        entrada_usuario = st.text_input("", placeholder="Escribe o dicta con Win + H...")
+        entrada_usuario = st.text_input("", placeholder="Escribe o dicta con Win + H y presiona Enter...")
+        
+        col_f1, col_f2, col_f3 = st.columns([1, 2, 2])
+        with col_f1:
+            btn_limpiar_chat = st.form_submit_button("🧹 Purga")
+        with col_f3:
+            btn_enviar_chat = st.form_submit_button("🚀 Enviar")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if btn_limpiar_chat:
+        st.session_state.historial_chat = [
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa... espero que no hayas borrado ninguna ecuación cuántica importante."}
+        ]
+        st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
+        st.rerun()
+
+    comando_ejecutar = None
+    if btn_enviar_chat and entrada_usuario:
+        comando_ejecutar = entrada_usuario
+
+    if comando_ejecutar:
+        texto = comando_ejecutar.lower().strip()
+        respuesta_ia = None
+
+        # 1. EJECUTAR ORDEN FÍSICA EN EL SISTEMA
+        respuesta_ia = ejecutar_orden_sistema(comando_ejecutar)
+
+        # DETECTAR SI ES UNA TAREA COMPLEJA PARA USAR EL MOTOR PROFUNDO DE OLLAMA
+        palabras_complejas = ["programa", "código", "analiza", "explica", "calcula", "estrategia", "física", "algoritmo"]
+        es_complejo = any(p in texto for p in palabras_complejas) or len(texto) > 40
+
+        # 2. CONSULTAR A OLLAMA LOCAL (CON TONO TONY STARK Y DOBLE MOTOR)
+        if not respuesta_ia:
+            prompt_sistema = f"""Eres J.A.R.V.I.S., el asistente de IA superinteligente, leal y con el inconfundible sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, y estás a cargo de su búnker en Buin, Chile.
+            INSTRUCCIONES:
+            1. Responde de forma brillante, rápida y con toques de humor irónico o sarcasmo fino (estilo Tony Stark hacia Pepper o Jarvis).
+            2. Sé breve y directo (1 a 3 frases máximo)."""
+            
+            respuesta_ia = consultar_ollama_local(prompt_sistema, comando_ejecutar, modo_complejo=es_complejo)
+
+        # 3. RESPALDO CON CLOUD GEMINI SI ESTÁ CONFIGURADO
+        if not respuesta_ia and cliente_ia:
+            try:
+                respuesta_modelo = cliente_ia.generate_content(f"{prompt_sistema}\nMensaje de la Jefa: {comando_ejecutar}")
+                if respuesta_modelo and respuesta_modelo.text:
+                    respuesta_ia = respuesta_modelo.text.strip()
+            except Exception:
+                respuesta_ia = None
+
+        # 4. RESPALDO LOCAL FINAL
+        if not respuesta_ia:
+            if "hola" in texto:
+                respuesta_ia = f"Hola, {nombre_jefa}. ¿Qué milagro requiere mi atención hoy en el búnker?"
+            else:
+                respuesta_ia = f"Orden procesada en el búnker, {nombre_jefa}. A veces me sorprende que todo funcione a la primera."
+
+        st.session_state.historial_chat.append({"remitente": "jefa", "texto": comando_ejecutar})
+        st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
+        st.session_state.ultima_respuesta = respuesta_ia
+        st.rerun()
+
+st.markdown("---")
