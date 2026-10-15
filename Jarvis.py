@@ -214,12 +214,12 @@ with col_orbe:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# CONSOLA DE MANDO: BURBUJAS COMPACTAS ARRIBA Y CONTROLES ABAJO SIN ESPACIOS VACÍOS
+# CONSOLA DE MANDO: ORDEN EXACTO (BURBUJAS ARRIBA -> BOTONES MEDIO -> CAJA DE TEXTO ABAJO)
 with col_chat:
     st.markdown('<div class="holo-card"><div class="holo-title">💬 CONSOLA DE MANDO // BURBUJAS DE DIÁLOGO</div>', unsafe_allow_html=True)
     
-    # 1. HISTORIAL DE BURBUJAS CON SCROLL COMPACTO (ALTURA AJUSTADA A 110)
-    chat_container = st.container(height=110)
+    # 1. HISTORIAL DE BURBUJAS CON SCROLL EN LA PARTE SUPERIOR
+    chat_container = st.container(height=140)
     with chat_container:
         for item in st.session_state.historial_chat:
             remitente = item["remitente"]
@@ -243,13 +243,14 @@ with col_chat:
                     </div>
                 ''', unsafe_allow_html=True)
 
-    # 2. BOTONES Y CAJA DE ENTRADA PEGADOS ABAJO
+    # 2. BOTONES DE COMANDOS RÁPIDOS EN EL MEDIO
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1: btn_q_hola = st.button("👋 Saludar")
     with col_q2: btn_q_emerg = st.button("🚨 Emergencia")
     with col_q3: btn_q_seg = st.button("🛡️ Seguridad")
     with col_q4: btn_limpiar = st.button("🧹 Purga")
 
+    # 3. CAJA DE ENTRADA Y BOTÓN DE TRANSMISIÓN ANCLADOS ABAJO
     with st.form(key="form_chat", clear_on_submit=True):
         entrada_usuario = st.text_input("", placeholder="Escribe o presiona [Windows + H] para charlar...")
         boton_enviar = st.form_submit_button(label="🚀 Transmitir Instrucción")
