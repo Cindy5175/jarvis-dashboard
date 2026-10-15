@@ -30,7 +30,7 @@ def cargar_memoria():
             "titulo": "Jefa",
             "ubicacion": "Buin, Chile"
         },
-        "notas": ["Búnker activado en Buin, Chile.", "Satélite Serafín en enlace estable."],
+        "notas": ["Búnker activado in Buin, Chile.", "Satélite Serafín en enlace estable."],
         "misiones": ["Verificar sistemas del búnker", "Sincronizar red táctica"],
         "preferencias_voz": {
             "voz_activa": "Español (Neutro)",
@@ -470,4 +470,29 @@ with j4:
             "🟡 Tráfico de red menor detectado en Santiago.",
             "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
         ]
-        st.session_state.alerta_actual = random.choice(amenazas
+        st.session_state.alerta_actual = random.choice(amenazas_posibles)
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
+with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
+    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso, la <b>API Key de Gemini</b> y ElevenLabs si deseas voz neural avanzada:</p>", unsafe_allow_html=True)
+    
+    col_id1, col_id2 = st.columns(2)
+    with col_id1:
+        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
+        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
+        elevenlabs_input = st.text_input("🔑 ElevenLabs API Key (Opcional):", type="password", value=elevenlabs_key)
+    with col_id2:
+        ai_key_actual = prefs_voz.get("ai_api_key", "")
+        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
+    
+    if st.button("💾 Actualizar Configuración y Clave"):
+        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
+        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
+        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_input
+        guardar_memoria(st.session_state.memoria)
+        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
+        st.rerun()
