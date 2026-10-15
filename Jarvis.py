@@ -142,14 +142,14 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (PISTAS ESTABLES INTEGRADAS)
+# REPRODUCTOR DE MÚSICA SPOTIFY (PLAYLISTS OFICIALES LIMPIAS SIN ANUNCIOS)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER 🟢 SPOTIFY</div>', unsafe_allow_html=True)
     
     opciones_spotify = {
-        "⚡ Synthwave & Electrónica": "https://open.spotify.com/embed/track/2tUBqZG2AbRi7Q0BIrVrEj?utm_source=generator",
-        "🎧 Instrumental Moderna / Lo-Fi": "https://open.spotify.com/embed/track/0hVWtDePIKHAh9Z62vB2m5?utm_source=generator"
+        "⚡ Synthwave Radio (Playlist Oficial)": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A35?utm_source=generator&theme=0",
+        "🎧 Chillout / Lo-Fi Beats": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgSPKQ?utm_source=generator&theme=0"
     }
     
     estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
@@ -470,29 +470,4 @@ with j4:
             "🟡 Tráfico de red menor detectado en Santiago.",
             "🚀 Alerta: Intento de hackeo bloqueado desde fuera de Buin."
         ]
-        st.session_state.alerta_actual = random.choice(amenazas_posibles)
-        st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# EXPANDER DE CONFIGURACIÓN Y CAMBIO DE CLAVE
-with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=False):
-    st.markdown("<p style='color:#00d2ff; font-size:12px;'>Configura aquí tus credenciales de acceso, la <b>API Key de Gemini</b> y ElevenLabs si deseas voz neural avanzada:</p>", unsafe_allow_html=True)
-    
-    col_id1, col_id2 = st.columns(2)
-    with col_id1:
-        nuevo_nom = st.text_input("Tu Nombre:", value=nombre_jefa)
-        nuevo_tit = st.text_input("Título Preferido:", value=titulo_jefa)
-        elevenlabs_input = st.text_input("🔑 ElevenLabs API Key (Opcional):", type="password", value=elevenlabs_key)
-    with col_id2:
-        ai_key_actual = prefs_voz.get("ai_api_key", "")
-        ai_api_key = st.text_input("🔑 IA Engine API Key (Gemini):", type="password", value=ai_key_actual, placeholder="Pega tu clave aquí...")
-    
-    if st.button("💾 Actualizar Configuración y Clave"):
-        st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
-        st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
-        st.session_state.memoria["preferencias_voz"]["elevenlabs_api_key"] = elevenlabs_input
-        guardar_memoria(st.session_state.memoria)
-        st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
-        st.rerun()
+        st.session_state.alerta_actual = random.choice(amenazas
