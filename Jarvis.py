@@ -142,28 +142,27 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (EMBED UNIVERSAL DE ALTA ESTABILIDAD)
+# REPRODUCTOR DE MÚSICA SPOTIFY (BOTÓN DIRECTO BLINDADO SIN ERRORES)
 with col_orbe:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER 🟢 SPOTIFY</div>', unsafe_allow_html=True)
     
     opciones_spotify = {
-        "⚡ Synthwave & Electrónica": "https://open.spotify.com/embed/track/2tUBqZG2AbRi7Q0BIrVrEj?utm_source=generator&theme=0",
-        "🎧 Instrumental / Lo-Fi Beats": "https://open.spotify.com/embed/track/0hVWtDePIKHAh9Z62vB2m5?utm_source=generator&theme=0"
+        "⚡ Synthwave & Electrónica": "https://open.spotify.com/playlist/37i9dQZF1DXdLENR312A35",
+        "🎧 Instrumental / Lo-Fi Beats": "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgSPKQ"
     }
     
     estacion_sp = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_spotify.keys()))
-    url_spotify_embed = opciones_spotify[estacion_sp]
+    url_playlist = opciones_spotify[estacion_sp]
 
-    spotify_iframe_html = (
-        f'<iframe style="border-radius:12px" src="{url_spotify_embed}" '
-        'width="100%" height="152" frameBorder="0" allowfullscreen="" '
-        'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '
-        'loading="lazy"></iframe>'
+    st.markdown(
+        f'<div style="text-align: center; margin: 15px 0;">'
+        f'<a href="{url_playlist}" target="_blank" style="background-color: #1DB954; color: #000000; padding: 12px 24px; border-radius: 25px; font-weight: bold; text-decoration: none; font-size: 14px; box-shadow: 0 0 15px rgba(29,185,84,0.6); display: inline-block;">🟢 Abrir {estacion_sp} en Spotify</a>'
+        f'</div>',
+        unsafe_allow_html=True
     )
-    components.html(spotify_iframe_html, height=160)
 
-    st.markdown('<div class="holo-title" style="margin-top:8px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="margin-top:15px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
     <style>
       body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }
