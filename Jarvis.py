@@ -157,8 +157,11 @@ st.markdown("""
     .stTextInput input, .stTextArea textarea { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,210,255,0.4); }
     
-    /* FORZAR ANCHO EXACTO AL 100% EN LOS BOTONES DE LOS FORMULARIOS */
-    div.stFormSubmitButton > button, div.stButton > button, button[kind="secondaryFormSubmit"] { 
+    /* FORZAR ANCHO AL 100% EN CONTENEDORES Y BOTONES DE FORMULARIO */
+    div[data-testid="stFormSubmitButton"] {
+        width: 100% !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button { 
         background-color: #000000 !important; 
         color: #00d2ff !important; 
         border: 1px solid #00d2ff !important; 
@@ -167,7 +170,7 @@ st.markdown("""
         width: 100% !important; 
         box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; 
     }
-    div.stFormSubmitButton > button:hover, div.stButton > button:hover, button[kind="secondaryFormSubmit"]:hover { 
+    div[data-testid="stFormSubmitButton"] > button:hover { 
         background-color: #00d2ff !important; 
         color: #000000 !important; 
         box-shadow: 0 0 15px #00d2ff !important; 
