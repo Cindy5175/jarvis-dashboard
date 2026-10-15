@@ -69,10 +69,14 @@ if ai_api_key_guardada:
         except Exception:
             cliente_ia = None
 
+# INICIALIZAR ESTACIÓN DE MÚSICA EN SESSION STATE
+if "estacion_musica" not in st.session_state:
+    st.session_state.estacion_musica = "Stark Chill Synthwave"
+
 # INICIALIZAR HISTORIAL DE CHAT ESTILO BURBUJAS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas del búnker en Buin operando al 100%, {titulo_jefa} {nombre_jefa}. Conexión con Spotify establecida."}
+        {"remitente": "jarvis", "texto": f"Sistemas del búnker en Buin operando al 100%, {titulo_jefa} {nombre_jefa}. Listo para lo que ordene."}
     ]
 
 if "ultima_respuesta" not in st.session_state:
@@ -141,24 +145,34 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA SPOTIFY (INSTRUMENTAL MODERNA / SYNTHWAVE / CYBERPUNK)
+# REPRODUCTOR DE MÚSICA TÁCTICO CON SYNTHWAVE Y CYBERPUNK
 with col_orbe:
-    st.markdown('<div class="holo-card">', unsafe_allow_html=True)
-    st.markdown('<div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER 🟢 SPOTIFY</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA TÁCTICA</div>', unsafe_allow_html=True)
     
-    # Reproductor oficial de Spotify embebido con música instrumental moderna / synthwave / cyberpunk
-    spotify_iframe_html = """
-    <iframe style="border-radius:12px" 
-            src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A35?utm_source=generator&theme=0" 
-            width="100%" 
-            height="152" 
-            frameBorder="0" 
-            allowfullscreen="" 
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-            loading="lazy">
-    </iframe>
-    """
-    components.html(spotify_iframe_html, height=160)
+    opciones_estaciones = {
+        "Stark Chill Synthwave": "https://stream.zeno.fm/f3wvbbqmdg8uv",
+        "Cyberpunk Electronic Beats": "https://stream.zeno.fm/0r0xa792yk8uv",
+        "Modo Sigilo (Sin Música)": ""
+    }
+    
+    estacion_seleccionada = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_estaciones.keys()), index=list(opciones_estaciones.keys()).index(st.session_state.estacion_musica) if st.session_state.estacion_musica in opciones_estaciones else 0)
+    st.session_state.estacion_musica = estacion_seleccionada
+    
+    url_streaming = opciones_estaciones[estacion_seleccionada]
+
+    if url_streaming:
+        audio_stream_html = f'''
+            <div style="background: #000; border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px rgba(0,210,255,0.3); text-align: center;">
+                <audio controls preload="none" style="width: 100%; height: 35px; filter: invert(100%) hue-rotate(180deg) brightness(1.5);">
+                    <source src="{url_streaming}" type="audio/mpeg">
+                    Tu navegador no soporta audio táctico.
+                </audio>
+                <p style="color: #00ffaa; font-family: monospace; font-size: 10px; margin: 5px 0 0 0;">📡 FRECUENCIA {estacion_seleccionada.upper()} ACTIVA</p>
+            </div>
+        '''
+        components.html(audio_stream_html, height=75)
+    else:
+        st.markdown('<div style="text-align: center; color: #ffbb00; font-family: monospace; font-size: 12px; padding: 15px 0; border: 1px dashed #ffbb00; border-radius: 8px;">🔇 SILENCIO TÁCTICO EN BUIN</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="holo-title" style="margin-top:8px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
