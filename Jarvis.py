@@ -161,7 +161,7 @@ st.markdown("""
 st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA Autonoma ( M.E.C.A 4.0 )</h1>', unsafe_allow_html=True)
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
-# DEFINICIÓN DE COLUMNAS PRINCIPALES (3 COLUMNAS LIMPIAS)
+# DEFINICIÓN DE COLUMNAS PRINCIPALES
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
 with col_telemetria:
@@ -218,19 +218,22 @@ with col_telemetria:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_orbe:
-    # BOTONES SUPERIORES CENTRADOS EN LA COLUMNA DEL ORBE
+    # BOTONES SUPERIORES DE LA COLUMNA CENTRAL (CLIMA, BIOMETRÍA, YOUTUBE)
     bc1, bc2, bc3 = st.columns(3)
     with bc1:
         if st.button("🌦️ Clima"):
             st.session_state.modo_central = "clima"
+            st.rerun()
     with bc2:
         if st.button("🧬 Biometría"):
             st.session_state.modo_central = "biometria"
+            st.rerun()
     with bc3:
-        if st.button("📺 Media"):
+        if st.button("📺 YouTube"):
             st.session_state.modo_central = "multimedia"
+            st.rerun()
 
-    # CONTENIDO DINÁMICO DE LA COLUMNA CENTRAL SEGÚN EL BOTÓN SELECCIONADO
+    # CONTENIDO DINÁMICO DE LA COLUMNA CENTRAL
     if st.session_state.modo_central == "clima":
         st.markdown('<div class="holo-card"><div class="holo-title">🌦️ CLIMA TÁCTICO // BUIN</div>', unsafe_allow_html=True)
         clima_ampliado_html = """
@@ -280,7 +283,7 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ORBE / FRECUENCIA VOCAL SIEMPRE ABAJO EN EL CENTRO
+    # ORBE / FRECUENCIA VOCAL ABAJO
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     st.markdown('<div class="holo-title">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     
