@@ -145,53 +145,53 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# REPRODUCTOR DE MÚSICA
+# REPRODUCTOR DE MÚSICA TÁCTICO AVANZADO
 with col_orbe:
-    st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // MÚSICA BÚNKER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">🎵 AMBIENTE ACÚSTICO // AUDIO TÁCTICO BÚNKER</div>', unsafe_allow_html=True)
     
-    opciones_estaciones = [
-        "Stark Chill Synthwave (Foco)",
-        "Lo-Fi Labs & Coffee",
-        "Cyberpunk Electronic Beats",
-        "Silent Night Buin"
-    ]
+    opciones_estaciones = {
+        "Stark Chill Synthwave (Foco)": "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&loop=1&playlist=4xDzrJKXOOY",
+        "Lo-Fi Labs & Coffee": "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1&playlist=jfKfPfyJRdk",
+        "Cyberpunk Electronic Beats": "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=1&loop=1&playlist=P_N38_b6t9w",
+        "Silent Night Buin (Modo Sigilo)": ""
+    }
     
-    playlist_sel = st.selectbox("Seleccionar Estación Sonora:", opciones_estaciones, index=opciones_estaciones.index(st.session_state.estacion_musica) if st.session_state.estacion_musica in opciones_estaciones else 0)
-    st.session_state.estacion_musica = playlist_sel
+    estacion_seleccionada = st.selectbox("Seleccionar Frecuencia Sonora:", list(opciones_estaciones.keys()), index=list(opciones_estaciones.keys()).index(st.session_state.estacion_musica) if st.session_state.estacion_musica in opciones_estaciones else 0)
+    st.session_state.estacion_musica = estacion_seleccionada
+    
+    url_streaming = opciones_estaciones[estacion_seleccionada]
 
-    if "Synthwave" in st.session_state.estacion_musica:
-        embed_url = "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&loop=1"
-    elif "Lo-Fi" in st.session_state.estacion_musica:
-        embed_url = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1"
-    elif "Cyberpunk" in st.session_state.estacion_musica:
-        embed_url = "https://www.youtube.com/embed/P_N38_b6t9w?autoplay=1&loop=1"
+    if url_streaming:
+        components.html(f'''
+            <div style="background: #000; border: 1px solid #00d2ff; border-radius: 8px; padding: 4px; box-shadow: 0 0 10px rgba(0,210,255,0.3);">
+                <iframe width="100%" height="95" src="{url_streaming}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px;"></iframe>
+            </div>
+        ''', height=105)
     else:
-        embed_url = "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&loop=1"
+        st.markdown('<div style="text-align: center; color: #ffbb00; font-family: monospace; font-size: 12px; padding: 25px 0; border: 1px dashed #ffbb00; border-radius: 8px;">🔇 SILENCIO TÁCTICO ACTIVADO EN BUIN</div>', unsafe_allow_html=True)
 
-    components.html(f'<iframe width="100%" height="110" src="{embed_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:6px; border:1px solid #00d2ff; box-shadow: 0 0 10px rgba(0,210,255,0.3);"></iframe>', height=125)
-
-    st.markdown('<div class="holo-title" style="margin-top:10px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-title" style="margin-top:8px;">🌐 FRECUENCIA VOCAL & ORBE HOLOGRÁFICO</div>', unsafe_allow_html=True)
     audio_wave_core_html = """
     <style>
-      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 75px; overflow: hidden; }
-      .audio-container { width: 100%; height: 70px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.95) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
-      .waveform { display: flex; align-items: center; gap: 3px; height: 50px; }
+      body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }
+      .audio-container { width: 100%; height: 60px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.95) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; box-shadow: 0 0 12px rgba(0, 210, 255, 0.3); }
+      .waveform { display: flex; align-items: center; gap: 3px; height: 40px; }
       .bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; animation: soundWaveAnim 1.2s ease-in-out infinite alternate; box-shadow: 0 0 8px #00d2ff; }
-      .bar:nth-child(1)  { height: 15px; animation-delay: 0.1s; }
-      .bar:nth-child(2)  { height: 35px; animation-delay: 0.3s; }
-      .bar:nth-child(3)  { height: 50px; animation-delay: 0.2s; }
-      .bar:nth-child(4)  { height: 25px; animation-delay: 0.5s; }
-      .bar:nth-child(5)  { height: 60px; animation-delay: 0.1s; }
-      .bar:nth-child(6)  { height: 40px; animation-delay: 0.4s; }
-      .bar:nth-child(7)  { height: 65px; animation-delay: 0.2s; }
-      .bar:nth-child(8)  { height: 45px; animation-delay: 0.6s; }
-      .bar:nth-child(9)  { height: 70px; animation-delay: 0.1s; }
-      .bar:nth-child(10) { height: 55px; animation-delay: 0.3s; }
+      .bar:nth-child(1)  { height: 12px; animation-delay: 0.1s; }
+      .bar:nth-child(2)  { height: 28px; animation-delay: 0.3s; }
+      .bar:nth-child(3)  { height: 40px; animation-delay: 0.2s; }
+      .bar:nth-child(4)  { height: 20px; animation-delay: 0.5s; }
+      .bar:nth-child(5)  { height: 50px; animation-delay: 0.1s; }
+      .bar:nth-child(6)  { height: 32px; animation-delay: 0.4s; }
+      .bar:nth-child(7)  { height: 55px; animation-delay: 0.2s; }
+      .bar:nth-child(8)  { height: 36px; animation-delay: 0.6s; }
+      .bar:nth-child(9)  { height: 48px; animation-delay: 0.1s; }
+      .bar:nth-child(10) { height: 42px; animation-delay: 0.3s; }
       @keyframes soundWaveAnim { 0% { transform: scaleY(0.4); opacity: 0.5; } 100% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 12px #ffffff; } }
     </style>
     <div class="audio-container"><div class="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
     """
-    components.html(audio_wave_core_html, height=85)
+    components.html(audio_wave_core_html, height=70)
     
     texto_para_hablar = st.session_state.ultima_respuesta.replace('"', '\\"').replace("'", "\\'").replace("\n", " ")
 
@@ -295,7 +295,7 @@ with col_chat:
             st.session_state.estacion_musica = "Cyberpunk Electronic Beats"
             respuesta_ia = f"Modo Cyberpunk encendido, {nombre_jefa}. No dejes que los neones te cieguen."
         elif "silenciosa" in texto or "silent" in texto or "buin" in texto and "música" in texto:
-            st.session_state.estacion_musica = "Silent Night Buin"
+            st.session_state.estacion_musica = "Silent Night Buin (Modo Sigilo)"
             respuesta_ia = f"Ambiente silencioso configurado para Buin, {nombre_jefa}."
 
         if not respuesta_ia and cliente_ia:
@@ -452,7 +452,7 @@ with col_log:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES
+# MÓDULO DE EXPANSIÓN TÁCTICA, CALENDARIO Y MISIONES (ABAJO DE TODO)
 if "biometrico_estado" not in st.session_state: st.session_state.biometrico_estado = "🔒 BLOQUEADO (ESPERANDO HUELLA)"
 if "alerta_actual" not in st.session_state: st.session_state.alerta_actual = "🟢 Perímetro seguro en Buin."
 if "misiones_lista" not in st.session_state:
@@ -511,7 +511,7 @@ with st.expander("👤 Identidad, Voz Neural y Seguridad del Búnker", expanded=
     if st.button("💾 Actualizar Configuración y Clave"):
         st.session_state.memoria["usuario"]["nombre"] = nuevo_nom
         st.session_state.memoria["usuario"]["titulo"] = nuevo_tit
-        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_key_actual
+        st.session_state.memoria["preferencias_voz"]["ai_api_key"] = ai_api_key
         guardar_memoria(st.session_state.memoria)
         st.success("¡Configuración y clave actualizadas con éxito en el búnker!")
         st.rerun()
