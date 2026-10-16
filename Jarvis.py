@@ -6,20 +6,26 @@ def escuchar_bunker():
     r = sr.Recognizer()
     mic = sr.Microphone()
     
-    print("[OÍDO TÁCTICO DE J.A.R.V.I.S. ACTIVADO]")
+    print("[RADAR VOCAL DE J.A.R.V.I.S. ACTIVO EN SEGUNDO PLANO]")
     while True:
         with mic as source:
-            r.adjust_for_ambient_noise(source, duration=0.5)
+            r.adjust_for_ambient_noise(source, duration=0.8)
             try:
-                audio = r.listen(source, timeout=5, phrase_time_limit=5)
+                # Escucha activa del micrófono
+                audio = r.listen(source, timeout=5, phrase_time_limit=6)
                 texto = r.recognize_google(audio, language="es-CL").lower()
                 
-                print(f"Detectado: {texto}")
+                print(f"Capturado: {texto}")
+                
+                # Si menciona a Jarvis, despliega la interfaz web o reacciona
                 if "jarvis" in texto or "hola jarvis" in texto:
-                    print("¡Palabra de activación detectada! Despertando sistemas...")
-                    # Aquí puede hacer que abra el navegador o ejecute una acción
+                    print("¡Comando de voz reconocido! Abriendo interfaz central...")
                     subprocess.Popen(["start", "chrome", "http://localhost:8501"], shell=True)
-            except Exception:
+                    time.sleep(10) # Pausa para evitar aperturas múltiples seguidas
+            except sr.WaitTimeoutError:
+                pass
+            except Exception as e:
+                # Silencia errores de ambiente menores para mantener el loop limpio
                 pass
         time.sleep(0.5)
 
