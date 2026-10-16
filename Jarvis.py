@@ -36,11 +36,30 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# INICIALIZAR ESTADOS
+# FUNCIÓN DE VOZ TÁCTICA (WEB SPEECH API)
+def hablar_con_jarvis(texto):
+    texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
+    voz_js = f"""
+    <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("{texto_limpio}");
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.05;
+            utterance.pitch = 0.95;
+            window.speechSynthesis.speak(utterance);
+        }}
+    </script>
+    """
+    components.html(voz_js, height=0)
+
+# INICIALIZAR ESTADOS CON PRESENTACIÓN TÁCTICA
 if "historial_chat" not in st.session_state:
+    texto_bienvenida = f"Saludos, {titulo_jefa} {nombre_jefa}. Sistemas operativos al 100% en el búnker de Buin. Protocolo local Ollama y síntesis de voz en línea. ¿Qué directiva tenemos para hoy?"
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea. Sarcasmo táctico y lógica local calibrados."}
+        {"remitente": "jarvis", "texto": texto_bienvenida}
     ]
+    hablar_con_jarvis(texto_bienvenida)
 
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
@@ -70,23 +89,6 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         return f"Sistemas operativos estables en Buin, {titulo_jefa}. Mi núcleo local está procesando las directivas con lógica impecable."
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
-
-# FUNCIÓN DE VOZ TÁCTICA (WEB SPEECH API)
-def hablar_con_jarvis(texto):
-    texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
-    voz_js = f"""
-    <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance("{texto_limpio}");
-            utterance.lang = 'es-ES';
-            utterance.rate = 1.05;
-            utterance.pitch = 0.95;
-            window.speechSynthesis.speak(utterance);
-        }}
-    </script>
-    """
-    components.html(voz_js, height=0)
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
