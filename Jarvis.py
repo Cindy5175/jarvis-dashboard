@@ -36,7 +36,7 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# SÍNTESIS DE VOZ NATIVA (HABLA SOLO AUTOMÁTICAMENTE)
+# SÍNTESIS DE VOZ NATIVA
 def hablar_con_jarvis(texto):
     texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
     voz_js = f"""
@@ -90,13 +90,26 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario):
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
-# ESTILOS VISUALES CIBERNETICOS (NEÓN TÁCTICO)
+# ESTILOS VISUALES CIBERNÉTICOS (NEÓN TÁCTICO & SELECTBOX NEGRO/AZUL)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
     .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
+    
+    /* ESTILO NEGRO Y AZUL NEÓN PARA EL SELECTOR DE PROTOCOLO */
+    div[data-baseweb="select"] > div {
+        background-color: #000000 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 10px rgba(0, 210, 255, 0.4) !important;
+    }
+    div[data-baseweb="select"] * {
+        color: #00d2ff !important;
+        background-color: #000000 !important;
+    }
     
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
@@ -276,8 +289,10 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
-        # COMANDOS RÁPIDOS LOCALES
-        if "bloc de notas" in texto_lower or "notepad" in texto_lower:
+        # RESPUESTAS RÁPIDAS AUTOMÁTICAS E INMEDIATAS
+        if "como estas" in texto_lower or "cómo estás" in texto_lower or "como te va" in texto_lower or "cómo te va" in texto_lower:
+            respuesta_ia = f"Sistemas al 100% y operando con absoluta elegancia en el búnker de Buin, {titulo_jefa}. ¿Listos para dominar el mundo o prefiere empezar con algo más pequeño?"
+        elif "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas con precisión milimétrica, {titulo_jefa}. No vaya a escribir otra obra maestra sin guardarla."
         elif "calculadora" in texto_lower or "calc" in texto_lower:
