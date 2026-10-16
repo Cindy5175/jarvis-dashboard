@@ -49,47 +49,44 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA: LLAMADA A GEMINI OFICIAL (COMPATIBLE)
+# MOTOR IA: CON DIAGNÓSTICO DE ERROR EN PANTALLA
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     if gemini_key and gemini_key.strip():
         key_limpia = gemini_key.strip()
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key_limpia}"
         
-        # Probamos los endpoints universales de Gemini
-        modelos_a_probar = ["gemini-1.5-flash", "gemini-1.5-pro"]
-        
-        for modelo in modelos_a_probar:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent?key={key_limpia}"
-            
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": f"{prompt_sistema}\n\nMensaje de {titulo_jefa} {nombre_jefa}: {mensaje_usuario}"}
-                        ]
-                    }
-                ],
-                "generationConfig": {
-                    "temperature": 0.7,
-                    "maxOutputTokens": 250
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"{prompt_sistema}\n\nMensaje de {titulo_jefa} {nombre_jefa}: {mensaje_usuario}"}
+                    ]
                 }
+            ],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 250
             }
+        }
+        
+        try:
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
             
-            try:
-                data = json.dumps(payload).encode('utf-8')
-                req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-                
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    resultado = json.loads(response.read().decode('utf-8'))
-                    candidates = resultado.get("candidates", [])
-                    if candidates:
-                        parts = candidates[0].get("content", {}).get("parts", [])
-                        if parts:
-                            return parts[0].get("text", "").strip()
-            except Exception as e:
-                print(f"Error con modelo {modelo}: {e}")
-                continue
+            with urllib.request.urlopen(req, timeout=15) as response:
+                resultado = json.loads(response.read().decode('utf-8'))
+                candidates = resultado.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        return parts[0].get("text", "").strip()
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8', errors='ignore')
+            return f"[ERROR DE API GEMINI {e.code}]: {error_body}"
+        except Exception as e:
+            return f"[EXCEPCIÓN DE CONEXIÓN]: {str(e)}"
 
-    # Si falla o no hay clave, probar Ollama local
+    # Fallback local Ollama
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -106,17 +103,10 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
             resp = resultado.get("response", "").strip()
             if resp:
                 return resp
-    except Exception as e:
-        print(f"Error Ollama local: {e}")
+    except Exception:
+        pass
 
-    # Respuestas de respaldo
-    respuestas_emergencia = [
-        f"Analizando subsistemas en Buin, {titulo_jefa}. Redes estables y matriz bajo control.",
-        f"Diagnóstico completado sin fallas críticas, {titulo_jefa}. Circuitos al 100%.",
-        f"Redes sincronizadas, {titulo_jefa}. ¿Qué otra orden ejecutamos?",
-        f"Sistemas en orden, {titulo_jefa}. Sin anomalías registradas."
-    ]
-    return random.choice(respuestas_emergencia)
+    return f"Enlace local intermitente, {titulo_jefa}. Revisa la conexión de los servidores en Buin."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -169,7 +159,7 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO PARA LA LLAVE DE GEMINI
+    # MÓDULO LLAVE GEMINI
     st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
     gemini_key_input = st.text_input("API Key Gemini:", value=st.session_state.get("gemini_api_key", ""), type="password", placeholder="Pega tu API Key aquí...", label_visibility="collapsed", key="input_gemini_key")
     if gemini_key_input:
@@ -231,7 +221,7 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # FRECUENCIA VOCAL DINÁMICA
+    # FRECUENCIA VOCAL
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
     audio_wave_animated_html = """
     <style>
@@ -301,7 +291,6 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
-        # Comandos físicos rápidos en Windows
         if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
