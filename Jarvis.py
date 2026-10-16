@@ -40,7 +40,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR HISTORIAL DE CHAT
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo con IA Autónoma y enlaces configurados. Sarcasmo al 100%."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo con IA Autónoma. Sarcasmo y sistemas listos."}
     ]
 
 if "ultima_respuesta" not in st.session_state:
@@ -49,42 +49,47 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA: GEMINI REST API DE GOOGLE CON FALLBACK A OLLAMA
+# MOTOR IA: LLAMADA A GEMINI OFICIAL (COMPATIBLE)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
-    # 1. Si el usuario ingresó la API Key de Gemini, llamar a Google Gemini API
     if gemini_key and gemini_key.strip():
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key.strip()}"
+        key_limpia = gemini_key.strip()
+        
+        # Probamos los endpoints universales de Gemini
+        modelos_a_probar = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        
+        for modelo in modelos_a_probar:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent?key={key_limpia}"
             
             payload = {
                 "contents": [
                     {
-                        "role": "user",
                         "parts": [
-                            {"text": f"INSTRUCCIÓN DE SISTEMA: {prompt_sistema}\n\nMENSAJE DE LA JEFA: {mensaje_usuario}"}
+                            {"text": f"{prompt_sistema}\n\nMensaje de {titulo_jefa} {nombre_jefa}: {mensaje_usuario}"}
                         ]
                     }
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
-                    "maxOutputTokens": 200
+                    "maxOutputTokens": 250
                 }
             }
             
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-            
-            with urllib.request.urlopen(req, timeout=15) as response:
-                resultado = json.loads(response.read().decode('utf-8'))
-                candidates = resultado.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
-        except Exception as e:
-            print(f"Error consultando la API de Gemini: {e}")
+            try:
+                data = json.dumps(payload).encode('utf-8')
+                req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+                
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    resultado = json.loads(response.read().decode('utf-8'))
+                    candidates = resultado.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            return parts[0].get("text", "").strip()
+            except Exception as e:
+                print(f"Error con modelo {modelo}: {e}")
+                continue
 
-    # 2. Fallback local si no hay clave de Gemini o falla la llamada: Ollama
+    # Si falla o no hay clave, probar Ollama local
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -102,14 +107,14 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
             if resp:
                 return resp
     except Exception as e:
-        print(f"Error en enlace local Ollama: {e}")
+        print(f"Error Ollama local: {e}")
 
-    # 3. Respuestas de respaldo emergente
+    # Respuestas de respaldo
     respuestas_emergencia = [
-        f"Analizando los subsistemas del búnker en Buin, {titulo_jefa}. Todo operativo y bajo control.",
-        f"Diagnóstico completado sin anomalías críticas, {titulo_jefa}. Mis algoritmos están afinados.",
-        f"Redes sincronizadas y blindadas, {titulo_jefa}. ¿Qué otra directiva ejecutamos?",
-        f"Procesamiento de sistemas al corriente, {titulo_jefa}. Sin fallas en la matriz."
+        f"Analizando subsistemas en Buin, {titulo_jefa}. Redes estables y matriz bajo control.",
+        f"Diagnóstico completado sin fallas críticas, {titulo_jefa}. Circuitos al 100%.",
+        f"Redes sincronizadas, {titulo_jefa}. ¿Qué otra orden ejecutamos?",
+        f"Sistemas en orden, {titulo_jefa}. Sin anomalías registradas."
     ]
     return random.choice(respuestas_emergencia)
 
@@ -164,9 +169,9 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO PARA LA LLAVE DE GEMINI CON MANEJO DE ESTADO
+    # MÓDULO PARA LA LLAVE DE GEMINI
     st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
-    gemini_key_input = st.text_input("API Key Gemini:", value=st.session_state.get("gemini_api_key", ""), type="password", placeholder="Pega tu API Key de Gemini aquí...", label_visibility="collapsed", key="input_gemini_key")
+    gemini_key_input = st.text_input("API Key Gemini:", value=st.session_state.get("gemini_api_key", ""), type="password", placeholder="Pega tu API Key aquí...", label_visibility="collapsed", key="input_gemini_key")
     if gemini_key_input:
         st.session_state.gemini_api_key = gemini_key_input
     st.markdown('</div>', unsafe_allow_html=True)
@@ -226,7 +231,7 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # FRECUENCIA VOCAL DINÁMICA Y ANIMADA
+    # FRECUENCIA VOCAL DINÁMICA
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
     audio_wave_animated_html = """
     <style>
@@ -296,7 +301,7 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
-        # 1. Comandos físicos rápidos en Windows
+        # Comandos físicos rápidos en Windows
         if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
@@ -309,9 +314,8 @@ with col_chat:
         elif "analisis de sistema" in texto_lower or "analizar sistema" in texto_lower:
             respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, núcleos de procesamiento al 24% y enlace autónomo sincronizado con éxito."
 
-        # 2. Consultar IA (utiliza Gemini API si la clave está en sesión o en la caja)
         if not respuesta_ia:
-            prompt_sistema = f"""Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."""
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."
             clave_actual = st.session_state.get("gemini_api_key", gemini_key_input)
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, clave_actual)
 
