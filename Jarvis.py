@@ -36,7 +36,7 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# FUNCIÓN DE VOZ TÁCTICA (WEB SPEECH API)
+# SÍNTESIS DE VOZ NATIVA (HABLA SOLO AUTOMÁTICAMENTE)
 def hablar_con_jarvis(texto):
     texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
     voz_js = f"""
@@ -53,7 +53,7 @@ def hablar_con_jarvis(texto):
     """
     components.html(voz_js, height=0)
 
-# INICIALIZAR ESTADOS CON PRESENTACIÓN TÁCTICA
+# INICIALIZAR ESTADOS Y SALUDO DE INICIO
 if "historial_chat" not in st.session_state:
     texto_bienvenida = f"Saludos, {titulo_jefa} {nombre_jefa}. Sistemas operativos al 100% en el búnker de Buin. Protocolo local Ollama y síntesis de voz en línea. ¿Qué directiva tenemos para hoy?"
     st.session_state.historial_chat = [
@@ -67,8 +67,8 @@ if "modo_central" not in st.session_state:
 if "personalidad_ia" not in st.session_state:
     st.session_state.personalidad_ia = "Tony Stark (Sarcasmo & Lógica)"
 
-# MOTOR IA 100% LOCAL CON REQUESTS
-def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
+# MOTOR IA LOCAL VÍA REQUESTS (OLLAMA)
+def consultar_ia_jarvis(prompt_sistema, mensaje_usuario):
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -90,7 +90,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
-# ESTILOS CSS TÁCTICOS NEÓN
+# ESTILOS VISUALES CIBERNETICOS (NEÓN TÁCTICO)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -118,7 +118,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO Y CONTROLES SUPERIORES
+# ENCABEZADO PRINCIPAL
 col_head1, col_head2 = st.columns([4, 2])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
@@ -133,6 +133,7 @@ st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
+# PANEL IZQUIERDO: TELEMETRÍA Y ESTADO
 with col_telemetria:
     st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA M.E.C.A</div>', unsafe_allow_html=True)
     gauges_html = '<div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;"><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">24%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">51%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div></div>'
@@ -165,6 +166,7 @@ with col_telemetria:
     """
     components.html(reloj_chileno_html, height=65)
 
+# PANEL CENTRAL: MULTIMEDIA Y FRECUENCIA
 with col_orbe:
     bc1, bc2, bc3 = st.columns(3)
     with bc1:
@@ -203,7 +205,7 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # FRECUENCIA VOCAL
+    # FRECUENCIA VOCAL ANIMADA
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
     audio_wave_animated_html = """
     <style>
@@ -236,6 +238,7 @@ with col_orbe:
     components.html(audio_wave_animated_html, height=70)
     st.markdown('</div>', unsafe_allow_html=True)
 
+# PANEL DERECHO: INTERACCIÓN Y CONVERSACIÓN
 with col_chat:
     st.markdown('<div class="holo-card">', unsafe_allow_html=True)
     
@@ -247,10 +250,10 @@ with col_chat:
         else:
             st.markdown(f'<div style="background-color: #0b1320; border-right: 3px solid #00ffaa; padding: 8px; border-radius: 4px; margin-bottom: 8px; color: #00ffaa; font-size: 13px; text-align: right;"><b>{nombre_jefa}:</b> {msg}</div>', unsafe_allow_html=True)
 
-    st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">💡 Presiona Win + H para dictar directo, o escribe tu orden:</p>', unsafe_allow_html=True)
     
     with st.form(key="chat_form", clear_on_submit=True):
-        entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...")
+        entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe o dicta tu orden aquí...")
         
         f_col1, f_col2 = st.columns(2)
         with f_col1:
@@ -262,7 +265,7 @@ with col_chat:
 
     if purga_clic:
         st.session_state.historial_chat = [
-            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa lista para más genialidad."}
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa lista para más órdenes."}
         ]
         st.rerun()
 
@@ -273,6 +276,7 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
+        # COMANDOS RÁPIDOS LOCALES
         if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas con precisión milimétrica, {titulo_jefa}. No vaya a escribir otra obra maestra sin guardarla."
@@ -287,13 +291,14 @@ with col_chat:
         elif "quien eres" in texto_lower or "quién eres" in texto_lower or "que eres" in texto_lower or "qué eres" in texto_lower:
             respuesta_ia = f"Soy J.A.R.V.I.S., su IA autónoma personal, {titulo_jefa}. Diseñado para mantener este búnker en Buin bajo control, procesar sus directivas locales y recordarle con elegancia cuando olvida apagar el tostador."
 
+        # CONSULTA A OLLAMA SI NO ES UN COMANDO RÁPIDO
         if not respuesta_ia:
             if "Chef" in st.session_state.personalidad_ia:
                 prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de recetas, con el ingenio y toque sarcástico elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde con lógica culinaria brillante y sarcasmo refinado (máximo 2 frases)."
             else:
                 prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local altamente lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
             
-            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
+            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario)
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         hablar_con_jarvis(respuesta_ia)
