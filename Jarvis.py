@@ -5,7 +5,7 @@ import os
 import subprocess
 import random
 
-# Importar la librería oficial de Google GenAI de forma segura
+# Importar la librería oficial de Google GenAI
 try:
     import google.generativeai as genai
     GENAI_DISPONIBLE = True
@@ -43,37 +43,40 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# INICIALIZAR HISTORIAL DE CHAT
+# INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo con IA Autónoma. Sarcasmo y sistemas listos."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Ingresa tu API Key a la izquierda y presiona 'Conectar Gemini'."}
     ]
-
-if "ultima_respuesta" not in st.session_state:
-    st.session_state.ultima_respuesta = st.session_state.historial_chat[0]["texto"]
 
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA OFICIAL CON SDK DE GOOGLE
-def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
-    if gemini_key and gemini_key.strip() and GENAI_DISPONIBLE:
-        try:
-            genai.configure(api_key=gemini_key.strip())
-            
-            # Usar el modelo estándar actual con system instruction
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=prompt_sistema
-            )
-            
-            response = model.generate_content(mensaje_usuario)
-            if response and response.text:
-                return response.text.strip()
-        except Exception as e:
-            print(f"Error con SDK oficial de Gemini: {e}")
+if "gemini_key_persistente" not in st.session_state:
+    st.session_state.gemini_key_persistente = ""
 
-    # Fallback local Ollama si no hay clave o falla el SDK
+# MOTOR IA ROBUSTO CON SDK DE GOOGLE
+def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
+    key_activa = gemini_key.strip() if gemini_key else ""
+    
+    if key_activa and GENAI_DISPONIBLE:
+        # Intentar conectar con Gemini mediante SDK Oficial
+        modelos_oficiales = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+        for mod in modelos_oficiales:
+            try:
+                genai.configure(api_key=key_activa)
+                model = genai.GenerativeModel(
+                    model_name=mod,
+                    system_instruction=prompt_sistema
+                )
+                response = model.generate_content(mensaje_usuario)
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as e:
+                print(f"Error probando modelo {mod}: {e}")
+                continue
+
+    # Respuestas con IA local / dinámicas si no hay Gemini
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -86,7 +89,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         import urllib.request
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=8) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             resp = resultado.get("response", "").strip()
             if resp:
@@ -94,7 +97,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     except Exception:
         pass
 
-    return f"Sistemas del búnker en Buin estables, {titulo_jefa}. Conexión lista para recibir directivas."
+    return f"Procesando directiva desde Buin, {titulo_jefa}. Conexión de respaldo activa."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -147,11 +150,20 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO LLAVE GEMINI
+    # MÓDULO LLAVE GEMINI CON BOTÓN DE CONEXIÓN PERSISTENTE
     st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
-    gemini_key_input = st.text_input("API Key Gemini:", value=st.session_state.get("gemini_api_key", ""), type="password", placeholder="Pega tu API Key aquí...", label_visibility="collapsed", key="input_gemini_key")
-    if gemini_key_input:
-        st.session_state.gemini_api_key = gemini_key_input
+    
+    key_temp = st.text_input("API Key Gemini:", value=st.session_state.gemini_key_persistente, type="password", placeholder="Pega tu API Key de AI Studio...", label_visibility="collapsed")
+    
+    if st.button("⚡ Conectar Gemini"):
+        st.session_state.gemini_key_persistente = key_temp.strip()
+        st.success("¡Gemini vinculado!")
+        
+    if st.session_state.gemini_key_persistente:
+        st.markdown("<p style='color:#00ffaa; font-size:11px; margin-top:4px;'>🟢 Estado: Conectado a Gemini AI</p>", unsafe_allow_html=True)
+    else:
+        st.markdown("<p style='color:#ff5555; font-size:11px; margin-top:4px;'>🔴 Estado: Pendiente de clave</p>", unsafe_allow_html=True)
+        
     st.markdown('</div>', unsafe_allow_html=True)
 
     reloj_chileno_html = """
@@ -293,11 +305,9 @@ with col_chat:
 
         if not respuesta_ia:
             prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."
-            clave_actual = st.session_state.get("gemini_api_key", gemini_key_input)
-            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, clave_actual)
+            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, st.session_state.gemini_key_persistente)
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
-        st.session_state.ultima_respuesta = respuesta_ia
         st.rerun()
 
 st.markdown("---")
