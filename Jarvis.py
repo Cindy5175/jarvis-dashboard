@@ -39,7 +39,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas de voz táctica al 100%, {titulo_jefa}. Búnker de Buin en línea con audio local activo."}
+        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea. Sarcasmo táctico y lógica local calibrados."}
     ]
 
 if "modo_central" not in st.session_state:
@@ -292,8 +292,6 @@ with col_chat:
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
-        
-        # Ejecutar la voz al responder
         hablar_con_jarvis(respuesta_ia)
         st.rerun()
 
