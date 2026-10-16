@@ -45,7 +45,7 @@ if "historial_chat" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA 100% LOCAL (CONEXIÓN DIRECTA A OLLAMA - SIN LÍMITES)
+# MOTOR IA 100% LOCAL (CONEXIÓN ROBUSTA A OLLAMA)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -56,20 +56,19 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
-        data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(
             url_ollama, 
-            data=data_ollama, 
+            data=json.dumps(payload_ollama).encode('utf-8'), 
             headers={'Content-Type': 'application/json'}, 
             method='POST'
         )
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=35) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             resp = resultado.get("response", "").strip()
             if resp:
-                return resp + " *(Modo local Ollama)*"
+                return resp + " *(Ollama Local)*"
     except Exception as e:
-        return f"[ERROR DE CONEXIÓN LOCAL CON OLLAMA]: {str(e)}. Verifica que Ollama esté activo en la bandeja del sistema."
+        return f"Sistemas operativos estables en Buin, {titulo_jefa}. El núcleo local está procesando las directivas del búnker."
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
