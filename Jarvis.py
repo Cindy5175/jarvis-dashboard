@@ -5,7 +5,7 @@ import os
 import subprocess
 import requests
 
-# Configuración de página
+# CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A. 4.0", 
     layout="wide",
@@ -36,7 +36,7 @@ if "memoria" not in st.session_state:
 nombre_jefa = st.session_state.memoria.get("usuario", {}).get("nombre", "Cindy")
 titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 
-# SÍNTESIS DE VOZ NATIVA
+# SÍNTESIS DE VOZ NATIVA (HABLA SOLO AUTOMÁTICAMENTE)
 def hablar_con_jarvis(texto):
     texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
     voz_js = f"""
@@ -98,7 +98,7 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* ESTILO NEGRO Y AZUL NEÓN PARA EL SELECTOR DE PROTOCOLO */
+    /* ESTILO NEGRO Y AZUL NEÓN PARA EL SELECTOR DE PROTOCOLO Y DESPLEGABLES */
     div[data-baseweb="select"] > div {
         background-color: #000000 !important;
         color: #00d2ff !important;
@@ -290,7 +290,9 @@ with col_chat:
         texto_lower = texto_usuario.lower()
         
         # RESPUESTAS RÁPIDAS AUTOMÁTICAS E INMEDIATAS
-        if "como estas" in texto_lower or "cómo estás" in texto_lower or "como te va" in texto_lower or "cómo te va" in texto_lower:
+        if "presentate" in texto_lower or "preséntate" in texto_lower or "presentacion" in texto_lower or "presentación" in texto_lower:
+            respuesta_ia = f"Permítame presentarme. Soy J.A.R.V.I.S., una Inteligencia Artificial Autónoma desarrollada para gestionar las operaciones tácticas de este búnker en Buin. Opero bajo un núcleo local privado, con capacidades de análisis, control de herramientas y voz integrada, al servicio exclusivo de la Jefa {nombre_jefa}."
+        elif "como estas" in texto_lower or "cómo estás" in texto_lower or "como te va" in texto_lower or "cómo te va" in texto_lower:
             respuesta_ia = f"Sistemas al 100% y operando con absoluta elegancia en el búnker de Buin, {titulo_jefa}. ¿Listos para dominar el mundo o prefiere empezar con algo más pequeño?"
         elif "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
@@ -311,7 +313,7 @@ with col_chat:
             if "Chef" in st.session_state.personalidad_ia:
                 prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de recetas, con el ingenio y toque sarcástico elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde con lógica culinaria brillante y sarcasmo refinado (máximo 2 frases)."
             else:
-                prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local altamente lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local highly lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
             
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario)
 
