@@ -284,6 +284,8 @@ with col_chat:
             respuesta_ia = f"Abriendo Chrome, {titulo_jefa}. Prepárese para perderse en 40 pestañas abiertas al mismo tiempo."
         elif "analisis de sistema" in texto_lower or "analizar sistema" in texto_lower:
             respuesta_ia = f"Sistemas del búnker en Buin analizados, {titulo_jefa}. Todo opera con una lógica impecable y un sarcasmo perfectamente estabilizado."
+        elif "quien eres" in texto_lower or "quién eres" in texto_lower or "que eres" in texto_lower or "qué eres" in texto_lower:
+            respuesta_ia = f"Soy J.A.R.V.I.S., su IA autónoma personal, {titulo_jefa}. Diseñado para mantener este búnker en Buin bajo control, procesar sus directivas locales y recordarle con elegancia cuando olvida apagar el tostador."
 
         if not respuesta_ia:
             if "Chef" in st.session_state.personalidad_ia:
