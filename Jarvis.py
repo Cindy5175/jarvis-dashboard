@@ -49,10 +49,6 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# INICIALIZAR EL VALOR DE LA ENTRADA DE TEXTO EN EL SESSION_STATE
-if "input_usuario" not in st.session_state:
-    st.session_state.input_usuario = ""
-
 # MOTOR OLLAMA LOCAL ROBUSTO (PLAN B)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://localhost:11434/api/generate"
@@ -171,9 +167,37 @@ with col_orbe:
         components.html(youtube_iframe_html, height=145)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # FRECUENCIA VOCAL DINÁMICA Y ANIMADA
     st.markdown('<div class="holo-card"><div class="holo-title">🌐 FRECUENCIA VOCAL</div>', unsafe_allow_html=True)
-    audio_wave_core_html = '<style>body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }.audio-container { width: 100%; height: 60px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.95) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; }.waveform { display: flex; align-items: center; gap: 3px; height: 40px; }.bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; }</style><div class="audio-container"><div class="waveform"><div class="bar" style="height: 12px;"></div><div class="bar" style="height: 28px;"></div><div class="bar" style="height: 40px;"></div><div class="bar" style="height: 20px;"></div><div class="bar" style="height: 50px;"></div></div></div>'
-    components.html(audio_wave_core_html, height=70)
+    audio_wave_animated_html = """
+    <style>
+    body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 65px; overflow: hidden; }
+    .audio-container { width: 100%; height: 60px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.95) 80%); border: 1px solid rgba(0,210,255,0.4); border-radius: 8px; }
+    .waveform { display: flex; align-items: center; gap: 4px; height: 40px; }
+    .bar { width: 4px; background: linear-gradient(180deg, #00ffff 0%, #00d2ff 50%, #0055ff 100%); border-radius: 2px; animation: pulse 0.8s infinite ease-in-out alternate; }
+    .bar:nth-child(1) { animation-delay: 0.1s; }
+    .bar:nth-child(2) { animation-delay: 0.3s; }
+    .bar:nth-child(3) { animation-delay: 0.2s; }
+    .bar:nth-child(4) { animation-delay: 0.5s; }
+    .bar:nth-child(5) { animation-delay: 0.4s; }
+    .bar:nth-child(6) { animation-delay: 0.15s; }
+    @keyframes pulse {
+        0% { height: 8px; }
+        100% { height: 38px; }
+    }
+    </style>
+    <div class="audio-container">
+        <div class="waveform">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
+    """
+    components.html(audio_wave_animated_html, height=70)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_chat:
@@ -189,18 +213,20 @@ with col_chat:
 
     st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
     
-    # Campo de texto vinculado a st.session_state.input_usuario
-    entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...", key="input_usuario")
-    
-    b_col1, b_col2 = st.columns(2)
-    with b_col1:
-        enviar_clic = st.button("🚀 Enviar")
-    with b_col2:
-        limpiar_clic = st.button("🧹 Purga")
+    # USO DE ST.FORM CON CLEAR_ON_SUBMIT PARA LIMPIAR LA CAJA Y EVITAR ERRORES
+    with st.form(key="chat_form", clear_on_submit=True):
+        entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...")
+        
+        f_col1, f_col2 = st.columns(2)
+        with f_col1:
+            enviar_clic = st.form_submit_button("🚀 Enviar")
+        with f_col2:
+            # Nota: el botón de purga dentro del form limpia y recarga
+            purga_clic = st.form_submit_button("🧹 Purga")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if limpiar_clic:
+    if purga_clic:
         st.session_state.historial_chat = [
             {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa limpia en el búnker."}
         ]
@@ -231,9 +257,6 @@ with col_chat:
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
-        
-        # Limpiamos correctamente el estado para el input de texto
-        st.session_state.input_usuario = ""
         st.rerun()
 
 st.markdown("---")
