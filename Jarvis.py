@@ -3,8 +3,14 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
-import urllib.request
 import random
+
+# Importar la librería oficial de Google GenAI de forma segura
+try:
+    import google.generativeai as genai
+    GENAI_DISPONIBLE = True
+except ImportError:
+    GENAI_DISPONIBLE = False
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -49,50 +55,25 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA: ENDPOINTS CORREGIDOS PARA GEMINI (v1 / v1beta)
+# MOTOR IA OFICIAL CON SDK DE GOOGLE
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
-    if gemini_key and gemini_key.strip():
-        key_limpia = gemini_key.strip()
-        
-        # Endpoints probados secuencialmente para máxima compatibilidad con GCP / AI Studio
-        endpoints_a_probar = [
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key_limpia}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={key_limpia}",
-            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_limpia}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={key_limpia}"
-        ]
-        
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": f"{prompt_sistema}\n\nMensaje de {titulo_jefa} {nombre_jefa}: {mensaje_usuario}"}
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 250
-            }
-        }
-        
-        data = json.dumps(payload).encode('utf-8')
-        
-        for url in endpoints_a_probar:
-            try:
-                req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-                with urllib.request.urlopen(req, timeout=12) as response:
-                    resultado = json.loads(response.read().decode('utf-8'))
-                    candidates = resultado.get("candidates", [])
-                    if candidates:
-                        parts = candidates[0].get("content", {}).get("parts", [])
-                        if parts:
-                            return parts[0].get("text", "").strip()
-            except Exception as e:
-                print(f"Probando siguiente endpoint tras error en {url}: {e}")
-                continue
+    if gemini_key and gemini_key.strip() and GENAI_DISPONIBLE:
+        try:
+            genai.configure(api_key=gemini_key.strip())
+            
+            # Usar el modelo estándar actual con system instruction
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction=prompt_sistema
+            )
+            
+            response = model.generate_content(mensaje_usuario)
+            if response and response.text:
+                return response.text.strip()
+        except Exception as e:
+            print(f"Error con SDK oficial de Gemini: {e}")
 
-    # Fallback local Ollama si no responde Gemini
+    # Fallback local Ollama si no hay clave o falla el SDK
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -102,6 +83,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
+        import urllib.request
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=10) as response:
