@@ -54,7 +54,7 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA OFICIAL CON EL MODELO COMPATIBLE
+# MOTOR IA OFICIAL CON EL MODELO ACTUALIZADO (GEMINI-3.8-FLASH)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
@@ -62,9 +62,9 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         try:
             genai.configure(api_key=key_activa)
             
-            # Usamos gemini-2.0-flash que es el estándar actual totalmente compatible
+            # Actualizado al nuevo modelo estándar gemini-3.8-flash
             model = genai.GenerativeModel(
-                model_name="gemini-2.0-flash",
+                model_name="gemini-3.8-flash",
                 system_instruction=prompt_sistema
             )
             
