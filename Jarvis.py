@@ -3,10 +3,15 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
-import urllib.request
-import random
 
-# Configuración de página en modo ancho
+# Usamos la librería oficial de Google
+try:
+    import google.generativeai as genai
+    GENAI_INSTALADO = True
+except ImportError:
+    GENAI_INSTALADO = False
+
+# Configuración de página
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A. 4.0", 
     layout="wide",
@@ -49,61 +54,35 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA DIRECTO Y ESTABLE
+# MOTOR IA OFICIAL DIRECTO CON CONEXIÓN CONFIABLE
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
-    if key_activa:
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_activa}"
-        
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"}
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 250
-            }
-        }
-        
+    if key_activa and GENAI_INSTALADO:
         try:
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=15) as response:
-                resultado = json.loads(response.read().decode('utf-8'))
-                candidates = resultado.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
+            genai.configure(api_key=key_activa)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            
+            prompt_completo = f"{prompt_sistema}\n\nMensaje de {titulo_jefa}: {mensaje_usuario}"
+            respuesta = model.generate_content(prompt_completo)
+            
+            if respuesta and respuesta.text:
+                return respuesta.text.strip()
         except Exception as e:
-            print(f"Error HTTP Gemini: {e}")
+            # Si falla el 1.5-flash, probar respaldo con 1.5-pro o gemini-pro
+            try:
+                model_alt = genai.GenerativeModel("gemini-1.5-pro")
+                respuesta_alt = model_alt.generate_content(f"{prompt_sistema}\n\nMensaje: {mensaje_usuario}")
+                if respuesta_alt and respuesta_alt.text:
+                    return respuesta_alt.text.strip()
+            except Exception as ex:
+                return f"[ERROR DE CONEXIÓN A GEMINI]: {str(e)}"
 
-    # Fallback local Ollama
-    url_ollama = "http://127.0.0.1:11434/api/generate"
-    prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
-    payload_ollama = {
-        "model": "llama3.2",
-        "prompt": prompt_completo,
-        "stream": False,
-        "options": {"temperature": 0.6}
-    }
-    try:
-        data_ollama = json.dumps(payload_ollama).encode('utf-8')
-        req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=8) as response:
-            resultado = json.loads(response.read().decode('utf-8'))
-            resp = resultado.get("response", "").strip()
-            if resp:
-                return resp
-    except Exception:
-        pass
+    # Si no hay clave ingresada
+    if not key_activa:
+        return f"Por favor vincula tu API Key en el panel izquierdo para activar mi red neuronal, {titulo_jefa}."
 
-    return f"Sistemas estables en Buin, {titulo_jefa}. Enlace matriz sincronizado."
+    return f"Sistemas estables en Buin, {titulo_jefa}. Conexión de respaldo activa."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -139,12 +118,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO CON REFRESCO DE PÁGINA
+# ENCABEZADO Y BOTÓN DE REINICIO DE SESIÓN
 col_head1, col_head2 = st.columns([5, 1])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 with col_head2:
-    if st.button("🔄 Reiniciar App"):
+    if st.button("🔄 Reiniciar"):
         st.session_state.clear()
         st.rerun()
 
