@@ -49,12 +49,12 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B)
+# MOTOR OLLAMA LOCAL ROBUSTO (CORREGIDO CON 127.0.0.1)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
-    url = "http://localhost:11434/api/generate"
+    url = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload = {
-        "model": "llama3.2:latest",
+        "model": "llama3.2",
         "prompt": prompt_completo,
         "stream": False,
         "options": {"temperature": 0.6}
@@ -75,7 +75,7 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
         ]
         return random.choice(respuestas_emergencia)
 
-# ESTILOS CSS TÁCTICOS NEÓN
+# ESTILOS CSS TÁCTICOS NEÓN (INCLUYENDO BOTONES DE FORMULARIO)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -91,8 +91,22 @@ st.markdown("""
     }
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
-    div.stButton > button { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 6px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important; }
-    div.stButton > button:hover { background-color: #00d2ff !important; color: #000000 !important; box-shadow: 0 0 15px #00d2ff !important; }
+    
+    /* Botones normales y de formulario con estilo Neón */
+    div.stButton > button, button[kind="secondary"], button[kind="primary"], form button {
+        background-color: #000000 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
+        border-radius: 6px !important;
+        font-weight: bold !important;
+        width: 100% !important;
+        box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important;
+    }
+    div.stButton > button:hover, button[kind="secondary"]:hover, button[kind="primary"]:hover, form button:hover {
+        background-color: #00d2ff !important;
+        color: #000000 !important;
+        box-shadow: 0 0 15px #00d2ff !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -213,7 +227,6 @@ with col_chat:
 
     st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
     
-    # USO DE ST.FORM CON CLEAR_ON_SUBMIT PARA LIMPIAR LA CAJA Y EVITAR ERRORES
     with st.form(key="chat_form", clear_on_submit=True):
         entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...")
         
@@ -221,7 +234,6 @@ with col_chat:
         with f_col1:
             enviar_clic = st.form_submit_button("🚀 Enviar")
         with f_col2:
-            # Nota: el botón de purga dentro del form limpia y recarga
             purga_clic = st.form_submit_button("🧹 Purga")
 
     st.markdown('</div>', unsafe_allow_html=True)
@@ -250,7 +262,7 @@ with col_chat:
             subprocess.Popen(["start", "chrome"], shell=True)
             respuesta_ia = f"Desplegando navegador web, {titulo_jefa}."
 
-        # 2. Si no es comando físico, consultar a Ollama Local (Plan B)
+        # 2. Si no es comando físico, consultar a Ollama Local
         if not respuesta_ia:
             prompt_sistema = f"""Eres J.A.R.V.I.S., asistente inteligente con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."""
             respuesta_ia = consultar_ollama_plan_b(prompt_sistema, texto_usuario)
