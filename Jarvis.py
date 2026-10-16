@@ -49,6 +49,10 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
+# INICIALIZAR EL VALOR DE LA ENTRADA DE TEXTO EN EL SESSION_STATE
+if "input_usuario" not in st.session_state:
+    st.session_state.input_usuario = ""
+
 # MOTOR OLLAMA LOCAL ROBUSTO (PLAN B)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://localhost:11434/api/generate"
@@ -185,7 +189,7 @@ with col_chat:
 
     st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
     
-    # Se añadió la clave 'input_usuario' para poder limpiarla después de enviar
+    # Campo de texto vinculado a st.session_state.input_usuario
     entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...", key="input_usuario")
     
     b_col1, b_col2 = st.columns(2)
@@ -228,7 +232,7 @@ with col_chat:
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
         
-        # Limpiamos la caja de texto reseteando su valor en session_state antes de recargar
+        # Limpiamos correctamente el estado para el input de texto
         st.session_state.input_usuario = ""
         st.rerun()
 
