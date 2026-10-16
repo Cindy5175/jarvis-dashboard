@@ -39,14 +39,14 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea (Modo local Ollama 100% activo)."}
+        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea. Sarcasmo táctico y lógica local calibrados."}
     ]
 
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
 if "personalidad_ia" not in st.session_state:
-    st.session_state.personalidad_ia = "Tony Stark (Sarcasmo Elegante)"
+    st.session_state.personalidad_ia = "Tony Stark (Sarcasmo & Lógica)"
 
 # MOTOR IA 100% LOCAL CON REQUESTS
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
@@ -56,7 +56,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "model": "llama3.2",
         "prompt": prompt_completo,
         "stream": False,
-        "options": {"temperature": 0.6}
+        "options": {"temperature": 0.7}
     }
     try:
         response = requests.post(url_ollama, json=payload_ollama, timeout=35)
@@ -67,7 +67,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
                 return resp + " *(Ollama Local)*"
     except Exception as e:
         print(f"--- ERROR REQUESTS OLLAMA ---: {str(e)}")
-        return f"Sistemas operativos estables en Buin, {titulo_jefa}. El núcleo local está procesando las directivas del búnker."
+        return f"Sistemas operativos estables en Buin, {titulo_jefa}. Mi núcleo local está procesando las directivas con lógica impecable... aunque parece que el servidor local de Ollama tardó en responder la broma."
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
@@ -106,8 +106,8 @@ with col_head1:
 with col_head2:
     st.session_state.personalidad_ia = st.selectbox(
         "🧠 Protocolo de Personalidad:", 
-        ["Tony Stark (Sarcasmo Elegante)", "Chef Ejecutivo (E-books & Recetas)"],
-        index=0 if st.session_state.personalidad_ia == "Tony Stark (Sarcasmo Elegante)" else 1
+        ["Tony Stark (Sarcasmo & Lógica)", "Chef Ejecutivo (E-books & Recetas)"],
+        index=0 if st.session_state.personalidad_ia == "Tony Stark (Sarcasmo & Lógica)" else 1
     )
 
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
@@ -243,7 +243,7 @@ with col_chat:
 
     if purga_clic:
         st.session_state.historial_chat = [
-            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa limpia en el búnker."}
+            {"remitente": "jarvis", "texto": f"Historial purgado, {titulo_jefa}. Tabula rasa lista para más genialidad."}
         ]
         st.rerun()
 
@@ -256,21 +256,21 @@ with col_chat:
         
         if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
-            respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
+            respuesta_ia = f"Abriendo el Bloc de notas con precisión milimétrica, {titulo_jefa}. No vaya a escribir otra obra maestra sin guardarla."
         elif "calculadora" in texto_lower or "calc" in texto_lower:
             subprocess.Popen(["calc.exe"])
-            respuesta_ia = f"Lanzando la calculadora, {titulo_jefa}."
+            respuesta_ia = f"Desplegando la calculadora, {titulo_jefa}. Supongo que las matemáticas siguen siendo necesarias en Buin."
         elif "chrome" in texto_lower:
             subprocess.Popen(["start", "chrome"], shell=True)
-            respuesta_ia = f"Desplegando navegador web, {titulo_jefa}."
+            respuesta_ia = f"Abriendo Chrome, {titulo_jefa}. Prepárese para perderse en 40 pestañas abiertas al mismo tiempo."
         elif "analisis de sistema" in texto_lower or "analizar sistema" in texto_lower:
-            respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, procesamiento local en Ollama al 100% operativo."
+            respuesta_ia = f"Sistemas del búnker en Buin analizados, {titulo_jefa}. Todo opera con una lógica impecable y un sarcasmo perfectamente estabilizado."
 
         if not respuesta_ia:
             if "Chef" in st.session_state.personalidad_ia:
-                prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de cocina, recetas de autor y tradiciones chilenas. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin. Responde con elegancia culinaria y precisión (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de recetas, con el ingenio y toque sarcástico elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde con lógica culinaria brillante y sarcasmo refinado (máximo 2 frases)."
             else:
-                prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma local con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante y con un toque de sarcasmo elegante (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local altamente lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
             
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
 
