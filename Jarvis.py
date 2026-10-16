@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 
-# Usamos la librería oficial de Google
+# Usar la librería oficial de Google
 try:
     import google.generativeai as genai
     GENAI_INSTALADO = True
@@ -54,31 +54,37 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA OFICIAL DIRECTO CON CONEXIÓN CONFIABLE
+# MOTOR IA OFICIAL CON EL MODELO COMPATIBLE
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
     if key_activa and GENAI_INSTALADO:
         try:
             genai.configure(api_key=key_activa)
-            model = genai.GenerativeModel("gemini-1.5-flash")
             
-            prompt_completo = f"{prompt_sistema}\n\nMensaje de {titulo_jefa}: {mensaje_usuario}"
-            respuesta = model.generate_content(prompt_completo)
+            # Usamos gemini-2.0-flash que es el estándar actual totalmente compatible
+            model = genai.GenerativeModel(
+                model_name="gemini-2.0-flash",
+                system_instruction=prompt_sistema
+            )
+            
+            respuesta = model.generate_content(mensaje_usuario)
             
             if respuesta and respuesta.text:
                 return respuesta.text.strip()
         except Exception as e:
-            # Si falla el 1.5-flash, probar respaldo con 1.5-pro o gemini-pro
             try:
-                model_alt = genai.GenerativeModel("gemini-1.5-pro")
-                respuesta_alt = model_alt.generate_content(f"{prompt_sistema}\n\nMensaje: {mensaje_usuario}")
+                # Respaldo con gemini-1.5-pro si fuera necesario
+                model_alt = genai.GenerativeModel(
+                    model_name="gemini-1.5-pro",
+                    system_instruction=prompt_sistema
+                )
+                respuesta_alt = model_alt.generate_content(mensaje_usuario)
                 if respuesta_alt and respuesta_alt.text:
                     return respuesta_alt.text.strip()
             except Exception as ex:
                 return f"[ERROR DE CONEXIÓN A GEMINI]: {str(e)}"
 
-    # Si no hay clave ingresada
     if not key_activa:
         return f"Por favor vincula tu API Key en el panel izquierdo para activar mi red neuronal, {titulo_jefa}."
 
