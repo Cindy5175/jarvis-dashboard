@@ -49,7 +49,7 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B MEJORADO)
+# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B MEJORADO CON TIMEOUT EXTENDIDO)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://localhost:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -62,10 +62,14 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     try:
         data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=10) as response:
+        # Aumentamos el timeout a 30 segundos para darle tiempo a Llama local
+        with urllib.request.urlopen(req, timeout=30) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             return resultado.get("response", "").strip()
-    except Exception:
+    except Exception as e:
+        # Imprimimos el error exacto en la terminal de Python para diagnóstico
+        print(f"Error conectando con Ollama: {e}")
+        
         # Respuestas de respaldo dinámicas estilo Tony Stark si Ollama no responde
         respuestas_emergencia = [
             f"Los servidores locales están descansando un momento, {titulo_jefa}, pero yo sigo operativo al 100%. ¿En qué te ayudo?",
