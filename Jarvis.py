@@ -94,7 +94,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario):
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
-    .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 0px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
+    .main-header { color: #00d2ff; font-family: 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 15px; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
@@ -148,17 +148,7 @@ st.markdown("""
 
 # ENCABEZADO PRINCIPAL CENTRADO
 st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
-
-# SELECTOR DE PERSONALIDAD CENTRADO
-col_centrar1, col_centrar2, col_centrar3 = st.columns([1, 2, 1])
-with col_centrar2:
-    st.session_state.personalidad_ia = st.selectbox(
-        "🧠 Protocolo de Personalidad:", 
-        ["Tony Stark (Sarcasmo & Lógica)", "Chef Ejecutivo (E-books & Recetas)"],
-        index=0 if st.session_state.personalidad_ia == "Tony Stark (Sarcasmo & Lógica)" else 1
-    )
-
-st.markdown("<hr style='margin: 10px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin: 0px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
@@ -289,6 +279,14 @@ with col_chat:
             enviar_clic = st.form_submit_button("🚀 Enviar")
         with f_col2:
             purga_clic = st.form_submit_button("🧹 Purga")
+
+    # MÓDULO PROTOCOLO DE PERSONALIDAD UBICADO ABAJO DE ENVIAR
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+    st.session_state.personalidad_ia = st.selectbox(
+        "🧠 Protocolo de Personalidad:", 
+        ["Tony Stark (Sarcasmo & Lógica)", "Chef Ejecutivo (E-books & Recetas)"],
+        index=0 if st.session_state.personalidad_ia == "Tony Stark (Sarcasmo & Lógica)" else 1
+    )
 
     st.markdown('</div>', unsafe_allow_html=True)
 
