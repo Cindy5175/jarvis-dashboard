@@ -45,7 +45,10 @@ if "historial_chat" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA 100% LOCAL (CONEXIÓN ROBUSTA A OLLAMA)
+if "personalidad_ia" not in st.session_state:
+    st.session_state.personalidad_ia = "Tony Stark (Sarcasmo Elegante)"
+
+# MOTOR IA 100% LOCAL (CONEXIÓN ROBUSTA A OLLAMA Y DIAGNÓSTICO)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -68,7 +71,8 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
             if resp:
                 return resp + " *(Ollama Local)*"
     except Exception as e:
-        return f"Sistemas operativos estables en Buin, {titulo_jefa}. El núcleo local está procesando las directivas del búnker."
+        print(f"--- ERROR TÉCNICO OLLAMA ---: {str(e)}")
+        return f"[ERROR TÉCNICO]: {str(e)}"
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
@@ -100,14 +104,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO Y BOTÓN DE REINICIO DE SESIÓN
-col_head1, col_head2 = st.columns([5, 1])
+# ENCABEZADO Y CONTROLES SUPERIORES
+col_head1, col_head2 = st.columns([4, 2])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 with col_head2:
-    if st.button("🔄 Reiniciar"):
-        st.session_state.clear()
-        st.rerun()
+    st.session_state.personalidad_ia = st.selectbox(
+        "🧠 Protocolo de Personalidad:", 
+        ["Tony Stark (Sarcasmo Elegante)", "Chef Ejecutivo (E-books & Recetas)"],
+        index=0 if st.session_state.personalidad_ia == "Tony Stark (Sarcasmo Elegante)" else 1
+    )
 
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
@@ -124,7 +130,6 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ESTADO DEL NÚCLEO LOCAL
     st.markdown('<div class="holo-card"><div class="holo-title">🟢 NÚCLEO LOCAL ACTIVO</div>', unsafe_allow_html=True)
     st.markdown("<p style='color:#00ffaa; font-size:11px; margin:0; text-align:center;'>Sin límites de cuota • 100% Privado</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -267,7 +272,11 @@ with col_chat:
             respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, procesamiento local en Ollama al 100% operativo."
 
         if not respuesta_ia:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma local con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y con un toque de sarcasmo elegante (máximo 2 frases)."
+            if "Chef" in st.session_state.personalidad_ia:
+                prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de cocina, recetas de autor y tradiciones chilenas. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin. Responde con elegancia culinaria y precisión (máximo 2 frases)."
+            else:
+                prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma local con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante y con un toque de sarcasmo elegante (máximo 2 frases)."
+            
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
