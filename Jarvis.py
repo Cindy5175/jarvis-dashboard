@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
+import time
 
 # Usar la librería oficial de Google
 try:
@@ -54,41 +55,52 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA OFICIAL CON EL MODELO ACTUALIZADO (GEMINI-3.8-FLASH)
+# MOTOR IA CON MANEJO DE CUOTA Y RESPALDO LOCAL
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
     if key_activa and GENAI_INSTALADO:
         try:
             genai.configure(api_key=key_activa)
-            
-            # Actualizado al nuevo modelo estándar gemini-3.8-flash
             model = genai.GenerativeModel(
                 model_name="gemini-3.8-flash",
                 system_instruction=prompt_sistema
             )
-            
             respuesta = model.generate_content(mensaje_usuario)
-            
             if respuesta and respuesta.text:
                 return respuesta.text.strip()
         except Exception as e:
-            try:
-                # Respaldo con gemini-1.5-pro si fuera necesario
-                model_alt = genai.GenerativeModel(
-                    model_name="gemini-1.5-pro",
-                    system_instruction=prompt_sistema
-                )
-                respuesta_alt = model_alt.generate_content(mensaje_usuario)
-                if respuesta_alt and respuesta_alt.text:
-                    return respuesta_alt.text.strip()
-            except Exception as ex:
-                return f"[ERROR DE CONEXIÓN A GEMINI]: {str(e)}"
+            error_str = str(e)
+            if "429" in error_str or "quota" in error_str.lower():
+                return f"⚠️ Cuota de Gemini excedida temporalmente en Buin. Espera unos segundos o usa el enlace local, {titulo_jefa}."
+            else:
+                return f"[ERROR DE CONEXIÓN A GEMINI]: {error_str}"
+
+    # Si no hay clave ingresada, intentamos con Ollama local de respaldo
+    url_ollama = "http://127.0.0.1:11434/api/generate"
+    prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
+    payload_ollama = {
+        "model": "llama3.2",
+        "prompt": prompt_completo,
+        "stream": False,
+        "options": {"temperature": 0.6}
+    }
+    try:
+        import urllib.request
+        data_ollama = json.dumps(payload_ollama).encode('utf-8')
+        req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
+        with urllib.request.urlopen(req, timeout=5) as response:
+            resultado = json.loads(response.read().decode('utf-8'))
+            resp = resultado.get("response", "").strip()
+            if resp:
+                return resp + " *(Modo local Ollama)*"
+    except Exception:
+        pass
 
     if not key_activa:
         return f"Por favor vincula tu API Key en el panel izquierdo para activar mi red neuronal, {titulo_jefa}."
 
-    return f"Sistemas estables en Buin, {titulo_jefa}. Conexión de respaldo activa."
+    return f"Sistemas estables en Buin, {titulo_jefa}."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
