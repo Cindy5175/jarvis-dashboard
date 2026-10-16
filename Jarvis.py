@@ -90,7 +90,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario):
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
-# ESTILOS VISUALES CIBERNÉTICOS (NEÓN TÁCTICO & SELECTBOX FORZADOS A NEGRO)
+# ESTILOS VISUALES CIBERNÉTICOS (NEÓN TÁCTICO & SELECTBOX ABSOLUTAMENTE NEGROS)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -98,15 +98,15 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* REGLA DEFINITIVA PARA TODOS LOS SELECTBOX (FONDO NEGRO Y NEÓN) */
-    div[data-baseweb="select"] > div, div[data-baseweb="select"] {
+    /* ANULACIÓN TOTAL DE COMPONENTES BLANCOS DE STREAMLIT */
+    div[data-baseweb="select"], div[data-baseweb="select"] > div, div.stSelectbox div[data-baseweb="select"] {
         background-color: #000000 !important;
         color: #00d2ff !important;
         border: 1px solid #00d2ff !important;
         border-radius: 8px !important;
         box-shadow: 0 0 10px rgba(0, 210, 255, 0.4) !important;
     }
-    span[data-baseweb="tag"], div[data-baseweb="select"] span {
+    span, div[data-baseweb="select"] span, div[data-baseweb="select"] div {
         color: #00d2ff !important;
         background-color: #000000 !important;
     }
@@ -146,10 +146,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO PRINCIPAL CENTRADO (OCUPANDO TODO EL ANCHO)
+# ENCABEZADO PRINCIPAL CENTRADO
 st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 
-# SELECTOR DE PERSONALIDAD CENTRADO DEBAJO DEL TÍTULO
+# SELECTOR DE PERSONALIDAD CENTRADO
 col_centrar1, col_centrar2, col_centrar3 = st.columns([1, 2, 1])
 with col_centrar2:
     st.session_state.personalidad_ia = st.selectbox(
