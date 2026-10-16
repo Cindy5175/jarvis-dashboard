@@ -49,7 +49,7 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO (CORREGIDO CON 127.0.0.1)
+# MOTOR OLLAMA LOCAL ROBUSTO
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -75,7 +75,7 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
         ]
         return random.choice(respuestas_emergencia)
 
-# ESTILOS CSS TÁCTICOS NEÓN (INCLUYENDO BOTONES DE FORMULARIO)
+# ESTILOS CSS TÁCTICOS NEÓN (FORZANDO LOS BOTONES DE FORMULARIO)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,8 +92,8 @@ st.markdown("""
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     
-    /* Botones normales y de formulario con estilo Neón */
-    div.stButton > button, button[kind="secondary"], button[kind="primary"], form button {
+    /* Estilo forzado para los botones normales y de formulario (Enviar / Purga) */
+    div.stButton > button, [data-testid="stFormSubmitButton"] > button {
         background-color: #000000 !important;
         color: #00d2ff !important;
         border: 1px solid #00d2ff !important;
@@ -102,7 +102,7 @@ st.markdown("""
         width: 100% !important;
         box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important;
     }
-    div.stButton > button:hover, button[kind="secondary"]:hover, button[kind="primary"]:hover, form button:hover {
+    div.stButton > button:hover, [data-testid="stFormSubmitButton"] > button:hover {
         background-color: #00d2ff !important;
         color: #000000 !important;
         box-shadow: 0 0 15px #00d2ff !important;
