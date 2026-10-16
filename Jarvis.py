@@ -5,13 +5,6 @@ import os
 import subprocess
 import urllib.request
 
-# Usar la librería oficial de Google por si se requiere como respaldo
-try:
-    import google.generativeai as genai
-    GENAI_INSTALADO = True
-except ImportError:
-    GENAI_INSTALADO = False
-
 # Configuración de página
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A. 4.0", 
@@ -46,18 +39,14 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea (Modo local Ollama activo)."}
+        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea (Modo local Ollama 100% activo)."}
     ]
 
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-if "gemini_key_persistente" not in st.session_state:
-    st.session_state.gemini_key_persistente = ""
-
-# MOTOR IA CONFIGURADO PARA USO LOCAL CON OLLAMA (SIN LÍMITES DE CUOTA)
+# MOTOR IA 100% LOCAL (CONEXIÓN DIRECTA A OLLAMA - SIN LÍMITES)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
-    # Intentar primero con Ollama de forma local para evitar esperas y cuotas
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -68,31 +57,21 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     }
     try:
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
-        req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=8) as response:
+        req = urllib.request.Request(
+            url_ollama, 
+            data=data_ollama, 
+            headers={'Content-Type': 'application/json'}, 
+            method='POST'
+        )
+        with urllib.request.urlopen(req, timeout=30) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             resp = resultado.get("response", "").strip()
             if resp:
                 return resp + " *(Modo local Ollama)*"
-    except Exception:
-        pass
+    except Exception as e:
+        return f"[ERROR DE CONEXIÓN LOCAL CON OLLAMA]: {str(e)}. Verifica que Ollama esté activo en la bandeja del sistema."
 
-    # Si Ollama no responde, intentamos con Gemini si hay clave vinculada
-    key_activa = gemini_key.strip() if gemini_key else ""
-    if key_activa and GENAI_INSTALADO:
-        try:
-            genai.configure(api_key=key_activa)
-            model = genai.GenerativeModel(
-                model_name="gemini-3.8-flash",
-                system_instruction=prompt_sistema
-            )
-            respuesta = model.generate_content(mensaje_usuario)
-            if respuesta and respuesta.text:
-                return respuesta.text.strip()
-        except Exception as e:
-            return f"[ERROR DE CONEXIÓN]: {str(e)}"
-
-    return f"Sistemas locales activos en Buin, {titulo_jefa}. Asegúrate de tener Ollama abierto en segundo plano."
+    return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -102,12 +81,6 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    div[data-baseweb="select"], div[data-baseweb="select"] > div {
-        background-color: #000000 !important;
-        border-color: #00d2ff !important;
-        color: #00d2ff !important;
-        box-shadow: 0 0 10px rgba(0,210,255,0.3) !important;
-    }
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     
@@ -148,24 +121,13 @@ with col_telemetria:
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE Y SATÉLITE</div>', unsafe_allow_html=True)
-    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Enlace Local: Ollama Activo</p></div></div>'
+    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Motor: Ollama Local (Llama 3.2)</p></div></div>'
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO LLAVE GEMINI
-    st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
-    
-    key_temp = st.text_input("API Key Gemini:", value=st.session_state.gemini_key_persistente, type="password", placeholder="Pega tu API Key...", label_visibility="collapsed")
-    
-    if st.button("⚡ Conectar Gemini"):
-        st.session_state.gemini_key_persistente = key_temp.strip()
-        st.success("¡Gemini vinculado!")
-        
-    if st.session_state.gemini_key_persistente:
-        st.markdown("<p style='color:#00ffaa; font-size:11px; margin-top:4px;'>🟢 Estado: Gemini disponible como respaldo</p>", unsafe_allow_html=True)
-    else:
-        st.markdown("<p style='color:#00d2ff; font-size:11px; margin-top:4px;'>🟢 Estado: Usando motor local Ollama</p>", unsafe_allow_html=True)
-        
+    # ESTADO DEL NÚCLEO LOCAL
+    st.markdown('<div class="holo-card"><div class="holo-title">🟢 NÚCLEO LOCAL ACTIVO</div>', unsafe_allow_html=True)
+    st.markdown("<p style='color:#00ffaa; font-size:11px; margin:0; text-align:center;'>Sin límites de cuota • 100% Privado</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     reloj_chileno_html = """
@@ -303,11 +265,11 @@ with col_chat:
             subprocess.Popen(["start", "chrome"], shell=True)
             respuesta_ia = f"Desplegando navegador web, {titulo_jefa}."
         elif "analisis de sistema" in texto_lower or "analizar sistema" in texto_lower:
-            respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, núcleos de procesamiento al 24% y enlace local sincronizado con éxito."
+            respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, procesamiento local en Ollama al 100% operativo."
 
         if not respuesta_ia:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y con un toque de sarcasmo elegante (máximo 2 frases)."
-            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, st.session_state.gemini_key_persistente)
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma local con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y con un toque de sarcasmo elegante (máximo 2 frases)."
+            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.rerun()
