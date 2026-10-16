@@ -39,7 +39,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea. Sarcasmo táctico y lógica local calibrados."}
+        {"remitente": "jarvis", "texto": f"Sistemas de voz táctica al 100%, {titulo_jefa}. Búnker de Buin en línea con audio local activo."}
     ]
 
 if "modo_central" not in st.session_state:
@@ -67,9 +67,26 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
                 return resp + " *(Ollama Local)*"
     except Exception as e:
         print(f"--- ERROR REQUESTS OLLAMA ---: {str(e)}")
-        return f"Sistemas operativos estables en Buin, {titulo_jefa}. Mi núcleo local está procesando las directivas con lógica impecable... aunque parece que el servidor local de Ollama tardó en responder la broma."
+        return f"Sistemas operativos estables en Buin, {titulo_jefa}. Mi núcleo local está procesando las directivas con lógica impecable."
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
+
+# FUNCIÓN DE VOZ TÁCTICA (WEB SPEECH API)
+def hablar_con_jarvis(texto):
+    texto_limpio = texto.replace('*(Ollama Local)*', '').replace('"', '').replace("'", "").replace('\n', ' ')
+    voz_js = f"""
+    <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("{texto_limpio}");
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.05;
+            utterance.pitch = 0.95;
+            window.speechSynthesis.speak(utterance);
+        }}
+    </script>
+    """
+    components.html(voz_js, height=0)
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -126,7 +143,7 @@ with col_telemetria:
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="holo-card"><div class="holo-title">🟢 NÚCLEO LOCAL ACTIVO</div>', unsafe_allow_html=True)
-    st.markdown("<p style='color:#00ffaa; font-size:11px; margin:0; text-align:center;'>Sin límites de cuota • 100% Privado</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#00ffaa; font-size:11px; margin:0; text-align:center;'>Sin límites • Voz activa • 100% Privado</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     reloj_chileno_html = """
@@ -275,6 +292,9 @@ with col_chat:
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, "")
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
+        
+        # Ejecutar la voz al responder
+        hablar_con_jarvis(respuesta_ia)
         st.rerun()
 
 st.markdown("---")
