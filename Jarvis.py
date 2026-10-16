@@ -3,8 +3,14 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
-import urllib.request
 import random
+
+# Importar SDK oficial de Google GenAI
+try:
+    import google.generativeai as genai
+    GENAI_DISPONIBLE = True
+except ImportError:
+    GENAI_DISPONIBLE = False
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -40,7 +46,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Ingresa tu API Key y conéctate."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Conéctate a Gemini para iniciar la matriz."}
     ]
 
 if "modo_central" not in st.session_state:
@@ -49,41 +55,29 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA DIRECTO POR HTTP REST (MÁXIMA ESTABILIDAD)
+# MOTOR IA CON SDK OFICIAL DE GOOGLE (MÁXIMA COMPATIBILIDAD)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
-    if key_activa:
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_activa}"
-        
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"}
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 250
-            }
-        }
-        
+    if key_activa and GENAI_DISPONIBLE:
         try:
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=15) as response:
-                resultado = json.loads(response.read().decode('utf-8'))
-                candidates = resultado.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
+            genai.configure(api_key=key_activa)
+            # Probamos los nombres de modelos oficiales vigentes
+            for nombre_modelo in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]:
+                try:
+                    model = genai.GenerativeModel(
+                        model_name=nombre_modelo,
+                        system_instruction=prompt_sistema
+                    )
+                    response = model.generate_content(mensaje_usuario)
+                    if response and response.text:
+                        return response.text.strip()
+                except Exception:
+                    continue
         except Exception as e:
-            print(f"Error HTTP Gemini: {e}")
+            print(f"Error en SDK de Gemini: {e}")
 
-    # Fallback local Ollama
+    # Fallback local Ollama si no hay clave o falla el SDK
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -93,6 +87,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
+        import urllib.request
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=8) as response:
@@ -139,7 +134,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO ACTUALIZADO CON BOTÓN DE REINICIO
+# ENCABEZADO CON BOTÓN DE REINICIO
 col_head1, col_head2 = st.columns([5, 1])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
