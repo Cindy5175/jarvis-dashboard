@@ -90,7 +90,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario):
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
-# ESTILOS VISUALES CIBERNÉTICOS (NEÓN TÁCTICO & SELECTBOX NEGRO/AZUL)
+# ESTILOS VISUALES CIBERNÉTICOS (NEÓN TÁCTICO & TODOS LOS SELECTBOX EN NEGRO/AZUL)
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -98,7 +98,11 @@ st.markdown("""
     .holo-card { background-color: #000000; border: 1px solid #00d2ff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
     .holo-title { color: #00d2ff; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; text-align: center; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
     
-    /* ESTILO NEGRO Y AZUL NEÓN PARA EL SELECTOR DE PROTOCOLO Y DESPLEGABLES */
+    /* REGLA MAESTRA: TODOS LOS MENÚS DESPLEGABLES (SELECTBOX) EN NEGRO Y NEÓN */
+    div[data-baseweb="select"] {
+        background-color: #000000 !important;
+        border-radius: 8px !important;
+    }
     div[data-baseweb="select"] > div {
         background-color: #000000 !important;
         color: #00d2ff !important;
@@ -110,7 +114,21 @@ st.markdown("""
         color: #00d2ff !important;
         background-color: #000000 !important;
     }
-    
+    /* MENÚ POPUP DE OPCIONES DESPLEGABLES */
+    ul[data-baseweb="menu"] {
+        background-color: #000000 !important;
+        border: 1px solid #00d2ff !important;
+    }
+    li[data-baseweb="option"] {
+        background-color: #000000 !important;
+        color: #00d2ff !important;
+    }
+    li[data-baseweb="option"]:hover {
+        background-color: #00d2ff !important;
+        color: #000000 !important;
+    }
+
+    /* INPUTS DE TEXTO Y BOTONES */
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     
@@ -313,7 +331,7 @@ with col_chat:
             if "Chef" in st.session_state.personalidad_ia:
                 prompt_sistema = f"Eres J.A.R.V.I.S., asistente culinario experto en e-books de recetas, con el ingenio y toque sarcástico elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde con lógica culinaria brillante y sarcasmo refinado (máximo 2 frases)."
             else:
-                prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local highly lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
+                prompt_sistema = f"Eres J.A.R.V.I.S., una IA autónoma local altamente lógica, amigable, brillante y con el sarcasmo elegante, filoso y rápido de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Mantén un tono leal pero respondón, inteligente y con ese toque irónico característico (máximo 2 frases)."
             
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario)
 
