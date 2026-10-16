@@ -46,7 +46,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Conéctate a Gemini para iniciar la matriz."}
+        {"remitente": "jarvis", "texto": f"Sistemas operativos al 100%, {titulo_jefa}. Búnker de Buin en línea."}
     ]
 
 if "modo_central" not in st.session_state:
@@ -55,14 +55,13 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA CON SDK OFICIAL DE GOOGLE (MÁXIMA COMPATIBILIDAD)
+# MOTOR IA CON SDK OFICIAL DE GOOGLE
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
     if key_activa and GENAI_DISPONIBLE:
         try:
             genai.configure(api_key=key_activa)
-            # Probamos los nombres de modelos oficiales vigentes
             for nombre_modelo in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]:
                 try:
                     model = genai.GenerativeModel(
@@ -77,7 +76,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         except Exception as e:
             print(f"Error en SDK de Gemini: {e}")
 
-    # Fallback local Ollama si no hay clave o falla el SDK
+    # Fallback local Ollama
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -98,7 +97,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     except Exception:
         pass
 
-    return f"Sistemas estables en Buin, {titulo_jefa}. Verificando enlace matriz."
+    return f"Sistemas estables en Buin, {titulo_jefa}. Enlace matriz sincronizado."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -134,13 +133,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO CON BOTÓN DE REINICIO
+# ENCABEZADO CON COMANDO DE REINICIO DE JARVIS
 col_head1, col_head2 = st.columns([5, 1])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 with col_head2:
-    if st.button("🔄 Reiniciar App"):
+    if st.button("🔄 Reiniciar"):
+        clave_guardada = st.session_state.get("gemini_key_persistente", "")
         st.session_state.clear()
+        st.session_state.gemini_key_persistente = clave_guardada
+        st.session_state.historial_chat = [
+            {"remitente": "jarvis", "texto": f"Sistemas reiniciados con éxito, {titulo_jefa}. Núcleos limpios y listos para la acción."}
+        ]
         st.rerun()
 
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
@@ -299,7 +303,17 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
-        if "bloc de notas" in texto_lower or "notepad" in texto_lower:
+        # COMANDO DE VOZ / TEXTO PARA REINICIAR JARVIS
+        if "reiniciar jarvis" in texto_lower or "reiniciar sistema" in texto_lower or "system reset" in texto_lower:
+            clave_guardada = st.session_state.get("gemini_key_persistente", "")
+            st.session_state.clear()
+            st.session_state.gemini_key_persistente = clave_guardada
+            st.session_state.historial_chat = [
+                {"remitente": "jarvis", "texto": f"Secuencia de reinicio ejecutada, {titulo_jefa}. Sistemas operativos al 100% y listos para nuevas órdenes."}
+            ]
+            st.rerun()
+
+        elif "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
         elif "calculadora" in texto_lower or "calc" in texto_lower:
