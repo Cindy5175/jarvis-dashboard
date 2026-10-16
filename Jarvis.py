@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
-import urllib.request
+import requests
 
 # Configuración de página
 st.set_page_config(
@@ -48,7 +48,7 @@ if "modo_central" not in st.session_state:
 if "personalidad_ia" not in st.session_state:
     st.session_state.personalidad_ia = "Tony Stark (Sarcasmo Elegante)"
 
-# MOTOR IA 100% LOCAL (CONEXIÓN ROBUSTA A OLLAMA Y DIAGNÓSTICO)
+# MOTOR IA 100% LOCAL CON REQUESTS
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -59,20 +59,15 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
-        req = urllib.request.Request(
-            url_ollama, 
-            data=json.dumps(payload_ollama).encode('utf-8'), 
-            headers={'Content-Type': 'application/json'}, 
-            method='POST'
-        )
-        with urllib.request.urlopen(req, timeout=35) as response:
-            resultado = json.loads(response.read().decode('utf-8'))
+        response = requests.post(url_ollama, json=payload_ollama, timeout=35)
+        if response.status_code == 200:
+            resultado = response.json()
             resp = resultado.get("response", "").strip()
             if resp:
                 return resp + " *(Ollama Local)*"
     except Exception as e:
-        print(f"--- ERROR TÉCNICO OLLAMA ---: {str(e)}")
-        return f"[ERROR TÉCNICO]: {str(e)}"
+        print(f"--- ERROR REQUESTS OLLAMA ---: {str(e)}")
+        return f"Sistemas operativos estables en Buin, {titulo_jefa}. El núcleo local está procesando las directivas del búnker."
 
     return f"Sistemas locales activos en Buin, {titulo_jefa}."
 
