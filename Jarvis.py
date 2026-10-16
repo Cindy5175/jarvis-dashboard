@@ -54,7 +54,6 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
     if key_activa:
-        # Usamos gemini-1.5-flash con la API v1 que acepta las claves de AI Studio directamente
         url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_activa}"
         
         payload = {
@@ -140,8 +139,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO ACTUALIZADO
-st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
+# ENCABEZADO ACTUALIZADO CON BOTÓN DE REINICIO
+col_head1, col_head2 = st.columns([5, 1])
+with col_head1:
+    st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
+with col_head2:
+    if st.button("🔄 Reiniciar App"):
+        st.session_state.clear()
+        st.rerun()
+
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
