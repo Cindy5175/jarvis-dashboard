@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import urllib.request
+import random
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -48,7 +49,7 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B)
+# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B MEJORADO)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://localhost:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -61,12 +62,18 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     try:
         data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-        with urllib.request.urlopen(req, timeout=25) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             return resultado.get("response", "").strip()
     except Exception:
-        # Respuesta de respaldo de emergencia Tony Stark si el servidor local parpadea
-        return f"Sistemas operativos bajo mínimos en el enlace local, {titulo_jefa}, pero el búnker sigue bajo control. ¿Qué orden ejecutamos en Windows?"
+        # Respuestas de respaldo dinámicas estilo Tony Stark si Ollama no responde
+        respuestas_emergencia = [
+            f"Los servidores locales están descansando un momento, {titulo_jefa}, pero yo sigo operativo al 100%. ¿En qué te ayudo?",
+            f"Enlace local intermitente, {titulo_jefa}. Aún así, mis circuitos están listos para lo que mandes.",
+            f"El búnker en Buin está blindado, {titulo_jefa}. ¿Qué otra directiva ejecutamos?",
+            f"Procesador local en modo de ahorro, {titulo_jefa}. Pero para ti siempre hay tiempo. ¿Qué necesitas?"
+        ]
+        return random.choice(respuestas_emergencia)
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
