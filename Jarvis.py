@@ -49,7 +49,7 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B MEJORADO CON TIMEOUT EXTENDIDO)
+# MOTOR OLLAMA LOCAL ROBUSTO (PLAN B)
 def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     url = "http://localhost:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
@@ -62,15 +62,11 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
     try:
         data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-        # Aumentamos el timeout a 30 segundos para darle tiempo a Llama local
         with urllib.request.urlopen(req, timeout=30) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             return resultado.get("response", "").strip()
     except Exception as e:
-        # Imprimimos el error exacto en la terminal de Python para diagnóstico
         print(f"Error conectando con Ollama: {e}")
-        
-        # Respuestas de respaldo dinámicas estilo Tony Stark si Ollama no responde
         respuestas_emergencia = [
             f"Los servidores locales están descansando un momento, {titulo_jefa}, pero yo sigo operativo al 100%. ¿En qué te ayudo?",
             f"Enlace local intermitente, {titulo_jefa}. Aún así, mis circuitos están listos para lo que mandes.",
@@ -189,7 +185,8 @@ with col_chat:
 
     st.markdown('<p style="color:#00d2ff; font-size:11px; font-weight:bold; margin-top:8px;">Win + H para dictar, escribe tu orden y presiona Enviar:</p>', unsafe_allow_html=True)
     
-    entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...")
+    # Se añadió la clave 'input_usuario' para poder limpiarla después de enviar
+    entrada_usuario = st.text_input("Mensaje a JARVIS:", label_visibility="collapsed", placeholder="Escribe aquí...", key="input_usuario")
     
     b_col1, b_col2 = st.columns(2)
     with b_col1:
@@ -230,6 +227,9 @@ with col_chat:
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
+        
+        # Limpiamos la caja de texto reseteando su valor en session_state antes de recargar
+        st.session_state.input_usuario = ""
         st.rerun()
 
 st.markdown("---")
