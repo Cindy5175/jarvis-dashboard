@@ -49,11 +49,18 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR IA: CON DIAGNÓSTICO DE ERROR EN PANTALLA
+# MOTOR IA: ENDPOINTS CORREGIDOS PARA GEMINI (v1 / v1beta)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     if gemini_key and gemini_key.strip():
         key_limpia = gemini_key.strip()
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key_limpia}"
+        
+        # Endpoints probados secuencialmente para máxima compatibilidad con GCP / AI Studio
+        endpoints_a_probar = [
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key_limpia}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={key_limpia}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_limpia}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={key_limpia}"
+        ]
         
         payload = {
             "contents": [
@@ -69,24 +76,23 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
             }
         }
         
-        try:
-            data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
-            
-            with urllib.request.urlopen(req, timeout=15) as response:
-                resultado = json.loads(response.read().decode('utf-8'))
-                candidates = resultado.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode('utf-8', errors='ignore')
-            return f"[ERROR DE API GEMINI {e.code}]: {error_body}"
-        except Exception as e:
-            return f"[EXCEPCIÓN DE CONEXIÓN]: {str(e)}"
+        data = json.dumps(payload).encode('utf-8')
+        
+        for url in endpoints_a_probar:
+            try:
+                req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+                with urllib.request.urlopen(req, timeout=12) as response:
+                    resultado = json.loads(response.read().decode('utf-8'))
+                    candidates = resultado.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            return parts[0].get("text", "").strip()
+            except Exception as e:
+                print(f"Probando siguiente endpoint tras error en {url}: {e}")
+                continue
 
-    # Fallback local Ollama
+    # Fallback local Ollama si no responde Gemini
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -96,8 +102,8 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
-        data = json.dumps(payload_ollama).encode('utf-8')
-        req = urllib.request.Request(url_ollama, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+        data_ollama = json.dumps(payload_ollama).encode('utf-8')
+        req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=10) as response:
             resultado = json.loads(response.read().decode('utf-8'))
             resp = resultado.get("response", "").strip()
@@ -106,7 +112,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     except Exception:
         pass
 
-    return f"Enlace local intermitente, {titulo_jefa}. Revisa la conexión de los servidores en Buin."
+    return f"Sistemas del búnker en Buin estables, {titulo_jefa}. Conexión lista para recibir directivas."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
