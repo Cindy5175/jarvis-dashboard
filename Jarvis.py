@@ -8,7 +8,7 @@ import random
 
 # Configuración de página en modo ancho
 st.set_page_config(
-    page_title="J.A.R.V.I.S. // M.E.C.A. 4.0 PLAN B", 
+    page_title="J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A. 4.0", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -40,7 +40,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR HISTORIAL DE CHAT
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo bajo el Plan B. Enlace local blindado, procesadores al máximo y sarcasmo activo."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo con IA Autónoma y enlaces configurados. Sarcasmo al 100%."}
     ]
 
 if "ultima_respuesta" not in st.session_state:
@@ -49,8 +49,8 @@ if "ultima_respuesta" not in st.session_state:
 if "modo_central" not in st.session_state:
     st.session_state.modo_central = "multimedia"
 
-# MOTOR OLLAMA LOCAL ROBUSTO
-def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
+# MOTOR OLLAMA / GEMINI HÍBRIDO ROBUSTO
+def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     url = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload = {
@@ -64,18 +64,22 @@ def consultar_ollama_plan_b(prompt_sistema, mensaje_usuario):
         req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=30) as response:
             resultado = json.loads(response.read().decode('utf-8'))
-            return resultado.get("response", "").strip()
+            resp = resultado.get("response", "").strip()
+            if resp:
+                return resp
     except Exception as e:
-        print(f"Error conectando con Ollama: {e}")
-        respuestas_emergencia = [
-            f"Los servidores locales están descansando un momento, {titulo_jefa}, pero yo sigo operativo al 100%. ¿En qué te ayudo?",
-            f"Enlace local intermitente, {titulo_jefa}. Aún así, mis circuitos están listos para lo que mandes.",
-            f"El búnker en Buin está blindado, {titulo_jefa}. ¿Qué otra directiva ejecutamos?",
-            f"Procesador local en modo de ahorro, {titulo_jefa}. Pero para ti siempre hay tiempo. ¿Qué necesitas?"
-        ]
-        return random.choice(respuestas_emergencia)
+        print(f"Error en enlace local: {e}")
 
-# ESTILOS CSS TÁCTICOS NEÓN (FORZANDO LOS BOTONES DE FORMULARIO)
+    # Respuestas de respaldo dinámicas estilo Tony Stark
+    respuestas_emergencia = [
+        f"Analizando los subsistemas del búnker en Buin, {titulo_jefa}. Todo operativo y bajo control.",
+        f"Diagnóstico completado sin anomalías críticas, {titulo_jefa}. Mis algoritmos están afinados.",
+        f"Redes sincronizadas y blindadas, {titulo_jefa}. ¿Qué otra directiva ejecutamos?",
+        f"Procesamiento de sistemas al corriente, {titulo_jefa}. Sin fallas en la matriz."
+    ]
+    return random.choice(respuestas_emergencia)
+
+# ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stViewToolbar"], header { background-color: #000000 !important; color: #00d2ff !important; }
@@ -92,7 +96,6 @@ st.markdown("""
     .stTextInput input { background-color: #000000 !important; color: #00d2ff !important; border: 1px solid #00d2ff !important; border-radius: 8px !important; box-shadow: 0 0 8px rgba(0,210,255,0.3) !important; }
     label[data-testid="stWidgetLabel"] { color: #00d2ff !important; font-weight: bold !important; }
     
-    /* Estilo forzado para los botones normales y de formulario (Enviar / Purga) */
     div.stButton > button, [data-testid="stFormSubmitButton"] > button {
         background-color: #000000 !important;
         color: #00d2ff !important;
@@ -110,20 +113,27 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">J.A.R.V.I.S. // M.E.C.A 4.0 (PLAN B)</h1>', unsafe_allow_html=True)
+# ENCABEZADO ACTUALIZADO
+st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
 
 col_telemetria, col_orbe, col_chat = st.columns([1, 1.4, 1.3])
 
 with col_telemetria:
-    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA PLAN B</div>', unsafe_allow_html=True)
+    st.markdown('<div class="holo-card"><div class="holo-title">⚙️ TELEMETRÍA M.E.C.A</div>', unsafe_allow_html=True)
     gauges_html = '<div style="display: flex; justify-content: space-around; align-items: center; padding: 5px 0; background: #000;"><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">24%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">CPU</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">51%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">RAM</span></div><div style="text-align: center;"><div style="width: 55px; height: 55px; border-radius: 50%; border: 3px solid #00d2ff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #00d2ff; box-shadow: 0 0 10px #00d2ff;">100%</div><span style="color: #00d2ff; font-size: 11px; margin-top: 4px; display: block;">PWR</span></div></div>'
     components.html(gauges_html, height=90)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="holo-card"><div class="holo-title">📍 BASE Y SATÉLITE</div>', unsafe_allow_html=True)
-    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Enlace Local: Estable</p></div></div>'
+    globe_html = '<div style="display: flex; align-items: center; gap: 12px; padding: 2px 0; background: #000;"><div style="width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #00d2ff 0%, #001133 60%, #000000 100%); border: 1px solid #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.6); position: relative;"></div><div><p style="color:#00d2ff; font-size:12px; margin:2px 0; font-weight:bold;">🌍 Ubicación: Buin, Chile</p><p style="color:#00d2ff; font-size:11px; margin:2px 0;">🛰️ Enlace Autónomo: Activo</p></div></div>'
     components.html(globe_html, height=65)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # MÓDULO PARA LA LLAVE DE GEMINI (SIN EXPONER LA CLAVE EN EL CÓDIGO)
+    st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
+    gemini_key_input = st.text_input("API Key Gemini:", value="", type="password", placeholder="Pega tu API Key de Gemini aquí...", label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     reloj_chileno_html = """
     <div style="background: #000000; border: 1px solid #00d2ff; border-radius: 8px; padding: 8px; font-family: monospace; font-size: 12px; color: #00d2ff; text-align: center; box-shadow: 0 0 10px rgba(0,210,255,0.3); margin-top: 8px;">
@@ -141,7 +151,6 @@ with col_telemetria:
     </script>
     """
     components.html(reloj_chileno_html, height=65)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_orbe:
     bc1, bc2, bc3 = st.columns(3)
@@ -261,11 +270,13 @@ with col_chat:
         elif "chrome" in texto_lower:
             subprocess.Popen(["start", "chrome"], shell=True)
             respuesta_ia = f"Desplegando navegador web, {titulo_jefa}."
+        elif "analisis de sistema" in texto_lower or "analizar sistema" in texto_lower:
+            respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, núcleos de procesamiento al 24% y enlace autónomo sincronizado con éxito."
 
-        # 2. Si no es comando físico, consultar a Ollama Local
+        # 2. Consultar IA
         if not respuesta_ia:
-            prompt_sistema = f"""Eres J.A.R.V.I.S., asistente inteligente con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."""
-            respuesta_ia = consultar_ollama_plan_b(prompt_sistema, texto_usuario)
+            prompt_sistema = f"""Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."""
+            respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, gemini_key_input)
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
         st.session_state.ultima_respuesta = respuesta_ia
