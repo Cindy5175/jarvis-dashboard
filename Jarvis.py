@@ -3,14 +3,8 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
+import urllib.request
 import random
-
-# Importar la librería oficial de Google GenAI
-try:
-    import google.generativeai as genai
-    GENAI_DISPONIBLE = True
-except ImportError:
-    GENAI_DISPONIBLE = False
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -46,7 +40,7 @@ titulo_jefa = st.session_state.memoria.get("usuario", {}).get("titulo", "Jefa")
 # INICIALIZAR ESTADOS
 if "historial_chat" not in st.session_state:
     st.session_state.historial_chat = [
-        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Ingresa tu API Key a la izquierda y presiona 'Conectar Gemini'."}
+        {"remitente": "jarvis", "texto": f"¡Hola, {titulo_jefa}! Búnker de Buin operativo. Ingresa tu API Key y conéctate."}
     ]
 
 if "modo_central" not in st.session_state:
@@ -55,28 +49,42 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA ROBUSTO CON SDK DE GOOGLE
+# MOTOR IA DIRECTO POR HTTP REST (MÁXIMA ESTABILIDAD)
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
-    if key_activa and GENAI_DISPONIBLE:
-        # Intentar conectar con Gemini mediante SDK Oficial
-        modelos_oficiales = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
-        for mod in modelos_oficiales:
-            try:
-                genai.configure(api_key=key_activa)
-                model = genai.GenerativeModel(
-                    model_name=mod,
-                    system_instruction=prompt_sistema
-                )
-                response = model.generate_content(mensaje_usuario)
-                if response and response.text:
-                    return response.text.strip()
-            except Exception as e:
-                print(f"Error probando modelo {mod}: {e}")
-                continue
+    if key_activa:
+        # Usamos gemini-1.5-flash con la API v1 que acepta las claves de AI Studio directamente
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_activa}"
+        
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"}
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 250
+            }
+        }
+        
+        try:
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(req, timeout=15) as response:
+                resultado = json.loads(response.read().decode('utf-8'))
+                candidates = resultado.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        return parts[0].get("text", "").strip()
+        except Exception as e:
+            print(f"Error HTTP Gemini: {e}")
 
-    # Respuestas con IA local / dinámicas si no hay Gemini
+    # Fallback local Ollama
     url_ollama = "http://127.0.0.1:11434/api/generate"
     prompt_completo = f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"
     payload_ollama = {
@@ -86,7 +94,6 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
-        import urllib.request
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=8) as response:
@@ -97,7 +104,7 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     except Exception:
         pass
 
-    return f"Procesando directiva desde Buin, {titulo_jefa}. Conexión de respaldo activa."
+    return f"Sistemas estables en Buin, {titulo_jefa}. Verificando enlace matriz."
 
 # ESTILOS CSS TÁCTICOS NEÓN
 st.markdown("""
@@ -150,7 +157,7 @@ with col_telemetria:
     components.html(globe_html, height=65)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO LLAVE GEMINI CON BOTÓN DE CONEXIÓN PERSISTENTE
+    # MÓDULO LLAVE GEMINI
     st.markdown('<div class="holo-card"><div class="holo-title">🔑 LLAVE API GOOGLE GEMINI</div>', unsafe_allow_html=True)
     
     key_temp = st.text_input("API Key Gemini:", value=st.session_state.gemini_key_persistente, type="password", placeholder="Pega tu API Key de AI Studio...", label_visibility="collapsed")
@@ -304,7 +311,7 @@ with col_chat:
             respuesta_ia = f"Sistemas del búnker en Buin escaneados, {titulo_jefa}. Redes estables, núcleos de procesamiento al 24% y enlace autónomo sincronizado con éxito."
 
         if not respuesta_ia:
-            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y breve (máximo 2 frases)."
+            prompt_sistema = f"Eres J.A.R.V.I.S., IA autónoma con el sarcasmo elegante de Tony Stark. Tu jefa es {titulo_jefa} {nombre_jefa}, en Buin, Chile. Responde de forma brillante, coherente y con un toque de sarcasmo elegante (máximo 2 frases)."
             respuesta_ia = consultar_ia_jarvis(prompt_sistema, texto_usuario, st.session_state.gemini_key_persistente)
 
         st.session_state.historial_chat.append({"remitente": "jarvis", "texto": respuesta_ia})
