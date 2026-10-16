@@ -3,14 +3,8 @@ import streamlit.components.v1 as components
 import json
 import os
 import subprocess
+import urllib.request
 import random
-
-# Importar SDK oficial de Google GenAI
-try:
-    import google.generativeai as genai
-    GENAI_DISPONIBLE = True
-except ImportError:
-    GENAI_DISPONIBLE = False
 
 # Configuración de página en modo ancho
 st.set_page_config(
@@ -55,26 +49,39 @@ if "modo_central" not in st.session_state:
 if "gemini_key_persistente" not in st.session_state:
     st.session_state.gemini_key_persistente = ""
 
-# MOTOR IA CON SDK OFICIAL DE GOOGLE
+# MOTOR IA DIRECTO Y ESTABLE
 def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
     key_activa = gemini_key.strip() if gemini_key else ""
     
-    if key_activa and GENAI_DISPONIBLE:
+    if key_activa:
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={key_activa}"
+        
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"{prompt_sistema}\n\nMensaje de la Jefa: {mensaje_usuario}"}
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 250
+            }
+        }
+        
         try:
-            genai.configure(api_key=key_activa)
-            for nombre_modelo in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]:
-                try:
-                    model = genai.GenerativeModel(
-                        model_name=nombre_modelo,
-                        system_instruction=prompt_sistema
-                    )
-                    response = model.generate_content(mensaje_usuario)
-                    if response and response.text:
-                        return response.text.strip()
-                except Exception:
-                    continue
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(req, timeout=15) as response:
+                resultado = json.loads(response.read().decode('utf-8'))
+                candidates = resultado.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        return parts[0].get("text", "").strip()
         except Exception as e:
-            print(f"Error en SDK de Gemini: {e}")
+            print(f"Error HTTP Gemini: {e}")
 
     # Fallback local Ollama
     url_ollama = "http://127.0.0.1:11434/api/generate"
@@ -86,7 +93,6 @@ def consultar_ia_jarvis(prompt_sistema, mensaje_usuario, gemini_key):
         "options": {"temperature": 0.6}
     }
     try:
-        import urllib.request
         data_ollama = json.dumps(payload_ollama).encode('utf-8')
         req = urllib.request.Request(url_ollama, data=data_ollama, headers={'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=8) as response:
@@ -133,18 +139,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ENCABEZADO CON COMANDO DE REINICIO DE JARVIS
+# ENCABEZADO CON REFRESCO DE PÁGINA
 col_head1, col_head2 = st.columns([5, 1])
 with col_head1:
     st.markdown('<h1 class="main-header">J.A.R.V.I.S. // IA AUTÓNOMA M.E.C.A 4.0</h1>', unsafe_allow_html=True)
 with col_head2:
-    if st.button("🔄 Reiniciar"):
-        clave_guardada = st.session_state.get("gemini_key_persistente", "")
+    if st.button("🔄 Reiniciar App"):
         st.session_state.clear()
-        st.session_state.gemini_key_persistente = clave_guardada
-        st.session_state.historial_chat = [
-            {"remitente": "jarvis", "texto": f"Sistemas reiniciados con éxito, {titulo_jefa}. Núcleos limpios y listos para la acción."}
-        ]
         st.rerun()
 
 st.markdown("<hr style='margin: 5px 0 15px 0; border-color: rgba(0,210,255,0.3);'>", unsafe_allow_html=True)
@@ -303,17 +304,7 @@ with col_chat:
         respuesta_ia = None
         texto_lower = texto_usuario.lower()
         
-        # COMANDO DE VOZ / TEXTO PARA REINICIAR JARVIS
-        if "reiniciar jarvis" in texto_lower or "reiniciar sistema" in texto_lower or "system reset" in texto_lower:
-            clave_guardada = st.session_state.get("gemini_key_persistente", "")
-            st.session_state.clear()
-            st.session_state.gemini_key_persistente = clave_guardada
-            st.session_state.historial_chat = [
-                {"remitente": "jarvis", "texto": f"Secuencia de reinicio ejecutada, {titulo_jefa}. Sistemas operativos al 100% y listos para nuevas órdenes."}
-            ]
-            st.rerun()
-
-        elif "bloc de notas" in texto_lower or "notepad" in texto_lower:
+        if "bloc de notas" in texto_lower or "notepad" in texto_lower:
             subprocess.Popen(["notepad.exe"])
             respuesta_ia = f"Abriendo el Bloc de notas, {titulo_jefa}."
         elif "calculadora" in texto_lower or "calc" in texto_lower:
