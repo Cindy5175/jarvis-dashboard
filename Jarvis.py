@@ -154,26 +154,40 @@ with col_centro:
             {"role": "user", "content": user_input}
         )
 
-        # Respuesta simulada o conexión a Ollama
-        prompt_sistema = (
-            "Eres JARVIS, asistente de Cindy (Jefa) en Buin."
-            if protocolo == "Tony Stark"
-            else "Eres un Chef Ejecutivo experto asistiendo a Cindy (Jefa)."
-        )
+        input_lower = user_input.lower().strip()
 
-        try:
-            res = requests.post(
-                "http://127.0.0.1:11434/api/generate",
-                json={
-                    "model": "llama3",
-                    "prompt": f"{prompt_sistema}\nUsuario: {user_input}\nJARVIS:",
-                    "stream": False,
-                },
-                timeout=10,
+        # Respuesta directa para consultas sobre si está despierto
+        if "despierto" in input_lower or "estas despierto" in input_lower:
+            respuesta = "Para usted siempre, señorita."
+        # Saludo oficial por defecto
+        elif (
+            "buenos dias" in input_lower
+            or "hola" in input_lower
+            or "buenos días" in input_lower
+        ):
+            respuesta = "Buenos días, señorita Cindy. Todos los sistemas del búnker operan al 100%."
+        else:
+            prompt_sistema = (
+                "Eres JARVIS, el asistente personal de la señorita Cindy (Jefa) en Buin, Chile. Tu trato es extremadamente elegante, respetuoso y leal."
+                if protocolo == "Tony Stark"
+                else "Eres un Chef Ejecutivo experto asistiendo a la señorita Cindy."
             )
-            respuesta = res.json().get("response", "Sistemas operativos.")
-        except Exception:
-            respuesta = f"Entendido, Jefa. Ejecutando orden con protocolo {protocolo}."
+
+            try:
+                res = requests.post(
+                    "http://127.0.0.1:11434/api/generate",
+                    json={
+                        "model": "llama3",
+                        "prompt": f"{prompt_sistema}\nUsuario: {user_input}\nJARVIS:",
+                        "stream": False,
+                    },
+                    timeout=10,
+                )
+                respuesta = res.json().get(
+                    "response", "Sistemas operativos, señorita Cindy."
+                )
+            except Exception:
+                respuesta = f"Entendido, señorita Cindy. Ejecutando orden con protocolo {protocolo}."
 
         st.session_state.messages.append(
             {"role": "assistant", "content": respuesta}
