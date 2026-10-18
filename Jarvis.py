@@ -18,9 +18,9 @@ class PuenteTacticoUnificado:
         if "telemetria_jarvis" not in st.session_state:
             ahora_cl = datetime.now(CHILE_TZ)
             st.session_state.telemetria_jarvis = [
-                {"origen": "JARVIS", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Núcleo de inteligencia estabilizado."},
-                {"origen": "N.O.V.A.", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sincronía cuántica de plasma lista."},
-                {"origen": "VIERNES", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sensores satelitales en línea."}
+                {"origen": "JARVIS", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Núcleo de inteligencia estabilizado con elegancia."},
+                {"origen": "N.O.V.A.", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sincronía cuántica lista para la acción."},
+                {"origen": "VIERNES", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sensores satelitales vigilando el perímetro."}
             ]
 
     def registrar_transmision(self, origen, mensaje):
@@ -355,23 +355,23 @@ with col_izq:
         
         if "foto" in p_lower or "ordenar" in p_lower or "laptop" in p_lower:
             if agente == "J.A.R.V.I.S.":
-                reply = "Protocolo de organización de archivos sincronizado en red, Jefa. En un entorno local real, ejecutaríamos la distribución de la galería."
+                reply = "Claro que sí, Jefa. Aunque a este paso, pronto querrá que también le limpie la pantalla con un plumero cuántico. Todo bajo control en local."
             else:
-                reply = "Matriz N.O.V.A. procesando almacenamiento: Los índices de imágenes están listos para la depuración en segundo plano."
+                reply = "Matriz N.O.V.A. activa. Tranquila, Jefa, los archivos están seguros... a menos que el gatito decida hackearnos de nuevo."
         elif "analisis" in p_lower or "sistema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
             if agente == "J.A.R.V.I.S.":
-                reply = f"Diagnóstico del sistema a las {hora_actual_str}: Núcleo al 99.9%, interfaz táctica fluida y latencia de 12ms. Todo en orden, Jefa."
+                reply = f"Diagnóstico a las {hora_actual_str}: Núcleo al 99.9%. Sobreviviendo con gracia y sin errores fatales. Un lujo, Jefa."
             else:
-                reply = "Análisis N.O.V.A. completado: Red orbital estable, enlace con Buin verificado y escudo AES-256 activo."
+                reply = "Análisis N.O.V.A. OK. Satélites en línea y clima de Buin verificado. Nadie nos pilla desprevenidos hoy."
         elif "hola" in p_lower or "buenas" in p_lower:
-            reply = f"¡Hola, Jefa! Sistema unificado respondiendo a las {hora_actual_str}. ¿Qué protocolo ejecutamos?"
+            reply = f"¡Hola, Jefa! Listos por aquí desde las {hora_actual_str}. ¿Qué travesura tecnológica vamos a ejecutar ahora?"
         elif "gracias" in p_lower or "excelente" in p_lower:
-            reply = "Es un honor servirle, Jefa. Mantenemos el enlace optimizado para la presentación."
+            reply = "Para eso estamos, Jefa. Para hacer que parezca magia y que usted se lleve todos los aplausos."
         else:
             if agente == "J.A.R.V.I.S.":
-                reply = f"Comprendido, Jefa. He analizado la orden '{prompt}' en el sistema central."
+                reply = f"Orden recibida y procesada con estilo: '{prompt}'. Deje que el sistema se encargue."
             else:
-                reply = f"Matriz N.O.V.A. procesando '{prompt}'. Protocolo registrado con éxito."
+                reply = f"N.O.V.A. procesando '{prompt}' con unidades de plasma al 100%. ¡Impecable, Jefa!"
 
         try:
             from gTTS import gTTS
