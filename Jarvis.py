@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 
 # Configuración de la página en Streamlit
 st.set_page_config(
