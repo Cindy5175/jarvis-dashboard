@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS para forzar fondo negro, letras azul neón y tamaño de mapa reducido
+# Inyección de Estilos CSS para forzar fondo negro, letras azul neón y mapa compacto
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -28,9 +28,9 @@ st.markdown("""
         color: #80f9ff !important;
     }
     
-    /* Reducir tamaño del contenedor del mapa */
+    /* Reducir altura del mapa iframe para hacerlo más compacto */
     iframe {
-        height: 220px !important;
+        height: 180px !important;
         border-radius: 8px;
         border: 1px solid #00f3ff !important;
     }
@@ -53,7 +53,7 @@ st.markdown("""
 st.title("🤖 JARVIS 4.0 // NOVA")
 st.markdown("---")
 
-# Distribución en columnas
+# Distribución en columnas principales
 col1, col2 = st.columns(2)
 
 with col1:
@@ -67,13 +67,16 @@ with col1:
     st.markdown(f"⏱️ **Hora Táctica (Local):**")
     st.markdown(f"### `{hora_actual}`")
     
-    # Enlace satelital Serafín con mapa más pequeño
+    # Enlace satelital Serafín con mapa achicado mediante subcolumnas
     st.markdown("### 🛰️ Enlace satelital Serafín")
-    mapa_buin = pd.DataFrame({
-        'lat': [-33.7333],
-        'lon': [-70.7417]
-    })
-    st.map(mapa_buin, zoom=9, use_container_width=True)
+    
+    mapa_col1, mapa_col2 = st.columns([2, 1])
+    with mapa_col1:
+        mapa_buin = pd.DataFrame({
+            'lat': [-33.7333],
+            'lon': [-70.7417]
+        })
+        st.map(mapa_buin, zoom=9, use_container_width=True)
 
 with col2:
     st.subheader("Controles Rápidos")
