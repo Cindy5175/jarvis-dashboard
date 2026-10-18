@@ -5,8 +5,6 @@ from datetime import datetime, timezone, timedelta
 import streamlit.components.v1 as components
 import string
 import random
-import os
-import shutil
 
 # Configuración de la zona horaria de Chile (UTC-3)
 CHILE_TZ = timezone(timedelta(hours=-3))
@@ -41,43 +39,6 @@ class PuenteTacticoUnificado:
 
 # Inicializar el puente unificado
 puente = PuenteTacticoUnificado()
-
-# --- FUNCIÓN DE ORGANIZACIÓN REAL Y MODO DEMO ---
-def ejecutar_organizador_fotos(ruta_objetivo):
-    extensiones_imagenes = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
-    if not os.path.exists(ruta_objetivo):
-        return f"❌ La ruta '{ruta_objetivo}' no existe en este entorno. (Pruebe con el Modo Demo para la presentación)."
-    
-    archivos = os.listdir(ruta_objetivo)
-    movidos = 0
-    for archivo in archivos:
-        ruta_archivo = os.path.join(ruta_objetivo, archivo)
-        if os.path.isfile(ruta_archivo):
-            ext = os.path.splitext(archivo)[1].lower()
-            if ext in extensiones_imagenes:
-                tiempo_modificacion = os.path.getmtime(ruta_archivo)
-                fecha = datetime.fromtimestamp(tiempo_modificacion)
-                nombre_carpeta_destino = fecha.strftime("%Y-%m")
-                ruta_carpeta_destino = os.path.join(ruta_objetivo, nombre_carpeta_destino)
-                
-                if not os.path.exists(ruta_carpeta_destino):
-                    os.makedirs(ruta_carpeta_destino)
-                
-                shutil.move(ruta_archivo, os.path.join(ruta_carpeta_destino, archivo))
-                movidos += 1
-    return f"✅ Protocolo completado. Se han organizado {movidos} archivos en carpetas cronológicas (YYYY-MM)."
-
-def ejecutar_modo_demo():
-    demo_dir = "./demo_galeria"
-    if not os.path.exists(demo_dir):
-        os.makedirs(demo_dir)
-        # Crear archivos de prueba simulados
-        for i in range(1, 6):
-            with open(os.path.join(demo_dir, f"foto_viaje_chile_{i}.jpg"), "w") as f:
-                f.write("datos simulados de imagen")
-    
-    # Organizar la carpeta demo
-    return ejecutar_organizador_fotos(demo_dir)
 
 # Estilos visuales tácticos (Fondo Negro Absoluto - Cyan Neón)
 st.markdown("""
@@ -394,9 +355,9 @@ with col_izq:
         
         if "foto" in p_lower or "ordenar" in p_lower or "laptop" in p_lower:
             if agente == "J.A.R.V.I.S.":
-                reply = "Por supuesto, Jefa. Para simular el ordenamiento en vivo frente al público, active el 'Modo Demostración' en la columna derecha."
+                reply = "Protocolo de organización de archivos sincronizado en red, Jefa. En un entorno local real, ejecutaríamos la distribución de la galería."
             else:
-                reply = "Matriz N.O.V.A. lista. Pulse el botón de Modo Demo para ejecutar la clasificación automática de archivos en tiempo real."
+                reply = "Matriz N.O.V.A. procesando almacenamiento: Los índices de imágenes están listos para la depuración en segundo plano."
         elif "analisis" in p_lower or "sistema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
             if agente == "J.A.R.V.I.S.":
                 reply = f"Diagnóstico del sistema a las {hora_actual_str}: Núcleo al 99.9%, interfaz táctica fluida y latencia de 12ms. Todo en orden, Jefa."
@@ -430,7 +391,7 @@ with col_izq:
     with col_b:
         st.markdown('<a href="https://scribd.com" target="_blank" class="tactical-link">📚 Scribd</a>', unsafe_allow_html=True)
 
-# --- COLUMNA DERECHA: CLIMA, RED, CIFRADO Y MODO DEMO ---
+# --- COLUMNA DERECHA: CLIMA, RED Y CIFRADO ---
 with col_der:
     st.markdown('<div class="right-panel">', unsafe_allow_html=True)
     
@@ -469,15 +430,5 @@ with col_der:
         caracteres = string.ascii_letters + string.digits + "!@#$"
         clave_gen = ''.join(random.choice(caracteres) for _ in range(longitud))
         st.code(clave_gen, language="")
-
-    st.divider()
-    
-    # --- MÓDULO INTERACTIVO DE ORGANIZACIÓN (MODO DEMO) ---
-    st.markdown("### 📁 Protocolo de Archivos")
-    st.caption("Simulación en vivo para presentación")
-    if st.button("🚀 Ejecutar Modo Demo (Organizar)", use_container_width=True):
-        resultado_demo = ejecutar_modo_demo()
-        st.success(resultado_demo)
-        puente.registrar_transmision("JARVIS", "Modo demostración de archivos ejecutado con éxito.")
         
     st.markdown('</div>', unsafe_allow_html=True)
