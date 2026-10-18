@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
 
-# Configuración de la página en Streamlit (Forzando diseño amplio y título)
+# Configuración de la página en Streamlit
 st.set_page_config(
     page_title="J.A.R.V.I.S. 4.0 - Núcleo Táctico",
     page_icon="⚡",
     layout="wide"
 )
 
-# Inyección de Estilos CSS para el fondo negro y letras azul neón
+# Inyección de Estilos CSS para forzar fondo negro y letras azul neón
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -16,31 +16,31 @@ st.markdown("""
         background-color: #000000 !important;
     }
     
-    /* Títulos principales en azul neón brillante */
+    /* Títulos principales en azul neón brillante con resplandor */
     h1, h2, h3 {
         color: #00f3ff !important;
-        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.6);
+        text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
     }
     
-    /* Textos generales en tono claro legible sobre fondo negro */
-    p, span, label, div, markdown {
-        color: #c0c0c0 !important;
+    /* Textos generales en azul neón claro / cian para mantener toda la temática */
+    p, span, label, div, markdown, .stMarkdown {
+        color: #80f9ff !important;
     }
     
     /* Cajas y contenedores con bordes de luz azul neón */
     div[data-testid="stVerticalBlock"] > div[style*="border"] {
         border: 1px solid #00f3ff !important;
-        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.3);
+        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.3);
         border-radius: 8px;
     }
     
     /* Botones tácticos */
     .stButton>button {
-        background-color: #0a0f18 !important;
+        background-color: #000a12 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
         border-radius: 6px;
-        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4);
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
     }
     .stButton>button:hover {
         background-color: #00f3ff !important;
@@ -52,11 +52,7 @@ st.markdown("""
 st.title("🤖 JARVIS 4.0 // NOVA")
 st.markdown("---")
 
-st.markdown("### Estado del Sistema")
-st.success("Núcleos y dependencias verificados correctamente.")
-st.info("Servidor de red local a la escucha de comandos desde el dispositivo iOS.")
-
-# Sección interactiva dividida en columnas
+# Distribución en columnas: Columna izquierda para Estado Ambiental y Mapa pequeño, Columna derecha para Controles
 col1, col2 = st.columns(2)
 
 with col1:
@@ -64,13 +60,15 @@ with col1:
     st.write("📍 **Ubicación:** Buin, Chile")
     st.write("⚡ **Condiciones:** Monitoreo de tormenta eléctrica activo.")
     
-    # Mapeo satelital centrado exactamente en Buin, Chile (-33.7333, -70.7417)
-    st.markdown("### 🛰️ Satélite VIERNES")
+    # Enlace satelital Serafín con mapa más compacto (zoom ajustado)
+    st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
-    st.map(mapa_buin, zoom=11, use_container_width=True)
+    # Contenedor para hacer el mapa visualmente más pequeño y estético
+    with st.container():
+        st.map(mapa_buin, zoom=10, use_container_width=False)
 
 with col2:
     st.subheader("Controles Rápidos")
@@ -79,3 +77,4 @@ with col2:
 
     st.subheader("Consola de Mando")
     st.info("Esperando instrucciones de voz desde iOS...")
+    
