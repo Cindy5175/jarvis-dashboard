@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -8,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS para forzar fondo negro y letras azul neón
+# Inyección de Estilos CSS para forzar fondo negro, letras azul neón y tamaño de mapa reducido
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -22,16 +23,16 @@ st.markdown("""
         text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
     }
     
-    /* Textos generales en azul neón claro / cian para mantener toda la temática */
+    /* Textos generales en azul neón claro / cian */
     p, span, label, div, markdown, .stMarkdown {
         color: #80f9ff !important;
     }
     
-    /* Cajas y contenedores con bordes de luz azul neón */
-    div[data-testid="stVerticalBlock"] > div[style*="border"] {
-        border: 1px solid #00f3ff !important;
-        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.3);
+    /* Reducir tamaño del contenedor del mapa */
+    iframe {
+        height: 220px !important;
         border-radius: 8px;
+        border: 1px solid #00f3ff !important;
     }
     
     /* Botones tácticos */
@@ -52,23 +53,27 @@ st.markdown("""
 st.title("🤖 JARVIS 4.0 // NOVA")
 st.markdown("---")
 
-# Distribución en columnas: Columna izquierda para Estado Ambiental y Mapa pequeño, Columna derecha para Controles
+# Distribución en columnas
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Estado Ambiental")
-    st.write("📍 **Ubicación:** Buin, Chile")
-    st.write("⚡ **Condiciones:** Monitoreo de tormenta eléctrica activo.")
+    # Fecha y Hora Táctica en tiempo real (con segundero)
+    st.subheader("📅 Sincronización Temporal")
+    ahora = datetime.now()
+    fecha_actual = ahora.strftime("%d/%m/%Y")
+    hora_actual = ahora.strftime("%H:%M:%S")
     
-    # Enlace satelital Serafín con mapa más compacto (zoom ajustado)
+    st.write(f"📌 **Fecha:** {fecha_actual}")
+    st.markdown(f"⏱️ **Hora Táctica (Local):**")
+    st.markdown(f"### `{hora_actual}`")
+    
+    # Enlace satelital Serafín con mapa más pequeño
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
-    # Contenedor para hacer el mapa visualmente más pequeño y estético
-    with st.container():
-        st.map(mapa_buin, zoom=10, use_container_width=False)
+    st.map(mapa_buin, zoom=9, use_container_width=True)
 
 with col2:
     st.subheader("Controles Rápidos")
@@ -77,4 +82,3 @@ with col2:
 
     st.subheader("Consola de Mando")
     st.info("Esperando instrucciones de voz desde iOS...")
-    
