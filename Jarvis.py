@@ -39,7 +39,7 @@ puente = PuenteTacticoUnificado()
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="J.A.R.V.I.S. 4.0 - Centro de Mando", page_icon="🤖", layout="wide")
 
-# Estilos visuales tácticos (Cyan neón)
+# Estilos visuales tácticos (Cyan neón total - Sin fondos blancos)
 st.markdown("""
     <style>
     .stApp {
@@ -66,12 +66,47 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
+    /* Forzar fondo negro y letras neón en inputs y textareas */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
         border: 1px solid #00d9ff !important; 
         border-radius: 4px;
         font-size: 12px !important;
+    }
+
+    /* Forzar selectbox y elementos desplegables a negro neón */
+    div[data-baseweb="select"] > div {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+        border: 1px solid #00d9ff !important;
+    }
+    span[data-baseweb="tag"] {
+        background-color: #161b22 !important;
+        color: #00d9ff !important;
+    }
+    div[data-baseweb="popover"] {
+        background-color: #0d1117 !important;
+        border: 1px solid #00d9ff !important;
+    }
+    
+    /* Eliminar destellos blancos en el chat input de Streamlit */
+    [data-testid="stChatInput"] {
+        background-color: #06090f !important;
+        border-top: 1px solid #00d9ff33;
+    }
+    [data-testid="stChatInput"] textarea {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+        border: 1px solid #00d9ff !important;
+    }
+
+    /* Forzar expanders y contenedores a negro con bordes neón */
+    .streamlit-expanderHeader {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+        border: 1px solid #00d9ff44 !important;
+        border-radius: 4px;
     }
     
     [data-testid="stMetricValue"] {
@@ -222,7 +257,7 @@ with st.sidebar:
 # --- ÁREA PRINCIPAL ---
 st.title("🤖 J.A.R.V.I.S. 4.0 // Centro de Mando")
 
-# Logo AI Geométrico Táctico Centrado (Inspirado en la referencia visual de alta precisión)
+# Logo AI Geométrico Táctico Centrado
 hud_ai_svg = """
 <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
     <svg viewBox="0 0 200 200" style="width: 180px; height: 180px;">
@@ -241,20 +276,16 @@ hud_ai_svg = """
             </radialGradient>
         </defs>
 
-        <!-- Fondo del HUD -->
         <circle cx="100" cy="100" r="95" fill="#06090f" stroke="#00d9ff44" stroke-width="1"/>
 
-        <!-- Esquinas de mira HUD -->
         <path d="M 40 20 L 20 20 L 20 40" fill="none" stroke="#00d9ff" stroke-width="2"/>
         <path d="M 160 20 L 180 20 L 180 40" fill="none" stroke="#00d9ff" stroke-width="2"/>
         <path d="M 40 180 L 20 180 L 20 160" fill="none" stroke="#00d9ff" stroke-width="2"/>
         <path d="M 160 180 L 180 180 L 180 160" fill="none" stroke="#00d9ff" stroke-width="2"/>
 
-        <!-- Anillos concéntricos y punteados -->
         <circle cx="100" cy="100" r="85" fill="none" stroke="#00d9ff66" stroke-width="1.5" stroke-dasharray="6 6"/>
         <circle cx="100" cy="100" r="75" fill="none" stroke="#00ffff" stroke-width="1" stroke-dasharray="2 4" filter="url(#glow-ai)"/>
 
-        <!-- Patrón geométrico de líneas estelares/red -->
         <g stroke="#00d9ff55" stroke-width="0.8" fill="none">
             <line x1="100" y1="15" x2="100" y2="185"/>
             <line x1="15" y1="100" x2="185" y2="100"/>
@@ -266,11 +297,9 @@ hud_ai_svg = """
             <line x1="50" y1="185" x2="150" y2="15"/>
         </g>
 
-        <!-- Núcleo central brillante -->
         <circle cx="100" cy="100" r="42" fill="url(#core-grad)" stroke="#00ffff" stroke-width="2" filter="url(#glow-ai)"/>
         <circle cx="100" cy="100" r="38" fill="#06090f" stroke="#00d9ff88" stroke-width="1"/>
 
-        <!-- Letras AI en el centro exacto -->
         <text x="100" y="109" font-family="'Space Mono', monospace" font-size="28" font-weight="bold" fill="#ffffff" text-anchor="middle" filter="url(#glow-ai)" letter-spacing="2">AI</text>
     </svg>
 </div>
@@ -284,7 +313,6 @@ col_izq, col_der = st.columns([2, 1])
 with col_izq:
     st.markdown("### 💬 Centro de Mando / Chat")
     
-    # Selector de Protocolo de Personalidad
     protocolo = st.selectbox("Protocolo de Personalidad", ["Tony Stark", "Analítico", "Defensivo"])
 
     if "messages" not in st.session_state:
