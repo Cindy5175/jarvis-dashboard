@@ -39,7 +39,7 @@ puente = PuenteTacticoUnificado()
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="J.A.R.V.I.S. 4.0 - Centro de Mando", page_icon="🤖", layout="wide")
 
-# Estilos visuales tácticos (Forzando visibilidad total en modo oscuro)
+# Estilos visuales tácticos (Forzando búnker oscuro sin fondos grises ni blancos)
 st.markdown("""
     <style>
     .stApp {
@@ -66,7 +66,7 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Forzar visibilidad y color en textos de la barra lateral y general */
+    /* Forzar barra lateral oscura */
     section[data-testid="stSidebar"] {
         background-color: #0d1117 !important;
         border-right: 1px solid #00d9ff66;
@@ -80,7 +80,7 @@ st.markdown("""
         color: #00d9ff !important;
     }
     
-    /* Forzar inputs, textareas y selectbox a fondo oscuro y texto neón */
+    /* Forzar inputs y textareas a negro profundo con borde neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -104,15 +104,20 @@ st.markdown("""
         border: 1px solid #00d9ff !important;
     }
     
-    /* Chat input oscuro */
+    /* Corregir barra inferior de comandos para que no sea gris claro */
     [data-testid="stChatInput"] {
         background-color: #06090f !important;
         border-top: 1px solid #00d9ff33;
     }
+    [data-testid="stChatInput"] > div {
+        background-color: #0d1117 !important;
+        border: 1px solid #00d9ff !important;
+        border-radius: 6px;
+    }
     [data-testid="stChatInput"] textarea {
         background-color: #0d1117 !important;
         color: #00d9ff !important;
-        border: 1px solid #00d9ff !important;
+        border: none !important;
     }
 
     /* Expanders oscuros con bordes neón */
@@ -198,7 +203,7 @@ with st.sidebar:
     st.caption("Centro de Control")
     st.divider()
     
-    # Módulo Reloj Táctico en Vivo (Con color forzado en texto)
+    # Módulo Reloj Táctico en Vivo
     ahora_local = datetime.now(CHILE_TZ)
     st.markdown(f"📅 **Fecha:** <span style='color: #00d9ff;'>{ahora_local.strftime('%d/%m/%Y')}</span>", unsafe_allow_html=True)
     st.markdown("⏰ **Hora Táctica (Local):**")
@@ -340,14 +345,20 @@ with col_izq:
 
         ahora = datetime.now(CHILE_TZ)
         hora_actual_str = ahora.strftime("%H:%M:%S")
+        fecha_actual_str = ahora.strftime("%d/%m/%Y")
         p_lower = prompt.lower()
         
+        # Respuestas inteligentes y naturales calibradas para J.A.R.V.I.S.
         if "hola" in p_lower:
             reply = f"Sistema en línea, Jefa. Protocolo '{protocolo}' activo. Son las {hora_actual_str} en Buin. ¿Cuáles son las órdenes?"
+        elif "analisis" in p_lower or "analisis de sisntema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
+            reply = f"Diagnóstico completado bajo protocolo '{protocolo}': Núcleo cuántico al 99.9%, enlace con satélite V.I.E.R.N.E.S. estable y temperatura atmosférica en Buin sincronizada. Todos los sistemas operan a máxima eficiencia."
         elif "quien eres" in p_lower or "que eres" in p_lower:
-            reply = "Soy J.A.R.V.I.S. 4.0 (Just A Rather Very Intelligent System), su sistema de inteligencia artificial de confianza integrado al núcleo táctico."
+            reply = "Soy J.A.R.V.I.S. 4.0 (Just A Rather Very Intelligent System), su asistente de inteligencia artificial de confianza integrado al núcleo táctico."
+        elif "excelente" in p_lower or "bien" in p_lower or "gracias" in p_lower:
+            reply = "A su servicio, Jefa. Es un placer mantener este búnker operando con precisión quirúrgica. ¿Qué otro protocolo ejecutamos?"
         else:
-            reply = f"Comando procesado bajo protocolo '{protocolo}', Jefa. Todos los sistemas operativos responden correctamente."
+            reply = f"Comando '{prompt}' procesado correctamente bajo protocolo '{protocolo}', Jefa. Enlace activo y sistemas estables."
         
         try:
             from gTTS import gTTS
