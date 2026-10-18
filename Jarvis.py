@@ -1,5 +1,6 @@
 import streamlit as st
 import urllib.request
+import json
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -8,39 +9,24 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS para tipografía y detalles en Azul Neón
+# Inyección de Estilos CSS limpios para estética táctica
 st.markdown("""
     <style>
-    /* Forzar fondo oscuro general */
     .stApp {
         background-color: #0e1117;
     }
-    
-    /* Títulos principales en azul neón brillante */
     h1, h2, h3 {
         color: #00f3ff !important;
-        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.5);
+        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
     }
-    
-    /* Textos generales claros para contraste táctico */
     p, span, label, div {
         color: #e0e0e0;
     }
-    
-    /* Cajas métricas y contenedores con borde azul neón */
-    div[data-testid="stMetric"], .stAlert, div.css-1r6slb0 {
-        border: 1px solid #00f3ff !important;
-        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.3);
-        border-radius: 8px;
-    }
-    
-    /* Botones tácticos con acento azul neón */
     .stButton>button {
         background-color: #161b22;
         color: #00f3ff;
         border: 1px solid #00f3ff;
         border-radius: 6px;
-        box-shadow: 0px 0px 5px rgba(0, 243, 255, 0.4);
     }
     .stButton>button:hover {
         background-color: #00f3ff;
@@ -52,15 +38,19 @@ st.markdown("""
 st.title("⚡ J.A.R.V.I.S. 4.0 - Centro de Comando Autónomo")
 st.markdown("---")
 
-# Función para consultar el clima en vivo de Buin
+# Función segura para obtener el clima actual en Buin en formato limpio
 def obtener_clima_buin():
     try:
-        url = "https://wttr.in/Buin?format=%C+%t"
+        # Usamos formato JSON para evitar problemas de etiquetas HTML en pantalla
+        url = "https://wttr.in/Buin?format=j1"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
-            return response.read().decode('utf-8').strip()
+            data = json.loads(response.read().decode('utf-8'))
+            condicion = data['current_condition'][0]['weatherDesc'][0]['value']
+            temp = data['current_condition'][0]['temp_C']
+            return f"{condicion}, {temp}°C"
     except Exception:
-        return "Tormenta eléctrica y truenos detectados"
+        return "Tormenta eléctrica activa en Buin"
 
 st.markdown("### Estado del Sistema")
 st.success("Núcleos y dependencias verificados correctamente.")
@@ -73,7 +63,7 @@ with col1:
     st.subheader("Estado Ambiental")
     st.write("📍 **Ubicación:** Buin, Chile")
     
-    # Obtenemos y mostramos el clima actual en la interfaz
+    # Obtenemos y mostramos el clima limpio
     clima_actual = obtener_clima_buin()
     st.write(f"🌤️ **Condiciones meteorológicas:** {clima_actual}")
 
