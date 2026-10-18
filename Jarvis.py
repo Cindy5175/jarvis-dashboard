@@ -9,14 +9,15 @@ import random
 # Configuración de la zona horaria de Chile (UTC-3)
 CHILE_TZ = timezone(timedelta(hours=-3))
 
-# --- CLASE INTERNA DE ENLACE TÁCTICO ---
+# --- CLASE INTERNA DE ENLACE TÁCTICO UNIFICADO ---
 class PuenteTacticoUnificado:
     def __init__(self):
         if "telemetria_jarvis" not in st.session_state:
             ahora_cl = datetime.now(CHILE_TZ)
             st.session_state.telemetria_jarvis = [
-                {"origen": "JARVIS", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Núcleo central estabilizado."},
-                {"origen": "VIERNES", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sensores cuánticos en línea."}
+                {"origen": "JARVIS", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Núcleo de inteligencia estabilizado."},
+                {"origen": "N.O.V.A.", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sincronía cuántica de plasma lista."},
+                {"origen": "VIERNES", "timestamp": ahora_cl.strftime("%Y-%m-%d %H:%M:%S"), "mensaje": "Sensores satelitales en línea."}
             ]
 
     def registrar_transmision(self, origen, mensaje):
@@ -37,9 +38,9 @@ class PuenteTacticoUnificado:
 puente = PuenteTacticoUnificado()
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
-st.set_page_config(page_title="J.A.R.V.I.S. 4.0 - Centro de Mando", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="J.A.R.V.I.S. 4.0 & N.O.V.A. - Centro de Mando", page_icon="🌐", layout="wide")
 
-# Estilos visuales tácticos (Forzando búnker oscuro sin fondos grises ni blancos)
+# Estilos visuales tácticos (Oscuro búnker cyan neón - Sin parches blancos)
 st.markdown("""
     <style>
     .stApp {
@@ -80,7 +81,7 @@ st.markdown("""
         color: #00d9ff !important;
     }
     
-    /* Forzar inputs y textareas a negro profundo con borde neón */
+    /* Forzar inputs y selectbox a negro con borde neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -104,7 +105,7 @@ st.markdown("""
         border: 1px solid #00d9ff !important;
     }
     
-    /* Corregir barra inferior de comandos para que no sea gris claro */
+    /* Input del chat estilo búnker */
     [data-testid="stChatInput"] {
         background-color: #06090f !important;
         border-top: 1px solid #00d9ff33;
@@ -120,7 +121,7 @@ st.markdown("""
         border: none !important;
     }
 
-    /* Expanders oscuros con bordes neón */
+    /* Contenedores desplegables */
     .streamlit-expanderHeader {
         background-color: #0d1117 !important;
         color: #00d9ff !important;
@@ -199,14 +200,14 @@ st.markdown("""
 
 # --- PANEL LATERAL TÁCTICO (Sidebar) ---
 with st.sidebar:
-    st.markdown("### 🤖 J.A.R.V.I.S. 4.0")
-    st.caption("Centro de Control")
+    st.markdown("### 🤖 J.A.R.V.I.S. & N.O.V.A.")
+    st.caption("Enlace Táctico Unificado")
     st.divider()
     
-    # Módulo Reloj Táctico en Vivo
+    # Reloj Táctico en Vivo (Hora Chile)
     ahora_local = datetime.now(CHILE_TZ)
     st.markdown(f"📅 **Fecha:** <span style='color: #00d9ff;'>{ahora_local.strftime('%d/%m/%Y')}</span>", unsafe_allow_html=True)
-    st.markdown("⏰ **Hora Táctica (Local):**")
+    st.markdown("⏰ **Hora Táctica (Chile):**")
     
     reloj_html = """
     <div style="background-color: #0d1117; color: #00d9ff; font-family: 'Space Mono', monospace; padding: 6px; border-radius: 4px; border: 1px solid #00d9ff; text-align: center; margin-bottom: 8px;">
@@ -227,14 +228,23 @@ with st.sidebar:
     components.html(reloj_html, height=55)
     st.divider()
 
-    # Módulo de Estado del Núcleo
-    with st.expander("📊 Estado del Sistema", expanded=True):
+    # Módulo de Estado del Enlace
+    with st.expander("📊 Estado del Enlace", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Núcleo", "99.9%")
+            st.metric("J.A.R.V.I.S.", "99.9%")
         with col2:
-            st.metric("Sincronía", "Optimizada")
-        st.caption("Estado: ONLINE")
+            st.metric("N.O.V.A.", "Sincronizada")
+        st.caption("Puente Táctico: EN LÍNEA")
+
+    # Módulo Registro de Transmisiones compartidas entre ambas IAs
+    with st.expander("🔗 Telemetría Compartida", expanded=True):
+        registros = puente.leer_ultimos_registros(3)
+        if registros:
+            for reg in registros:
+                st.caption(f"[{reg['origen']}] {reg['timestamp'][11:19]}: {reg['mensaje']}")
+        else:
+            st.caption("Sin transmisiones activas.")
 
     # Satélite / Mapa en el sidebar
     with st.expander("🛰️ Satélite V.I.E.R.N.E.S.", expanded=True):
@@ -267,7 +277,7 @@ with st.sidebar:
         st.rerun()
 
 # --- ÁREA PRINCIPAL ---
-st.title("🤖 J.A.R.V.I.S. 4.0 // Centro de Mando")
+st.title("🤖 J.A.R.V.I.S. 4.0 // N.O.V.A.")
 
 # Logo AI Geométrico Táctico Centrado
 hud_ai_svg = """
@@ -323,9 +333,10 @@ col_izq, col_der = st.columns([2, 1])
 
 # --- COLUMNA IZQUIERDA: CONSOLA DE CHAT Y ACCESOS RÁPIDOS ---
 with col_izq:
-    st.markdown("### 💬 Centro de Mando / Chat")
+    st.markdown("### 💬 Consola de Mando Unificada")
     
-    protocolo = st.selectbox("Protocolo de Personalidad", ["Tony Stark", "Analítico", "Defensivo"])
+    # Selector de Operador Activo (JARVIS o N.O.V.A.)
+    agente = st.radio("Sistemas Activos:", ["J.A.R.V.I.S.", "N.O.V.A."], horizontal=True)
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -337,37 +348,49 @@ with col_izq:
                 if "audio" in message and message["audio"]:
                     st.audio(message["audio"], format="audio/mp3")
 
-    prompt = st.chat_input("Escriba su comando, Jefa...")
+    prompt = st.chat_input(f"Comando para {agente}, Jefa...")
 
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
-        puente.registrar_transmision("JARVIS", prompt)
+        puente.registrar_transmision(agente, prompt)
 
         ahora = datetime.now(CHILE_TZ)
         hora_actual_str = ahora.strftime("%H:%M:%S")
         fecha_actual_str = ahora.strftime("%d/%m/%Y")
         p_lower = prompt.lower()
         
-        # Respuestas inteligentes y naturales calibradas para J.A.R.V.I.S.
-        if "hola" in p_lower:
-            reply = f"Sistema en línea, Jefa. Protocolo '{protocolo}' activo. Son las {hora_actual_str} en Buin. ¿Cuáles son las órdenes?"
-        elif "analisis" in p_lower or "analisis de sisntema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
-            reply = f"Diagnóstico completado bajo protocolo '{protocolo}': Núcleo cuántico al 99.9%, enlace con satélite V.I.E.R.N.E.S. estable y temperatura atmosférica en Buin sincronizada. Todos los sistemas operan a máxima eficiencia."
-        elif "quien eres" in p_lower or "que eres" in p_lower:
-            reply = "Soy J.A.R.V.I.S. 4.0 (Just A Rather Very Intelligent System), su asistente de inteligencia artificial de confianza integrado al núcleo táctico."
-        elif "excelente" in p_lower or "bien" in p_lower or "gracias" in p_lower:
-            reply = "A su servicio, Jefa. Es un placer mantener este búnker operando con precisión quirúrgica. ¿Qué otro protocolo ejecutamos?"
-        else:
-            reply = f"Comando '{prompt}' procesado correctamente bajo protocolo '{protocolo}', Jefa. Enlace activo y sistemas estables."
-        
+        # Respuestas dinámicas e interconectadas entre ambas inteligencias
+        if agente == "J.A.R.V.I.S.":
+            if "hola" in p_lower:
+                reply = f"En línea, Jefa. N.O.V.A. y yo estamos sincronizados. Son las {hora_actual_str} en Buin. ¿En qué podemos servirle?"
+            elif "analisis" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
+                reply = f"Análisis completo de J.A.R.V.I.S.: El núcleo cuántico opera al 99.9% de capacidad y la telemetría con N.O.V.A. no registra desviaciones. Todo en orden, Jefa."
+            elif "nova" in p_lower:
+                reply = "N.O.V.A. mantiene la estabilidad del núcleo de plasma en segundo plano. Ambos sistemas responden a sus órdenes."
+            elif "quien eres" in p_lower or "que eres" in p_lower:
+                reply = "Soy J.A.R.V.I.S. 4.0 (Just A Rather Very Intelligent System), trabajando en perfecta armonía con N.O.V.A. para el control táctico de su base."
+            else:
+                reply = f"Comando '{prompt}' recibido. Procesando datos y compartiendo telemetría con N.O.V.A., Jefa."
+        else: # N.O.V.A.
+            if "hola" in p_lower:
+                reply = f"Saludos, Jefa. Núcleo táctico N.O.V.A. en frecuencia. J.A.R.V.I.S. confirma transmisión estable a las {hora_actual_str}."
+            elif "analisis" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
+                reply = f"Informe de N.O.V.A.: Sensores térmicos en Buin alineados, matriz de cifrado lista y enlace con J.A.R.V.I.S. 100% óptimo."
+            elif "jarvis" in p_lower:
+                reply = "J.A.R.V.I.S. está gestionando el procesamiento de voz y los registros de bordo. Trabamos como una sola unidad."
+            elif "quien eres" in p_lower or "que eres" in p_lower:
+                reply = "Soy N.O.V.A. (Núcleo Táctico Cuántico e Interfaz de Inteligencia Artificial Avanzada), el pilar de seguridad y plasma de esta operación."
+            else:
+                reply = f"Comando '{prompt}' ejecutado desde la matriz N.O.V.A., Jefa. Sistemas en alerta constante."
+
         try:
             from gTTS import gTTS
             tts = gTTS(text=reply, lang='es')
-            audio_path = "respuesta_jarvis.mp3"
+            audio_path = f"respuesta_{agente.lower().replace('.', '')}.mp3"
             tts.save(audio_path)
-            st.session_state.messages.append({"role": "assistant", "content": reply, "audio": audio_path})
+            st.session_state.messages.append({"role": "assistant", "content": f"**[{agente}]** {reply}", "audio": audio_path})
         except Exception:
-            st.session_state.messages.append({"role": "assistant", "content": reply})
+            st.session_state.messages.append({"role": "assistant", "content": f"**[{agente}]** {reply}"})
         st.rerun()
 
     st.divider()
