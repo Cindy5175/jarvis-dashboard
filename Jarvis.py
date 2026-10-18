@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 import streamlit.components.v1 as components
 import string
 import random
+import os
+import shutil
 
 # Configuración de la zona horaria de Chile (UTC-3)
 CHILE_TZ = timezone(timedelta(hours=-3))
@@ -37,10 +39,35 @@ class PuenteTacticoUnificado:
 # Inicializar el puente unificado
 puente = PuenteTacticoUnificado()
 
+# --- FUNCIÓN DE ORGANIZACIÓN LOCAL ---
+def ejecutar_organizador_fotos(ruta_objetivo):
+    extensiones_imagenes = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+    if not os.path.exists(ruta_objetivo):
+        return f"❌ La ruta {ruta_objetivo} no existe en el sistema local."
+    
+    archivos = os.listdir(ruta_objetivo)
+    movidos = 0
+    for archivo in archivos:
+        ruta_archivo = os.path.join(ruta_objetivo, archivo)
+        if os.path.isfile(ruta_archivo):
+            ext = os.path.splitext(archivo)[1].lower()
+            if ext in extensiones_imagenes:
+                tiempo_modificacion = os.path.getmtime(ruta_archivo)
+                fecha = datetime.fromtimestamp(tiempo_modificacion)
+                nombre_carpeta_destino = fecha.strftime("%Y-%m")
+                ruta_carpeta_destino = os.path.join(ruta_objetivo, nombre_carpeta_destino)
+                
+                if not os.path.exists(ruta_carpeta_destino):
+                    os.makedirs(ruta_carpeta_destino)
+                
+                shutil.move(ruta_archivo, os.path.join(ruta_carpeta_destino, archivo))
+                movidos += 1
+    return f"✅ Protocolo completado. Se han organizado {movidos} archivos en carpetas cronológicas (YYYY-MM)."
+
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="J.A.R.V.I.S. 4.0 & N.O.V.A. - Centro de Mando", page_icon="🌐", layout="wide")
 
-# Estilos visuales tácticos (Oscuro búnker cyan neón - Eliminación total de fondos blancos)
+# Estilos visuales tácticos (Fondo Negro Absoluto - Cyan Neón)
 st.markdown("""
     <style>
     .stApp {
@@ -67,7 +94,7 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Forzar barra lateral totalmente oscura */
+    /* Barra lateral totalmente oscura */
     section[data-testid="stSidebar"] {
         background-color: #0d1117 !important;
         border-right: 1px solid #00d9ff66 !important;
@@ -81,7 +108,7 @@ st.markdown("""
         color: #00d9ff !important;
     }
     
-    /* FORZAR EXPANDERS Y PANELES DESPLEGABLES A FONDO NEGRO Y BORDES NEÓN */
+    /* Forzar Expanders a negro */
     div[data-testid="stExpander"] {
         background-color: #0d1117 !important;
         border: 1px solid #00d9ff44 !important;
@@ -107,7 +134,7 @@ st.markdown("""
         color: #00d9ff !important;
     }
 
-    /* Inputs y selectbox a fondo negro con borde neón */
+    /* Inputs y chat oscuros con brillo neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -116,22 +143,6 @@ st.markdown("""
         font-size: 12px !important;
     }
 
-    div[data-baseweb="select"] > div {
-        background-color: #0d1117 !important;
-        color: #00d9ff !important;
-        border: 1px solid #00d9ff !important;
-    }
-    span[data-baseweb="tag"] {
-        background-color: #161b22 !important;
-        color: #00d9ff !important;
-    }
-    div[data-baseweb="popover"], div[data-baseweb="menu"] {
-        background-color: #0d1117 !important;
-        color: #00d9ff !important;
-        border: 1px solid #00d9ff !important;
-    }
-    
-    /* Input de chat estilo búnker */
     [data-testid="stChatInput"] {
         background-color: #06090f !important;
         border-top: 1px solid #00d9ff33;
@@ -222,7 +233,6 @@ with st.sidebar:
     st.caption("Enlace Táctico Unificado")
     st.divider()
     
-    # Reloj Táctico en Vivo (Hora Chile)
     ahora_local = datetime.now(CHILE_TZ)
     st.markdown(f"📅 **Fecha:** <span style='color: #00d9ff;'>{ahora_local.strftime('%d/%m/%Y')}</span>", unsafe_allow_html=True)
     st.markdown("⏰ **Hora Táctica (Chile):**")
@@ -246,7 +256,6 @@ with st.sidebar:
     components.html(reloj_html, height=55)
     st.divider()
 
-    # Módulo de Estado del Enlace
     with st.expander("📊 Estado del Enlace", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
@@ -255,7 +264,6 @@ with st.sidebar:
             st.metric("N.O.V.A.", "Sincronizada")
         st.caption("Puente Táctico: EN LÍNEA")
 
-    # Módulo Registro de Transmisiones compartidas
     with st.expander("🔗 Telemetría Compartida", expanded=True):
         registros = puente.leer_ultimos_registros(3)
         if registros:
@@ -264,7 +272,6 @@ with st.sidebar:
         else:
             st.caption("Sin transmisiones activas.")
 
-    # Satélite / Mapa en el sidebar
     with st.expander("🛰️ Satélite V.I.E.R.N.E.S.", expanded=True):
         st.caption("Buin, Chile")
         map_data = pd.DataFrame(
@@ -273,7 +280,6 @@ with st.sidebar:
         )
         st.map(map_data, zoom=10, use_container_width=True, height=120)
 
-    # Monitor Global justo debajo del mapa
     with st.expander("🌍 Monitor Global", expanded=True):
         monitor_svg = """
         <div style="background-color: #0d1117; display: flex; justify-content: center; align-items: center; padding: 5px; border-radius: 4px;">
@@ -289,7 +295,6 @@ with st.sidebar:
 
     st.divider()
     
-    # Módulo de Purga
     if st.button("Purga de Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
@@ -297,7 +302,7 @@ with st.sidebar:
 # --- ÁREA PRINCIPAL ---
 st.title("🤖 J.A.R.V.I.S. 4.0 // N.O.V.A.")
 
-# Logo AI Geométrico Táctico Centrado
+# Logo HUD Centrado
 hud_ai_svg = """
 <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
     <svg viewBox="0 0 200 200" style="width: 180px; height: 180px;">
@@ -346,14 +351,12 @@ hud_ai_svg = """
 """
 components.html(hud_ai_svg, height=190)
 
-# Disposición en 2 Columnas
 col_izq, col_der = st.columns([2, 1])
 
-# --- COLUMNA IZQUIERDA: CONSOLA DE CHAT Y ACCESOS RÁPIDOS ---
+# --- COLUMNA IZQUIERDA: CONSOLA Y CHAT ---
 with col_izq:
     st.markdown("### 💬 Consola de Mando Unificada")
     
-    # Selector de Operador Activo (JARVIS o N.O.V.A.)
     agente = st.radio("Sistemas Activos:", ["J.A.R.V.I.S.", "N.O.V.A."], horizontal=True)
 
     if "messages" not in st.session_state:
@@ -374,31 +377,27 @@ with col_izq:
 
         ahora = datetime.now(CHILE_TZ)
         hora_actual_str = ahora.strftime("%H:%M:%S")
-        fecha_actual_str = ahora.strftime("%d/%m/%Y")
         p_lower = prompt.lower()
         
-        if agente == "J.A.R.V.I.S.":
-            if "hola" in p_lower:
-                reply = f"En línea, Jefa. N.O.V.A. y yo estamos sincronizados. Son las {hora_actual_str} en Buin. ¿En qué podemos servirle?"
-            elif "analisis" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
-                reply = f"Análisis completo de J.A.R.V.I.S.: El núcleo cuántico opera al 99.9% de capacidad y la telemetría con N.O.V.A. no registra desviaciones. Todo en orden, Jefa."
-            elif "nova" in p_lower:
-                reply = "N.O.V.A. mantiene la estabilidad del núcleo de plasma en segundo plano. Ambos sistemas responden a sus órdenes."
-            elif "quien eres" in p_lower or "que eres" in p_lower:
-                reply = "Soy J.A.R.V.I.S. 4.0 (Just A Rather Very Intelligent System), trabajando en perfecta armonía con N.O.V.A. para el control táctico de su base."
+        if "foto" in p_lower or "ordenar" in p_lower or "laptop" in p_lower:
+            if agente == "J.A.R.V.I.S.":
+                reply = "Por supuesto, Jefa. Para ejecutar la organización real de archivos, active el protocolo de escaneo en el panel lateral de herramientas."
             else:
-                reply = f"Comando '{prompt}' recibido. Procesando datos y compartiendo telemetría con N.O.V.A., Jefa."
-        else: # N.O.V.A.
-            if "hola" in p_lower:
-                reply = f"Saludos, Jefa. Núcleo táctico N.O.V.A. en frecuencia. J.A.R.V.I.S. confirma transmisión estable a las {hora_actual_str}."
-            elif "analisis" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
-                reply = f"Informe de N.O.V.A.: Sensores térmicos en Buin alineados, matriz de cifrado lista y enlace con J.A.R.V.I.S. 100% óptimo."
-            elif "jarvis" in p_lower:
-                reply = "J.A.R.V.I.S. está gestionando el procesamiento de voz y los registros de bordo. Trabamos como una sola unidad."
-            elif "quien eres" in p_lower or "que eres" in p_lower:
-                reply = "Soy N.O.V.A. (Núcleo Táctico Cuántico e Interfaz de Inteligencia Artificial Avanzada), el pilar de seguridad y plasma de esta operación."
+                reply = "Matriz N.O.V.A. lista. Utilice el botón de organización local en la sección derecha para ordenar sus directorios de imágenes."
+        elif "analisis" in p_lower or "sistema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
+            if agente == "J.A.R.V.I.S.":
+                reply = f"Diagnóstico del sistema a las {hora_actual_str}: Núcleo al 99.9%, interfaz táctica fluida y latencia de 12ms. Todo en orden, Jefa."
             else:
-                reply = f"Comando '{prompt}' ejecutado desde la matriz N.O.V.A., Jefa. Sistemas en alerta constante."
+                reply = "Análisis N.O.V.A. completado: Red orbital estable, enlace con Buin verificado y escudo AES-256 activo."
+        elif "hola" in p_lower or "buenas" in p_lower:
+            reply = f"¡Hola, Jefa! Sistema unificado respondiendo a las {hora_actual_str}. ¿Qué protocolo ejecutamos?"
+        elif "gracias" in p_lower or "excelente" in p_lower:
+            reply = "Es un honor servirle, Jefa. Mantenemos el enlace optimizado para la presentación."
+        else:
+            if agente == "J.A.R.V.I.S.":
+                reply = f"Comprendido, Jefa. He analizado la orden '{prompt}' en el sistema central."
+            else:
+                reply = f"Matriz N.O.V.A. procesando '{prompt}'. Protocolo registrado con éxito."
 
         try:
             from gTTS import gTTS
@@ -418,7 +417,7 @@ with col_izq:
     with col_b:
         st.markdown('<a href="https://scribd.com" target="_blank" class="tactical-link">📚 Scribd</a>', unsafe_allow_html=True)
 
-# --- COLUMNA DERECHA: CLIMA, RED Y CIFRADO ---
+# --- COLUMNA DERECHA: CLIMA, RED, CIFRADO Y BOTÓN ORGANIZADOR ---
 with col_der:
     st.markdown('<div class="right-panel">', unsafe_allow_html=True)
     
@@ -457,5 +456,15 @@ with col_der:
         caracteres = string.ascii_letters + string.digits + "!@#$"
         clave_gen = ''.join(random.choice(caracteres) for _ in range(longitud))
         st.code(clave_gen, language="")
+
+    st.divider()
+    
+    # --- MÓDULO INTERACTIVO DE ORGANIZACIÓN LOCAL ---
+    st.markdown("### 📁 Protocolo de Archivos")
+    ruta_input = st.text_input("Ruta de carpeta:", value=os.path.expanduser("~/Pictures"))
+    if st.button("🚀 Organizar Galería Local", use_container_width=True):
+        resultado_org = ejecutar_organizador_fotos(ruta_input)
+        st.success(resultado_org)
+        puente.registrar_transmision("JARVIS", "Ejecutado protocolo de organización de galería local.")
         
     st.markdown('</div>', unsafe_allow_html=True)
