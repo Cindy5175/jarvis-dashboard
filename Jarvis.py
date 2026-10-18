@@ -40,17 +40,17 @@ puente = PuenteTacticoUnificado()
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="J.A.R.V.I.S. 4.0 & N.O.V.A. - Centro de Mando", page_icon="🌐", layout="wide")
 
-# Estilos visuales tácticos (Oscuro búnker cyan neón - Sin parches blancos)
+# Estilos visuales tácticos (Oscuro búnker cyan neón - Eliminación total de fondos blancos)
 st.markdown("""
     <style>
     .stApp {
-        background-color: #06090f;
-        color: #00d9ff;
+        background-color: #06090f !important;
+        color: #00d9ff !important;
         font-family: 'Space Mono', monospace;
     }
     .main { 
-        background-color: #06090f; 
-        color: #00d9ff; 
+        background-color: #06090f !important; 
+        color: #00d9ff !important; 
     }
     
     h1 {
@@ -67,10 +67,10 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Forzar barra lateral oscura */
+    /* Forzar barra lateral totalmente oscura */
     section[data-testid="stSidebar"] {
         background-color: #0d1117 !important;
-        border-right: 1px solid #00d9ff66;
+        border-right: 1px solid #00d9ff66 !important;
         color: #00d9ff !important;
     }
     section[data-testid="stSidebar"] .block-container {
@@ -81,7 +81,33 @@ st.markdown("""
         color: #00d9ff !important;
     }
     
-    /* Forzar inputs y selectbox a negro con borde neón */
+    /* FORZAR EXPANDERS Y PANELES DESPLEGABLES A FONDO NEGRO Y BORDES NEÓN */
+    div[data-testid="stExpander"] {
+        background-color: #0d1117 !important;
+        border: 1px solid #00d9ff44 !important;
+        border-radius: 6px !important;
+        margin-bottom: 8px !important;
+    }
+    div[data-testid="stExpander"] details {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+        border: none !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+        border-bottom: 1px solid #00d9ff33 !important;
+    }
+    div[data-testid="stExpander"] summary * {
+        color: #00d9ff !important;
+        background-color: transparent !important;
+    }
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #0d1117 !important;
+        color: #00d9ff !important;
+    }
+
+    /* Inputs y selectbox a fondo negro con borde neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -105,7 +131,7 @@ st.markdown("""
         border: 1px solid #00d9ff !important;
     }
     
-    /* Input del chat estilo búnker */
+    /* Input de chat estilo búnker */
     [data-testid="stChatInput"] {
         background-color: #06090f !important;
         border-top: 1px solid #00d9ff33;
@@ -121,14 +147,6 @@ st.markdown("""
         border: none !important;
     }
 
-    /* Contenedores desplegables */
-    .streamlit-expanderHeader {
-        background-color: #0d1117 !important;
-        color: #00d9ff !important;
-        border: 1px solid #00d9ff44 !important;
-        border-radius: 4px;
-    }
-    
     [data-testid="stMetricValue"] {
         color: #00d9ff !important;
         font-size: 16px !important;
@@ -237,7 +255,7 @@ with st.sidebar:
             st.metric("N.O.V.A.", "Sincronizada")
         st.caption("Puente Táctico: EN LÍNEA")
 
-    # Módulo Registro de Transmisiones compartidas entre ambas IAs
+    # Módulo Registro de Transmisiones compartidas
     with st.expander("🔗 Telemetría Compartida", expanded=True):
         registros = puente.leer_ultimos_registros(3)
         if registros:
@@ -359,7 +377,6 @@ with col_izq:
         fecha_actual_str = ahora.strftime("%d/%m/%Y")
         p_lower = prompt.lower()
         
-        # Respuestas dinámicas e interconectadas entre ambas inteligencias
         if agente == "J.A.R.V.I.S.":
             if "hola" in p_lower:
                 reply = f"En línea, Jefa. N.O.V.A. y yo estamos sincronizados. Son las {hora_actual_str} en Buin. ¿En qué podemos servirle?"
