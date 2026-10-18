@@ -42,11 +42,11 @@ class PuenteTacticoUnificado:
 # Inicializar el puente unificado
 puente = PuenteTacticoUnificado()
 
-# --- FUNCIÓN DE ORGANIZACIÓN LOCAL ---
+# --- FUNCIÓN DE ORGANIZACIÓN REAL Y MODO DEMO ---
 def ejecutar_organizador_fotos(ruta_objetivo):
     extensiones_imagenes = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
     if not os.path.exists(ruta_objetivo):
-        return f"❌ La ruta {ruta_objetivo} no existe en el sistema local."
+        return f"❌ La ruta '{ruta_objetivo}' no existe en este entorno. (Pruebe con el Modo Demo para la presentación)."
     
     archivos = os.listdir(ruta_objetivo)
     movidos = 0
@@ -67,6 +67,18 @@ def ejecutar_organizador_fotos(ruta_objetivo):
                 movidos += 1
     return f"✅ Protocolo completado. Se han organizado {movidos} archivos en carpetas cronológicas (YYYY-MM)."
 
+def ejecutar_modo_demo():
+    demo_dir = "./demo_galeria"
+    if not os.path.exists(demo_dir):
+        os.makedirs(demo_dir)
+        # Crear archivos de prueba simulados
+        for i in range(1, 6):
+            with open(os.path.join(demo_dir, f"foto_viaje_chile_{i}.jpg"), "w") as f:
+                f.write("datos simulados de imagen")
+    
+    # Organizar la carpeta demo
+    return ejecutar_organizador_fotos(demo_dir)
+
 # Estilos visuales tácticos (Fondo Negro Absoluto - Cyan Neón)
 st.markdown("""
     <style>
@@ -80,7 +92,6 @@ st.markdown("""
         color: #00d9ff !important; 
     }
     
-    /* FORZAR VISIBILIDAD DE TODAS LAS ETIQUETAS Y TEXTOS */
     label, .stTextInput label, p, span {
         color: #00d9ff !important;
     }
@@ -99,7 +110,6 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Barra lateral totalmente oscura */
     section[data-testid="stSidebar"] {
         background-color: #0d1117 !important;
         border-right: 1px solid #00d9ff66 !important;
@@ -113,7 +123,6 @@ st.markdown("""
         color: #00d9ff !important;
     }
     
-    /* Forzar Expanders a negro */
     div[data-testid="stExpander"] {
         background-color: #0d1117 !important;
         border: 1px solid #00d9ff44 !important;
@@ -139,7 +148,6 @@ st.markdown("""
         color: #00d9ff !important;
     }
 
-    /* Inputs y chat oscuros con brillo neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -386,9 +394,9 @@ with col_izq:
         
         if "foto" in p_lower or "ordenar" in p_lower or "laptop" in p_lower:
             if agente == "J.A.R.V.I.S.":
-                reply = "Por supuesto, Jefa. Para ejecutar la organización real de archivos, active el protocolo de escaneo en el panel lateral de herramientas."
+                reply = "Por supuesto, Jefa. Para simular el ordenamiento en vivo frente al público, active el 'Modo Demostración' en la columna derecha."
             else:
-                reply = "Matriz N.O.V.A. lista. Utilice el botón de organización local en la sección derecha para ordenar sus directorios de imágenes."
+                reply = "Matriz N.O.V.A. lista. Pulse el botón de Modo Demo para ejecutar la clasificación automática de archivos en tiempo real."
         elif "analisis" in p_lower or "sistema" in p_lower or "diagnostico" in p_lower or "estado" in p_lower:
             if agente == "J.A.R.V.I.S.":
                 reply = f"Diagnóstico del sistema a las {hora_actual_str}: Núcleo al 99.9%, interfaz táctica fluida y latencia de 12ms. Todo en orden, Jefa."
@@ -422,7 +430,7 @@ with col_izq:
     with col_b:
         st.markdown('<a href="https://scribd.com" target="_blank" class="tactical-link">📚 Scribd</a>', unsafe_allow_html=True)
 
-# --- COLUMNA DERECHA: CLIMA, RED, CIFRADO Y BOTÓN ORGANIZADOR ---
+# --- COLUMNA DERECHA: CLIMA, RED, CIFRADO Y MODO DEMO ---
 with col_der:
     st.markdown('<div class="right-panel">', unsafe_allow_html=True)
     
@@ -464,12 +472,12 @@ with col_der:
 
     st.divider()
     
-    # --- MÓDULO INTERACTIVO DE ORGANIZACIÓN LOCAL ---
+    # --- MÓDULO INTERACTIVO DE ORGANIZACIÓN (MODO DEMO) ---
     st.markdown("### 📁 Protocolo de Archivos")
-    ruta_input = st.text_input("Ruta de carpeta local:", value="./Imágenes")
-    if st.button("🚀 Organizar Galería Local", use_container_width=True):
-        resultado_org = ejecutar_organizador_fotos(ruta_input)
-        st.success(resultado_org)
-        puente.registrar_transmision("JARVIS", "Ejecutado protocolo de organización de galería local.")
+    st.caption("Simulación en vivo para presentación")
+    if st.button("🚀 Ejecutar Modo Demo (Organizar)", use_container_width=True):
+        resultado_demo = ejecutar_modo_demo()
+        st.success(resultado_demo)
+        puente.registrar_transmision("JARVIS", "Modo demostración de archivos ejecutado con éxito.")
         
     st.markdown('</div>', unsafe_allow_html=True)
