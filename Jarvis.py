@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import pytz
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -9,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS para forzar fondo negro, letras azul neón y mapa compacto
+# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa cuadrado medio)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -28,10 +29,18 @@ st.markdown("""
         color: #80f9ff !important;
     }
     
-    /* Reducir altura del mapa iframe para hacerlo más compacto */
+    /* Reducir altura del mapa iframe para que quede como un cuadrado medio */
     iframe {
-        height: 180px !important;
+        height: 200px !important;
+        width: 100% !important;
         border-radius: 8px;
+        border: 1px solid #00f3ff !important;
+    }
+    
+    /* Cajas de entrada de chat y elementos interactivos */
+    .stTextInput>div>div>input {
+        background-color: #000a12 !important;
+        color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
     }
     
@@ -54,34 +63,59 @@ st.title("🤖 JARVIS 4.0 // NOVA")
 st.markdown("---")
 
 # Distribución en columnas principales
-col1, col2 = st.columns(2)
+col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
-with col1:
-    # Fecha y Hora Táctica en tiempo real (con segundero)
+with col_izq:
+    # Fecha y Hora Oficial de Chile (con zona horaria de Santiago) con segundero
     st.subheader("📅 Sincronización Temporal")
-    ahora = datetime.now()
-    fecha_actual = ahora.strftime("%d/%m/%Y")
-    hora_actual = ahora.strftime("%H:%M:%S")
+    zona_chile = pytz.timezone('America/Santiago')
+    ahora_chile = datetime.now(zona_chile)
+    
+    fecha_actual = ahora_chile.strftime("%d/%m/%Y")
+    hora_actual = ahora_chile.strftime("%H:%M:%S")
     
     st.write(f"📌 **Fecha:** {fecha_actual}")
-    st.markdown(f"⏱️ **Hora Táctica (Local):**")
+    st.markdown(f"⏱️ **Hora Táctica (Chile):**")
     st.markdown(f"### `{hora_actual}`")
     
-    # Enlace satelital Serafín con mapa achicado mediante subcolumnas
+    # Enlace satelital Serafín (Cuadrado medio)
     st.markdown("### 🛰️ Enlace satelital Serafín")
+    mapa_buin = pd.DataFrame({
+        'lat': [-33.7333],
+        'lon': [-70.7417]
+    })
+    st.map(mapa_buin, zoom=11, use_container_width=True)
+
+with col_centro:
+    st.subheader("💬 Consola Central / Conexión Gemini")
     
-    mapa_col1, mapa_col2 = st.columns([2, 1])
-    with mapa_col1:
-        mapa_buin = pd.DataFrame({
-            'lat': [-33.7333],
-            'lon': [-70.7417]
-        })
-        st.map(mapa_buin, zoom=9, use_container_width=True)
+    # Inicializar historial de chat si no existe
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Saludos, Jefa. Núcleos operativos y enlace con Gemini sincronizados."}
+        ]
 
-with col2:
+    # Mostrar mensajes del chat
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Entrada de chat central conectada
+    if prompt := st.chat_input("Ingrese comando táctico o consulta para Gemini..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Respuesta simulada/integrada del núcleo
+        respuesta_nucleo = f"Procesamiento autónomo completado para: '{prompt}'. Sistemas al 100%, Jefa."
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_nucleo})
+        with st.chat_message("assistant"):
+            st.markdown(respuesta_nucleo)
+
+with col_der:
     st.subheader("Controles Rápidos")
-    if st.button("Verificar Estado"):
-        st.toast("¡Sistemas operativos al 100%, Jefa!")
-
-    st.subheader("Consola de Mando")
-    st.info("Esperando instrucciones de voz desde iOS...")
+    if st.button("Verificar Estado de Núcleos"):
+        st.toast("¡Sistemas operativos y telemetría al 100%, Jefa!")
+        
+    st.markdown("### ⚡ Telemetría")
+    st.info("Red local iOS: Activa\nServidor Flask: Escuchando\nTormenta Buin: Monitoreada")
