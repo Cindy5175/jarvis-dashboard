@@ -39,7 +39,7 @@ puente = PuenteTacticoUnificado()
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="J.A.R.V.I.S. 4.0 - Centro de Mando", page_icon="🤖", layout="wide")
 
-# Estilos visuales tácticos (Cyan neón total - Sin fondos blancos)
+# Estilos visuales tácticos (Forzando visibilidad total en modo oscuro)
 st.markdown("""
     <style>
     .stApp {
@@ -66,7 +66,21 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Forzar fondo negro y letras neón en inputs y textareas */
+    /* Forzar visibilidad y color en textos de la barra lateral y general */
+    section[data-testid="stSidebar"] {
+        background-color: #0d1117 !important;
+        border-right: 1px solid #00d9ff66;
+        color: #00d9ff !important;
+    }
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1rem;
+        color: #00d9ff !important;
+    }
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] div {
+        color: #00d9ff !important;
+    }
+    
+    /* Forzar inputs, textareas y selectbox a fondo oscuro y texto neón */
     .stTextInput input, textarea { 
         background-color: #0d1117 !important; 
         color: #00d9ff !important; 
@@ -75,7 +89,6 @@ st.markdown("""
         font-size: 12px !important;
     }
 
-    /* Forzar selectbox y elementos desplegables a negro neón */
     div[data-baseweb="select"] > div {
         background-color: #0d1117 !important;
         color: #00d9ff !important;
@@ -85,12 +98,13 @@ st.markdown("""
         background-color: #161b22 !important;
         color: #00d9ff !important;
     }
-    div[data-baseweb="popover"] {
+    div[data-baseweb="popover"], div[data-baseweb="menu"] {
         background-color: #0d1117 !important;
+        color: #00d9ff !important;
         border: 1px solid #00d9ff !important;
     }
     
-    /* Eliminar destellos blancos en el chat input de Streamlit */
+    /* Chat input oscuro */
     [data-testid="stChatInput"] {
         background-color: #06090f !important;
         border-top: 1px solid #00d9ff33;
@@ -101,7 +115,7 @@ st.markdown("""
         border: 1px solid #00d9ff !important;
     }
 
-    /* Forzar expanders y contenedores a negro con bordes neón */
+    /* Expanders oscuros con bordes neón */
     .streamlit-expanderHeader {
         background-color: #0d1117 !important;
         color: #00d9ff !important;
@@ -115,14 +129,7 @@ st.markdown("""
     }
     [data-testid="stMetricLabel"] {
         font-size: 11px !important;
-    }
-    
-    section[data-testid="stSidebar"] {
-        background-color: #0d1117 !important;
-        border-right: 1px solid #00d9ff66;
-    }
-    section[data-testid="stSidebar"] .block-container {
-        padding-top: 1rem;
+        color: #8ae9ff !important;
     }
     
     hr {
@@ -191,14 +198,14 @@ with st.sidebar:
     st.caption("Centro de Control")
     st.divider()
     
-    # Módulo Reloj Táctico en Vivo
+    # Módulo Reloj Táctico en Vivo (Con color forzado en texto)
     ahora_local = datetime.now(CHILE_TZ)
-    st.markdown(f"📅 **Fecha:** {ahora_local.strftime('%d/%m/%Y')}")
+    st.markdown(f"📅 **Fecha:** <span style='color: #00d9ff;'>{ahora_local.strftime('%d/%m/%Y')}</span>", unsafe_allow_html=True)
     st.markdown("⏰ **Hora Táctica (Local):**")
     
     reloj_html = """
     <div style="background-color: #0d1117; color: #00d9ff; font-family: 'Space Mono', monospace; padding: 6px; border-radius: 4px; border: 1px solid #00d9ff; text-align: center; margin-bottom: 8px;">
-        <div id="clock" style="font-size: 18px; font-weight: bold; color: #00d9ff; letter-spacing: 2px;">00:00:00</div>
+        <div id="clock" style="font-size: 18px; font-weight: bold; color: #00ffff; letter-spacing: 2px; text-shadow: 0 0 8px #00d9ff;">00:00:00</div>
     </div>
     <script>
     function updateClock() {
