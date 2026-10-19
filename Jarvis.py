@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # Configuración directa de Google Gemini con su clave AQ
-API_KEY_JARVIS = "AQUI_VA_SU_CLAVE_AQ"  # Puede dejarla aquí o vincularla de forma segura
+API_KEY_JARVIS = "AQ.Ab8RN6J0av6SHZiYBxf3XpFMTYfeJ1EtHdFy6y36lIl4HTYw9g"  # Puede dejarla aquí o vincularla de forma segura
 
 try:
     genai.configure(api_key=API_KEY_JARVIS)
