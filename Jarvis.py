@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS definitivos y limpios
+# Inyección de Estilos CSS definitivos y forzados para modo oscuro absoluto
 st.markdown("""
     <style>
     /* Fondo negro profundo general para toda la app */
@@ -61,7 +61,7 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Estilo para las etiquetas de estado */
+    /* Etiqueta de estado neón */
     .estado-neon {
         background-color: #000000;
         color: #00f3ff;
@@ -71,6 +71,7 @@ st.markdown("""
         font-family: monospace;
         font-size: 13px;
         box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
+        display: inline-block;
     }
 
     /* Estilizar el texto de las pestañas en Azul Neón */
@@ -327,7 +328,7 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets, Nova-Core y Bitácora limpios
+    # Widgets, Nova-Core y Bitácora
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
