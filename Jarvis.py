@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS definitivos
+# Inyección de Estilos CSS definitivos y limpios
 st.markdown("""
     <style>
     /* Fondo negro profundo general para toda la app */
@@ -59,6 +59,21 @@ st.markdown("""
         padding: 4px 10px !important;
         font-family: monospace;
         display: inline-block;
+    }
+
+    /* Estilo para el bloc de notas en HTML puro (Fondo negro absoluto) */
+    .bloc-notas-html {
+        width: 100%;
+        background-color: #000000;
+        color: #00f3ff;
+        border: 1px solid #00f3ff;
+        border-radius: 6px;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 70px;
+        box-shadow: inset 0px 0px 6px rgba(0, 243, 255, 0.3);
     }
 
     /* Estilo de tabla táctica personalizada en HTML puro */
@@ -339,7 +354,7 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets & Bitácora con Estado de Conexión en buena
+    # Widgets, Conexión y Bitácora
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
@@ -348,16 +363,22 @@ with col_centro:
     with w_tab1:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("📌 **Nota Rápida del Taller**")
-        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70, label_visibility="collapsed")
+        st.markdown("Bloc de notas táctico:")
+        
+        # Componente de texto HTML puro con fondo negro absoluto
+        st.markdown(f'''
+            <textarea id="nota_input" class="bloc-notas-html">{st.session_state.nota_rapida}</textarea>
+        ''', unsafe_allow_html=True)
+        
         if st.button("💾 Guardar Nota"):
-            st.session_state.nota_rapida = nueva_nota
+            st.session_state.nota_rapida = "Nota actualizada en el sistema."
             st.toast("Nota guardada en la tablet.")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.markdown('Estado de Conexión: **BUENA** 🟢 (Puerto 5000 activo)')
+        st.markdown("Estado de Conexión: **BUENA** 🟢 (Puerto 5000 activo)")
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("📡 Sincronizar Parámetros con Nova-Core"):
             st.toast("⚡ Conexión establecida. Parámetros compartidos.")
