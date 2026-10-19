@@ -173,14 +173,14 @@ def emitir_voz(texto_respuesta):
     """
     st.components.v1.html(js_speech, height=0, width=0)
 
-# Módulo de Reconocimiento de Voz (STT) mediante Web Speech API
+# Módulo de Reconocimiento de Voz (STT) limpio y compacto
 def componente_microfono():
     js_mic = """
-    <div style="text-align: center; margin-bottom: 10px;">
-        <button id="mic_btn" onclick="iniciarEscucha()" style="background-color: #000a12; color: #00f3ff; border: 1px solid #00f3ff; padding: 8px 16px; border-radius: 6px; cursor: pointer; box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4); width: 100%;">
+    <div style="text-align: center; margin-bottom: 5px;">
+        <button id="mic_btn" onclick="iniciarEscucha()" style="background-color: #000a12; color: #00f3ff; border: 1px solid #00f3ff; padding: 6px 12px; border-radius: 6px; cursor: pointer; box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4); width: 100%; font-size: 13px;">
             🎙️ Activar Micrófono (Dictado Táctico)
         </button>
-        <p id="mic_status" style="color: #80f9ff; font-size: 12px; margin-top: 5px;">Aprete para dictar comando...</p>
+        <p id="mic_status" style="color: #80f9ff; font-size: 11px; margin-top: 4px; margin-bottom: 0px;">Presione para dictar comando...</p>
     </div>
     <script>
         function iniciarEscucha() {
@@ -188,7 +188,7 @@ def componente_microfono():
             var status = document.getElementById('mic_status');
             
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.innerText = "Reconocimiento de voz no soportado en este navegador.";
+                status.innerText = "Reconocimiento no soportado en este navegador.";
                 return;
             }
             
@@ -205,17 +205,15 @@ def componente_microfono():
             
             recognition.onresult = function(event) {
                 var transcript = event.results[0][0].transcript;
-                status.innerText = "Transcripción: " + transcript;
+                status.innerText = "Dictado: " + transcript;
                 btn.style.backgroundColor = "#000a12";
                 btn.style.color = "#00f3ff";
-                
-                // Pegar comando en el portapapeles para facilitar su ingreso
                 navigator.clipboard.writeText(transcript);
                 alert("Comando dictado copiado: " + transcript + "\\nPegue en la consola abajo.");
             };
             
             recognition.onerror = function(event) {
-                status.innerText = "Error de micrófono: " + event.error;
+                status.innerText = "Error: " + event.error;
                 btn.style.backgroundColor = "#000a12";
                 btn.style.color = "#00f3ff";
             };
@@ -224,7 +222,7 @@ def componente_microfono():
         }
     </script>
     """
-    st.components.v1.html(js_mic, height=90)
+    st.components.v1.html(js_mic, height=55)
 
 st.title("🤖 JARVIS 4.0 // NOVA")
 
@@ -306,11 +304,10 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
-    # Módulo de Consola Central perfectamente enmarcado y simétrico
+    # 1. Módulo de Consola Central (Independiente)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
     
-    # Micrófono de dictado
     componente_microfono()
 
     if "messages" not in st.session_state:
@@ -318,7 +315,6 @@ with col_centro:
             {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y dictado táctico activados. ¿Qué orden ejecutamos hoy?"}
         ]
 
-    # Mostrar historial de mensajes de la consola dentro de la tarjeta
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -326,28 +322,24 @@ with col_centro:
                 if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
                     emitir_voz(message["content"])
 
-    # CAJA DE CHAT INTEGRADA JUSTO DEBAJO DE LOS BOTONES
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Guardar en Bitácora
         st.session_state.bitacora.append({
             "Hora": datetime.now().strftime("%H:%M:%S"),
             "Evento": f"Comando: {prompt[:25]}...",
             "Estado": "PROCESADO"
         })
         
-        # Respuesta limpia de Tony Stark
         respuesta_ia = random.choice(RESPUESTAS_STARK)
         st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
         
-        # Reproducir voz automáticamente al responder
         emitir_voz(respuesta_ia)
         st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # NUEVO MÓDULO: WIDGETS ESTILO TABLET iOS & BITÁCORA
+    # 2. Módulo de Widgets & Bitácora (En su propia tarjeta separada)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
