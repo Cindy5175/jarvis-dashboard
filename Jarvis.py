@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS avanzados (Fondo negro, azul neón total y título centrado)
+# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa de la mitad y título centrado)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -36,19 +36,25 @@ st.markdown("""
         color: #80f9ff !important;
     }
     
-    /* Forzar que cualquier cuadro de alerta o info mantenga la estética azul neón (sin verde) */
+    /* Forzar alertas/infos a diseño oscuro sin verde */
     div[data-testid="stNotification"], .stAlert {
         background-color: #000a12 !important;
         color: #80f9ff !important;
         border: 1px solid #00f3ff !important;
     }
     
-    /* Reducir altura del mapa iframe para que quede como un cuadrado medio */
-    iframe {
-        height: 200px !important;
-        width: 100% !important;
-        border-radius: 8px;
+    /* Ajustar el mapa para que tenga fondo oscuro, bordes neón y tamaño de la mitad (cuadrado medio) */
+    div[data-testid="stDeckGlArrow"] div, iframe {
+        background-color: #050b14 !important;
+        border-radius: 8px !important;
         border: 1px solid #00f3ff !important;
+        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.3);
+    }
+    
+    /* Contenedor específico para reducir el mapa a la mitad */
+    .mapa-cuadrado {
+        max-width: 85%;
+        margin: 0 auto;
     }
     
     /* Cajas de entrada de chat y elementos interactivos */
@@ -98,13 +104,17 @@ with col_izq:
     # Llamada al reloj en vivo
     reloj_en_vivo()
     
-    # Enlace satelital Serafín (Cuadrado medio)
+    # Enlace satelital Serafín (Cuadrado medio con fondo oscuro)
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
+    
+    # Envoltorio para reducir el mapa a la mitad en la columna
+    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
     st.map(mapa_buin, zoom=11, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
     st.subheader("💬 Consola Central / Conexión Gemini")
