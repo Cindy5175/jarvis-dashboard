@@ -61,22 +61,6 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Etiqueta de estado en línea y tamaño mediano legible en azul neón */
-    .estado-mediano {
-        background-color: #000000 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
-        border-radius: 6px !important;
-        font-size: 13px !important;
-        padding: 6px 12px !important;
-        font-family: monospace;
-        display: inline-block;
-        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4) !important;
-        margin-top: 4px;
-        margin-bottom: 4px;
-        white-space: nowrap;
-    }
-
     /* Estilo de tabla táctica personalizada en HTML puro */
     .tabla-tactica {
         width: 100%;
@@ -355,7 +339,7 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets & Bitácora con HTML puro para garantizar fondo negro
+    # Widgets & Bitácora con Estado de Conexión en buena
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
@@ -373,7 +357,7 @@ with col_centro:
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.markdown('Estado de Conexión: <div class="estado-mediano">ONLINE / LISTEN (Puerto 5000)</div>', unsafe_allow_html=True)
+        st.markdown('Estado de Conexión: **BUENA** 🟢 (Puerto 5000 activo)')
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("📡 Sincronizar Parámetros con Nova-Core"):
             st.toast("⚡ Conexión establecida. Parámetros compartidos.")
@@ -386,4 +370,35 @@ with col_centro:
 
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
-        # Generar tabla limpia en HTML puro para que sea siempre negra con
+        html_tabla = '<table class="tabla-tactica"><tr><th>Hora</th><th>Evento</th><th>Estado</th></tr>'
+        for item in st.session_state.bitacora:
+            html_tabla += f"<tr><td>{item['Hora']}</td><td>{item['Evento']}</td><td>{item['Estado']}</td></tr>"
+        html_tabla += '</table>'
+        st.markdown(html_tabla, unsafe_allow_html=True)
+        
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_der:
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("⚡ Controles Rápidos")
+    if st.button("Verificar Estado de Núcleos"):
+        st.toast("Sistemas al 100%. Módulo de voz activo.")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🧹 Módulo de Purga")
+    if st.button("Ejecutar Purga de Sistema"):
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}
+        ]
+        st.session_state.bitacora = [
+            {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual ejecutada", "Estado": "LIMPIO"}
+        ]
+        st.toast("🧹 Registros eliminados.")
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("📡 Telemetría")
+    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core Link: Estable\nTormenta Buin: Bajo control")
+    st.markdown('</div>', unsafe_allow_html=True)
