@@ -213,12 +213,12 @@ def activar_script_microfono():
 # Título limpio
 st.title("⚡ J.A.R.V.I.S. 4.0 // NOVA")
 
-# Banner de Ondas Azules
+# Banner de ondas táctico
 st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Memoria JSON & Enlace Cloud ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Protocolo de Presentación & Enlace Cloud ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -286,16 +286,20 @@ with col_izq:
         st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL ---
+# --- COLUMNA CENTRAL (CONSOLA DE CHAT CON PROTOCOLO DE PRESENTACIÓN) ---
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
     if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
         activar_script_microfono()
 
+    # Protocolo de presentación inicial por defecto
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Taller en orden y sistemas al 100%, Jefa. Prometo portarme bien hoy... a menos que me des órdenes aburridas. ¿Qué hacemos ahora?"}
+            {
+                "role": "assistant", 
+                "content": "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. 4.0 en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
+            }
         ]
 
     for idx, message in enumerate(st.session_state.messages):
@@ -308,7 +312,7 @@ with col_centro:
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Filtro reforzado y absoluto para el estado de alerta
+        # Filtro absoluto para el estado de alerta
         p_lower = prompt.lower()
         if any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
             respuesta_ia = "Para usted, señorita, siempre."
