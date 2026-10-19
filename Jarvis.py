@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas enmarcadas)
+# Inyección de Estilos CSS precisos (Fondo negro total, neón azul, tablas y inputs oscuros)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -61,21 +61,37 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Etiqueta de tamaño mediano y legible en azul neón para estados y puertos */
+    /* Etiqueta de estado en línea y tamaño mediano legible en azul neón */
     .estado-mediano {
         background-color: #000000 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
         border-radius: 6px !important;
-        font-size: 14px !important;
-        padding: 5px 10px !important;
+        font-size: 13px !important;
+        padding: 6px 12px !important;
         font-family: monospace;
         display: inline-block;
         box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4) !important;
         margin-top: 4px;
         margin-bottom: 4px;
+        white-space: nowrap;
     }
 
+    /* FORZAR CAJAS DE TEXTO (TEXT AREA) A FONDO NEGRO Y LETRAS NEÓN */
+    textarea {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 8px !important;
+    }
+
+    /* FORZAR TABLAS A MODO OSCURO NEÓN */
+    div[data-testid="stDataFrame"] {
+        background-color: #000000 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 8px !important;
+    }
+    
     /* Reducir y estilizar el texto de las pestañas en Azul Neón */
     button[data-baseweb="tab"] {
         color: #80f9ff !important;
@@ -363,7 +379,7 @@ with col_centro:
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.markdown('Estado de Conexión:<br><div class="estado-mediano">ONLINE / LISTEN (Puerto 5000)</div>', unsafe_allow_html=True)
+        st.markdown('Estado de Conexión: <div class="estado-mediano">ONLINE / LISTEN (Puerto 5000)</div>', unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("📡 Sincronizar Parámetros con Nova-Core"):
             st.toast("⚡ Conexión establecida. Parámetros compartidos.")
@@ -376,8 +392,8 @@ with col_centro:
 
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
-        for item in st.session_state.bitacora:
-            st.markdown(f"• **`{item['Hora']}`** — {item['Evento']} | <span class='estado-mediano'>{item['Estado']}</span>", unsafe_allow_html=True)
+        df_bitacora = pd.DataFrame(st.session_state.bitacora)
+        st.dataframe(df_bitacora, use_container_width=True)
         
     st.markdown('</div>', unsafe_allow_html=True)
 
