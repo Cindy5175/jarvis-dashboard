@@ -147,7 +147,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inicialización del estado de la sesión para bitácora y notas
+# Inicialización del estado de la sesión
 if "bitacora" not in st.session_state:
     st.session_state.bitacora = [
         {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema J.A.R.V.I.S. inicializado", "Estado": "ÓPTIMO"}
@@ -173,56 +173,38 @@ def emitir_voz(texto_respuesta):
     """
     st.components.v1.html(js_speech, height=0, width=0)
 
-# Módulo de Reconocimiento de Voz (STT) limpio y compacto
-def componente_microfono():
+# Módulo de Reconocimiento de Voz adaptado a ancho 100% simétrico
+def activar_script_microfono():
     js_mic = """
-    <div style="text-align: center; margin-bottom: 5px;">
-        <button id="mic_btn" onclick="iniciarEscucha()" style="background-color: #000a12; color: #00f3ff; border: 1px solid #00f3ff; padding: 6px 12px; border-radius: 6px; cursor: pointer; box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4); width: 100%; font-size: 13px;">
-            🎙️ Activar Micrófono (Dictado Táctico)
-        </button>
-        <p id="mic_status" style="color: #80f9ff; font-size: 11px; margin-top: 4px; margin-bottom: 0px;">Presione para dictar comando...</p>
-    </div>
     <script>
-        function iniciarEscucha() {
-            var btn = document.getElementById('mic_btn');
-            var status = document.getElementById('mic_status');
-            
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.innerText = "Reconocimiento no soportado en este navegador.";
-                return;
+        if (typeof window.iniciarEscucha === 'undefined') {
+            window.iniciarEscucha = function() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    alert("Reconocimiento de voz no soportado en este navegador.");
+                    return;
+                }
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                var recognition = new SpeechRecognition();
+                recognition.lang = 'es-ES';
+                recognition.interimResults = false;
+                
+                recognition.onstart = function() {
+                    console.log("Escuchando...");
+                };
+                
+                recognition.onresult = function(event) {
+                    var transcript = event.results[0][0].transcript;
+                    navigator.clipboard.writeText(transcript);
+                    alert("Comando dictado registrado: " + transcript + "\\nCopiado al portapapeles para pegar en el chat.");
+                };
+                
+                recognition.start();
             }
-            
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            var recognition = new SpeechRecognition();
-            recognition.lang = 'es-ES';
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                status.innerText = "🔴 Escuchando... Hable ahora, Jefa.";
-                btn.style.backgroundColor = "#00f3ff";
-                btn.style.color = "#000000";
-            };
-            
-            recognition.onresult = function(event) {
-                var transcript = event.results[0][0].transcript;
-                status.innerText = "Dictado: " + transcript;
-                btn.style.backgroundColor = "#000a12";
-                btn.style.color = "#00f3ff";
-                navigator.clipboard.writeText(transcript);
-                alert("Comando dictado copiado: " + transcript + "\\nPegue en la consola abajo.");
-            };
-            
-            recognition.onerror = function(event) {
-                status.innerText = "Error: " + event.error;
-                btn.style.backgroundColor = "#000a12";
-                btn.style.color = "#00f3ff";
-            };
-            
-            recognition.start();
         }
+        window.iniciarEscucha();
     </script>
     """
-    st.components.v1.html(js_mic, height=55)
+    st.components.v1.html(js_mic, height=0, width=0)
 
 st.title("🤖 JARVIS 4.0 // NOVA")
 
@@ -304,11 +286,13 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
-    # 1. Módulo de Consola Central (Independiente)
+    # Consola Central totalmente amplia y simétrica
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
     
-    componente_microfono()
+    # Botón nativo de Streamlit que ocupa el 100% del ancho de la tarjeta
+    if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
+        activar_script_microfono()
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
@@ -339,7 +323,7 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. Módulo de Widgets & Bitácora (En su propia tarjeta separada)
+    # Módulo de Widgets & Bitácora separado en su propia tarjeta
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
