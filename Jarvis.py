@@ -134,8 +134,27 @@ st.markdown("""
         background-color: #00f3ff !important;
         color: #000000 !important;
     }
+    
+    /* Estilos específicos para Widgets iOS */
+    .widget-ios {
+        background: rgba(0, 15, 30, 0.85);
+        border: 1px solid #00f3ff;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+        box-shadow: inset 0px 0px 8px rgba(0, 243, 255, 0.2);
+    }
     </style>
 """, unsafe_allow_html=True)
+
+# Inicialización del estado de la sesión para bitácora y notas
+if "bitacora" not in st.session_state:
+    st.session_state.bitacora = [
+        {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema J.A.R.V.I.S. inicializado", "Estado": "ÓPTIMO"}
+    ]
+
+if "nota_rapida" not in st.session_state:
+    st.session_state.nota_rapida = "Revisar estado de reactores y canal seguro con Nova-Core."
 
 # Función de Síntesis de Voz (Text-to-Speech) mediante JavaScript nativo
 def emitir_voz(texto_respuesta):
@@ -154,6 +173,59 @@ def emitir_voz(texto_respuesta):
     """
     st.components.v1.html(js_speech, height=0, width=0)
 
+# Módulo de Reconocimiento de Voz (STT) mediante Web Speech API
+def componente_microfono():
+    js_mic = """
+    <div style="text-align: center; margin-bottom: 10px;">
+        <button id="mic_btn" onclick="iniciarEscucha()" style="background-color: #000a12; color: #00f3ff; border: 1px solid #00f3ff; padding: 8px 16px; border-radius: 6px; cursor: pointer; box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4); width: 100%;">
+            🎙️ Activar Micrófono (Dictado Táctico)
+        </button>
+        <p id="mic_status" style="color: #80f9ff; font-size: 12px; margin-top: 5px;">Aprete para dictar comando...</p>
+    </div>
+    <script>
+        function iniciarEscucha() {
+            var btn = document.getElementById('mic_btn');
+            var status = document.getElementById('mic_status');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.innerText = "Reconocimiento de voz no soportado en este navegador.";
+                return;
+            }
+            
+            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            var recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.interimResults = false;
+            
+            recognition.onstart = function() {
+                status.innerText = "🔴 Escuchando... Hable ahora, Jefa.";
+                btn.style.backgroundColor = "#00f3ff";
+                btn.style.color = "#000000";
+            };
+            
+            recognition.onresult = function(event) {
+                var transcript = event.results[0][0].transcript;
+                status.innerText = "Transcripción: " + transcript;
+                btn.style.backgroundColor = "#000a12";
+                btn.style.color = "#00f3ff";
+                
+                // Pegar comando en el portapapeles para facilitar su ingreso
+                navigator.clipboard.writeText(transcript);
+                alert("Comando dictado copiado: " + transcript + "\\nPegue en la consola abajo.");
+            };
+            
+            recognition.onerror = function(event) {
+                status.innerText = "Error de micrófono: " + event.error;
+                btn.style.backgroundColor = "#000a12";
+                btn.style.color = "#00f3ff";
+            };
+            
+            recognition.start();
+        }
+    </script>
+    """
+    st.components.v1.html(js_mic, height=90)
+
 st.title("🤖 JARVIS 4.0 // NOVA")
 
 # Banner de Ondas Azules
@@ -161,7 +233,7 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark & Módulo de Voz Integrados ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Enlace Nova-Core ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -238,9 +310,12 @@ with col_centro:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
     
+    # Micrófono de dictado
+    componente_microfono()
+
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz activado. ¿Qué orden ejecutamos hoy?"}
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y dictado táctico activados. ¿Qué orden ejecutamos hoy?"}
         ]
 
     # Mostrar historial de mensajes de la consola dentro de la tarjeta
@@ -251,9 +326,16 @@ with col_centro:
                 if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
                     emitir_voz(message["content"])
 
-    # CAJA DE CHAT INTEGRADA JUSTO DEBAJO DE LOS BOTONES (Simetría total en la columna central)
+    # CAJA DE CHAT INTEGRADA JUSTO DEBAJO DE LOS BOTONES
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Guardar en Bitácora
+        st.session_state.bitacora.append({
+            "Hora": datetime.now().strftime("%H:%M:%S"),
+            "Evento": f"Comando: {prompt[:25]}...",
+            "Estado": "PROCESADO"
+        })
         
         # Respuesta limpia de Tony Stark
         respuesta_ia = random.choice(RESPUESTAS_STARK)
@@ -263,6 +345,41 @@ with col_centro:
         emitir_voz(respuesta_ia)
         st.rerun()
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # NUEVO MÓDULO: WIDGETS ESTILO TABLET iOS & BITÁCORA
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
+    
+    w_tab1, w_tab2, w_tab3 = st.tabs(["📝 Notas & Widgets", "🔗 Conexión Nova-Core", "📋 Bitácora Misiones"])
+    
+    with w_tab1:
+        st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
+        st.markdown("📌 **Nota Rápida del Taller**")
+        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70)
+        if st.button("💾 Guardar Nota"):
+            st.session_state.nota_rapida = nueva_nota
+            st.toast("Nota guardada en la tablet.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with w_tab2:
+        st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
+        st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
+        st.write("Estado de Conexión: `ONLINE / LISTEN (Puerto 5000)`")
+        if st.button("📡 Sincronizar Parámetros con Nova-Core"):
+            st.toast("⚡ Conexión establecida. Parámetros compartidos.")
+            st.session_state.bitacora.append({
+                "Hora": datetime.now().strftime("%H:%M:%S"),
+                "Evento": "Sincronización manual con Nova-Core",
+                "Estado": "EXITOSO"
+            })
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with w_tab3:
+        st.markdown("📋 **Registro Auditado de Eventos:**")
+        df_bitacora = pd.DataFrame(st.session_state.bitacora)
+        st.dataframe(df_bitacora, use_container_width=True)
+        
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
@@ -280,6 +397,9 @@ with col_der:
         st.session_state.messages = [
             {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}
         ]
+        st.session_state.bitacora = [
+            {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual ejecutada", "Estado": "LIMPIO"}
+        ]
         st.toast("🧹 Registros eliminados.")
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -287,5 +407,5 @@ with col_der:
     # Módulo de Telemetría
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nNúcleo Autónomo: Estable\nTormenta Buin: Bajo control")
+    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core Link: Activo\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
