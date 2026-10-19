@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS precisos (Fondo negro, neón azul, caja del chat y mapa compacto)
+# Inyección de Estilos CSS precisos
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -94,4 +94,148 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0px 0px 15px rgba(0,
+        box-shadow: 0px 0px 15px rgba(0, 243, 255, 0.4);
+        margin-bottom: 20px;
+    }
+    
+    /* Mantenimiento estricto del tamaño del mapa en cuadrado compacto */
+    .stMap, iframe, div[data-testid="stDeckGlJsonChart"] {
+        height: 180px !important;
+        width: 180px !important;
+        max-width: 180px !important;
+        border-radius: 8px !important;
+        border: 1px solid #00f3ff !important;
+        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
+    }
+    
+    .mapa-cuadrado {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+    }
+    
+    /* Botones tácticos generales */
+    .stButton>button {
+        background-color: #000a12 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 6px;
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
+    }
+    .stButton>button:hover {
+        background-color: #00f3ff !important;
+        color: #000000 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("🤖 JARVIS 4.0 // NOVA")
+
+# Banner de Ondas Azules
+st.markdown("""
+    <div class="banner-ondas">
+        <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
+            ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark activada ]</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Respuestas sarcásticas estilo Tony Stark para la consola
+RESPUESTAS_STARK = [
+    "Sistemas al 100%, Jefa. Aunque si me pide calcular el sentido de la vida, le advierto que no viene en el manual.",
+    "Procesado. Si todo sale mal, le echaremos la culpa a los servidores.",
+    "Ejecutando orden. Prometo no gastarme el presupuesto en trajes nuevos esta vez.",
+    "Comando recibido. Calculando la forma más elegante de resolver esto sin despeinarme.",
+    "Sistemas sincronizados, Jefa. Listo para salvar el día o al menos para hacer que parezca que sabemos lo que hacemos."
+]
+
+# Distribución en columnas principales
+col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
+
+with col_izq:
+    st.subheader("📅 Sincronización Temporal")
+    
+    # Fragmento dinámico con segundero en vivo
+    @st.fragment(run_every=1)
+    def reloj_en_vivo():
+        zona_chile = pytz.timezone('America/Santiago')
+        ahora_chile = datetime.now(zona_chile)
+        
+        fecha_actual = ahora_chile.strftime("%d/%m/%Y")
+        hora_actual = ahora_chile.strftime("%H:%M:%S")
+        
+        st.write(f"📌 **Fecha:** {fecha_actual}")
+        st.markdown(f"⏱️ **Hora Táctica (Chile):**")
+        st.markdown(f"`{hora_actual}`")
+
+    reloj_en_vivo()
+    
+    # Módulo de Clima local en Buin con emojis según la hora
+    st.markdown("---")
+    st.subheader("🌤️ Clima Buin")
+    
+    zona_chile = pytz.timezone('America/Santiago')
+    hora_int = datetime.now(zona_chile).hour
+    
+    if 6 <= hora_int < 19:
+        icono_tiempo = "☀️ Despejado"
+        temp_simulada = "22°C"
+        humedad = "45%"
+    else:
+        icono_tiempo = "🌙 Noche despejada"
+        temp_simulada = "14°C"
+        humedad = "68%"
+        
+    st.write(f"**Estado:** {icono_tiempo}")
+    st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** {humedad}")
+    
+    # Enlace satelital Serafín (Cuadrado compacto)
+    st.markdown("---")
+    st.markdown("### 🛰️ Enlace satelital Serafín")
+    mapa_buin = pd.DataFrame({
+        'lat': [-33.7333],
+        'lon': [-70.7417]
+    })
+    
+    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
+    st.map(mapa_buin, zoom=10, use_container_width=False)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_centro:
+    st.subheader("💬 Consola Central / Conexión Gemini")
+    
+    # Inicializar historial de chat si no existe
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Prometo responder rápido y con no más de un 15% de sarcasmo. ¿En qué trabajamos hoy?"}
+        ]
+
+    # Mostrar mensajes del chat
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Entrada de chat central
+    if prompt := st.chat_input("Ingrese comando táctico o consulta para Gemini..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        respuesta_sarcástica = random.choice(RESPUESTAS_STARK)
+        respuesta_completa = f"{respuesta_sarcástica}\n\n*[Comando: '{prompt}']*"
+        
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_completa})
+        with st.chat_message("assistant"):
+            st.markdown(respuesta_completa)
+
+with col_der:
+    st.subheader("Controles Rápidos")
+    if st.button("Verificar Estado de Núcleos"):
+        st.toast("Sistemas al 100%. Si algo explota, le echo la culpa al servofreno.")
+    
+    # Módulo de Purga
+    st.markdown("###
