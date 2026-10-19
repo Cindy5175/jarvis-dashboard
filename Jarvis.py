@@ -48,8 +48,8 @@ st.markdown("""
         box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.2) !important;
     }
     
-    /* Estilo táctico para la caja de la hora */
-    code, .stCodeBlock {
+    /* Estilo exclusivo para el reloj grande */
+    .reloj-digital {
         background-color: #000000 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
@@ -57,6 +57,18 @@ st.markdown("""
         box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4) !important;
         font-size: 20px !important;
         padding: 4px 10px !important;
+        font-family: monospace;
+        display: inline-block;
+    }
+
+    /* Código general más pequeño y limpio para los estados */
+    code, .stCodeBlock {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 4px !important;
+        font-size: 13px !important;
+        padding: 2px 6px !important;
     }
     
     /* Estilo del historial de mensajes del chat */
@@ -173,7 +185,6 @@ def emitir_voz(texto_respuesta):
     """
     st.components.v1.html(js_speech, height=0, width=0)
 
-# Módulo de Reconocimiento de Voz adaptado a ancho 100% simétrico
 def activar_script_microfono():
     js_mic = """
     <script>
@@ -187,10 +198,6 @@ def activar_script_microfono():
                 var recognition = new SpeechRecognition();
                 recognition.lang = 'es-ES';
                 recognition.interimResults = false;
-                
-                recognition.onstart = function() {
-                    console.log("Escuchando...");
-                };
                 
                 recognition.onresult = function(event) {
                     var transcript = event.results[0][0].transcript;
@@ -220,7 +227,6 @@ st.markdown("""
 
 st.markdown("---")
 
-# Repertorio de respuestas inteligentes con estilo Tony Stark
 RESPUESTAS_STARK = [
     "Sistemas al 100%, Jefa. Analizando su consulta sin interferencias.",
     "Comando procesado con éxito. A veces me sorprende lo eficiente que soy.",
@@ -229,7 +235,6 @@ RESPUESTAS_STARK = [
     "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
 ]
 
-# Distribución en columnas principales
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
 with col_izq:
@@ -247,7 +252,7 @@ with col_izq:
         
         st.write(f"📌 **Fecha:** {fecha_actual}")
         st.markdown(f"⏱️ **Hora Táctica (Chile):**")
-        st.markdown(f"`{hora_actual}`")
+        st.markdown(f'<div class="reloj-digital">{hora_actual}</div>', unsafe_allow_html=True)
 
     reloj_en_vivo()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -286,11 +291,9 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
-    # Consola Central totalmente amplia y simétrica
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
     
-    # Botón nativo de Streamlit que ocupa el 100% del ancho de la tarjeta
     if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
         activar_script_microfono()
 
@@ -323,7 +326,7 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Módulo de Widgets & Bitácora separado en su propia tarjeta
+    # Widgets & Bitácora
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
@@ -359,14 +362,12 @@ with col_centro:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # Módulo de Controles Rápidos
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
         st.toast("Sistemas al 100%. Módulo de voz activo.")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Módulo de Purga
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🧹 Módulo de Purga")
     if st.button("Ejecutar Purga de Sistema"):
@@ -380,7 +381,6 @@ with col_der:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Módulo de Telemetría
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
     st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core Link: Activo\nTormenta Buin: Bajo control")
