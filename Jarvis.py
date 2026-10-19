@@ -3,6 +3,8 @@ import pandas as pd
 from datetime import datetime
 import pytz
 import random
+import json
+import os
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -10,6 +12,31 @@ st.set_page_config(
     page_icon="⚡",
     layout="wide"
 )
+
+# Archivo de memoria compartida
+MEMORIA_FILE = "memoria_compartida.json"
+
+def cargar_memoria_json():
+    if os.path.exists(MEMORIA_FILE):
+        try:
+            with open(MEMORIA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {
+        "bitacora": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema inicializado", "Estado": "ÓPTIMO"}],
+        "nota_rapida": "Revisar estado de reactores y canal seguro con Nova-Core."
+    }
+
+def guardar_memoria_json(datos):
+    try:
+        with open(MEMORIA_FILE, "w", encoding="utf-8") as f:
+            json.dump(datos, f, ensure_ascii=False, indent=4)
+    except:
+        pass
+
+# Cargar datos iniciales desde el JSON
+memoria_actual = cargar_memoria_json()
 
 # Inyección de Estilos CSS definitivos y limpios
 st.markdown("""
@@ -59,21 +86,6 @@ st.markdown("""
         padding: 4px 10px !important;
         font-family: monospace;
         display: inline-block;
-    }
-
-    /* Bloc de notas en HTML puro (Fondo negro absoluto) */
-    .bloc-notas-html {
-        width: 100%;
-        background-color: #000000;
-        color: #00f3ff;
-        border: 1px solid #00f3ff;
-        border-radius: 6px;
-        padding: 10px;
-        font-family: monospace;
-        font-size: 13px;
-        resize: vertical;
-        min-height: 60px;
-        box-shadow: inset 0px 0px 6px rgba(0, 243, 255, 0.3);
     }
 
     /* Estilo del historial de mensajes del chat */
@@ -146,14 +158,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inicialización del estado de la sesión
+# Inicialización del estado de la sesión con la memoria JSON
 if "bitacora" not in st.session_state:
-    st.session_state.bitacora = [
-        {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema J.A.R.V.I.S. inicializado", "Estado": "ÓPTIMO"}
-    ]
-
-if "nota_rapida" not in st.session_state:
-    st.session_state.nota_rapida = "Revisar estado de reactores y canal seguro con Nova-Core."
+    st.session_state.bitacora = memoria_actual.get("bitacora", [])
 
 if "acceso_biometrico" not in st.session_state:
     st.session_state.acceso_biometrico = False
@@ -203,7 +210,7 @@ def activar_script_microfono():
     """
     st.components.v1.html(js_mic, height=0, width=0)
 
-# Título sin el robot
+# Título limpio
 st.title("⚡ J.A.R.V.I.S. 4.0 // NOVA")
 
 # Banner de Ondas Azules
@@ -211,7 +218,7 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Enlace Nova-Core ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Memoria JSON & Enlace Nova-Core ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -229,118 +236,4 @@ RESPUESTAS_STARK = [
 col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
 
 with col_izq:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📅 Sincronización Temporal")
-    
-    @st.fragment(run_every=1)
-    def reloj_en_vivo():
-        zona_chile = pytz.timezone('America/Santiago')
-        ahora_chile = datetime.now(zona_chile)
-        fecha_actual = ahora_chile.strftime("%d/%m/%Y")
-        hora_actual = ahora_chile.strftime("%H:%M:%S")
-        st.write(f"📌 **Fecha:** {fecha_actual}")
-        st.markdown(f"⏱️ **Hora (Chile):**")
-        st.markdown(f'<div class="reloj-digital">{hora_actual}</div>', unsafe_allow_html=True)
-
-    reloj_en_vivo()
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🌤️ Clima Buin")
-    zona_chile = pytz.timezone('America/Santiago')
-    hora_int = datetime.now(zona_chile).hour
-    if 6 <= hora_int < 19:
-        icono_tiempo = "☀️ Despejado"
-        temp_simulada = "22°C"
-    else:
-        icono_tiempo = "🌙 Noche despejada"
-        temp_simulada = "14°C"
-    st.write(f"**Estado:** {icono_tiempo}")
-    st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** 45%")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📊 Rendimiento del Sistema")
-    st.write("💻 **CPU:** 14.2% (Estable)")
-    st.progress(14)
-    st.write("🧠 **RAM:** 48.6% (Óptimo)")
-    st.progress(49)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📌 Nota Rápida")
-    st.markdown(f'<textarea class="bloc-notas-html">{st.session_state.nota_rapida}</textarea>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_centro:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("💬 Consola Central // Audio & Texto")
-    
-    if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
-        activar_script_microfono()
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y dictado táctico activados. ¿Qué orden ejecutamos hoy?"}
-        ]
-
-    for idx, message in enumerate(st.session_state.messages):
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            if message["role"] == "assistant":
-                if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
-                    emitir_voz(message["content"])
-
-    if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.session_state.bitacora.append({
-            "Hora": datetime.now().strftime("%H:%M:%S"),
-            "Evento": f"Comando: {prompt[:25]}...",
-            "Estado": "PROCESADO"
-        })
-        respuesta_ia = random.choice(RESPUESTAS_STARK)
-        st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
-        emitir_voz(respuesta_ia)
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_der:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🔒 Acceso Biométrico")
-    if not st.session_state.acceso_biometrico:
-        if st.button("🔑 Autorizar Protocolo Alpha"):
-            st.session_state.acceso_biometrico = True
-            st.toast("✅ Autorización concedida, Jefa.")
-            st.rerun()
-        st.info("Estado: BLOQUEADO 🔒")
-    else:
-        if st.button("🔒 Bloquear Sistema"):
-            st.session_state.acceso_biometrico = False
-            st.toast("🔒 Sistema asegurado.")
-            st.rerun()
-        st.success("Estado: AUTORIZADO 🟢")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("⚡ Comandos Frecuentes")
-    if st.button("🤖 Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Enlace óptimo.")
-    if st.button("📡 Ping a Nova-Core"):
-        st.toast("Conexión estable con Puerto 5000.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🛰️ Satélite Serafín")
-    mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
-    st.map(mapa_buin, zoom=10, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🧹 Módulo de Purga")
-    if st.button("Ejecutar Purga"):
-        st.session_state.messages = [{"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}]
-        st.session_state.bitacora = [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual", "Estado": "LIMPIO"}]
-        st.toast("🧹 Registros eliminados.")
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown
