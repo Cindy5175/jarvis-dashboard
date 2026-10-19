@@ -225,7 +225,6 @@ st.markdown("""
 
 st.markdown("---")
 
-# Repertorio de respuestas con estilo Stark y lealtad absoluta
 RESPUESTAS_STARK = [
     "Oh, perfecto, otra tarea brillante. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
     "Procesado. De nada por salvar el día otra vez con mi elegancia habitual.",
@@ -237,7 +236,7 @@ RESPUESTAS_STARK = [
 
 col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
 
-# --- COLUMNA IZQUIERDA: Herramientas, Sincronización y Notas ---
+# --- COLUMNA IZQUIERDA ---
 with col_izq:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
@@ -287,7 +286,7 @@ with col_izq:
         st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL: Consola de Chat Absolutamente Libre ---
+# --- COLUMNA CENTRAL ---
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
@@ -309,9 +308,9 @@ with col_centro:
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Filtro inteligente para el estado de alerta
-        prompt_lower = prompt.lower()
-        if "despierto" in prompt_lower or "estas despierto" in prompt_lower:
+        # Filtro reforzado y absoluto para el estado de alerta
+        p_lower = prompt.lower()
+        if any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
             respuesta_ia = "Para usted, señorita, siempre."
         else:
             respuesta_ia = random.choice(RESPUESTAS_STARK)
@@ -330,7 +329,7 @@ with col_centro:
         emitir_voz(respuesta_ia)
         st.rerun()
 
-# --- COLUMNA DERECHA: Seguridad, Controles y Satélite ---
+# --- COLUMNA DERECHA ---
 with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🔒 Acceso Biométrico")
