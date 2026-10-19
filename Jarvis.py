@@ -203,7 +203,8 @@ def activar_script_microfono():
     """
     st.components.v1.html(js_mic, height=0, width=0)
 
-st.title("🤖 JARVIS 4.0 // NOVA")
+# Título sin el robot
+st.title("⚡ J.A.R.V.I.S. 4.0 // NOVA")
 
 # Banner de Ondas Azules
 st.markdown("""
