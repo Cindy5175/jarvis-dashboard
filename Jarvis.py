@@ -286,14 +286,13 @@ with col_izq:
         st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL (CONSOLA DE CHAT CON PROTOCOLO DE PRESENTACIÓN) ---
+# --- COLUMNA CENTRAL (CONSOLA DE CHAT CON FILTROS INTELIGENTES) ---
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
     if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
         activar_script_microfono()
 
-    # Protocolo de presentación inicial por defecto
     if "messages" not in st.session_state:
         st.session_state.messages = [
             {
@@ -312,9 +311,12 @@ with col_centro:
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Filtro absoluto para el estado de alerta
         p_lower = prompt.lower()
-        if any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
+        
+        # Filtros inteligentes y exclusivos
+        if "protocolo de presentación" in p_lower or "protocolo de presentacion" in p_lower:
+            respuesta_ia = "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. 4.0 en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
+        elif any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
             respuesta_ia = "Para usted, señorita, siempre."
         else:
             respuesta_ia = random.choice(RESPUESTAS_STARK)
