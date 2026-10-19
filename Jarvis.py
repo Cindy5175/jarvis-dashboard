@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS precisos
+# Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas/módulos enmarcados)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -30,11 +30,22 @@ st.markdown("""
     h2, h3 {
         color: #00f3ff !important;
         text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
+        margin-top: 0px !important;
     }
     
     /* Textos generales en azul neón */
     p, span, label, div, markdown, .stMarkdown {
         color: #80f9ff !important;
+    }
+    
+    /* Contenedor general para enmarcar cada módulo táctico */
+    .card-tactica {
+        background-color: #000a12 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 10px !important;
+        padding: 16px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.2) !important;
     }
     
     /* Estilo táctico para la caja de la hora (Reloj negro con azul neón) */
@@ -122,6 +133,7 @@ st.markdown("""
         border: 1px solid #00f3ff !important;
         border-radius: 6px;
         box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
+        width: 100%;
     }
     .stButton>button:hover {
         background-color: #00f3ff !important;
@@ -157,9 +169,10 @@ RESPUESTAS_STARK = [
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
 with col_izq:
+    # Módulo de Sincronización Temporal
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
     
-    # Fragmento dinámico con segundero en vivo
     @st.fragment(run_every=1)
     def reloj_en_vivo():
         zona_chile = pytz.timezone('America/Santiago')
@@ -173,9 +186,10 @@ with col_izq:
         st.markdown(f"`{hora_actual}`")
 
     reloj_en_vivo()
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Módulo de Clima local en Buin con emojis según la hora
-    st.markdown("---")
+    # Módulo de Clima local en Buin
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🌤️ Clima Buin")
     
     zona_chile = pytz.timezone('America/Santiago')
@@ -192,10 +206,11 @@ with col_izq:
         
     st.write(f"**Estado:** {icono_tiempo}")
     st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** {humedad}")
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Enlace satelital Serafín (Cuadrado compacto)
-    st.markdown("---")
-    st.markdown("### 🛰️ Enlace satelital Serafín")
+    # Módulo de Enlace Satelital
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
@@ -204,22 +219,22 @@ with col_izq:
     st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
     st.map(mapa_buin, zoom=10, use_container_width=False)
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
+    # Módulo de Consola Central
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central / Conexión Gemini")
     
-    # Inicializar historial de chat si no existe
     if "messages" not in st.session_state:
         st.session_state.messages = [
             {"role": "assistant", "content": "Bienvenida al taller, Jefa. Prometo responder rápido y con no más de un 15% de sarcasmo. ¿En qué trabajamos hoy?"}
         ]
 
-    # Mostrar mensajes del chat
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Entrada de chat central
     if prompt := st.chat_input("Ingrese comando táctico o consulta para Gemini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
@@ -231,20 +246,30 @@ with col_centro:
         st.session_state.messages.append({"role": "assistant", "content": respuesta_completa})
         with st.chat_message("assistant"):
             st.markdown(respuesta_completa)
+            
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    st.subheader("Controles Rápidos")
+    # Módulo de Controles Rápidos
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("⚡ Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
         st.toast("Sistemas al 100%. Si algo explota, le echo la culpa al servofreno.")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Módulo de Purga
-    st.markdown("### 🧹 Módulo de Purga")
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🧹 Módulo de Purga")
     if st.button("Ejecutar Purga de Sistema"):
         st.session_state.messages = [
             {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa. Como si nada de esto hubiera pasado."}
         ]
         st.toast("🧹 Registros borrados. Archivos confidenciales a salvo.")
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("### ⚡ Telemetría")
+    # Módulo de Telemetría
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("📡 Telemetría")
     st.info("Red local iOS: Conectada\nServidor Flask: Escuchando\nTormenta Buin: Bajo control")
+    st.markdown('</div>', unsafe_allow_html=True)
