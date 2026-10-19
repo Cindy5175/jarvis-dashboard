@@ -71,7 +71,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT */
+    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT DENTRO DE LA TARJETA */
     div[data-testid="stChatInput"] {
         background-color: #000000 !important;
         border-radius: 10px !important;
@@ -234,7 +234,7 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
-    # Módulo de Consola Central
+    # Módulo de Consola Central perfectamente enmarcado y simétrico
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
     
@@ -243,13 +243,25 @@ with col_centro:
             {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz activado. ¿Qué orden ejecutamos hoy?"}
         ]
 
-    # Mostrar historial de mensajes de la consola
+    # Mostrar historial de mensajes de la consola dentro de la tarjeta
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             if message["role"] == "assistant":
                 if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
                     emitir_voz(message["content"])
+
+    # CAJA DE CHAT INTEGRADA JUSTO DEBAJO DE LOS BOTONES (Simetría total en la columna central)
+    if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Respuesta limpia de Tony Stark
+        respuesta_ia = random.choice(RESPUESTAS_STARK)
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
+        
+        # Reproducir voz automáticamente al responder
+        emitir_voz(respuesta_ia)
+        st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -277,15 +289,3 @@ with col_der:
     st.subheader("📡 Telemetría")
     st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nNúcleo Autónomo: Estable\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
-
-# CAJA DE ENTRADA DE CHAT - Colocada de forma limpia abajo de la interfaz
-if prompt := st.chat_input("Ingrese comando táctico o consulta para J.A.R.V.I.S..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Respuesta limpia de Tony Stark sin fragmentos adicionales
-    respuesta_ia = random.choice(RESPUESTAS_STARK)
-    st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
-    
-    # Reproducir voz automáticamente al responder
-    emitir_voz(respuesta_ia)
-    st.rerun()
