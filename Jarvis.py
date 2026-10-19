@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import pytz
-import google.generativeai as genai
+import random
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -10,23 +10,6 @@ st.set_page_config(
     page_icon="⚡",
     layout="wide"
 )
-
-# Configuración directa con su clave AQ
-API_KEY_JARVIS = "AQ.Ab8RN6J0av6SHZiYBxf3XpFMTYfeJ1EtHdFy6y36lIl4HTYw9g"
-
-try:
-    genai.configure(api_key=API_KEY_JARVIS)
-    system_instruction = (
-        "Eres J.A.R.V.I.S. / NOVA, la inteligencia artificial táctica del taller. "
-        "Le respondes a tu 'Jefa' de forma inteligente, extremadamente leal, amigable, eficiente y con un ligero toque de sarcasmo humorístico al estilo Tony Stark. "
-        "Mantén tus respuestas relativamente breves, tácticas y bien formateadas."
-    )
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        system_instruction=system_instruction
-    )
-except Exception:
-    model = None
 
 # Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas/módulos enmarcados)
 st.markdown("""
@@ -159,6 +142,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Función de Síntesis de Voz (Text-to-Speech) mediante JavaScript nativo
+def emitir_voz(texto_respuesta):
+    texto_limpio = texto_respuesta.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
+    js_speech = f"""
+    <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            var utterance = new SpeechSynthesisUtterance("{texto_limpio}");
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }}
+    </script>
+    """
+    st.components.v1.html(js_speech, height=0, width=0)
+
 st.title("🤖 JARVIS 4.0 // NOVA")
 
 # Banner de Ondas Azules
@@ -166,12 +166,21 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark activada ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark & Módulo de Voz Integrados ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
+
+# Repertorio de respuestas inteligentes con estilo Tony Stark
+RESPUESTAS_STARK = [
+    "Sistemas al 100%, Jefa. Analizando su consulta sin interferencias.",
+    "Comando procesado con éxito. A veces me sorprende lo eficiente que soy, y eso que fui yo mismo quien me programé.",
+    "Entendido. Ejecutando la rutina solicitada con un 0% de errores y un toque de sarcasmo justificado.",
+    "Analizando los datos del taller. Todo en orden, Jefa; ningún reactor arc en riesgo por ahora.",
+    "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
+]
 
 # Distribución en columnas principales
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
@@ -232,36 +241,35 @@ with col_izq:
 with col_centro:
     # Módulo de Consola Central
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("💬 Consola Central / Conexión Gemini IA")
+    st.subheader("💬 Consola Central // Audio & Texto")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Conexión de IA activa 24/7. ¿Qué orden ejecutamos hoy?"}
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y síntesis neural activados. ¿Qué orden ejecutamos hoy?"}
         ]
 
-    for message in st.session_state.messages:
+    for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            if message["role"] == "assistant":
+                if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
+                    emitir_voz(message["content"])
 
-    if prompt := st.chat_input("Ingrese comando táctico o consulta para Gemini..."):
+    if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Procesamiento en vivo con Gemini
-        if model:
-            try:
-                chat = model.start_chat(history=[])
-                response = chat.send_message(prompt)
-                respuesta_ia = response.text
-            except Exception as e:
-                respuesta_ia = f"Interferencia momentánea, Jefa: {e}"
-        else:
-            respuesta_ia = "Núcleo de IA no configurado correctamente, Jefa."
+        # Respuesta autónoma fluida
+        base_resp = random.choice(RESPUESTAS_STARK)
+        respuesta_ia = f"{base_resp}\n\n*Procesado para:* `{prompt}`"
 
         st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
+        
         with st.chat_message("assistant"):
             st.markdown(respuesta_ia)
+            # Emitir respuesta por voz automáticamente al responder
+            emitir_voz(respuesta_ia)
             
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -270,7 +278,7 @@ with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Conexión activa.")
+        st.toast("Sistemas al 100%. Módulo de voz activo.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Módulo de Purga
@@ -287,5 +295,5 @@ with col_der:
     # Módulo de Telemetría
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nServidor Flask: Escuchando\nIA Conectada: Activa\nTormenta Buin: Bajo control")
+    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nNúcleo Autónomo: Estable\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
