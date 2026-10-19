@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa de la mitad y título centrado)
+# Inyección de Estilos CSS (Fondo negro, letras azul marino y mapa en formato cuadrado exacto)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -18,63 +18,67 @@ st.markdown("""
         background-color: #000000 !important;
     }
     
-    /* Centrar el encabezado principal y darle azul neón brillante */
+    /* Centrar el encabezado principal y darle azul marino brillante */
     h1 {
         text-align: center;
-        color: #00f3ff !important;
-        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.7);
+        color: #1E3A8A !important;
+        text-shadow: 0px 0px 10px rgba(30, 58, 138, 0.7);
     }
     
-    /* Demás títulos en azul neón */
+    /* Demás títulos en azul marino */
     h2, h3 {
-        color: #00f3ff !important;
-        text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
+        color: #1E3A8A !important;
+        text-shadow: 0px 0px 8px rgba(30, 58, 138, 0.6);
     }
     
-    /* Textos generales en azul neón claro / cian */
+    /* Textos generales en azul marino / cian oscuro para mantener la legibilidad */
     p, span, label, div, markdown, .stMarkdown {
-        color: #80f9ff !important;
+        color: #3B82F6 !important;
     }
     
-    /* Forzar alertas/infos a diseño oscuro sin verde */
+    /* Forzar alertas/infos a diseño oscuro */
     div[data-testid="stNotification"], .stAlert {
         background-color: #000a12 !important;
-        color: #80f9ff !important;
-        border: 1px solid #00f3ff !important;
+        color: #3B82F6 !important;
+        border: 1px solid #1E3A8A !important;
     }
     
-    /* Ajustar el mapa para que tenga fondo oscuro, bordes neón y tamaño de la mitad (cuadrado medio) */
-    div[data-testid="stDeckGlArrow"] div, iframe {
-        background-color: #050b14 !important;
+    /* Reducir el mapa para que sea un cuadrado perfecto */
+    iframe {
+        height: 250px !important;
+        width: 250px !important;
+        max-width: 100% !important;
         border-radius: 8px !important;
-        border: 1px solid #00f3ff !important;
-        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.3);
+        border: 1px solid #1E3A8A !important;
+        box-shadow: 0px 0px 10px rgba(30, 58, 138, 0.4);
     }
     
-    /* Contenedor específico para reducir el mapa a la mitad */
+    /* Contenedor específico para centrar y moldear el mapa como cuadrado */
     .mapa-cuadrado {
-        max-width: 85%;
-        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
     }
     
     /* Cajas de entrada de chat y elementos interactivos */
     .stTextInput>div>div>input {
         background-color: #000a12 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
+        color: #3B82F6 !important;
+        border: 1px solid #1E3A8A !important;
     }
     
     /* Botones tácticos */
     .stButton>button {
         background-color: #000a12 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
+        color: #3B82F6 !important;
+        border: 1px solid #1E3A8A !important;
         border-radius: 6px;
-        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
+        box-shadow: 0px 0px 6px rgba(30, 58, 138, 0.4);
     }
     .stButton>button:hover {
-        background-color: #00f3ff !important;
-        color: #000000 !important;
+        background-color: #1E3A8A !important;
+        color: #ffffff !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -104,16 +108,15 @@ with col_izq:
     # Llamada al reloj en vivo
     reloj_en_vivo()
     
-    # Enlace satelital Serafín (Cuadrado medio con fondo oscuro)
+    # Enlace satelital Serafín (Formato Cuadrado Exacto)
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
     
-    # Envoltorio para reducir el mapa a la mitad en la columna
     st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
-    st.map(mapa_buin, zoom=11, use_container_width=True)
+    st.map(mapa_buin, zoom=11, use_container_width=False)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
