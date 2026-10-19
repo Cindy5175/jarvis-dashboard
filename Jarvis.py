@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 import random
+import psutil # Para el monitor de sistema en vivo
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -61,6 +62,21 @@ st.markdown("""
         display: inline-block;
     }
 
+    /* Bloc de notas en HTML puro (Fondo negro absoluto) */
+    .bloc-notas-html {
+        width: 100%;
+        background-color: #000000;
+        color: #00f3ff;
+        border: 1px solid #00f3ff;
+        border-radius: 6px;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 60px;
+        box-shadow: inset 0px 0px 6px rgba(0, 243, 255, 0.3);
+    }
+
     /* Estilo del historial de mensajes del chat */
     div[data-testid="stChatMessage"] {
         background-color: #000000 !important;
@@ -73,7 +89,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* CAJA DE CHAT INFERIOR */
+    /* CAJA DE CHAT INFERIOR LIBRE */
     div[data-testid="stChatInput"] {
         background-color: #000000 !important;
         border-radius: 10px !important;
@@ -95,7 +111,7 @@ st.markdown("""
     /* Banner de ondas de IA táctico */
     .banner-ondas {
         width: 100%;
-        height: 90px;
+        height: 80px;
         background: linear-gradient(90deg, #000000 0%, #031525 50%, #000000 100%);
         border: 1px solid #00f3ff;
         border-radius: 8px;
@@ -108,19 +124,11 @@ st.markdown("""
     
     /* Mapa en cuadrado compacto */
     .stMap, iframe, div[data-testid="stDeckGlJsonChart"] {
-        height: 180px !important;
-        width: 180px !important;
-        max-width: 180px !important;
+        height: 160px !important;
+        width: 100% !important;
         border-radius: 8px !important;
         border: 1px solid #00f3ff !important;
         box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
-    }
-    
-    .mapa-cuadrado {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
     }
     
     /* Botones tácticos generales */
@@ -144,6 +152,12 @@ if "bitacora" not in st.session_state:
     st.session_state.bitacora = [
         {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema J.A.R.V.I.S. inicializado", "Estado": "ÓPTIMO"}
     ]
+
+if "nota_rapida" not in st.session_state:
+    st.session_state.nota_rapida = "Revisar estado de reactores y canal seguro con Nova-Core."
+
+if "acceso_biometrico" not in st.session_state:
+    st.session_state.acceso_biometrico = False
 
 # Funciones de voz y micro
 def emitir_voz(texto_respuesta):
@@ -212,8 +226,10 @@ RESPUESTAS_STARK = [
     "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
 ]
 
-col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
+# Estructura de 3 columnas: Izquierda (Monitores y Clima), Centro (Chat despejado), Derecha (Seguridad y Controles)
+col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
 
+# --- COLUMNA IZQUIERDA: Clima, Tiempo, Satélite y Notas ---
 with col_izq:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
@@ -225,7 +241,7 @@ with col_izq:
         fecha_actual = ahora_chile.strftime("%d/%m/%Y")
         hora_actual = ahora_chile.strftime("%H:%M:%S")
         st.write(f"📌 **Fecha:** {fecha_actual}")
-        st.markdown(f"⏱️ **Hora Táctica (Chile):**")
+        st.markdown(f"⏱️ **Hora (Chile):**")
         st.markdown(f'<div class="reloj-digital">{hora_actual}</div>', unsafe_allow_html=True)
 
     reloj_en_vivo()
@@ -238,23 +254,33 @@ with col_izq:
     if 6 <= hora_int < 19:
         icono_tiempo = "☀️ Despejado"
         temp_simulada = "22°C"
-        humedad = "45%"
     else:
         icono_tiempo = "🌙 Noche despejada"
         temp_simulada = "14°C"
-        humedad = "68%"
     st.write(f"**Estado:** {icono_tiempo}")
-    st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** {humedad}")
+    st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** 45%")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("📊 Rendimiento del Sistema")
+    try:
+        cpu_uso = psutil.cpu_percent(interval=None)
+        mem_uso = psutil.virtual_memory().percent
+    except:
+        cpu_uso = 12.4
+        mem_uso = 45.2
+    st.write(f"💻 **CPU:** {cpu_uso}%")
+    st.progress(int(cpu_uso))
+    st.write(f"🧠 **RAM:** {mem_uso}%")
+    st.progress(int(mem_uso))
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🛰️ Enlace satelital Serafín")
-    mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
-    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
-    st.map(mapa_buin, zoom=10, use_container_width=False)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.subheader("📌 Nota Rápida")
+    st.markdown(f'<textarea class="bloc-notas-html">{st.session_state.nota_rapida}</textarea>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+# --- COLUMNA CENTRAL: Consola de Chat Absolutamente Libre y Despejada ---
 with col_centro:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
@@ -288,27 +314,43 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+# --- COLUMNA DERECHA: Seguridad, Controles, Mapa y Comandos Frecuentes ---
 with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("⚡ Controles Rápidos")
-    if st.button("Verificar Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Módulo de voz activo.")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🧹 Módulo de Purga")
-    if st.button("Ejecutar Purga de Sistema"):
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}
-        ]
-        st.session_state.bitacora = [
-            {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual ejecutada", "Estado": "LIMPIO"}
-        ]
-        st.toast("🧹 Registros eliminados.")
-        st.rerun()
+    st.subheader("🔒 Acceso Biométrico")
+    if not st.session_state.acceso_biometrico:
+        if st.button("🔑 Autorizar Protocolo Alpha"):
+            st.session_state.acceso_biometrico = True
+            st.toast("✅ Autorización concedida, Jefa.")
+            st.rerun()
+        st.info("Estado: BLOQUEADO 🔒")
+    else:
+        if st.button("🔒 Bloquear Sistema"):
+            st.session_state.acceso_biometrico = False
+            st.toast("🔒 Sistema asegurado.")
+            st.rerun()
+        st.success("Estado: AUTORIZADO 🟢")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nEstado del Núcleo: Estable\nTormenta Buin: Bajo control")
+    st.subheader("⚡ Comandos Frecuentes")
+    if st.button("🤖 Estado de Núcleos"):
+        st.toast("Sistemas al 100%. Enlace óptimo.")
+    if st.button("📡 Ping a Nova-Core"):
+        st.toast("Conexión estable con Puerto 5000.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🛰️ Satélite Serafín")
+    mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
+    st.map(mapa_buin, zoom=10, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🧹 Módulo de Purga")
+    if st.button("Ejecutar Purga"):
+        st.session_state.messages = [{"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}]
+        st.session_state.bitacora = [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual", "Estado": "LIMPIO"}]
+        st.toast("🧹 Registros eliminados.")
+        st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
