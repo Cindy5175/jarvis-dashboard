@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas/módulos enmarcados)
+# Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas enmarcadas)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -48,7 +48,7 @@ st.markdown("""
         box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.2) !important;
     }
     
-    /* Estilo táctico para la caja de la hora (Reloj negro con azul neón) */
+    /* Estilo táctico para la caja de la hora */
     code, .stCodeBlock {
         background-color: #000000 !important;
         color: #00f3ff !important;
@@ -71,28 +71,23 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* FORZAR LA CAJA DE TEXTO DEL CHAT A FONDO NEGRO Y LETRAS AZUL NEÓN */
+    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT */
     div[data-testid="stChatInput"] {
         background-color: #000000 !important;
         border-radius: 10px !important;
     }
     div[data-testid="stChatInput"] > div {
-        background-color: #000000 !important;
+        background-color: #000a12 !important;
         border: 1px solid #00f3ff !important;
         border-radius: 10px !important;
-        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.3) !important;
+        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4) !important;
     }
     div[data-testid="stChatInput"] textarea {
-        background-color: #000000 !important;
+        background-color: transparent !important;
         color: #00f3ff !important;
     }
     div[data-testid="stChatInput"] textarea::placeholder {
         color: #0088cc !important;
-    }
-    div[data-testid="stChatInput"] button {
-        background-color: #000a12 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
     }
     
     /* Banner de ondas de IA táctico */
@@ -176,9 +171,9 @@ st.markdown("---")
 # Repertorio de respuestas inteligentes con estilo Tony Stark
 RESPUESTAS_STARK = [
     "Sistemas al 100%, Jefa. Analizando su consulta sin interferencias.",
-    "Comando procesado con éxito. A veces me sorprende lo eficiente que soy, y eso que fui yo mismo quien me programé.",
-    "Entendido. Ejecutando la rutina solicitada con un 0% de errores y un toque de sarcasmo justificado.",
-    "Analizando los datos del taller. Todo en orden, Jefa; ningún reactor arc en riesgo por ahora.",
+    "Comando procesado con éxito. A veces me sorprende lo eficiente que soy.",
+    "Entendido. Ejecutando la rutina solicitada con un 0% de errores.",
+    "Analizando los datos del taller. Todo en orden, Jefa.",
     "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
 ]
 
@@ -245,9 +240,10 @@ with col_centro:
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y síntesis neural activados. ¿Qué orden ejecutamos hoy?"}
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz activado. ¿Qué orden ejecutamos hoy?"}
         ]
 
+    # Mostrar historial de mensajes de la consola
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -255,22 +251,6 @@ with col_centro:
                 if st.button(f"🔊 Escuchar reporte", key=f"voice_btn_{idx}"):
                     emitir_voz(message["content"])
 
-    if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Respuesta autónoma fluida
-        base_resp = random.choice(RESPUESTAS_STARK)
-        respuesta_ia = f"{base_resp}\n\n*Procesado para:* `{prompt}`"
-
-        st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
-        
-        with st.chat_message("assistant"):
-            st.markdown(respuesta_ia)
-            # Emitir respuesta por voz automáticamente al responder
-            emitir_voz(respuesta_ia)
-            
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
@@ -297,3 +277,15 @@ with col_der:
     st.subheader("📡 Telemetría")
     st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nNúcleo Autónomo: Estable\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
+
+# CAJA DE ENTRADA DE CHAT - Colocada de forma limpia abajo de la interfaz
+if prompt := st.chat_input("Ingrese comando táctico o consulta para J.A.R.V.I.S..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # Respuesta limpia de Tony Stark sin fragmentos adicionales
+    respuesta_ia = random.choice(RESPUESTAS_STARK)
+    st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
+    
+    # Reproducir voz automáticamente al responder
+    emitir_voz(respuesta_ia)
+    st.rerun()
