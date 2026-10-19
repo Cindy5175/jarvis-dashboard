@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS ultra-reforzados para anular el tema claro de Streamlit
+# Inyección de Estilos CSS definitivos
 st.markdown("""
     <style>
     /* Fondo negro profundo general para toda la app */
@@ -34,7 +34,7 @@ st.markdown("""
     }
     
     /* Textos generales en azul neón */
-    p, span, label, div, markdown, .stMarkdown, .streamlit-expanderHeader {
+    p, span, label, div, markdown, .stMarkdown {
         color: #80f9ff !important;
     }
     
@@ -77,29 +77,30 @@ st.markdown("""
         white-space: nowrap;
     }
 
-    /* FORZAR CAJAS DE TEXTO (TEXT AREA Y INPUTS) A FONDO NEGRO ABSOLUTO */
-    .stTextArea textarea, textarea, [data-baseweb="textarea"] {
-        background-color: #000000 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
-        border-radius: 8px !important;
+    /* Estilo de tabla táctica personalizada en HTML puro */
+    .tabla-tactica {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #000000;
+        border: 1px solid #00f3ff;
+        border-radius: 6px;
+        overflow: hidden;
+        font-family: monospace;
+        font-size: 12px;
     }
-    [data-baseweb="base-input"], .stTextInput input {
-        background-color: #000000 !important;
-        color: #00f3ff !important;
+    .tabla-tactica th {
+        background-color: #001525;
+        color: #00f3ff;
+        border-bottom: 1px solid #00f3ff;
+        padding: 8px;
+        text-align: left;
+    }
+    .tabla-tactica td {
+        color: #80f9ff;
+        border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        padding: 8px;
     }
 
-    /* FORZAR TABLAS Y DATAFRAMES A MODO OSCURO NEÓN */
-    [data-testid="stDataFrame"], [data-testid="stTable"] {
-        background-color: #000000 !important;
-        border: 1px solid #00f3ff !important;
-        border-radius: 8px !important;
-    }
-    [data-testid="stDataFrame"] div {
-        background-color: #000000 !important;
-        color: #00f3ff !important;
-    }
-    
     /* Estilizar el texto de las pestañas en Azul Neón */
     button[data-baseweb="tab"] {
         color: #80f9ff !important;
@@ -126,7 +127,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT */
+    /* CAJA DE CHAT INFERIOR */
     div[data-testid="stChatInput"] {
         background-color: #000000 !important;
         border-radius: 10px !important;
@@ -159,7 +160,7 @@ st.markdown("""
         margin-bottom: 20px;
     }
     
-    /* Mantenimiento estricto del tamaño del mapa en cuadrado compacto */
+    /* Mapa en cuadrado compacto */
     .stMap, iframe, div[data-testid="stDeckGlJsonChart"] {
         height: 180px !important;
         width: 180px !important;
@@ -211,7 +212,7 @@ if "bitacora" not in st.session_state:
 if "nota_rapida" not in st.session_state:
     st.session_state.nota_rapida = "Revisar estado de reactores y canal seguro con Nova-Core."
 
-# Función de Síntesis de Voz (Text-to-Speech) mediante JavaScript nativo
+# Funciones de voz y micro
 def emitir_voz(texto_respuesta):
     texto_limpio = texto_respuesta.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
     js_speech = f"""
@@ -281,7 +282,6 @@ RESPUESTAS_STARK = [
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
 with col_izq:
-    # Módulo de Sincronización Temporal
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
     
@@ -289,10 +289,8 @@ with col_izq:
     def reloj_en_vivo():
         zona_chile = pytz.timezone('America/Santiago')
         ahora_chile = datetime.now(zona_chile)
-        
         fecha_actual = ahora_chile.strftime("%d/%m/%Y")
         hora_actual = ahora_chile.strftime("%H:%M:%S")
-        
         st.write(f"📌 **Fecha:** {fecha_actual}")
         st.markdown(f"⏱️ **Hora Táctica (Chile):**")
         st.markdown(f'<div class="reloj-digital">{hora_actual}</div>', unsafe_allow_html=True)
@@ -300,13 +298,10 @@ with col_izq:
     reloj_en_vivo()
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Módulo de Clima local en Buin
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🌤️ Clima Buin")
-    
     zona_chile = pytz.timezone('America/Santiago')
     hora_int = datetime.now(zona_chile).hour
-    
     if 6 <= hora_int < 19:
         icono_tiempo = "☀️ Despejado"
         temp_simulada = "22°C"
@@ -315,19 +310,13 @@ with col_izq:
         icono_tiempo = "🌙 Noche despejada"
         temp_simulada = "14°C"
         humedad = "68%"
-        
     st.write(f"**Estado:** {icono_tiempo}")
     st.write(f"🌡️ **Temp:** {temp_simulada} | 💧 **Hum:** {humedad}")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Módulo de Enlace Satelital
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Enlace satelital Serafín")
-    mapa_buin = pd.DataFrame({
-        'lat': [-33.7333],
-        'lon': [-70.7417]
-    })
-    
+    mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
     st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
     st.map(mapa_buin, zoom=10, use_container_width=False)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -354,22 +343,19 @@ with col_centro:
 
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
         st.session_state.bitacora.append({
             "Hora": datetime.now().strftime("%H:%M:%S"),
             "Evento": f"Comando: {prompt[:25]}...",
             "Estado": "PROCESADO"
         })
-        
         respuesta_ia = random.choice(RESPUESTAS_STARK)
         st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
-        
         emitir_voz(respuesta_ia)
         st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets & Bitácora
+    # Widgets & Bitácora con HTML puro para garantizar fondo negro
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
@@ -378,7 +364,7 @@ with col_centro:
     with w_tab1:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("📌 **Nota Rápida del Taller**")
-        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70)
+        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70, label_visibility="collapsed")
         if st.button("💾 Guardar Nota"):
             st.session_state.nota_rapida = nueva_nota
             st.toast("Nota guardada en la tablet.")
@@ -400,32 +386,4 @@ with col_centro:
 
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
-        df_bitacora = pd.DataFrame(st.session_state.bitacora)
-        st.dataframe(df_bitacora, use_container_width=True)
-        
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_der:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("⚡ Controles Rápidos")
-    if st.button("Verificar Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Módulo de voz activo.")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🧹 Módulo de Purga")
-    if st.button("Ejecutar Purga de Sistema"):
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}
-        ]
-        st.session_state.bitacora = [
-            {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual ejecutada", "Estado": "LIMPIO"}
-        ]
-        st.toast("🧹 Registros eliminados.")
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core Link: Activo\nTormenta Buin: Bajo control")
-    st.markdown('</div>', unsafe_allow_html=True)
+        # Generar tabla limpia en HTML puro para que sea siempre negra con
