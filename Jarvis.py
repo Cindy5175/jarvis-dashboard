@@ -225,7 +225,7 @@ st.markdown("""
 
 st.markdown("---")
 
-# Repertorio de respuestas con estilo Stark y el toque especial para cuando pregunte si está despierto
+# Repertorio de respuestas con estilo Stark y toque sarcástico fluido
 RESPUESTAS_STARK = [
     "Oh, perfecto, otra tarea brillante. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
     "Procesado. De nada por salvar el día otra vez con mi elegancia habitual.",
@@ -308,14 +308,6 @@ with col_centro:
 
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        # Filtro inteligente para detectar la pregunta exacta sobre el estado de alerta
-        prompt_lower = prompt.lower()
-        if "despierto" in prompt_lower or "estas despierto" in prompt_lower:
-            respuesta_ia = "Para usted, señorita, siempre."
-        else:
-            respuesta_ia = random.choice(RESPUESTAS_STARK)
-
         nuevo_evento = {
             "Hora": datetime.now().strftime("%H:%M:%S"),
             "Evento": f"Comando: {prompt[:25]}...",
@@ -326,6 +318,7 @@ with col_centro:
         memoria_actual["bitacora"] = st.session_state.bitacora
         guardar_memoria_json(memoria_actual)
 
+        respuesta_ia = random.choice(RESPUESTAS_STARK)
         st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
         emitir_voz(respuesta_ia)
         st.rerun()
