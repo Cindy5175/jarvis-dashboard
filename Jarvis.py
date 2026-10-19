@@ -238,4 +238,13 @@ with col_der:
         st.toast("Sistemas al 100%. Si algo explota, le echo la culpa al servofreno.")
     
     # Módulo de Purga
-    st.markdown("###
+    st.markdown("### 🧹 Módulo de Purga")
+    if st.button("Ejecutar Purga de Sistema"):
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa. Como si nada de esto hubiera pasado."}
+        ]
+        st.toast("🧹 Registros borrados. Archivos confidenciales a salvo.")
+        st.rerun()
+
+    st.markdown("### ⚡ Telemetría")
+    st.info("Red local iOS: Conectada\nServidor Flask: Escuchando\nTormenta Buin: Bajo control")
