@@ -8,7 +8,7 @@ import os
 
 # Configuración de la página en Streamlit
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - Núcleo Táctico",
+    page_title="J.A.R.V.I.S. AI - Núcleo Táctico",
     page_icon="⚡",
     layout="wide"
 )
@@ -51,6 +51,7 @@ st.markdown("""
         text-align: center;
         color: #00f3ff !important;
         text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.7);
+        font-size: 28px !important;
     }
     
     /* Demás títulos en azul neón */
@@ -210,15 +211,15 @@ def activar_script_microfono():
     """
     st.components.v1.html(js_mic, height=0, width=0)
 
-# Título limpio
-st.title("⚡ J.A.R.V.I.S. 4.0 // NOVA")
+# Título ajustado y simétrico
+st.title("⚡ J.A.R.V.I.S. AI // N.O.V.A. ⚡")
 
 # Banner de ondas táctico
 st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Protocolo de Presentación & Enlace Cloud ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL AUTÓNOMO & ENLACE N.T.C. CLOUD ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -286,7 +287,7 @@ with col_izq:
         st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL (CONSOLA DE CHAT CON FILTROS INTELIGENTES) ---
+# --- COLUMNA CENTRAL (CONSOLA DE CHAT) ---
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
@@ -297,7 +298,7 @@ with col_centro:
         st.session_state.messages = [
             {
                 "role": "assistant", 
-                "content": "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. 4.0 en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
+                "content": "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. AI Autónomo N.T.C. en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
             }
         ]
 
@@ -313,9 +314,8 @@ with col_centro:
         
         p_lower = prompt.lower()
         
-        # Filtros inteligentes y exclusivos
         if "protocolo de presentación" in p_lower or "protocolo de presentacion" in p_lower:
-            respuesta_ia = "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. 4.0 en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
+            respuesta_ia = "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. AI Autónomo N.T.C. en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
         elif any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
             respuesta_ia = "Para usted, señorita, siempre."
         else:
