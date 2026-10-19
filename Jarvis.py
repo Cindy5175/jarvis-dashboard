@@ -11,11 +11,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS precisos (Fondo negro total, neón azul, tablas y inputs oscuros)
+# Inyección de Estilos CSS ultra-reforzados para anular el tema claro de Streamlit
 st.markdown("""
     <style>
-    /* Fondo negro profundo general */
-    .stApp {
+    /* Fondo negro profundo general para toda la app */
+    .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #000000 !important;
     }
     
@@ -34,7 +34,7 @@ st.markdown("""
     }
     
     /* Textos generales en azul neón */
-    p, span, label, div, markdown, .stMarkdown {
+    p, span, label, div, markdown, .stMarkdown, .streamlit-expanderHeader {
         color: #80f9ff !important;
     }
     
@@ -77,22 +77,30 @@ st.markdown("""
         white-space: nowrap;
     }
 
-    /* FORZAR CAJAS DE TEXTO (TEXT AREA) A FONDO NEGRO Y LETRAS NEÓN */
-    textarea {
+    /* FORZAR CAJAS DE TEXTO (TEXT AREA Y INPUTS) A FONDO NEGRO ABSOLUTO */
+    .stTextArea textarea, textarea, [data-baseweb="textarea"] {
         background-color: #000000 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
         border-radius: 8px !important;
     }
+    [data-baseweb="base-input"], .stTextInput input {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+    }
 
-    /* FORZAR TABLAS A MODO OSCURO NEÓN */
-    div[data-testid="stDataFrame"] {
+    /* FORZAR TABLAS Y DATAFRAMES A MODO OSCURO NEÓN */
+    [data-testid="stDataFrame"], [data-testid="stTable"] {
         background-color: #000000 !important;
         border: 1px solid #00f3ff !important;
         border-radius: 8px !important;
     }
+    [data-testid="stDataFrame"] div {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+    }
     
-    /* Reducir y estilizar el texto de las pestañas en Azul Neón */
+    /* Estilizar el texto de las pestañas en Azul Neón */
     button[data-baseweb="tab"] {
         color: #80f9ff !important;
         font-size: 13px !important;
@@ -118,7 +126,7 @@ st.markdown("""
         color: #00f3ff !important;
     }
 
-    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT DENTRO DE LA TARJETA */
+    /* ESTILO PARA LA CAJA DE ENTRADA DEL CHAT */
     div[data-testid="stChatInput"] {
         background-color: #000000 !important;
         border-radius: 10px !important;
