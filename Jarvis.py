@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa cuadrado medio)
+# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa cuadrado medio y título centrado)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -18,8 +18,15 @@ st.markdown("""
         background-color: #000000 !important;
     }
     
-    /* Títulos principales en azul neón brillante con resplandor */
-    h1, h2, h3 {
+    /* Centrar el encabezado principal y darle azul neón brillante */
+    h1 {
+        text-align: center;
+        color: #00f3ff !important;
+        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.7);
+    }
+    
+    /* Demás títulos en azul neón */
+    h2, h3 {
         color: #00f3ff !important;
         text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
     }
