@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import pytz
-import random
+import google.generativeai as genai
 
 # Configuración de la página en Streamlit
 st.set_page_config(
@@ -10,6 +10,23 @@ st.set_page_config(
     page_icon="⚡",
     layout="wide"
 )
+
+# Configuración directa de Google Gemini con su clave AQ
+API_KEY_JARVIS = "AQUI_VA_SU_CLAVE_AQ"  # Puede dejarla aquí o vincularla de forma segura
+
+try:
+    genai.configure(api_key=API_KEY_JARVIS)
+    system_instruction = (
+        "Eres J.A.R.V.I.S. / NOVA, la inteligencia artificial táctica del taller. "
+        "Le respondes a tu 'Jefa' de forma inteligente, extremadamente leal, amigable, eficiente y con un ligero toque de sarcasmo humorístico al estilo Tony Stark. "
+        "Mantén tus respuestas relativamente breves, tácticas y bien formateadas."
+    )
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=system_instruction
+    )
+except Exception:
+    model = None
 
 # Inyección de Estilos CSS precisos (Fondo negro, neón azul, tarjetas/módulos enmarcados)
 st.markdown("""
@@ -156,15 +173,6 @@ st.markdown("""
 
 st.markdown("---")
 
-# Respuestas sarcásticas estilo Tony Stark para la consola
-RESPUESTAS_STARK = [
-    "Sistemas al 100%, Jefa. Aunque si me pide calcular el sentido de la vida, le advierto que no viene en el manual.",
-    "Procesado. Si todo sale mal, le echaremos la culpa a los servidores.",
-    "Ejecutando orden. Prometo no gastarme el presupuesto en trajes nuevos esta vez.",
-    "Comando recibido. Calculando la forma más elegante de resolver esto sin despeinarme.",
-    "Sistemas sincronizados, Jefa. Listo para salvar el día o al menos para hacer que parezca que sabemos lo que hacemos."
-]
-
 # Distribución en columnas principales
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
@@ -224,11 +232,11 @@ with col_izq:
 with col_centro:
     # Módulo de Consola Central
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("💬 Consola Central / Conexión Gemini")
+    st.subheader("💬 Consola Central / Conexión Gemini IA")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Prometo responder rápido y con no más de un 15% de sarcasmo. ¿En qué trabajamos hoy?"}
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Núcleo de IA activo y listo. ¿Qué orden tenemos para hoy?"}
         ]
 
     for message in st.session_state.messages:
@@ -240,12 +248,20 @@ with col_centro:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        respuesta_sarcástica = random.choice(RESPUESTAS_STARK)
-        respuesta_completa = f"{respuesta_sarcástica}\n\n*[Comando: '{prompt}']*"
-        
-        st.session_state.messages.append({"role": "assistant", "content": respuesta_completa})
+        # Procesamiento en vivo con Gemini
+        if model:
+            try:
+                chat = model.start_chat(history=[])
+                response = chat.send_message(prompt)
+                respuesta_ia = response.text
+            except Exception as e:
+                respuesta_ia = f"Sistemas con pequeña interferencia, Jefa. Detalle: {e}"
+        else:
+            respuesta_ia = "Núcleo de IA desconectado temporalmente, Jefa."
+
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
         with st.chat_message("assistant"):
-            st.markdown(respuesta_completa)
+            st.markdown(respuesta_ia)
             
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -254,7 +270,7 @@ with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Si algo explota, le echo la culpa al servofreno.")
+        st.toast("Sistemas al 100%. Todo en orden en el taller, Jefa.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Módulo de Purga
@@ -262,14 +278,14 @@ with col_der:
     st.subheader("🧹 Módulo de Purga")
     if st.button("Ejecutar Purga de Sistema"):
         st.session_state.messages = [
-            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa. Como si nada de esto hubiera pasado."}
+            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia y registros borrados, Jefa."}
         ]
-        st.toast("🧹 Registros borrados. Archivos confidenciales a salvo.")
+        st.toast("🧹 Registros eliminados con éxito.")
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Módulo de Telemetría
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nServidor Flask: Escuchando\nTormenta Buin: Bajo control")
+    st.info("Red local iOS: Conectada\nServidor Flask: Escuchando\nIA Conectada: Activa\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
