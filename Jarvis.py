@@ -5,10 +5,10 @@ import pytz
 import random
 import psutil # Para el monitor de sistema en vivo
 
-# Configuración de la página en Streamlit
+# Configuración de la página en Streamlit con tu nueva imagen de icono
 st.set_page_config(
     page_title="J.A.R.V.I.S. 4.0 - Núcleo Táctico",
-    page_icon="⚡",
+    page_icon="image_811d20.jpg",
     layout="wide"
 )
 
@@ -226,10 +226,8 @@ RESPUESTAS_STARK = [
     "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
 ]
 
-# Estructura de 3 columnas: Izquierda (Monitores y Clima), Centro (Chat despejado), Derecha (Seguridad y Controles)
 col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
 
-# --- COLUMNA IZQUIERDA: Clima, Tiempo, Satélite y Notas ---
 with col_izq:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
@@ -280,7 +278,6 @@ with col_izq:
     st.markdown(f'<textarea class="bloc-notas-html">{st.session_state.nota_rapida}</textarea>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL: Consola de Chat Absolutamente Libre y Despejada ---
 with col_centro:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("💬 Consola Central // Audio & Texto")
@@ -314,7 +311,6 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA DERECHA: Seguridad, Controles, Mapa y Comandos Frecuentes ---
 with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🔒 Acceso Biométrico")
