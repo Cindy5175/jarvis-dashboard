@@ -5,10 +5,10 @@ import pytz
 import random
 import psutil # Para el monitor de sistema en vivo
 
-# Configuración de la página en Streamlit con tu nueva imagen de icono
+# Configuración de la página en Streamlit con emoji brillante
 st.set_page_config(
     page_title="J.A.R.V.I.S. 4.0 - Núcleo Táctico",
-    page_icon="image_811d20.jpg",
+    page_icon="⚡",
     layout="wide"
 )
 
