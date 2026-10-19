@@ -61,14 +61,31 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Código general más pequeño y limpio para los estados */
-    code, .stCodeBlock {
+    /* Etiqueta compacta en azul neón para estados y puertos */
+    .estado-codigo {
         background-color: #000000 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
-        border-radius: 4px !important;
+        border-radius: 5px !important;
+        font-size: 11px !important;
+        padding: 3px 8px !important;
+        font-family: monospace;
+        display: inline-block;
+        box-shadow: 0px 0px 5px rgba(0, 243, 255, 0.3) !important;
+    }
+
+    /* Reducir y estilizar el texto de las pestañas en Azul Neón */
+    button[data-baseweb="tab"] {
+        color: #80f9ff !important;
         font-size: 13px !important;
-        padding: 2px 6px !important;
+    }
+    button[aria-selected="true"] {
+        color: #00f3ff !important;
+        border-bottom-color: #00f3ff !important;
+        text-shadow: 0px 0px 6px #00f3ff;
+    }
+    div[data-baseweb="tab-highlight"] {
+        background-color: #00f3ff !important;
     }
     
     /* Estilo del historial de mensajes del chat */
@@ -344,7 +361,8 @@ with col_centro:
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.write("Estado de Conexión: `ONLINE / LISTEN (Puerto 5000)`")
+        st.markdown('Estado de Conexión: <span class="estado-codigo">ONLINE / LISTEN (Puerto 5000)</span>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         if st.button("📡 Sincronizar Parámetros con Nova-Core"):
             st.toast("⚡ Conexión establecida. Parámetros compartidos.")
             st.session_state.bitacora.append({
@@ -356,8 +374,8 @@ with col_centro:
 
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
-        df_bitacora = pd.DataFrame(st.session_state.bitacora)
-        st.dataframe(df_bitacora, use_container_width=True)
+        for item in st.session_state.bitacora:
+            st.markdown(f"• **`{item['Hora']}`** — {item['Evento']} | <span class='estado-codigo'>{item['Estado']}</span>", unsafe_allow_html=True)
         
     st.markdown('</div>', unsafe_allow_html=True)
 
