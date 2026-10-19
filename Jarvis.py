@@ -97,13 +97,21 @@ st.markdown("""
         margin-bottom: 20px;
     }
     
-    /* Tamaño de mapa mantenido según la vista actual */
-    iframe {
-        height: 220px !important;
-        width: 100% !important;
+    /* RESTRICTIVO: Forzar el mapa a un cuadrado pequeño y compacto */
+    .stMap, iframe, div[data-testid="stDeckGlJsonChart"] {
+        height: 180px !important;
+        width: 180px !important;
+        max-width: 180px !important;
         border-radius: 8px !important;
         border: 1px solid #00f3ff !important;
         box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
+    }
+    
+    .mapa-cuadrado {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
     }
     
     /* Botones tácticos generales */
@@ -156,13 +164,16 @@ with col_izq:
 
     reloj_en_vivo()
     
-    # Enlace satelital Serafín
+    # Enlace satelital Serafín (Cuadrado compacto)
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
-    st.map(mapa_buin, zoom=10, use_container_width=True)
+    
+    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
+    st.map(mapa_buin, zoom=10, use_container_width=False)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
     st.subheader("💬 Consola Central / Conexión Gemini")
@@ -205,3 +216,4 @@ with col_der:
 
     st.markdown("### ⚡ Telemetría")
     st.info("Red local iOS: Activa\nServidor Flask: Escuchando\nTormenta Buin: Monitoreada")
+
