@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS avanzados
+# Inyección de Estilos CSS precisos
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -36,7 +36,18 @@ st.markdown("""
         color: #80f9ff !important;
     }
     
-    /* Forzar fondo negro y letras azul neón en los mensajes del chat */
+    /* Estilo táctico para la caja de la hora (Reloj negro con azul neón) */
+    code, .stCodeBlock {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 6px !important;
+        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.4) !important;
+        font-size: 22px !important;
+        padding: 4px 10px !important;
+    }
+    
+    /* Estilo del historial de mensajes del chat */
     div[data-testid="stChatMessage"] {
         background-color: #000000 !important;
         border: 1px solid #00f3ff !important;
@@ -44,15 +55,38 @@ st.markdown("""
         box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.3);
         margin-bottom: 8px;
     }
-    
     div[data-testid="stChatMessage"] * {
         color: #00f3ff !important;
+    }
+
+    /* FORZAR LA CAJA DE TEXTO DEL CHAT (chat_input) A FONDO NEGRO Y LETRAS AZUL NEÓN */
+    div[data-testid="stChatInput"] {
+        background-color: #000000 !important;
+        border-radius: 10px !important;
+    }
+    div[data-testid="stChatInput"] > div {
+        background-color: #000000 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 10px !important;
+        box-shadow: 0px 0px 8px rgba(0, 243, 255, 0.3) !important;
+    }
+    div[data-testid="stChatInput"] textarea {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+    }
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #0088cc !important;
+    }
+    div[data-testid="stChatInput"] button {
+        background-color: #000a12 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
     }
     
     /* Banner de ondas de IA táctico */
     .banner-ondas {
         width: 100%;
-        height: 100px;
+        height: 90px;
         background: linear-gradient(90deg, #000000 0%, #031525 50%, #000000 100%);
         border: 1px solid #00f3ff;
         border-radius: 8px;
@@ -63,32 +97,16 @@ st.markdown("""
         margin-bottom: 20px;
     }
     
-    /* Mapa en formato de cuadrado pequeño y compacto */
+    /* Tamaño de mapa mantenido según la vista actual */
     iframe {
-        height: 130px !important;
-        width: 130px !important;
-        max-width: 100% !important;
+        height: 220px !important;
+        width: 100% !important;
         border-radius: 8px !important;
         border: 1px solid #00f3ff !important;
         box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
     }
     
-    /* Contenedor del mapa */
-    .mapa-cuadrado {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
-    }
-    
-    /* Cajas de entrada de chat */
-    .stTextInput>div>div>input, div[data-testid="stChatInput"] textarea {
-        background-color: #000000 !important;
-        color: #00f3ff !important;
-        border: 1px solid #00f3ff !important;
-    }
-    
-    /* Botones tácticos */
+    /* Botones tácticos generales */
     .stButton>button {
         background-color: #000a12 !important;
         color: #00f3ff !important;
@@ -134,29 +152,25 @@ with col_izq:
         
         st.write(f"📌 **Fecha:** {fecha_actual}")
         st.markdown(f"⏱️ **Hora Táctica (Chile):**")
-        st.markdown(f"### `{hora_actual}`")
+        st.markdown(f"`{hora_actual}`")
 
     reloj_en_vivo()
     
-    # Enlace satelital Serafín (Cuadrado pequeño)
+    # Enlace satelital Serafín
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
         'lon': [-70.7417]
     })
-    
-    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
-    st.map(mapa_buin, zoom=10, use_container_width=False)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.map(mapa_buin, zoom=10, use_container_width=True)
 
 with col_centro:
-    st.markdown("<br>", unsafe_allow_html=True)
     st.subheader("💬 Consola Central / Conexión Gemini")
     
     # Inicializar historial de chat si no existe
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Saludos, Jefa. Núcleos operativos y enlace con Gemini sincronizados."}
+            {"role": "assistant", "content": "Purga ejecutada. Memoria de consola restablecida, Jefa."}
         ]
 
     # Mostrar mensajes del chat
