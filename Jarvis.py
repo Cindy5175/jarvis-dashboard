@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS (Fondo negro, letras azul marino, mapa cuadrado más pequeño y ajuste de chat)
+# Inyección de Estilos CSS (Fondo negro, letras azul marino, mapa cuadrado y banner de ondas de IA)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -41,6 +41,20 @@ st.markdown("""
         background-color: #000a12 !important;
         color: #3B82F6 !important;
         border: 1px solid #1E3A8A !important;
+    }
+    
+    /* Banner de ondas de IA táctico */
+    .banner-ondas {
+        width: 100%;
+        height: 110px;
+        background: linear-gradient(90deg, #000000 0%, #031525 50%, #000000 100%);
+        border: 1px solid #1E3A8A;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 0px 15px rgba(30, 58, 138, 0.5);
+        margin-bottom: 20px;
     }
     
     /* Reducir aún más el mapa para que sea un cuadrado pequeño y compacto */
@@ -84,6 +98,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🤖 JARVIS 4.0 // NOVA")
+
+# Inyección del Banner de Ondas Azules estilo IA debajo del encabezado
+st.markdown("""
+    <div class="banner-ondas">
+        <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
+            ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
+            <span style="font-size: 11px; color: #3B82F6;">[ NÚCLEO NEURAL ACTIVO: CONEXIÓN CUÁNTICA ESTABLE ]</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
 st.markdown("---")
 
 # Distribución en columnas principales
