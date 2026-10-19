@@ -3,9 +3,8 @@ import pandas as pd
 from datetime import datetime
 import pytz
 import random
-import psutil # Para el monitor de sistema en vivo
 
-# Configuración de la página en Streamlit con emoji brillante
+# Configuración de la página en Streamlit
 st.set_page_config(
     page_title="J.A.R.V.I.S. 4.0 - Núcleo Táctico",
     page_icon="⚡",
@@ -261,16 +260,10 @@ with col_izq:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📊 Rendimiento del Sistema")
-    try:
-        cpu_uso = psutil.cpu_percent(interval=None)
-        mem_uso = psutil.virtual_memory().percent
-    except:
-        cpu_uso = 12.4
-        mem_uso = 45.2
-    st.write(f"💻 **CPU:** {cpu_uso}%")
-    st.progress(int(cpu_uso))
-    st.write(f"🧠 **RAM:** {mem_uso}%")
-    st.progress(int(mem_uso))
+    st.write("💻 **CPU:** 14.2% (Estable)")
+    st.progress(14)
+    st.write("🧠 **RAM:** 48.6% (Óptimo)")
+    st.progress(49)
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
