@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS avanzados (Fondo negro, neón azul, mapa cuadrado medio y título centrado)
+# Inyección de Estilos CSS avanzados (Fondo negro, azul neón total y título centrado)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -34,6 +34,13 @@ st.markdown("""
     /* Textos generales en azul neón claro / cian */
     p, span, label, div, markdown, .stMarkdown {
         color: #80f9ff !important;
+    }
+    
+    /* Forzar que cualquier cuadro de alerta o info mantenga la estética azul neón (sin verde) */
+    div[data-testid="stNotification"], .stAlert {
+        background-color: #000a12 !important;
+        color: #80f9ff !important;
+        border: 1px solid #00f3ff !important;
     }
     
     /* Reducir altura del mapa iframe para que quede como un cuadrado medio */
@@ -73,17 +80,23 @@ st.markdown("---")
 col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 
 with col_izq:
-    # Fecha y Hora Oficial de Chile (con zona horaria de Santiago) con segundero
     st.subheader("📅 Sincronización Temporal")
-    zona_chile = pytz.timezone('America/Santiago')
-    ahora_chile = datetime.now(zona_chile)
     
-    fecha_actual = ahora_chile.strftime("%d/%m/%Y")
-    hora_actual = ahora_chile.strftime("%H:%M:%S")
-    
-    st.write(f"📌 **Fecha:** {fecha_actual}")
-    st.markdown(f"⏱️ **Hora Táctica (Chile):**")
-    st.markdown(f"### `{hora_actual}`")
+    # Fragmento con actualización automática cada 1 segundo para el segundero en vivo
+    @st.fragment(run_every=1)
+    def reloj_en_vivo():
+        zona_chile = pytz.timezone('America/Santiago')
+        ahora_chile = datetime.now(zona_chile)
+        
+        fecha_actual = ahora_chile.strftime("%d/%m/%Y")
+        hora_actual = ahora_chile.strftime("%H:%M:%S")
+        
+        st.write(f"📌 **Fecha:** {fecha_actual}")
+        st.markdown(f"⏱️ **Hora Táctica (Chile):**")
+        st.markdown(f"### `{hora_actual}`")
+
+    # Llamada al reloj en vivo
+    reloj_en_vivo()
     
     # Enlace satelital Serafín (Cuadrado medio)
     st.markdown("### 🛰️ Enlace satelital Serafín")
