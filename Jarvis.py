@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS (Fondo negro, letras azul marino y mapa en formato cuadrado exacto)
+# Inyección de Estilos CSS (Fondo negro, letras azul marino, mapa cuadrado más pequeño y ajuste de chat)
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -43,17 +43,17 @@ st.markdown("""
         border: 1px solid #1E3A8A !important;
     }
     
-    /* Reducir el mapa para que sea un cuadrado perfecto */
+    /* Reducir aún más el mapa para que sea un cuadrado pequeño y compacto */
     iframe {
-        height: 250px !important;
-        width: 250px !important;
+        height: 180px !important;
+        width: 180px !important;
         max-width: 100% !important;
         border-radius: 8px !important;
         border: 1px solid #1E3A8A !important;
         box-shadow: 0px 0px 10px rgba(30, 58, 138, 0.4);
     }
     
-    /* Contenedor específico para centrar y moldear el mapa como cuadrado */
+    /* Contenedor específico para centrar el mapa */
     .mapa-cuadrado {
         display: flex;
         justify-content: center;
@@ -108,7 +108,7 @@ with col_izq:
     # Llamada al reloj en vivo
     reloj_en_vivo()
     
-    # Enlace satelital Serafín (Formato Cuadrado Exacto)
+    # Enlace satelital Serafín (Cuadrado pequeño)
     st.markdown("### 🛰️ Enlace satelital Serafín")
     mapa_buin = pd.DataFrame({
         'lat': [-33.7333],
@@ -116,10 +116,12 @@ with col_izq:
     })
     
     st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
-    st.map(mapa_buin, zoom=11, use_container_width=False)
+    st.map(mapa_buin, zoom=10, use_container_width=False)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
+    # Espaciado superior para bajar la caja del chat
+    st.markdown("<br>", unsafe_allow_html=True)
     st.subheader("💬 Consola Central / Conexión Gemini")
     
     # Inicializar historial de chat si no existe
