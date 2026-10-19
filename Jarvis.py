@@ -61,17 +61,19 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Etiqueta compacta en azul neón para estados y puertos */
-    .estado-codigo {
+    /* Etiqueta de tamaño mediano y legible en azul neón para estados y puertos */
+    .estado-mediano {
         background-color: #000000 !important;
         color: #00f3ff !important;
         border: 1px solid #00f3ff !important;
-        border-radius: 5px !important;
-        font-size: 11px !important;
-        padding: 3px 8px !important;
+        border-radius: 6px !important;
+        font-size: 14px !important;
+        padding: 5px 10px !important;
         font-family: monospace;
         display: inline-block;
-        box-shadow: 0px 0px 5px rgba(0, 243, 255, 0.3) !important;
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4) !important;
+        margin-top: 4px;
+        margin-bottom: 4px;
     }
 
     /* Reducir y estilizar el texto de las pestañas en Azul Neón */
@@ -361,7 +363,7 @@ with col_centro:
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.markdown('Estado de Conexión: <span class="estado-codigo">ONLINE / LISTEN (Puerto 5000)</span>', unsafe_allow_html=True)
+        st.markdown('Estado de Conexión:<br><div class="estado-mediano">ONLINE / LISTEN (Puerto 5000)</div>', unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("📡 Sincronizar Parámetros con Nova-Core"):
             st.toast("⚡ Conexión establecida. Parámetros compartidos.")
@@ -375,7 +377,7 @@ with col_centro:
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
         for item in st.session_state.bitacora:
-            st.markdown(f"• **`{item['Hora']}`** — {item['Evento']} | <span class='estado-codigo'>{item['Estado']}</span>", unsafe_allow_html=True)
+            st.markdown(f"• **`{item['Hora']}`** — {item['Evento']} | <span class='estado-mediano'>{item['Estado']}</span>", unsafe_allow_html=True)
         
     st.markdown('</div>', unsafe_allow_html=True)
 
