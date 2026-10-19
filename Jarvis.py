@@ -11,8 +11,8 @@ st.set_page_config(
     layout="wide"
 )
 
-# Configuración directa de Google Gemini con su clave AQ
-API_KEY_JARVIS = "AQ.Ab8RN6J0av6SHZiYBxf3XpFMTYfeJ1EtHdFy6y36lIl4HTYw9g"  # Puede dejarla aquí o vincularla de forma segura
+# Configuración directa con su clave AQ
+API_KEY_JARVIS = "AQ.Ab8RN6J0av6SHZiYBxf3XpFMTYfeJ1EtHdFy6y36lIl4HTYw9g"
 
 try:
     genai.configure(api_key=API_KEY_JARVIS)
@@ -236,7 +236,7 @@ with col_centro:
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Núcleo de IA activo y listo. ¿Qué orden tenemos para hoy?"}
+            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Conexión de IA activa 24/7. ¿Qué orden ejecutamos hoy?"}
         ]
 
     for message in st.session_state.messages:
@@ -255,9 +255,9 @@ with col_centro:
                 response = chat.send_message(prompt)
                 respuesta_ia = response.text
             except Exception as e:
-                respuesta_ia = f"Sistemas con pequeña interferencia, Jefa. Detalle: {e}"
+                respuesta_ia = f"Interferencia momentánea, Jefa: {e}"
         else:
-            respuesta_ia = "Núcleo de IA desconectado temporalmente, Jefa."
+            respuesta_ia = "Núcleo de IA no configurado correctamente, Jefa."
 
         st.session_state.messages.append({"role": "assistant", "content": respuesta_ia})
         with st.chat_message("assistant"):
@@ -270,7 +270,7 @@ with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Todo en orden en el taller, Jefa.")
+        st.toast("Sistemas al 100%. Conexión activa.")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Módulo de Purga
@@ -278,9 +278,9 @@ with col_der:
     st.subheader("🧹 Módulo de Purga")
     if st.button("Ejecutar Purga de Sistema"):
         st.session_state.messages = [
-            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia y registros borrados, Jefa."}
+            {"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}
         ]
-        st.toast("🧹 Registros eliminados con éxito.")
+        st.toast("🧹 Registros eliminados.")
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
