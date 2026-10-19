@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS (Fondo negro, letras azul marino, mapa cuadrado y banner de ondas de IA)
+# Inyección de Estilos CSS avanzados
 st.markdown("""
     <style>
     /* Fondo negro profundo general */
@@ -18,93 +18,99 @@ st.markdown("""
         background-color: #000000 !important;
     }
     
-    /* Centrar el encabezado principal y darle azul marino brillante */
+    /* Centrar el encabezado principal y darle azul neón brillante */
     h1 {
         text-align: center;
-        color: #1E3A8A !important;
-        text-shadow: 0px 0px 10px rgba(30, 58, 138, 0.7);
+        color: #00f3ff !important;
+        text-shadow: 0px 0px 10px rgba(0, 243, 255, 0.7);
     }
     
-    /* Demás títulos en azul marino */
+    /* Demás títulos en azul neón */
     h2, h3 {
-        color: #1E3A8A !important;
-        text-shadow: 0px 0px 8px rgba(30, 58, 138, 0.6);
+        color: #00f3ff !important;
+        text-shadow: 0px 0px 8px rgba(0, 243, 255, 0.6);
     }
     
-    /* Textos generales en azul marino / cian oscuro para mantener la legibilidad */
+    /* Textos generales en azul neón */
     p, span, label, div, markdown, .stMarkdown {
-        color: #3B82F6 !important;
+        color: #80f9ff !important;
     }
     
-    /* Forzar alertas/infos a diseño oscuro */
-    div[data-testid="stNotification"], .stAlert {
-        background-color: #000a12 !important;
-        color: #3B82F6 !important;
-        border: 1px solid #1E3A8A !important;
+    /* Forzar fondo negro y letras azul neón en los mensajes del chat */
+    div[data-testid="stChatMessage"] {
+        background-color: #000000 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 8px !important;
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.3);
+        margin-bottom: 8px;
+    }
+    
+    div[data-testid="stChatMessage"] * {
+        color: #00f3ff !important;
     }
     
     /* Banner de ondas de IA táctico */
     .banner-ondas {
         width: 100%;
-        height: 110px;
+        height: 100px;
         background: linear-gradient(90deg, #000000 0%, #031525 50%, #000000 100%);
-        border: 1px solid #1E3A8A;
+        border: 1px solid #00f3ff;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0px 0px 15px rgba(30, 58, 138, 0.5);
+        box-shadow: 0px 0px 15px rgba(0, 243, 255, 0.4);
         margin-bottom: 20px;
     }
     
-    /* Reducir aún más el mapa para que sea un cuadrado pequeño y compacto */
+    /* Mapa en formato de cuadrado pequeño y compacto */
     iframe {
-        height: 180px !important;
-        width: 180px !important;
+        height: 130px !important;
+        width: 130px !important;
         max-width: 100% !important;
         border-radius: 8px !important;
-        border: 1px solid #1E3A8A !important;
-        box-shadow: 0px 0px 10px rgba(30, 58, 138, 0.4);
+        border: 1px solid #00f3ff !important;
+        box-shadow: 0px 0px 10px rgba(0, 243, 255, 0.4);
     }
     
-    /* Contenedor específico para centrar el mapa */
+    /* Contenedor del mapa */
     .mapa-cuadrado {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         width: 100%;
     }
     
-    /* Cajas de entrada de chat y elementos interactivos */
-    .stTextInput>div>div>input {
-        background-color: #000a12 !important;
-        color: #3B82F6 !important;
-        border: 1px solid #1E3A8A !important;
+    /* Cajas de entrada de chat */
+    .stTextInput>div>div>input, div[data-testid="stChatInput"] textarea {
+        background-color: #000000 !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
     }
     
     /* Botones tácticos */
     .stButton>button {
         background-color: #000a12 !important;
-        color: #3B82F6 !important;
-        border: 1px solid #1E3A8A !important;
+        color: #00f3ff !important;
+        border: 1px solid #00f3ff !important;
         border-radius: 6px;
-        box-shadow: 0px 0px 6px rgba(30, 58, 138, 0.4);
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
     }
     .stButton>button:hover {
-        background-color: #1E3A8A !important;
-        color: #ffffff !important;
+        background-color: #00f3ff !important;
+        color: #000000 !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 st.title("🤖 JARVIS 4.0 // NOVA")
 
-# Inyección del Banner de Ondas Azules estilo IA debajo del encabezado
+# Banner de Ondas Azules
 st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #3B82F6;">[ NÚCLEO NEURAL ACTIVO: CONEXIÓN CUÁNTICA ESTABLE ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: CONEXIÓN CUÁNTICA ESTABLE ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -117,7 +123,7 @@ col_izq, col_centro, col_der = st.columns([1.2, 2, 1.2])
 with col_izq:
     st.subheader("📅 Sincronización Temporal")
     
-    # Fragmento con actualización automática cada 1 segundo para el segundero en vivo
+    # Fragmento dinámico con segundero en vivo
     @st.fragment(run_every=1)
     def reloj_en_vivo():
         zona_chile = pytz.timezone('America/Santiago')
@@ -130,7 +136,6 @@ with col_izq:
         st.markdown(f"⏱️ **Hora Táctica (Chile):**")
         st.markdown(f"### `{hora_actual}`")
 
-    # Llamada al reloj en vivo
     reloj_en_vivo()
     
     # Enlace satelital Serafín (Cuadrado pequeño)
@@ -145,7 +150,6 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_centro:
-    # Espaciado superior para bajar la caja del chat
     st.markdown("<br>", unsafe_allow_html=True)
     st.subheader("💬 Consola Central / Conexión Gemini")
     
@@ -160,13 +164,12 @@ with col_centro:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Entrada de chat central conectada
+    # Entrada de chat central
     if prompt := st.chat_input("Ingrese comando táctico o consulta para Gemini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Respuesta simulada/integrada del núcleo
         respuesta_nucleo = f"Procesamiento autónomo completado para: '{prompt}'. Sistemas al 100%, Jefa."
         st.session_state.messages.append({"role": "assistant", "content": respuesta_nucleo})
         with st.chat_message("assistant"):
@@ -176,6 +179,15 @@ with col_der:
     st.subheader("Controles Rápidos")
     if st.button("Verificar Estado de Núcleos"):
         st.toast("¡Sistemas operativos y telemetría al 100%, Jefa!")
-        
+    
+    # Módulo de Purga
+    st.markdown("### 🧹 Módulo de Purga")
+    if st.button("Ejecutar Purga de Sistema"):
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Purga ejecutada. Memoria de consola restablecida, Jefa."}
+        ]
+        st.toast("🧹 Registros temporales y caché purgados con éxito.")
+        st.rerun()
+
     st.markdown("### ⚡ Telemetría")
     st.info("Red local iOS: Activa\nServidor Flask: Escuchando\nTormenta Buin: Monitoreada")
