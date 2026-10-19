@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inyección de Estilos CSS definitivos y forzados para modo oscuro absoluto
+# Inyección de Estilos CSS definitivos y limpios
 st.markdown("""
     <style>
     /* Fondo negro profundo general para toda la app */
@@ -61,33 +61,6 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Etiqueta de estado neón */
-    .estado-neon {
-        background-color: #000000;
-        color: #00f3ff;
-        border: 1px solid #00f3ff;
-        padding: 4px 10px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 13px;
-        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
-        display: inline-block;
-    }
-
-    /* Estilizar el texto de las pestañas en Azul Neón */
-    button[data-baseweb="tab"] {
-        color: #80f9ff !important;
-        font-size: 13px !important;
-    }
-    button[aria-selected="true"] {
-        color: #00f3ff !important;
-        border-bottom-color: #00f3ff !important;
-        text-shadow: 0px 0px 6px #00f3ff;
-    }
-    div[data-baseweb="tab-highlight"] {
-        background-color: #00f3ff !important;
-    }
-    
     /* Estilo del historial de mensajes del chat */
     div[data-testid="stChatMessage"] {
         background-color: #000000 !important;
@@ -163,16 +136,6 @@ st.markdown("""
         background-color: #00f3ff !important;
         color: #000000 !important;
     }
-    
-    /* Estilos específicos para Widgets iOS */
-    .widget-ios {
-        background: rgba(0, 15, 30, 0.85);
-        border: 1px solid #00f3ff;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 10px;
-        box-shadow: inset 0px 0px 8px rgba(0, 243, 255, 0.2);
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -181,9 +144,6 @@ if "bitacora" not in st.session_state:
     st.session_state.bitacora = [
         {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema J.A.R.V.I.S. inicializado", "Estado": "ÓPTIMO"}
     ]
-
-if "nota_rapida" not in st.session_state:
-    st.session_state.nota_rapida = "Revisar estado de reactores y canal seguro con Nova-Core."
 
 # Funciones de voz y micro
 def emitir_voz(texto_respuesta):
@@ -237,7 +197,7 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Nova-Core ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Enlace Nova-Core ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -328,42 +288,6 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets, Nova-Core y Bitácora
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
-    
-    w_tab1, w_tab2, w_tab3 = st.tabs(["📝 Notas & Widgets", "Nova-Core", "📋 Bitácora Misiones"])
-    
-    with w_tab1:
-        st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
-        st.markdown("📌 **Nota Rápida del Taller**")
-        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70, label_visibility="collapsed")
-        if st.button("💾 Guardar Nota"):
-            st.session_state.nota_rapida = nueva_nota
-            st.toast("Nota guardada en la tablet.")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with w_tab2:
-        st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
-        st.markdown("### Nova-Core")
-        st.markdown('Estado de Conexión: <span class="estado-neon">BUENA 🟢 (Puerto 5000)</span>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("📡 Sincronizar con Nova-Core"):
-            st.toast("⚡ Conexión establecida con Nova-Core.")
-            st.session_state.bitacora.append({
-                "Hora": datetime.now().strftime("%H:%M:%S"),
-                "Evento": "Sincronización con Nova-Core",
-                "Estado": "EXITOSO"
-            })
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with w_tab3:
-        st.markdown("📋 **Registro Auditado de Eventos:**")
-        df_bitacora = pd.DataFrame(st.session_state.bitacora)
-        st.dataframe(df_bitacora, use_container_width=True)
-        
-    st.markdown('</div>', unsafe_allow_html=True)
-
 with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Controles Rápidos")
@@ -386,5 +310,5 @@ with col_der:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core: Estable\nTormenta Buin: Bajo control")
+    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nEstado del Núcleo: Estable\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
