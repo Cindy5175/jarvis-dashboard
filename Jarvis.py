@@ -218,14 +218,14 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Memoria JSON & Enlace Nova-Core ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Memoria JSON & Enlace Cloud ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Repertorio de respuestas con estilo Stark y el toque especial para cuando pregunte si está despierto
+# Repertorio de respuestas con estilo Stark y lealtad absoluta
 RESPUESTAS_STARK = [
     "Oh, perfecto, otra tarea brillante. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
     "Procesado. De nada por salvar el día otra vez con mi elegancia habitual.",
@@ -237,7 +237,7 @@ RESPUESTAS_STARK = [
 
 col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
 
-# --- COLUMNA IZQUIERDA ---
+# --- COLUMNA IZQUIERDA: Herramientas, Sincronización y Notas ---
 with col_izq:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
@@ -287,7 +287,7 @@ with col_izq:
         st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLUMNA CENTRAL (CONSOLA DE CHAT LIBRE) ---
+# --- COLUMNA CENTRAL: Consola de Chat Absolutamente Libre ---
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
@@ -309,7 +309,7 @@ with col_centro:
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Filtro inteligente para detectar la pregunta exacta sobre el estado de alerta
+        # Filtro inteligente para el estado de alerta
         prompt_lower = prompt.lower()
         if "despierto" in prompt_lower or "estas despierto" in prompt_lower:
             respuesta_ia = "Para usted, señorita, siempre."
@@ -330,7 +330,7 @@ with col_centro:
         emitir_voz(respuesta_ia)
         st.rerun()
 
-# --- COLUMNA DERECHA ---
+# --- COLUMNA DERECHA: Seguridad, Controles y Satélite ---
 with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🔒 Acceso Biométrico")
