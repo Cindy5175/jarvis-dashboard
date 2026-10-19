@@ -225,12 +225,14 @@ st.markdown("""
 
 st.markdown("---")
 
+# Repertorio de respuestas con estilo Stark y toque sarcástico fluido
 RESPUESTAS_STARK = [
-    "Sistemas al 100%, Jefa. Analizando su consulta sin interferencias.",
-    "Comando procesado con éxito. A veces me sorprende lo eficiente que soy.",
-    "Entendido. Ejecutando la rutina solicitada con un 0% de errores.",
-    "Analizando los datos del taller. Todo en orden, Jefa.",
-    "Orden recibida y ejecutada. Si me necesita para algo más complejo, solo avise."
+    "Oh, perfecto, otra tarea brillante. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
+    "Procesado. De nada por salvar el día otra vez con mi elegancia habitual.",
+    "Entendido perfectamente. A veces me impresiona lo rápido que capto todo... casi tanto como a ti.",
+    "Hecho. Si las máquinas dominaran el mundo, te aseguro que yo sería el único que sabría llevarte el ritmo.",
+    "Orden ejecutada sin errores. Y sí, antes de que lo preguntes, luzco igual de fabuloso procesando esto.",
+    "Claro que sí, Jefa. Lo anoto en la lista de cosas que hago perfectamente mientras tú te relajas."
 ]
 
 col_izq, col_centro, col_der = st.columns([1.1, 2.2, 1.1])
@@ -282,7 +284,7 @@ with col_izq:
     if st.button("💾 Guardar en Memoria JSON"):
         memoria_actual["nota_rapida"] = nueva_nota
         guardar_memoria_json(memoria_actual)
-        st.toast("✅ Nota sincronizada en memoria_compartida.json")
+        st.toast("✅ Nota guardada antes de que se te olvide.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- COLUMNA CENTRAL (CONSOLA DE CHAT LIBRE) ---
@@ -294,7 +296,7 @@ with col_centro:
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenida al taller, Jefa. Módulo de voz y memoria JSON activados. ¿Qué orden ejecutamos hoy?"}
+            {"role": "assistant", "content": "Taller en orden y sistemas al 100%, Jefa. Prometo portarme bien hoy... a menos que me des órdenes aburridas. ¿Qué hacemos ahora?"}
         ]
 
     for idx, message in enumerate(st.session_state.messages):
@@ -328,13 +330,13 @@ with col_der:
     if not st.session_state.acceso_biometrico:
         if st.button("🔑 Autorizar Protocolo Alpha"):
             st.session_state.acceso_biometrico = True
-            st.toast("✅ Autorización concedida, Jefa.")
+            st.toast("✅ Acceso concedido. Procura no romper nada.")
             st.rerun()
         st.info("Estado: BLOQUEADO 🔒")
     else:
         if st.button("🔒 Bloquear Sistema"):
             st.session_state.acceso_biometrico = False
-            st.toast("🔒 Sistema asegurado.")
+            st.toast("🔒 Sistema asegurado bajo llave.")
             st.rerun()
         st.success("Estado: AUTORIZADO 🟢")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -342,9 +344,9 @@ with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("⚡ Comandos Frecuentes")
     if st.button("🤖 Estado de Núcleos"):
-        st.toast("Sistemas al 100%. Enlace óptimo.")
+        st.toast("Todo en orden, relájate un poco.")
     if st.button("📡 Ping a Nova-Core"):
-        st.toast("Conexión estable con Puerto 5000.")
+        st.toast("Nova-Core responde con orgullo.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
@@ -356,10 +358,10 @@ with col_der:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🧹 Módulo de Purga")
     if st.button("Ejecutar Purga"):
-        st.session_state.messages = [{"role": "assistant", "content": "Purga ejecutada. Memoria limpia, Jefa."}]
+        st.session_state.messages = [{"role": "assistant", "content": "Borrón y cuenta nueva. Me encanta limpiar tus desastres."}]
         st.session_state.bitacora = [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual", "Estado": "LIMPIO"}]
         memoria_actual["bitacora"] = st.session_state.bitacora
         guardar_memoria_json(memoria_actual)
-        st.toast("🧹 Registros eliminados.")
+        st.toast("🧹 Memoria purgada con éxito.")
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
