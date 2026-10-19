@@ -66,7 +66,7 @@ st.markdown("""
         color: #80f9ff !important;
     }
     
-    /* Contenedor general para enmarcar cada módulo táctico lateral */
+    /* Contenedor general para enmarcar cada módulo táctico */
     .card-tactica {
         background-color: #000a12 !important;
         border: 1px solid #00f3ff !important;
@@ -291,8 +291,22 @@ with col_izq:
 with col_centro:
     st.subheader("💬 Consola Central // Audio & Texto")
     
-    if st.button("🎙️ Activar Micrófono (Dictado Táctico)", key="btn_mic_nativo"):
-        activar_script_microfono()
+    # Barra de acciones tácticas superiores: Micrófono y Módulo de Purga
+    col_acc1, col_acc2 = st.columns([1.2, 1])
+    with col_acc1:
+        if st.button("🎙️ Activar Micrófono", key="btn_mic_nativo"):
+            activar_script_microfono()
+    with col_acc2:
+        if st.button("🧹 Ejecutar Purga", key="btn_purga_centro"):
+            st.session_state.messages = [{
+                "role": "assistant", 
+                "content": "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. AI Autónomo N.T.C. en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
+            }]
+            st.session_state.bitacora = [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual", "Estado": "LIMPIO"}]
+            memoria_actual["bitacora"] = st.session_state.bitacora
+            guardar_memoria_json(memoria_actual)
+            st.toast("🧹 Memoria purgada con éxito.")
+            st.rerun()
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
@@ -312,9 +326,10 @@ with col_centro:
     if prompt := st.chat_input("Ingrese comando táctico o consulta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        p_lower = prompt.lower()
+        p_lower = prompt.lower().strip()
         
-        if "protocolo de presentación" in p_lower or "protocolo de presentacion" in p_lower:
+        # Filtro infalible para el Protocolo de Presentación
+        if "protocolo de presentacion" in p_lower or "protocolo de presentación" in p_lower or "presentacion" in p_lower or "presentación" in p_lower:
             respuesta_ia = "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\nSaludos, Jefa. Núcleo J.A.R.V.I.S. AI Autónomo N.T.C. en línea, operando con un 100% de eficiencia en la nube. Sincronización temporal, telemetría y enlaces de red estables. ¿Qué directiva ejecutamos en el taller el día de hoy?"
         elif any(w in p_lower for w in ["despierto", "despierta", "estás ahí", "estas ahi"]):
             respuesta_ia = "Para usted, señorita, siempre."
@@ -365,15 +380,4 @@ with col_der:
     st.subheader("🛰️ Satélite Serafín")
     mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
     st.map(mapa_buin, zoom=10, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🧹 Módulo de Purga")
-    if st.button("Ejecutar Purga"):
-        st.session_state.messages = [{"role": "assistant", "content": "Borrón y cuenta nueva. Me encanta limpiar tus desastres."}]
-        st.session_state.bitacora = [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Purga manual", "Estado": "LIMPIO"}]
-        memoria_actual["bitacora"] = st.session_state.bitacora
-        guardar_memoria_json(memoria_actual)
-        st.toast("🧹 Memoria purgada con éxito.")
-        st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
