@@ -61,43 +61,16 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Estilo para el bloc de notas en HTML puro (Fondo negro absoluto) */
-    .bloc-notas-html {
-        width: 100%;
+    /* Estilo para las etiquetas de estado */
+    .estado-neon {
         background-color: #000000;
         color: #00f3ff;
         border: 1px solid #00f3ff;
-        border-radius: 6px;
-        padding: 10px;
+        padding: 4px 10px;
+        border-radius: 5px;
         font-family: monospace;
         font-size: 13px;
-        resize: vertical;
-        min-height: 70px;
-        box-shadow: inset 0px 0px 6px rgba(0, 243, 255, 0.3);
-    }
-
-    /* Estilo de tabla táctica personalizada en HTML puro */
-    .tabla-tactica {
-        width: 100%;
-        border-collapse: collapse;
-        background-color: #000000;
-        border: 1px solid #00f3ff;
-        border-radius: 6px;
-        overflow: hidden;
-        font-family: monospace;
-        font-size: 12px;
-    }
-    .tabla-tactica th {
-        background-color: #001525;
-        color: #00f3ff;
-        border-bottom: 1px solid #00f3ff;
-        padding: 8px;
-        text-align: left;
-    }
-    .tabla-tactica td {
-        color: #80f9ff;
-        border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-        padding: 8px;
+        box-shadow: 0px 0px 6px rgba(0, 243, 255, 0.4);
     }
 
     /* Estilizar el texto de las pestañas en Azul Neón */
@@ -263,7 +236,7 @@ st.markdown("""
     <div class="banner-ondas">
         <div style="text-align: center; color: #00f3ff; font-family: monospace; font-size: 14px; letter-spacing: 2px; text-shadow: 0px 0px 8px #00f3ff;">
             ||||||| |||| |||||||| || | ||||||||| |||| ||||||<br>
-            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Enlace Nova-Core ]</span>
+            <span style="font-size: 11px; color: #00f3ff;">[ NÚCLEO NEURAL ACTIVO: Personalidad Stark, Módulo de Voz & Nova-Core ]</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -354,48 +327,39 @@ with col_centro:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Widgets, Conexión y Bitácora
+    # Widgets, Nova-Core y Bitácora limpios
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📱 Widgets Estilo Tablet iOS & Bitácora")
     
-    w_tab1, w_tab2, w_tab3 = st.tabs(["📝 Notas & Widgets", "🔗 Conexión Nova-Core", "📋 Bitácora Misiones"])
+    w_tab1, w_tab2, w_tab3 = st.tabs(["📝 Notas & Widgets", "Nova-Core", "📋 Bitácora Misiones"])
     
     with w_tab1:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
         st.markdown("📌 **Nota Rápida del Taller**")
-        st.markdown("Bloc de notas táctico:")
-        
-        # Componente de texto HTML puro con fondo negro absoluto
-        st.markdown(f'''
-            <textarea id="nota_input" class="bloc-notas-html">{st.session_state.nota_rapida}</textarea>
-        ''', unsafe_allow_html=True)
-        
+        nueva_nota = st.text_area("Bloc de notas táctico:", value=st.session_state.nota_rapida, height=70, label_visibility="collapsed")
         if st.button("💾 Guardar Nota"):
-            st.session_state.nota_rapida = "Nota actualizada en el sistema."
+            st.session_state.nota_rapida = nueva_nota
             st.toast("Nota guardada en la tablet.")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with w_tab2:
         st.markdown('<div class="widget-ios">', unsafe_allow_html=True)
-        st.markdown("🔗 **Pasarela de Enlace Mixto: NOVA-CORE**")
-        st.markdown("Estado de Conexión: **BUENA** 🟢 (Puerto 5000 activo)")
+        st.markdown("### Nova-Core")
+        st.markdown('Estado de Conexión: <span class="estado-neon">BUENA 🟢 (Puerto 5000)</span>', unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("📡 Sincronizar Parámetros con Nova-Core"):
-            st.toast("⚡ Conexión establecida. Parámetros compartidos.")
+        if st.button("📡 Sincronizar con Nova-Core"):
+            st.toast("⚡ Conexión establecida con Nova-Core.")
             st.session_state.bitacora.append({
                 "Hora": datetime.now().strftime("%H:%M:%S"),
-                "Evento": "Sincronización manual con Nova-Core",
+                "Evento": "Sincronización con Nova-Core",
                 "Estado": "EXITOSO"
             })
         st.markdown('</div>', unsafe_allow_html=True)
 
     with w_tab3:
         st.markdown("📋 **Registro Auditado de Eventos:**")
-        html_tabla = '<table class="tabla-tactica"><tr><th>Hora</th><th>Evento</th><th>Estado</th></tr>'
-        for item in st.session_state.bitacora:
-            html_tabla += f"<tr><td>{item['Hora']}</td><td>{item['Evento']}</td><td>{item['Estado']}</td></tr>"
-        html_tabla += '</table>'
-        st.markdown(html_tabla, unsafe_allow_html=True)
+        df_bitacora = pd.DataFrame(st.session_state.bitacora)
+        st.dataframe(df_bitacora, use_container_width=True)
         
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -421,5 +385,5 @@ with col_der:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📡 Telemetría")
-    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core Link: Estable\nTormenta Buin: Bajo control")
+    st.info("Red local iOS: Conectada\nSíntesis de Voz: Habilitada\nMicrófono Táctico: Listo\nNova-Core: Estable\nTormenta Buin: Bajo control")
     st.markdown('</div>', unsafe_allow_html=True)
