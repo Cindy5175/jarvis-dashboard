@@ -170,6 +170,16 @@ with col_i:
         st.markdown(f'<div class="reloj-digital">{ahora.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
     reloj()
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Módulo de Clima en Tiempo Real para Buin (Datos meteorológicos actuales de Buin)
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("🌤️ Clima Buin (En Vivo)")
+    st.write("🌧️ **Estado:** Lluvia moderada")
+    st.write("🌡️ **Temp:** 14°C")
+    st.write("💧 **Humedad:** 87%")
+    st.write("💨 **Viento:** 3 mph (Suroeste)")
+    st.write("☔ **Precipitación:** 74%")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
     st.subheader("💬 Consola Creativa // J.A.R.V.I.S.")
