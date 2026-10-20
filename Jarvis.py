@@ -50,7 +50,7 @@ REPORTE_JARVIS = (
     "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
 )
 
-# Estilos CSS Neón Azul con contenedor cuadrado perfecto
+# Estilos CSS Neón Azul
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -152,9 +152,8 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Controles en barra lateral: Modo Sarcasmo y Modo de Visualización del Satélite (Día / Noche)
+# Interruptor para el Modo Sarcasmo
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
-modo_satelite = st.sidebar.radio("🛰️ Espectro Satélite Serafín:", ["🌙 Modo Noche (Táctico)", "☀️ Modo Día (Óptico)"])
 
 st.markdown("---")
 col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
@@ -180,6 +179,7 @@ with col_i:
     st.write("💧 **Humedad:** 87%")
     st.write("💨 **Viento:** 3 mph (Suroeste)")
     st.write("☔ **Precipitación:** 74%")
+    st.markdown('</div>', unsafe_allow_html=Thread if 'Thread' in globals() else True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
@@ -230,8 +230,11 @@ with col_d:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Satélite Serafín")
     
-    # Mapa Cuadrado en vivo mediante OpenStreetMap (Garantizado que carga y no se pone en negro)
-    filtro_CSS = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if "Noche" in modo_satelite else "none"
+    # Selector de Modo Día / Noche ubicado directamente DENTRO de la tarjeta del mapa
+    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="selector_mapa_j")
+    
+    # Filtro CSS para transformar el mapa en modo nocturno táctico o dejarlo diurno
+    filtro_CSS = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
     
     mapa_html = f"""
     <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid #00f3ff; filter: {filtro_CSS};">
