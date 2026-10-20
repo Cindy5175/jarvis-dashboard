@@ -23,8 +23,7 @@ def cargar_memoria():
             pass
     return {
         "bitacora": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "JARVIS Inicializado", "Estado": "ÓPTIMO"}],
-        "nota_rapida": "Ideas de proyectos y notas del taller.",
-        "snippets": "1. st.set_page_config(layout='wide')\n2. st.markdown('<style>...</style>', unsafe_allow_html=True)"
+        "nota_rapida": "Ideas de proyectos y notas del taller."
     }
 
 def guardar_memoria(datos):
@@ -36,7 +35,7 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Saludo conversacional dinámico (Punto 4)
+# Saludo conversacional dinámico
 hora_actual_int = datetime.now(pytz.timezone('America/Santiago')).hour
 if hora_actual_int < 12:
     saludo_tiempo = "¡Buenos días, Jefa! Empezamos con energía el día."
@@ -153,7 +152,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Interruptor para el Modo Sarcasmo / Humor (Punto 1)
+# Interruptor para el Modo Sarcasmo / Humor
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
 
 st.markdown("---")
@@ -170,17 +169,6 @@ with col_i:
         st.markdown("⏱️ **Hora (Chile):**")
         st.markdown(f'<div class="reloj-digital">{ahora.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
     reloj()
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Generador de Snippets de Código Rápido (Punto 2)
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🛠️ Snippets Rápidos")
-    snippets_val = memoria_actual.get("snippets", "")
-    n_snip = st.text_area("Editar plantillas:", value=snippets_val, height=120, key="snip_j")
-    if st.button("💾 Guardar Snippet"):
-        memoria_actual["snippets"] = n_snip
-        guardar_memoria(memoria_actual)
-        st.toast("✅ Snippet actualizado.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
@@ -218,7 +206,6 @@ with col_c:
         st.rerun()
 
 with col_d:
-    # Control de Proyectos Personales / Socio Creativo (Punto 3)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🚀 Proyectos del Taller")
     nota_act = memoria_actual.get("nota_rapida", "")
