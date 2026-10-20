@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
 from datetime import datetime
 import pytz
 import random
@@ -51,7 +50,7 @@ REPORTE_JARVIS = (
     "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
 )
 
-# Estilos CSS Neón Azul con contenedor cuadrado estricto
+# Estilos CSS Neón Azul con contenedor cuadrado perfecto
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -126,15 +125,6 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #00f3ff !important;
         color: #000000 !important;
-    }
-    /* Contenedor cuadrado perfecto y forzado para PyDeck */
-    .mapa-cuadrado-perfecto {
-        width: 100% !important;
-        height: 220px !important;
-        max-height: 220px !important;
-        overflow: hidden !important;
-        border-radius: 8px;
-        border: 1px solid #00f3ff;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -218,7 +208,7 @@ with col_c:
             respuestas = [
                 "¡Excelente idea, Jefa! Me pongo a estructurarla de inmediato.",
                 "Brillante como siempre. Analizando datos en la base del taller.",
-                "Anotado en los registros creativos. چه más planeamos hoy?"
+                "Anotado en los registros creativos. ¿Qué más planeamos hoy?"
             ]
             
         resp = random.choice(respuestas)
@@ -240,30 +230,15 @@ with col_d:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Satélite Serafín")
     
-    # Configuración de mapa cuadrado interactivo con PyDeck con soporte de día/noche
-    df_mapa = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
-    view_state = pdk.ViewState(latitude=-33.7333, longitude=-70.7417, zoom=11, pitch=0)
+    # Mapa Cuadrado en vivo mediante OpenStreetMap (Garantizado que carga y no se pone en negro)
+    filtro_CSS = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if "Noche" in modo_satelite else "none"
     
-    # Capa de puntos luminosos con tono cian táctico
-    capa_satelite = pdk.Layer(
-        "ScatterplotLayer",
-        data=df_mapa,
-        get_position='[lon, lat]',
-        get_color='[0, 243, 255, 230]',
-        get_radius=500,
-        pickable=True
-    )
-    
-    # Selección dinámica de estilo de mapa (Día vs Noche)
-    estilo_mapa = "mapbox://styles/mapbox/dark-v10" if "Noche" in modo_satelite else "mapbox://styles/mapbox/light-v10"
-    
-    deck = pdk.Deck(
-        layers=[capa_satelite],
-        initial_view_state=view_state,
-        map_style=estilo_mapa
-    )
-    
-    st.markdown('<div class="mapa-cuadrado-perfecto">', unsafe_allow_html=True)
-    st.pydeck_chart(deck, use_container_width=True, height=220)
-    st.markdown('</div>', unsafe_allow_html=True)
+    mapa_html = f"""
+    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid #00f3ff; filter: {filtro_CSS};">
+        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417">
+        </iframe>
+    </div>
+    """
+    st.components.v1.html(mapa_html, height=210)
     st.markdown('</div>', unsafe_allow_html=True)
