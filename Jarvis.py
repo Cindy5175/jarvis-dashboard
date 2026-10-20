@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pydeck as pdk
 from datetime import datetime
 import pytz
 import random
@@ -171,7 +172,7 @@ with col_i:
     reloj()
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Módulo de Clima en Tiempo Real para Buin (Datos meteorológicos actuales de Buin)
+    # Módulo de Clima en Tiempo Real para Buin
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🌤️ Clima Buin (En Vivo)")
     st.write("🌧️ **Estado:** Lluvia moderada")
@@ -228,6 +229,8 @@ with col_d:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Satélite Serafín")
-    mapa = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
-    st.map(mapa, zoom=10, use_container_width=True)
+    df_mapa = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
+    view_state = pdk.ViewState(latitude=-33.7333, longitude=-70.7417, zoom=11, pitch=0)
+    layer = pdk.Layer("ScatterplotLayer", data=df_mapa, get_position='[lon, lat]', get_color='[0, 243, 255, 200]', get_radius=400)
+    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state, map_style="mapbox://styles/mapbox/dark-v10", height=120))
     st.markdown('</div>', unsafe_allow_html=True)
