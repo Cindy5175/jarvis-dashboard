@@ -50,7 +50,7 @@ REPORTE_JARVIS = (
     "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
 )
 
-# Estilos CSS Neón Azul
+# Estilos CSS Neón Azul con ajuste para el mapa rectangular
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -125,6 +125,11 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #00f3ff !important;
         color: #000000 !important;
+    }
+    /* Contenedor rectangular mediano para el mapa */
+    .mapa-rectangulo iframe, .mapa-rectangulo div[data-testid="stDeckGlJsonChart"], .mapa-rectangulo div.stMap {
+        height: 140px !important;
+        max-height: 140px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -228,6 +233,8 @@ with col_d:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Satélite Serafín")
+    st.markdown('<div class="mapa-rectangulo">', unsafe_allow_html=True)
     mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
     st.map(mapa_buin, zoom=10, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
