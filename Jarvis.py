@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pydeck as pdk
 from datetime import datetime
 import pytz
 import random
@@ -50,7 +51,7 @@ REPORTE_JARVIS = (
     "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
 )
 
-# Estilos CSS Neón Azul con ajuste para mapa cuadrado
+# Estilos CSS Neón Azul con contenedor cuadrado estricto
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -126,10 +127,14 @@ st.markdown("""
         background-color: #00f3ff !important;
         color: #000000 !important;
     }
-    /* Contenedor cuadrado para el mapa */
-    .mapa-cuadrado iframe, .mapa-cuadrado div[data-testid="stDeckGlJsonChart"], .mapa-cuadrado div.stMap {
-        height: 180px !important;
-        max-height: 180px !important;
+    /* Contenedor cuadrado perfecto y forzado para PyDeck */
+    .mapa-cuadrado-perfecto {
+        width: 100% !important;
+        height: 220px !important;
+        max-height: 220px !important;
+        overflow: hidden !important;
+        border-radius: 8px;
+        border: 1px solid #00f3ff;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -157,8 +162,9 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Interruptor para el Modo Sarcasmo / Humor
+# Controles en barra lateral: Modo Sarcasmo y Modo de Visualización del Satélite (Día / Noche)
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
+modo_satelite = st.sidebar.radio("🛰️ Espectro Satélite Serafín:", ["🌙 Modo Noche (Táctico)", "☀️ Modo Día (Óptico)"])
 
 st.markdown("---")
 col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
@@ -212,7 +218,7 @@ with col_c:
             respuestas = [
                 "¡Excelente idea, Jefa! Me pongo a estructurarla de inmediato.",
                 "Brillante como siempre. Analizando datos en la base del taller.",
-                "Anotado en los registros creativos. ¿Qué más planeamos hoy?"
+                "Anotado en los registros creativos. چه más planeamos hoy?"
             ]
             
         resp = random.choice(respuestas)
@@ -233,8 +239,31 @@ with col_d:
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("🛰️ Satélite Serafín")
-    st.markdown('<div class="mapa-cuadrado">', unsafe_allow_html=True)
-    mapa_buin = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
-    st.map(mapa_buin, zoom=10, use_container_width=True)
+    
+    # Configuración de mapa cuadrado interactivo con PyDeck con soporte de día/noche
+    df_mapa = pd.DataFrame({'lat': [-33.7333], 'lon': [-70.7417]})
+    view_state = pdk.ViewState(latitude=-33.7333, longitude=-70.7417, zoom=11, pitch=0)
+    
+    # Capa de puntos luminosos con tono cian táctico
+    capa_satelite = pdk.Layer(
+        "ScatterplotLayer",
+        data=df_mapa,
+        get_position='[lon, lat]',
+        get_color='[0, 243, 255, 230]',
+        get_radius=500,
+        pickable=True
+    )
+    
+    # Selección dinámica de estilo de mapa (Día vs Noche)
+    estilo_mapa = "mapbox://styles/mapbox/dark-v10" if "Noche" in modo_satelite else "mapbox://styles/mapbox/light-v10"
+    
+    deck = pdk.Deck(
+        layers=[capa_satelite],
+        initial_view_state=view_state,
+        map_style=estilo_mapa
+    )
+    
+    st.markdown('<div class="mapa-cuadrado-perfecto">', unsafe_allow_html=True)
+    st.pydeck_chart(deck, use_container_width=True, height=220)
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
