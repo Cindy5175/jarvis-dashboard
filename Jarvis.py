@@ -240,7 +240,7 @@ if st.session_state.nucleo_previo != nucleo_activo:
         st.session_state.messages = [{"role": "assistant", "content": REPORTE_NOVA}]
     st.rerun()
 
-# Títulos y Banners con frase única limpia (sin barras paralelas)
+# Títulos y Banners limpios sin barras ni separadores innecesarios
 if "NOVA" in nucleo_activo:
     titulo_pantalla = "🛡️ N.O.V.A. // CENTRO DE INTELIGENCIA TÁCTICA 🛡️"
     banner_texto = "[ NÚCLEO BLINDADO & ARCHIVO TÁCTICO N.T.C. ]"
@@ -250,7 +250,7 @@ if "NOVA" in nucleo_activo:
         "Directiva protegida y ejecutada bajo estrictos estándares."
     ]
 else:
-    titulo_pantalla = "⚡ J.A.R.V.I.S. AI // AUTÓNOMO ⚡"
+    titulo_pantalla = "⚡ J.A.R.V.I.S. AI AUTÓNOMO ⚡"
     banner_texto = "[ NÚCLEO NEURAL AUTÓNOMO & BASE DE DATOS TÉCNICA ]"
     respuestas_rand = [
         "Oh, perfecto, otra tarea brillante. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
