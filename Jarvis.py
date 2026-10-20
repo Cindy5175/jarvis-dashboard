@@ -12,50 +12,42 @@ except ImportError:
     psutil = None
 
 st.set_page_config(
-    page_title="Centro de Mando - J.A.R.V.I.S. Autónomo",
-    page_icon="⚡",
+    page_title="Centro de Mando - N.O.V.A. (C.I.T.)",
+    page_icon="🛡️",
     layout="wide"
 )
 
-MEMORIA_JARVIS = "memoria_jarvis.json"
+MEMORIA_NOVA = "memoria_nova.json"
 
-def cargar_memoria():
-    if os.path.exists(MEMORIA_JARVIS):
+def cargar_memoria_nova():
+    if os.path.exists(MEMORIA_NOVA):
         try:
-            with open(MEMORIA_JARVIS, "r", encoding="utf-8") as f:
+            with open(MEMORIA_NOVA, "r", encoding="utf-8") as f:
                 return json.load(f)
         except:
             pass
     return {
-        "bitacora": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "JARVIS Inicializado", "Estado": "ÓPTIMO"}],
-        "nota_rapida": "Ideas de proyectos y notas del taller."
+        "auditoria": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "Sistema Blindado Inicializado", "Estado": "SEGURO"}],
+        "nota_segura": "DATOS CONFIDENCIALES: Claves de acceso secundarias del taller."
     }
 
-def guardar_memoria(datos):
+def guardar_memoria_nova(datos):
     try:
-        with open(MEMORIA_JARVIS, "w", encoding="utf-8") as f:
+        with open(MEMORIA_NOVA, "w", encoding="utf-8") as f:
             json.dump(datos, f, ensure_ascii=False, indent=4)
     except:
         pass
 
-memoria_actual = cargar_memoria()
+memoria_nova = cargar_memoria_nova()
 
-# Saludo conversacional dinámico
-hora_actual_int = datetime.now(pytz.timezone('America/Santiago')).hour
-if hora_actual_int < 12:
-    saludo_tiempo = "¡Buenos días, Jefa! Empezamos con energía el día."
-elif hora_actual_int < 19:
-    saludo_tiempo = "¡Buenas tardes, Jefa! ¿Cómo va el ritmo en el taller?"
-else:
-    saludo_tiempo = "¡Buenas noches, Jefa! Trabajando hasta tarde, veo."
-
-REPORTE_JARVIS = (
-    f"⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\n"
-    f"{saludo_tiempo} Soy J.A.R.V.I.S., tu IA autónoma amigable creada por Cindy para asistirla "
-    "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
+REPORTE_NOVA = (
+    "🛡️ **PROTOCOLO N.O.V.A. (C.I.T.) ACTIVADO** 🛡️\n\n"
+    "Saludos, Jefa. Soy N.O.V.A. (Centro de Inteligencia Táctica), "
+    "operando bajo **Nivel de Blindaje Máximo N.T.C.** Encriptación cuántica activa "
+    "y monitoreo de seguridad operativo. ¿Qué directiva protegida ejecutamos hoy?"
 )
 
-# Estilos CSS Neón Azul
+# Estilos CSS Neón Azul / Blindaje
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -134,7 +126,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def emitir_voz(texto):
+def emitir_voz_nova(texto):
     limpio = texto.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
     js = f"""
     <script>
@@ -148,16 +140,14 @@ def emitir_voz(texto):
     """
     st.components.v1.html(js, height=0, width=0)
 
-st.markdown("<h1>⚡ J.A.R.V.I.S. AI AUTÓNOMO ⚡</h1>", unsafe_allow_html=True)
+st.markdown("<h1>🛡️ N.O.V.A (C.I.T) // CENTRO DE INTELIGENCIA TÁCTICA 🛡️</h1>", unsafe_allow_html=True)
 st.markdown("""
     <div class="banner-ondas">
         <span style="font-size: 13px; color: #00f3ff; font-family: monospace; letter-spacing: 2px;">
-            [ NÚCLEO NEURAL AUTÓNOMO & CONTROL CREATIVO ]
+            [ NÚCLEO BLINDADO & CENTRO DE INTELIGENCIA TÁCTICA ]
         </span>
     </div>
 """, unsafe_allow_html=True)
-
-modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
 
 st.markdown("---")
 col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
@@ -166,106 +156,109 @@ with col_i:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader("📅 Sincronización Temporal")
     @st.fragment(run_every=1)
-    def reloj():
+    def reloj_nova():
         z = pytz.timezone('America/Santiago')
         ahora = datetime.now(z)
         st.write(f"📌 **Fecha:** {ahora.strftime('%d/%m/%Y')}")
         st.markdown("⏱️ **Hora (Chile):**")
         st.markdown(f'<div class="reloj-digital">{ahora.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
-    reloj()
+    reloj_nova()
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Monitoreo de Hardware Real (CPU / RAM)
+    # Monitoreo de Red y Servidores
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("💻 Rendimiento CPU/RAM")
+    st.subheader("🌐 Red y Hardware")
+    st.write("🛰️ **Cloud:** `Online`")
+    st.write("⚡ **Latencia:** `18ms`")
     if psutil:
-        cpu_uso = psutil.cpu_percent(interval=None)
-        ram_uso = psutil.virtual_memory().percent
-        st.write(f"⚙️ **CPU Activo:** `{cpu_uso}%`")
-        st.write(f"🧠 **Memoria RAM:** `{ram_uso}%`")
+        st.write(f"⚙️ **CPU:** `{psutil.cpu_percent()}%`")
+        st.write(f"🧠 **RAM:** `{psutil.virtual_memory().percent}%`")
     else:
-        st.write("⚙️ **CPU Activo:** `14% (Óptimo)`")
-        st.write("🧠 **Memoria RAM:** `42% (Estable)`")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Clima en Tiempo Real para Buin
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🌤️ Clima Buin (En Vivo)")
-    st.write("🌧️ **Estado:** Lluvia moderada")
-    st.write("🌡️ **Temp:** 14°C")
-    st.write("💧 **Humedad:** 87%")
-    st.write("💨 **Viento:** 3 mph (Suroeste)")
-    st.write("☔ **Precipitación:** 74%")
+        st.write("⚙️ **CPU:** `12%`")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
-    st.subheader("💬 Consola Creativa // J.A.R.V.I.S.")
+    st.subheader("💬 Consola Táctica // N.O.V.A. (C.I.T.)")
     
-    if "msgs_j" not in st.session_state:
-        st.session_state.msgs_j = [{"role": "assistant", "content": REPORTE_JARVIS}]
+    if "msgs_n" not in st.session_state:
+        st.session_state.msgs_n = [{"role": "assistant", "content": REPORTE_NOVA}]
 
-    for idx, msg in enumerate(st.session_state.msgs_j):
+    for idx, msg in enumerate(st.session_state.msgs_n):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if msg["role"] == "assistant":
-                if st.button("🔊 Escuchar", key=f"v_j_{idx}"):
-                    emitir_voz(msg["content"])
+                if st.button("🔊 Escuchar", key=f"v_n_{idx}"):
+                    emitir_voz_nova(msg["content"])
 
-    if prompt := st.chat_input("Escribe una idea o consulta para J.A.R.V.I.S...."):
-        st.session_state.msgs_j.append({"role": "user", "content": prompt})
+    if prompt := st.chat_input("Ingrese consulta o directiva táctica..."):
+        st.session_state.msgs_n.append({"role": "user", "content": prompt})
         
-        if modo_sarcasmo:
-            respuestas = [
-                "Oh, claro, otra brillante tarea. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
-                "Por supuesto, me pondré a hacer magia inmediatamente mientras tú descansas.",
-                "Procesando tu solicitud... Tranquila, para mí las leyes de la física son opcionales."
-            ]
-        else:
-            respuestas = [
-                "¡Excelente idea, Jefa! Me pongo a estructurarla de inmediato.",
-                "Brillante como siempre. Analizando datos en la base del taller.",
-                "Anotado en los registros creativos. ¿Qué más planeamos hoy?"
-            ]
-            
-        resp = random.choice(respuestas)
-        st.session_state.msgs_j.append({"role": "assistant", "content": resp})
-        emitir_voz(resp)
+        respuestas_militares = [
+            "INFORME: Perímetro seguro. Parámetros biométricos y de red verificados sin anomalías.",
+            "ESTADO TÁCTICO: Encriptación de canal activa al 100%. Directiva procesada bajo protocolo N.T.C.",
+            "CONFIRMACIÓN: Registro completado con éxito. Sin incidencias reportadas en el sector."
+        ]
+        resp_n = random.choice(respuestas_militares)
+        st.session_state.msgs_n.append({"role": "assistant", "content": resp_n})
+        
+        nuevo_evento = {"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": f"Comando: {prompt[:12]}...", "Estado": "VERIFICADO"}
+        memoria_nova["auditoria"].append(nuevo_evento)
+        guardar_memoria_nova(memoria_nova)
+        
+        emitir_voz_nova(resp_n)
         st.rerun()
 
 with col_d:
+    # Protocolo Cero (Botón de Pánico de Seguridad)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🚀 Proyectos del Taller")
-    nota_act = memoria_actual.get("nota_rapida", "")
-    n_nota = st.text_area("Metas y proyectos activos:", value=nota_act, height=100, key="nota_j")
-    
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        if st.button("💾 Guardar"):
-            memoria_actual["nota_rapida"] = n_nota
-            guardar_memoria(memoria_actual)
-            st.toast("✅ Proyectos actualizados.")
-    with col_b2:
-        st.download_button(
-            label="📥 Exportar",
-            data=n_nota,
-            file_name="proyectos_taller_jarvis.txt",
-            mime="text/plain",
-            key="down_j"
-        )
+    st.subheader("🚨 Protocolo Cero")
+    pin_panico = st.text_input("PIN de Emergencia:", type="password", key="pin_p")
+    if st.button("🔴 EJECUTAR BLOQUEO"):
+        if pin_panico == "1234":
+            st.session_state.msgs_n = [{"role": "assistant", "content": "⚠️ **PROTOCOLO CERO EJECUTADO:** Historial purgado y sesión bloqueada por seguridad."}]
+            st.toast("🚨 ¡Sistema blindado y purgado con éxito!")
+            st.rerun()
+        else:
+            st.error("❌ PIN incorrecto.")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Bóveda de Notas Confidenciales Mejorada
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🛰️ Satélite Serafín")
+    st.subheader("🔐 Notas Confidenciales")
     
-    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="selector_mapa_j")
-    filtro_CSS = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
-    
-    mapa_html = f"""
-    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid #00f3ff; filter: {filtro_CSS};">
-        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
-            src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417">
-        </iframe>
-    </div>
-    """
-    st.components.v1.html(mapa_html, height=210)
+    if "boveda_abierta" not in st.session_state:
+        st.session_state.boveda_abierta = False
+
+    if not st.session_state.boveda_abierta:
+        pin_ingresado = st.text_input("Ingrese PIN de seguridad:", type="password", key="pin_conf")
+        if st.button("🔓 Desbloquear Bóveda"):
+            if pin_ingresado == "1234":
+                st.session_state.boveda_abierta = True
+                st.toast("✅ ¡Bóveda desbloqueada con éxito!")
+                st.rerun()
+            else:
+                st.error("❌ PIN incorrecto.")
+    else:
+        st.success("🟢 Bóveda abierta")
+        nota_seg = memoria_nova.get("nota_segura", "")
+        n_seg = st.text_area("Editar datos seguros:", value=nota_seg, height=90, key="nota_seg")
+        
+        col_ba1, col_ba2 = st.columns(2)
+        with col_ba1:
+            if st.button("💾 Guardar"):
+                memoria_nova["nota_segura"] = n_seg
+                guardar_memoria_nova(memoria_nova)
+                st.toast("✅ Datos confidenciales actualizados.")
+        with col_ba2:
+            if st.button("🔒 Bloquear"):
+                st.session_state.boveda_abierta = False
+                st.rerun()
+                
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Registro de Auditoría Visual en Columna
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader("📋 Auditoría de Eventos")
+    for ev in reversed(memoria_nova["auditoria"][-3:]):
+        st.caption(f"[{ev['Hora']}] {ev['Evento']} - **{ev['Estado']}**")
     st.markdown('</div>', unsafe_allow_html=True)
