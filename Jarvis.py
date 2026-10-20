@@ -23,7 +23,8 @@ def cargar_memoria():
             pass
     return {
         "bitacora": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "JARVIS Inicializado", "Estado": "ÓPTIMO"}],
-        "nota_rapida": "Ideas de proyectos y notas del taller de J.A.R.V.I.S."
+        "nota_rapida": "Ideas de proyectos y notas del taller.",
+        "snippets": "1. st.set_page_config(layout='wide')\n2. st.markdown('<style>...</style>', unsafe_allow_html=True)"
     }
 
 def guardar_memoria(datos):
@@ -35,11 +36,19 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
+# Saludo conversacional dinámico (Punto 4)
+hora_actual_int = datetime.now(pytz.timezone('America/Santiago')).hour
+if hora_actual_int < 12:
+    saludo_tiempo = "¡Buenos días, Jefa! Empezamos con energía el día."
+elif hora_actual_int < 19:
+    saludo_tiempo = "¡Buenas tardes, Jefa! ¿Cómo va el ritmo en el taller?"
+else:
+    saludo_tiempo = "¡Buenas noches, Jefa! Trabajando hasta tarde, veo."
+
 REPORTE_JARVIS = (
-    "⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\n"
-    "Saludos. Soy J.A.R.V.I.S., tu IA autónoma amigable creada por Cindy (mi Jefa) "
-    "para asistirla en sus labores, proyectos y lluvia de ideas. Sistema en línea al 100%. "
-    "¿Qué directiva creativa ejecutamos en el taller el día de hoy?"
+    f"⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\n"
+    f"{saludo_tiempo} Soy J.A.R.V.I.S., tu IA autónoma amigable creada por Cindy para asistirla "
+    "en sus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
 )
 
 # Estilos CSS Neón Azul
@@ -121,9 +130,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-if "bitacora_j" not in st.session_state:
-    st.session_state.bitacora_j = memoria_actual.get("bitacora", [])
-
 def emitir_voz(texto):
     limpio = texto.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
     js = f"""
@@ -147,6 +153,9 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+# Interruptor para el Modo Sarcasmo / Humor (Punto 1)
+modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
+
 st.markdown("---")
 col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
 
@@ -163,10 +172,15 @@ with col_i:
     reloj()
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Generador de Snippets de Código Rápido (Punto 2)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("🌤️ Clima Buin")
-    st.write("**Estado:** ☀️ Despejado")
-    st.write("🌡️ **Temp:** 22°C | 💧 **Hum:** 45%")
+    st.subheader("🛠️ Snippets Rápidos")
+    snippets_val = memoria_actual.get("snippets", "")
+    n_snip = st.text_area("Editar plantillas:", value=snippets_val, height=120, key="snip_j")
+    if st.button("💾 Guardar Snippet"):
+        memoria_actual["snippets"] = n_snip
+        guardar_memoria(memoria_actual)
+        st.toast("✅ Snippet actualizado.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
@@ -184,25 +198,35 @@ with col_c:
 
     if prompt := st.chat_input("Escribe una idea o consulta para J.A.R.V.I.S...."):
         st.session_state.msgs_j.append({"role": "user", "content": prompt})
-        respuestas = [
-            "¡Excelente idea, Jefa! Me pongo a procesarla de inmediato en el taller.",
-            "Oh, brillante como siempre. Menos mal que estoy yo aquí para ayudarte a estructurarlo.",
-            "Anotado en los registros creativos. ¿Qué más planeamos hoy?"
-        ]
+        
+        if modo_sarcasmo:
+            respuestas = [
+                "Oh, claro, otra brillante tarea. Menos mal que estoy yo aquí para evitar que el taller explote, Jefa.",
+                "Por supuesto, me pondré a hacer magia inmediatamente mientras tú descansas.",
+                "Procesando tu solicitud... Tranquila, para mí las leyes de la física son opcionales."
+            ]
+        else:
+            respuestas = [
+                "¡Excelente idea, Jefa! Me pongo a estructurarla de inmediato.",
+                "Brillante como siempre. Analizando datos en la base del taller.",
+                "Anotado en los registros creativos. ¿Qué más planeamos hoy?"
+            ]
+            
         resp = random.choice(respuestas)
         st.session_state.msgs_j.append({"role": "assistant", "content": resp})
         emitir_voz(resp)
         st.rerun()
 
 with col_d:
+    # Control de Proyectos Personales / Socio Creativo (Punto 3)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader("📌 Notas del Taller")
+    st.subheader("🚀 Proyectos del Taller")
     nota_act = memoria_actual.get("nota_rapida", "")
-    n_nota = st.text_area("Ideas rápidas:", value=nota_act, key="nota_j")
-    if st.button("💾 Guardar Nota Jarvis"):
+    n_nota = st.text_area("Metas y proyectos activos:", value=nota_act, height=120, key="nota_j")
+    if st.button("💾 Guardar Proyecto"):
         memoria_actual["nota_rapida"] = n_nota
         guardar_memoria(memoria_actual)
-        st.toast("✅ Nota guardada con éxito.")
+        st.toast("✅ Proyectos actualizados.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
