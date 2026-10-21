@@ -53,13 +53,13 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Stark Sound System")
 canal_musica = st.sidebar.selectbox(
     "Ambiente de Trabajo:",
-    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "Iron Man Soundtrack 🦾", "Desactivado 🔇"]
+    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "J.A.R.V.I.S.", "Desactivado 🔇"]
 )
 
 urls_musica = {
     "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0",
     "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/embed/5qap5aO4i9A?autoplay=0",
-    "Iron Man Soundtrack 🦾": "https://www.youtube.com/embed/2_u_7Hae6VU?autoplay=0"
+    "J.A.R.V.I.S.": "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0"
 }
 
 if canal_musica != "Desactivado 🔇":
@@ -413,4 +413,45 @@ with col_d:
         st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    #
+    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["mapa"])
+    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
+    filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
+    
+    html_mapa = """
+    <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; background:#000a12; padding:8px;">
+        <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:8px; text-align:center; font-weight:bold; text-shadow: 0px 0px 6px rgba(0,243,255,0.6);">
+            📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
+        </div>
+        <div style="width:100%; height:260px; filter:__FILTRO__; position:relative; margin-bottom:8px;">
+            <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
+        </div>
+        <button onclick="getLocation()" style="width:100%; background:#001324; color:#00f3ff; border:2px solid #00f3ff; border-radius:6px; padding:10px; cursor:pointer; font-family:monospace; font-size:12px; font-weight:bold; box-shadow: 0px 0px 10px rgba(0,243,255,0.6);">
+            📍 ACTIVAR RASTREO GPS SATELITAL
+        </button>
+    </div>
+    <script>
+        function getLocation() {
+            const info = document.getElementById("gps_info");
+            const frame = document.getElementById("map_frame");
+            if (navigator.geolocation) {
+                info.innerText = "Buscando satélites LEO y señal GPS...";
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0.0;
+                    info.innerText = "GPS Activo | Lat: " + lat.toFixed(4) + " Lon: " + lon.toFixed(4) + " | Vel: " + speed + " km/h";
+                    frame.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + (lon-0.02) + "%2C" + (lat-0.02) + "%2C" + (lon+0.02) + "%2C" + (lat+0.02) + "&layer=mapnik&marker=" + lat + "%2C" + lon;
+                }, () => {
+                    info.innerText = "Error: Permiso de ubicación denegado.";
+                });
+            } else {
+                info.innerText = "Geolocalización no soportada en este navegador.";
+            }
+        }
+    </script>
+    """.replace("__FILTRO__", filtro)
+    
+    st.components.v1.html(html_mapa, height=410)
+    st.markdown('</div>', unsafe_allow_html=True)
