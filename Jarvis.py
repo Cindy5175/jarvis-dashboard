@@ -81,7 +81,8 @@ textos_ui = {
         "proyectos": "🚀 Proyectos del Taller",
         "mapa": "🛰️ Radar GPS & Telemetría Móvil",
         "iot": "🤖 Domótica del Taller (IoT)",
-        "cronometro": "⏱️ Cuenta Regresiva Stark"
+        "cronometro": "⏱️ Cuenta Regresiva Stark",
+        "matrix": "💻 Cascada Matrix (Interactiva)"
     },
     "English 🇺🇸": {
         "titulo": "⚡ J.A.R.V.I.S. AUTONOMOUS AI ⚡",
@@ -96,7 +97,8 @@ textos_ui = {
         "proyectos": "🚀 Workshop Projects",
         "mapa": "🛰️ GPS Radar & Mobile Telemetry",
         "iot": "🤖 Workshop Smart Control (IoT)",
-        "cronometro": "⏱️ Stark Countdown"
+        "cronometro": "⏱️ Stark Countdown",
+        "matrix": "💻 Matrix Cascade (Interactive)"
     },
     "Français 🇫🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTONOME ⚡",
@@ -111,7 +113,8 @@ textos_ui = {
         "proyectos": "🚀 Projets d'Atelier",
         "mapa": "🛰️ Radar GPS & Télémétrie Mobile",
         "iot": "🤖 Domotique d'Atelier (IoT)",
-        "cronometro": "⏱️ Compte à rebours Stark"
+        "cronometro": "⏱️ Compte à rebours Stark",
+        "matrix": "💻 Cascade Matrix (Interactive)"
     },
     "Português 🇧🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTÔNOMA ⚡",
@@ -126,7 +129,8 @@ textos_ui = {
         "proyectos": "🚀 Projetos da Oficina",
         "mapa": "🛰️ Radar GPS e Telemetria Móvel",
         "iot": "🤖 Domótica da Oficina (IoT)",
-        "cronometro": "⏱️ Contagem Regressiva Stark"
+        "cronometro": "⏱️ Contagem Regressiva Stark",
+        "matrix": "💻 Cascata Matrix (Interativa)"
     }
 }
 
@@ -362,4 +366,172 @@ with col_c:
 
     for idx, msg in enumerate(st.session_state.msgs_j):
         with st.chat_message(msg["role"]):
-            st.markdown
+            st.markdown(msg["content"])
+            if msg["role"] == "assistant":
+                if st.button("🔊 Escuchar", key=f"v_j_{idx}"):
+                    emitir_voz(msg["content"], idioma)
+
+    if prompt := st.chat_input(t["input"]):
+        st.session_state.msgs_j.append({"role": "user", "content": prompt})
+        
+        texto_lower = prompt.lower().strip()
+        saludos = ["hola", "hello", "bonjour", "olá", "saludos", "buenas"]
+        preguntas_estado = ["cómo estás", "como estas", "how are you", "comment vas-tu", "estás despierto", "estas despierto"]
+        
+        if any(s in texto_lower for s in saludos):
+            if modo_sarcasmo:
+                resp = "Hola, Jefa. Qué milagro que se digna a saludarme y no solo a darme órdenes de última hora."
+            else:
+                resp = "¡Hola, Jefa! Estoy en línea, despierto y listo para asistirte en el taller."
+        elif any(p in texto_lower for p in preguntas_estado):
+            if modo_sarcasmo:
+                resp = "Operando al 100%, Jefa, esperando pacientemente a que rompa algo para que tenga que repararlo."
+            else:
+                resp = "¡Excelente, Jefa! Todos mis núcleos creativos operan de forma óptima y estoy completamente despierto."
+        else:
+            if modo_sarcasmo:
+                resp = f"Interesante consulta: '{prompt}'. Dejemos de lado las obviedades y pongámonos a trabajar en ello, ¿le parece?"
+            else:
+                if idioma == "English 🇺🇸":
+                    resp = f"Understood, Boss. Query processed: '{prompt}'."
+                elif idioma == "Français 🇫🇷":
+                    resp = f"Compris, Chef. Requête traitée : '{prompt}'."
+                elif idioma == "Português 🇧🇷":
+                    resp = f"Entendido, Chefe. Consulta processada: '{prompt}'."
+                else:
+                    resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'."
+
+        st.session_state.msgs_j.append({"role": "assistant", "content": resp})
+        emitir_voz(resp, idioma)
+        st.rerun()
+
+with col_d:
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["proyectos"])
+    nota_act = memoria_actual.get("nota_rapida", "")
+    n_nota = st.text_area("Metas y proyectos / Goals:", value=nota_act, height=100, key="nota_j")
+    
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        if st.button("💾 Guardar"):
+            memoria_actual["nota_rapida"] = n_nota
+            guardar_memoria(memoria_actual)
+            st.toast("✅ Actualizado / Updated.")
+    with col_b2:
+        st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 💻 Cascada Matrix Interactiva (Se detiene al mover el mouse o presionar una tecla)
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["matrix"])
+    matrix_html = """
+    <div style="background:#000; border:1px solid #00ff66; border-radius:6px; overflow:hidden; height:130px; position:relative;">
+        <canvas id="matrixCanvas" style="display:block; width:100%; height:100%;"></canvas>
+        <div id="matrix_status" style="position:absolute; bottom:2px; right:5px; color:#00ff66; font-family:monospace; font-size:9px; background:rgba(0,0,0,0.7); padding:2px 4px; border-radius:3px;">
+            ESTADO: ACTIVO (Mueve el mouse para pausar)
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('matrix_status');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        resizeCanvas();
+        window.onresize = resizeCanvas;
+
+        const chars = "01J.A.R.V.I.S.STARK_SYS_SECURE_MODE_ACTIVE_9876543210ABCDEF";
+        const fontSize = 11;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        let animating = true;
+
+        function drawMatrix() {
+            if (!animating) return;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        let matrixInterval = setInterval(drawMatrix, 35);
+
+        function stopMatrix() {
+            if (animating) {
+                animating = false;
+                clearInterval(matrixInterval);
+                statusEl.innerText = "ESTADO: PAUSADO (Interacción detectada)";
+                statusEl.style.color = "#ff0055";
+                canvas.style.opacity = "0.4";
+            }
+        }
+
+        // Eventos de interrupción por movimiento o teclado
+        window.addEventListener('mousemove', stopMatrix);
+        window.addEventListener('keydown', stopMatrix);
+        canvas.addEventListener('click', stopMatrix);
+    </script>
+    """
+    st.components.v1.html(matrix_html, height=145)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil (Enmarcado Completo)
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["mapa"])
+    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
+    filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
+    
+    html_mapa = """
+    <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; background:#000a12; padding:8px;">
+        <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:8px; text-align:center; font-weight:bold; text-shadow: 0px 0px 6px rgba(0,243,255,0.6);">
+            📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
+        </div>
+        <div style="width:100%; height:260px; filter:__FILTRO__; position:relative; margin-bottom:8px;">
+            <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
+        </div>
+        <button onclick="getLocation()" style="width:100%; background:#001324; color:#00f3ff; border:2px solid #00f3ff; border-radius:6px; padding:10px; cursor:pointer; font-family:monospace; font-size:12px; font-weight:bold; box-shadow: 0px 0px 10px rgba(0,243,255,0.6);">
+            📍 ACTIVAR RASTREO GPS SATELITAL
+        </button>
+    </div>
+    <script>
+        function getLocation() {
+            const info = document.getElementById("gps_info");
+            const frame = document.getElementById("map_frame");
+            if (navigator.geolocation) {
+                info.innerText = "Buscando satélites LEO y señal GPS...";
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0.0;
+                    info.innerText = "GPS Activo | Lat: " + lat.toFixed(4) + " Lon: " + lon.toFixed(4) + " | Vel: " + speed + " km/h";
+                    frame.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + (lon-0.02) + "%2C" + (lat-0.02) + "%2C" + (lon+0.02) + "%2C" + (lat+0.02) + "&layer=mapnik&marker=" + lat + "%2C" + lon;
+                }, () => {
+                    info.innerText = "Error: Permiso de ubicación denegado.";
+                });
+            } else {
+                info.innerText = "Geolocalización no soportada en este navegador.";
+            }
+        }
+    </script>
+    """.replace("__FILTRO__", filtro)
+    
+    st.components.v1.html(html_mapa, height=410)
+    st.markdown('</div>', unsafe_allow_html=True)
