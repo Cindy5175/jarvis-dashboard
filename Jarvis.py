@@ -62,9 +62,9 @@ urls_musica = {
 }
 
 if canal_musica != "Desactivado 🔇":
-    st.sidebar.components.v1.html(
-        f'<iframe width="100%" height="180" src="{urls_musica[canal_musica]}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-        height=190
+    st.components.v1.html(
+        f'<div style="background:#000a12; padding:5px; border-radius:8px; border:1px solid #00f3ff;"><iframe width="100%" height="160" src="{urls_musica[canal_musica]}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>',
+        height=180
     )
 
 textos_ui = {
