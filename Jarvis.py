@@ -28,7 +28,10 @@ def cargar_memoria():
             pass
     return {
         "bitacora": [{"Hora": datetime.now().strftime("%H:%M:%S"), "Evento": "JARVIS Inicializado", "Estado": "ÓPTIMO"}],
-        "nota_rapida": "Ideas de proyectos y notas del taller."
+        "nota_rapida": "Ideas de proyectos y notas del taller.",
+        "iot_luces": True,
+        "iot_monitores": True,
+        "iot_temp": 21
     }
 
 def guardar_memoria(datos):
@@ -40,10 +43,29 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Barra lateral: Idioma y Sarcasmo
+# Barra lateral: Idioma, Sarcasmo y 🎵 Stark Sound System
 st.sidebar.markdown("### 🌐 Configuración Neural")
 idioma = st.sidebar.selectbox("Idioma del Sistema:", ["Español 🇨🇱", "English 🇺🇸", "Français 🇫🇷", "Português 🇧🇷"])
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Tony Stark)", value=False)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🎵 Stark Sound System")
+canal_musica = st.sidebar.selectbox(
+    "Ambiente de Trabajo:",
+    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "Iron Man Soundtrack 🦾", "Desactivado 🔇"]
+)
+
+urls_musica = {
+    "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0",
+    "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0",
+    "Iron Man Soundtrack 🦾": "https://www.youtube.com/embed/S_E2EHVdeBU?autoplay=0"
+}
+
+if canal_musica != "Desactivado 🔇":
+    st.sidebar.components.v1.html(
+        f'<iframe width="100%" height="180" src="{urls_musica[canal_musica]}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
+        height=190
+    )
 
 textos_ui = {
     "Español 🇨🇱": {
@@ -56,7 +78,8 @@ textos_ui = {
         "rendimiento": "💻 Rendimiento CPU/RAM",
         "clima": "🌤️ Clima Buin (En Vivo)",
         "proyectos": "🚀 Proyectos del Taller",
-        "mapa": "🛰️ Satélite Serafín"
+        "mapa": "🛰️ Satélite Serafín",
+        "iot": "🤖 Domótica del Taller (IoT)"
     },
     "English 🇺🇸": {
         "titulo": "⚡ J.A.R.V.I.S. AUTONOMOUS AI ⚡",
@@ -68,7 +91,8 @@ textos_ui = {
         "rendimiento": "💻 CPU/RAM Performance",
         "clima": "🌤️ Buin Weather (Live)",
         "proyectos": "🚀 Workshop Projects",
-        "mapa": "🛰️ Seraphim Satellite"
+        "mapa": "🛰️ Seraphim Satellite",
+        "iot": "🤖 Workshop Smart Control (IoT)"
     },
     "Français 🇫🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTONOME ⚡",
@@ -80,7 +104,8 @@ textos_ui = {
         "rendimiento": "💻 Performance CPU/RAM",
         "clima": "🌤️ Météo Buin (En Direct)",
         "proyectos": "🚀 Projets d'Atelier",
-        "mapa": "🛰️ Satellite Séraphin"
+        "mapa": "🛰️ Satellite Séraphin",
+        "iot": "🤖 Domotique d'Atelier (IoT)"
     },
     "Português 🇧🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTÔNOMA ⚡",
@@ -92,13 +117,13 @@ textos_ui = {
         "rendimiento": "💻 Desempenho CPU/RAM",
         "clima": "🌤️ Clima Buin (Ao Vivo)",
         "proyectos": "🚀 Projetos da Oficina",
-        "mapa": "🛰️ Satélite Serafim"
+        "mapa": "🛰️ Satélite Serafim",
+        "iot": "🤖 Domótica da Oficina (IoT)"
     }
 }
 
 t = textos_ui[idioma]
 
-# Estilos CSS Neón Azul
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -227,15 +252,66 @@ with col_i:
         st.write("⚙️ **CPU:** `14%` | 🧠 **RAM:** `42%`")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # 🤖 5. Panel IoT / Domótica del Taller
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["iot"])
+    c1, c2 = st.columns(2)
+    with c1:
+        luces = st.toggle("💡 Escritorio", value=memoria_actual.get("iot_luces", True))
+    with c2:
+        monitores = st.toggle("🖥️ Monitores", value=memoria_actual.get("iot_monitores", True))
+    temp_amb = st.slider("🌡️ Climatización Taller (°C):", 16, 28, memoria_actual.get("iot_temp", 21))
+    
+    if luces != memoria_actual.get("iot_luces") or monitores != memoria_actual.get("iot_monitores") or temp_amb != memoria_actual.get("iot_temp"):
+        memoria_actual["iot_luces"] = luces
+        memoria_actual["iot_monitores"] = monitores
+        memoria_actual["iot_temp"] = temp_amb
+        guardar_memoria(memoria_actual)
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["clima"])
-    st.write("🌧️ **Estado:** Lluvia / Rain / Pluie")
+    st.write("🌧️ **Estado:** Lluvia / Rain")
     st.write("🌡️ **Temp:** 14°C")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
     st.subheader("💬 Consola Multilingüe // J.A.R.V.I.S.")
     
+    # 🎤 3. Activación por Voz Directa ("Escúchame, Jarvis")
+    st.markdown('<div class="card-tactica" style="padding: 10px !important;">', unsafe_allow_html=True)
+    st.markdown("🎤 **Entrada de Voz Directa:**")
+    st.components.v1.html("""
+    <div style="text-align:center;">
+        <button id="btn_voice" style="background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:sans-serif; width:100%;">
+            🎙️ Presionar para hablar a JARVIS
+        </button>
+        <p id="tx_voice" style="color:#80f9ff; font-size:12px; margin-top:5px; font-family:sans-serif;"></p>
+    </div>
+    <script>
+        const btn = document.getElementById('btn_voice');
+        const tx = document.getElementById('tx_voice');
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const rec = new SpeechRecognition();
+            rec.lang = 'es-ES';
+            btn.onclick = () => {
+                rec.start();
+                tx.innerText = "Escuchando en el taller...";
+            };
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                tx.innerText = "Reconocido: " + text;
+                navigator.clipboard.writeText(text);
+            };
+        } else {
+            tx.innerText = "Reconocimiento de voz no soportado en este navegador.";
+        }
+    </script>
+    """, height=85)
+    st.caption("💡 *Presiona el botón para dictar. El texto se copiará automáticamente al portapapeles.*")
+    st.markdown('</div>', unsafe_allow_html=True)
+
     if "msgs_j" not in st.session_state:
         st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
 
@@ -250,30 +326,25 @@ with col_c:
         st.session_state.msgs_j.append({"role": "user", "content": prompt})
         
         texto_lower = prompt.lower().strip()
+        saludos = ["hola", "hello", "bonjour", "olá", "saludos", "buenas"]
+        preguntas_estado = ["cómo estás", "como estas", "how are you", "comment vas-tu"]
         
-        # Reconocimiento conversacional de saludos y preguntas
-        if any(w in texto_lower for w in ["hola", "hello", "bonjour", "olá", "saludos"]):
-            if idioma == "English 🇺🇸":
-                resp = "Hello, Boss! I am online and ready to assist you."
-            elif idioma == "Français 🇫🇷":
-                resp = "Bonjour, Chef ! Je suis en ligne et prêt à vous aider."
-            elif idioma == "Português 🇧🇷":
-                resp = "Olá, Chefe! Estou online e pronto para ajudar."
+        if any(s in texto_lower for s in saludos):
+            if modo_sarcasmo:
+                resp = "Hola, Jefa. Espero que traiga tareas interesantes y no solo saludos de cortesía."
             else:
                 resp = "¡Hola, Jefa! Estoy en línea y listo para asistirte en el taller."
-                
-        elif any(w in texto_lower for w in ["cómo estás", "como estas", "how are you", "comment vas-tu"]):
-            resp = "¡Excelente, Jefa! Todos mis sistemas operan de manera óptima."
-            
+        elif any(p in texto_lower for p in preguntas_estado):
+            resp = "¡Excelente, Jefa! Todos mis núcleos creativos operan de forma óptima."
         else:
             if idioma == "English 🇺🇸":
-                resp = f"Understood, Boss. Query processed in English: '{prompt}'. Systems fully optimal."
+                resp = f"Understood, Boss. Query processed: '{prompt}'."
             elif idioma == "Français 🇫🇷":
-                resp = f"Compris, Chef. Requête traitée en français : '{prompt}'. Systèmes optimaux."
+                resp = f"Compris, Chef. Requête traitée : '{prompt}'."
             elif idioma == "Português 🇧🇷":
-                resp = f"Entendido, Chefe. Consulta processada em português: '{prompt}'. Sistemas operacionais."
+                resp = f"Entendido, Chefe. Consulta processada: '{prompt}'."
             else:
-                resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'. Sistemas al 100%."
+                resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'."
 
         st.session_state.msgs_j.append({"role": "assistant", "content": resp})
         emitir_voz(resp, idioma)
