@@ -389,13 +389,12 @@ with col_d:
     modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
     filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
     
-    # Componente con botón de geolocalización en vivo para rastreo fuera del taller
-    st.components.v1.html(f'''
+    html_mapa = """
     <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; background:#000a12; padding:5px;">
         <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:5px; text-align:center;">
             📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
         </div>
-        <div style="width:100%; aspect-ratio:1/1; filter:{filtro}; position:relative;">
+        <div style="width:100%; aspect-ratio:1/1; filter:__FILTRO__; position:relative;">
             <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
         </div>
         <button onclick="getLocation()" style="width:100%; margin-top:6px; background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:4px; padding:6px; cursor:pointer; font-family:monospace; font-size:11px;">
@@ -403,7 +402,7 @@ with col_d:
         </button>
     </div>
     <script>
-        function getLocation() {{
+        function getLocation() {
             const info = document.getElementById("gps_info");
             const frame = document.getElementById("map_frame");
             if (navigator.geolocation) {
@@ -420,7 +419,9 @@ with col_d:
             } else {
                 info.innerText = "Geolocalización no soportada en este navegador.";
             }
-        }}
+        }
     </script>
-    ''', height=310)
+    """.replace("__FILTRO__", filtro)
+    
+    st.components.v1.html(html_mapa, height=310)
     st.markdown('</div>', unsafe_allow_html=True)
