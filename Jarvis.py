@@ -53,13 +53,12 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Stark Sound System")
 canal_musica = st.sidebar.selectbox(
     "Ambiente de Trabajo:",
-    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "Iron Man Soundtrack 🦾", "Desactivado 🔇"]
+    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "Desactivado 🔇"]
 )
 
 urls_musica = {
     "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/watch?v=4xDzrJKXOOY",
-    "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/watch?v=jfKfPfyJRdk",
-    "Iron Man Soundtrack 🦾": "https://www.youtube.com/watch?v=7779JHZuugU"
+    "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 }
 
 if canal_musica != "Desactivado 🔇":
@@ -326,137 +325,4 @@ with col_c:
             st.rerun()
 
     st.markdown('<div class="card-tactica" style="padding: 10px !important;">', unsafe_allow_html=True)
-    st.markdown("🎤 **Entrada de Voz Directa:**")
-    st.components.v1.html("""
-    <div style="text-align:center;">
-        <button id="btn_voice" style="background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:sans-serif; width:100%;">
-            🎙️ Presionar para hablar a JARVIS
-        </button>
-        <p id="tx_voice" style="color:#80f9ff; font-size:12px; margin-top:5px; font-family:sans-serif;"></p>
-    </div>
-    <script>
-        const btn = document.getElementById('btn_voice');
-        const tx = document.getElementById('tx_voice');
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new SpeechRecognition();
-            rec.lang = 'es-ES';
-            btn.onclick = () => {
-                rec.start();
-                tx.innerText = "Escuchando en el taller...";
-            };
-            rec.onresult = (e) => {
-                const text = e.results[0][0].transcript;
-                tx.innerText = "Reconocido: " + text;
-                navigator.clipboard.writeText(text);
-            };
-        } else {
-            tx.innerText = "Reconocimiento de voz no soportado en este navegador.";
-        }
-    </script>
-    """, height=85)
-    st.caption("💡 *Presiona el botón para dictar. El texto se copiará automáticamente al portapapeles.*")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if "msgs_j" not in st.session_state:
-        st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
-
-    for idx, msg in enumerate(st.session_state.msgs_j):
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            if msg["role"] == "assistant":
-                if st.button("🔊 Escuchar", key=f"v_j_{idx}"):
-                    emitir_voz(msg["content"], idioma)
-
-    if prompt := st.chat_input(t["input"]):
-        st.session_state.msgs_j.append({"role": "user", "content": prompt})
-        
-        texto_lower = prompt.lower().strip()
-        saludos = ["hola", "hello", "bonjour", "olá", "saludos", "buenas"]
-        preguntas_estado = ["cómo estás", "como estas", "how are you", "comment vas-tu", "estás despierto", "estas despierto"]
-        
-        if any(s in texto_lower for s in saludos):
-            if modo_sarcasmo:
-                resp = "Hola, Jefa. Qué milagro que se digna a saludarme y no solo a darme órdenes de última hora."
-            else:
-                resp = "¡Hola, Jefa! Estoy en línea, despierto y listo para asistirte en el taller."
-        elif any(p in texto_lower for p in preguntas_estado):
-            if modo_sarcasmo:
-                resp = "Operando al 100%, Jefa, esperando pacientemente a que rompa algo para que tenga que repararlo."
-            else:
-                resp = "¡Excelente, Jefa! Todos mis núcleos creativos operan de forma óptima y estoy completamente despierto."
-        else:
-            if modo_sarcasmo:
-                resp = f"Interesante consulta: '{prompt}'. Dejemos de lado las obviedades y pongámonos a trabajar en ello, ¿le parece?"
-            else:
-                if idioma == "English 🇺🇸":
-                    resp = f"Understood, Boss. Query processed: '{prompt}'."
-                elif idioma == "Français 🇫🇷":
-                    resp = f"Compris, Chef. Requête traitée : '{prompt}'."
-                elif idioma == "Português 🇧🇷":
-                    resp = f"Entendido, Chefe. Consulta processada: '{prompt}'."
-                else:
-                    resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'."
-
-        st.session_state.msgs_j.append({"role": "assistant", "content": resp})
-        emitir_voz(resp, idioma)
-        st.rerun()
-
-with col_d:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["proyectos"])
-    nota_act = memoria_actual.get("nota_rapida", "")
-    n_nota = st.text_area("Metas y proyectos / Goals:", value=nota_act, height=100, key="nota_j")
-    
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        if st.button("💾 Guardar"):
-            memoria_actual["nota_rapida"] = n_nota
-            guardar_memoria(memoria_actual)
-            st.toast("✅ Actualizado / Updated.")
-    with col_b2:
-        st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil (Enmarcado Completo)
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["mapa"])
-    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
-    filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
-    
-    html_mapa = """
-    <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; background:#000a12; padding:8px;">
-        <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:8px; text-align:center; font-weight:bold; text-shadow: 0px 0px 6px rgba(0,243,255,0.6);">
-            📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
-        </div>
-        <div style="width:100%; height:260px; filter:__FILTRO__; position:relative; margin-bottom:8px;">
-            <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
-        </div>
-        <button onclick="getLocation()" style="width:100%; background:#001324; color:#00f3ff; border:2px solid #00f3ff; border-radius:6px; padding:10px; cursor:pointer; font-family:monospace; font-size:12px; font-weight:bold; box-shadow: 0px 0px 10px rgba(0,243,255,0.6);">
-            📍 ACTIVAR RASTREO GPS SATELITAL
-        </button>
-    </div>
-    <script>
-        function getLocation() {
-            const info = document.getElementById("gps_info");
-            const frame = document.getElementById("map_frame");
-            if (navigator.geolocation) {
-                info.innerText = "Buscando satélites LEO y señal GPS...";
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0.0;
-                    info.innerText = "GPS Activo | Lat: " + lat.toFixed(4) + " Lon: " + lon.toFixed(4) + " | Vel: " + speed + " km/h";
-                    frame.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + (lon-0.02) + "%2C" + (lat-0.02) + "%2C" + (lon+0.02) + "%2C" + (lat+0.02) + "&layer=mapnik&marker=" + lat + "%2C" + lon;
-                }, () => {
-                    info.innerText = "Error: Permiso de ubicación denegado.";
-                });
-            } else {
-                info.innerText = "Geolocalización no soportada en este navegador.";
-            }
-        }
-    </script>
-    """.replace("__FILTRO__", filtro)
-    
-    st.components.v1.html(html_mapa, height=410)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("🎤 **Entrada de Voz Directa
