@@ -44,7 +44,7 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Barra lateral: Idioma, Sarcasmo y Stark Sound System
+# Barra lateral: Idioma, Sarcasmo y Stark Sound System (Integrado directamente)
 st.sidebar.markdown("### 🌐 Configuración Neural")
 idioma = st.sidebar.selectbox("Idioma del Sistema:", ["Español 🇨🇱", "English 🇺🇸", "Français 🇫🇷", "Português 🇧🇷"])
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Tony Stark)", value=False)
@@ -53,18 +53,18 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Stark Sound System")
 canal_musica = st.sidebar.selectbox(
     "Ambiente de Trabajo:",
-    ["Synthwave / Cyberpunk 🌆", "Lo-Fi Beats / Focus ☕", "Desactivado 🔇"]
+    ["Synthwave / Cyberpunk 🌆", "Radio Lofi Hip Hop 📚", "Desactivado 🔇"]
 )
 
 urls_musica = {
-    "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/watch?v=4xDzrJKXOOY",
-    "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+    "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0",
+    "Radio Lofi Hip Hop 📚": "https://www.youtube.com/embed/cTTxesT4C0M?autoplay=0"
 }
 
 if canal_musica != "Desactivado 🔇":
-    st.sidebar.markdown(
-        f'<a href="{urls_musica[canal_musica]}" target="_blank" style="display:block; text-align:center; background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:6px; padding:10px; text-decoration:none; font-family:monospace; font-weight:bold; box-shadow: 0px 0px 8px rgba(0,243,255,0.4);">🎧 Abrir {canal_musica}</a>',
-        unsafe_allow_html=True
+    st.sidebar.components.v1.html(
+        f'<div style="background:#000a12; padding:5px; border-radius:8px; border:1px solid #00f3ff;"><iframe width="100%" height="160" src="{urls_musica[canal_musica]}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>',
+        height=180
     )
 
 textos_ui = {
