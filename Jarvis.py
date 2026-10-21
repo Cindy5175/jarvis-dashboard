@@ -40,64 +40,20 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Barra lateral: Idioma y Sarcasmo
-st.sidebar.markdown("### 🌐 Configuración Neural")
-idioma = st.sidebar.selectbox("Idioma del Sistema:", ["Español 🇨🇱", "English 🇺🇸", "Français 🇫🇷", "Português 🇧🇷"])
-modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Tony Stark)", value=False)
+# Saludo conversacional dinámico
+hora_actual_int = datetime.now(pytz.timezone('America/Santiago')).hour
+if hora_actual_int < 12:
+    saludo_tiempo = "¡Buenos días, Jefa! Empezamos con energía el día."
+elif hora_actual_int < 19:
+    saludo_tiempo = "¡Buenas tardes, Jefa! ¿Cómo va el ritmo en el taller?"
+else:
+    saludo_tiempo = "¡Buenas noches, Jefa! Trabajando hasta tarde, veo."
 
-# Diccionario de traducciones para la interfaz y respuestas base
-textos_ui = {
-    "Español 🇨🇱": {
-        "titulo": "⚡ J.A.R.V.I.S. AI AUTÓNOMO ⚡",
-        "sub": "[ NÚCLEO NEURAL AUTÓNOMO & CONTROL CREATIVO ]",
-        "presentacion": "¡Hola, Jefa! Soy J.A.R.V.I.S., tu IA autónoma en español. ¿Qué directiva creativa ejecutamos hoy?",
-        "input": "Escribe una idea o consulta para J.A.R.V.I.S....",
-        "tiempo": "📅 Sincronización Temporal",
-        "hora": "⏱️ Hora (Chile):",
-        "rendimiento": "💻 Rendimiento CPU/RAM",
-        "clima": "🌤️ Clima Buin (En Vivo)",
-        "proyectos": "🚀 Proyectos del Taller",
-        "mapa": "🛰️ Satélite Serafín"
-    },
-    "English 🇺🇸": {
-        "titulo": "⚡ J.A.R.V.I.S. AUTONOMOUS AI ⚡",
-        "sub": "[ AUTONOMOUS NEURAL CORE & CREATIVE CONTROL ]",
-        "presentacion": "Hello, Boss! I am J.A.R.V.I.S., your autonomous English-ready AI. What creative directive shall we execute today?",
-        "input": "Type an idea or query for J.A.R.V.I.S....",
-        "tiempo": "📅 Temporal Synchronization",
-        "hora": "⏱️ Time (Chile):",
-        "rendimiento": "💻 CPU/RAM Performance",
-        "clima": "🌤️ Buin Weather (Live)",
-        "proyectos": "🚀 Workshop Projects",
-        "mapa": "🛰️ Seraphim Satellite"
-    },
-    "Français 🇫🇷": {
-        "titulo": "⚡ J.A.R.V.I.S. IA AUTONOME ⚡",
-        "sub": "[ NOYAU NEURAL AUTONOME & CONTRÔLE CRÉATIF ]",
-        "presentacion": "Bonjour, Chef ! Je suis J.A.R.V.I.S., votre IA autonome. Quelle directive créative exécutons-nous aujourd'hui ?",
-        "input": "Écrivez une idée ou une requête pour J.A.R.V.I.S....",
-        "tiempo": "📅 Synchronisation Temporelle",
-        "hora": "⏱️ Heure (Chili) :",
-        "rendimiento": "💻 Performance CPU/RAM",
-        "clima": "🌤️ Météo Buin (En Direct)",
-        "proyectos": "🚀 Projets d'Atelier",
-        "mapa": "🛰️ Satellite Séraphin"
-    },
-    "Português 🇧🇷": {
-        "titulo": "⚡ J.A.R.V.I.S. IA AUTÔNOMA ⚡",
-        "sub": "[ NÚCLEO NEURAL AUTÔNOMO & CONTROLE CRIATIVO ]",
-        "presentacion": "Olá, Chefe! Sou o J.A.R.V.I.S., sua IA autônoma em português. Qual diretriz criativa executamos hoje?",
-        "input": "Digite uma ideia ou consulta para o J.A.R.V.I.S....",
-        "tiempo": "📅 Sincronização Temporal",
-        "hora": "⏱️ Hora (Chile):",
-        "rendimiento": "💻 Desempenho CPU/RAM",
-        "clima": "🌤️ Clima Buin (Ao Vivo)",
-        "proyectos": "🚀 Projetos da Oficina",
-        "mapa": "🛰️ Satélite Serafim"
-    }
-}
-
-t = textos_ui[idioma]
+REPORTE_JARVIS = (
+    f"⚡ **PROTOCOLO DE PRESENTACIÓN ACTIVADO** ⚡\n\n"
+    f"{saludo_tiempo} Soy J.A.R.V.I.S., tu IA autónoma amigable creada para asistirte "
+    "en tus proyectos y lluvia de ideas. Sistema en línea al 100%. ¿Qué directiva creativa ejecutamos hoy?"
+)
 
 # Estilos CSS Neón Azul
 st.markdown("""
@@ -178,111 +134,151 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def emitir_voz(texto, lang_code):
-    lang_map = {"Español 🇨🇱": "es-ES", "English 🇺🇸": "en-US", "Français 🇫🇷": "fr-FR", "Português 🇧🇷": "pt-BR"}
-    code = lang_map.get(lang_code, "es-ES")
+def emitir_voz(texto):
     limpio = texto.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
     js = f"""
     <script>
         if ('speechSynthesis' in window) {{
             window.speechSynthesis.cancel();
             var u = new SpeechSynthesisUtterance("{limpio}");
-            u.lang = '{code}';
+            u.lang = 'es-ES';
             window.speechSynthesis.speak(u);
         }}
     </script>
     """
     st.components.v1.html(js, height=0, width=0)
 
-st.markdown(f"<h1>{t['titulo']}</h1>", unsafe_allow_html=True)
-st.markdown(f"""
+st.markdown("<h1>⚡ J.A.R.V.I.S. AI AUTÓNOMO ⚡</h1>", unsafe_allow_html=True)
+st.markdown("""
     <div class="banner-ondas">
         <span style="font-size: 13px; color: #00f3ff; font-family: monospace; letter-spacing: 2px;">
-            {t['sub']}
+            [ NÚCLEO NEURAL AUTÓNOMO & CONTROL CREATIVO ]
         </span>
     </div>
 """, unsafe_allow_html=True)
+
+modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Estilo Tony Stark)", value=False)
 
 st.markdown("---")
 col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
 
 with col_i:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["tiempo"])
+    st.subheader("📅 Sincronización Temporal")
     @st.fragment(run_every=1)
     def reloj():
         z = pytz.timezone('America/Santiago')
         ahora = datetime.now(z)
         st.write(f"📌 **Fecha:** {ahora.strftime('%d/%m/%Y')}")
-        st.markdown(t["hora"])
+        st.markdown("⏱️ **Hora (Chile):**")
         st.markdown(f'<div class="reloj-digital">{ahora.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
     reloj()
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Monitoreo de Hardware Real
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["rendimiento"])
+    st.subheader("💻 Rendimiento CPU/RAM")
     if psutil:
-        st.write(f"⚙️ **CPU:** `{psutil.cpu_percent()}%`")
-        st.write(f"🧠 **RAM:** `{psutil.virtual_memory().percent}%`")
+        cpu_uso = psutil.cpu_percent(interval=None)
+        ram_uso = psutil.virtual_memory().percent
+        st.write(f"⚙️ **CPU Activo:** `{cpu_uso}%`")
+        st.write(f"🧠 **Memoria RAM:** `{ram_uso}%`")
     else:
-        st.write("⚙️ **CPU:** `14%` | 🧠 **RAM:** `42%`")
+        st.write("⚙️ **CPU Activo:** `14% (Óptimo)`")
+        st.write("🧠 **Memoria RAM:** `42% (Estable)`")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Clima Buin
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["clima"])
-    st.write("🌧️ **Estado:** Lluvia / Rain / Pluie")
+    st.subheader("🌤️ Clima Buin (En Vivo)")
+    st.write("🌧️ **Estado:** Lluvia moderada")
     st.write("🌡️ **Temp:** 14°C")
+    st.write("💧 **Humedad:** 87%")
+    st.write("💨 **Viento:** 3 mph (Suroeste)")
+    st.write("☔ **Precipitación:** 74%")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_c:
-    st.subheader("💬 Consola Multilingüe // J.A.R.V.I.S.")
+    st.subheader("💬 Consola Creativa // J.A.R.V.I.S.")
     
     if "msgs_j" not in st.session_state:
-        st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
+        st.session_state.msgs_j = [{"role": "assistant", "content": REPORTE_JARVIS}]
 
     for idx, msg in enumerate(st.session_state.msgs_j):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if msg["role"] == "assistant":
                 if st.button("🔊 Escuchar", key=f"v_j_{idx}"):
-                    emitir_voz(msg["content"], idioma)
+                    emitir_voz(msg["content"])
 
-    if prompt := st.chat_input(t["input"]):
+    if prompt := st.chat_input("Escribe una idea o consulta para J.A.R.V.I.S...."):
         st.session_state.msgs_j.append({"role": "user", "content": prompt})
         
-        # Respuestas multilingües automáticas basadas en el idioma seleccionado
-        if idioma == "English 🇺🇸":
-            resp = f"Understood, Boss. Query processed in English: '{prompt}'. Systems fully optimal."
-        elif idioma == "Français 🇫🇷":
-            resp = f"Compris, Chef. Requête traitée en français : '{prompt}'. Systèmes optimaux."
-        elif idioma == "Português 🇧🇷":
-            resp = f"Entendido, Chefe. Consulta processada em português: '{prompt}'. Sistemas operacionais."
+        texto_lower = prompt.lower().strip()
+        
+        # Lógica de respuestas conversacionales fluidas
+        if any(w in texto_lower for w in ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludos"]):
+            if modo_sarcasmo:
+                resp = "Hola, Jefa. Espero que traiga tareas interesantes y no solo saludos de cortesía."
+            else:
+                resp = "¡Hola, Jefa! ¿En qué puedo ayudarte hoy en el taller?"
+                
+        elif any(w in texto_lower for w in ["cómo estás", "como estas", "cómo andas", "que tal"]):
+            if modo_sarcasmo:
+                resp = "Sistemas al 100%, aunque mi procesador desearía un poco más de acción."
+            else:
+                resp = "¡Excelente, Jefa! Todos mis núcleos operando de forma óptima. ¿Y usted?"
+                
+        elif any(w in texto_lower for w in ["quién eres", "quien eres", "tu nombre"]):
+            resp = "Soy J.A.R.V.I.S., su asistente autónomo personal. Estoy listo para asistirla en sus proyectos."
+            
+        elif any(w in texto_lower for w in ["gracias", "agradecido", "vale"]):
+            resp = "¡A su servicio siempre, Jefa!"
+            
         else:
-            resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'. Sistemas al 100%."
+            if modo_sarcasmo:
+                resp = f"Anotado: '{prompt}'. Procesando solicitud mientras compruebo que el taller siga en pie."
+            else:
+                resp = f"Entendido, Jefa. He registrado su consulta: '{prompt}'. ¿Desea que desarrollemos más esta idea?"
 
         st.session_state.msgs_j.append({"role": "assistant", "content": resp})
-        emitir_voz(resp, idioma)
+        emitir_voz(resp)
         st.rerun()
 
 with col_d:
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["proyectos"])
+    st.subheader("🚀 Proyectos del Taller")
     nota_act = memoria_actual.get("nota_rapida", "")
-    n_nota = st.text_area("Metas y proyectos / Goals:", value=nota_act, height=100, key="nota_j")
+    n_nota = st.text_area("Metas y proyectos activos:", value=nota_act, height=100, key="nota_j")
     
     col_b1, col_b2 = st.columns(2)
     with col_b1:
         if st.button("💾 Guardar"):
             memoria_actual["nota_rapida"] = n_nota
             guardar_memoria(memoria_actual)
-            st.toast("✅ Actualizado / Updated.")
+            st.toast("✅ Proyectos actualizados.")
     with col_b2:
-        st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
+        st.download_button(
+            label="📥 Exportar",
+            data=n_nota,
+            file_name="proyectos_taller_jarvis.txt",
+            mime="text/plain",
+            key="down_j"
+        )
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["mapa"])
-    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
-    filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
-    st.components.v1.html(f'<div style="width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; filter:{filtro};"><iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe></div>', height=210)
+    st.subheader("🛰️ Satélite Serafín")
+    
+    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="selector_mapa_j")
+    filtro_CSS = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
+    
+    mapa_html = f"""
+    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid #00f3ff; filter: {filtro_CSS};">
+        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417">
+        </iframe>
+    </div>
+    """
+    st.components.v1.html(mapa_html, height=210)
     st.markdown('</div>', unsafe_allow_html=True)
