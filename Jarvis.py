@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import random
 import json
@@ -78,8 +78,9 @@ textos_ui = {
         "rendimiento": "💻 Rendimiento CPU/RAM",
         "clima": "🌤️ Clima Buin (En Vivo)",
         "proyectos": "🚀 Proyectos del Taller",
-        "mapa": "🛰️ Satélite Serafín",
-        "iot": "🤖 Domótica del Taller (IoT)"
+        "mapa": "🛰️ Radar GPS & Satélite",
+        "iot": "🤖 Domótica del Taller (IoT)",
+        "cronometro": "⏱️ Cuenta Regresiva Stark"
     },
     "English 🇺🇸": {
         "titulo": "⚡ J.A.R.V.I.S. AUTONOMOUS AI ⚡",
@@ -91,8 +92,9 @@ textos_ui = {
         "rendimiento": "💻 CPU/RAM Performance",
         "clima": "🌤️ Buin Weather (Live)",
         "proyectos": "🚀 Workshop Projects",
-        "mapa": "🛰️ Seraphim Satellite",
-        "iot": "🤖 Workshop Smart Control (IoT)"
+        "mapa": "🛰️ GPS Radar & Satellite",
+        "iot": "🤖 Workshop Smart Control (IoT)",
+        "cronometro": "⏱️ Stark Countdown"
     },
     "Français 🇫🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTONOME ⚡",
@@ -104,8 +106,9 @@ textos_ui = {
         "rendimiento": "💻 Performance CPU/RAM",
         "clima": "🌤️ Météo Buin (En Direct)",
         "proyectos": "🚀 Projets d'Atelier",
-        "mapa": "🛰️ Satellite Séraphin",
-        "iot": "🤖 Domotique d'Atelier (IoT)"
+        "mapa": "🛰️ Radar GPS & Satellite",
+        "iot": "🤖 Domotique d'Atelier (IoT)",
+        "cronometro": "⏱️ Compte à rebours Stark"
     },
     "Português 🇧🇷": {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTÔNOMA ⚡",
@@ -117,8 +120,9 @@ textos_ui = {
         "rendimiento": "💻 Desempenho CPU/RAM",
         "clima": "🌤️ Clima Buin (Ao Vivo)",
         "proyectos": "🚀 Projetos da Oficina",
-        "mapa": "🛰️ Satélite Serafim",
-        "iot": "🤖 Domótica da Oficina (IoT)"
+        "mapa": "🛰️ Radar GPS & Satélite",
+        "iot": "🤖 Domótica da Oficina (IoT)",
+        "cronometro": "⏱️ Contagem Regressiva Stark"
     }
 }
 
@@ -267,6 +271,15 @@ with col_i:
         guardar_memoria(memoria_actual)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # ⏱️ LOCURA JARVIS 1: Cuenta Regresiva Stark (Cronómetro Táctico)
+    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
+    st.subheader(t["cronometro"])
+    min_sel = st.slider("Minutos de Tarea:", 1, 60, 15, key="stark_timer")
+    if st.button("🚀 Iniciar Cuenta Regresiva"):
+        st.toast(f"⏱️ Alarma programada para {min_sel} minutos.")
+    st.markdown(f'<div class="reloj-digital">00:{min_sel:02d}:00 (ACTIVO)</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["clima"])
     st.write("🌧️ **Estado:** Lluvia / Rain")
@@ -370,9 +383,17 @@ with col_d:
         st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # 🛰️ LOCURA JARVIS 2: Radar GPS / Geoposicionamiento Buin
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["mapa"])
     modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
     filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
-    st.components.v1.html(f'<div style="width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; filter:{filtro};"><iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe></div>', height=210)
+    st.components.v1.html(f'''
+    <div style="width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; filter:{filtro}; position:relative;">
+        <iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
+        <div style="position:absolute; bottom:5px; left:5px; background:rgba(0,0,0,0.8); color:#00f3ff; font-family:monospace; font-size:10px; padding:3px 6px; border:1px solid #00f3ff; border-radius:4px;">
+            GPS: -33.7333, -70.7417 (Buin, CL)
+        </div>
+    </div>
+    ''', height=210)
     st.markdown('</div>', unsafe_allow_html=True)
