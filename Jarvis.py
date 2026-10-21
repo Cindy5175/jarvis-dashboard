@@ -44,7 +44,7 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Barra lateral: Idioma, Sarcasmo y Stark Sound System (Integrado directamente)
+# Barra lateral: Idioma, Sarcasmo y Stark Sound System
 st.sidebar.markdown("### 🌐 Configuración Neural")
 idioma = st.sidebar.selectbox("Idioma del Sistema:", ["Español 🇨🇱", "English 🇺🇸", "Français 🇫🇷", "Português 🇧🇷"])
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Tony Stark)", value=False)
