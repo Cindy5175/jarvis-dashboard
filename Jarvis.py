@@ -325,4 +325,41 @@ with col_c:
             st.rerun()
 
     st.markdown('<div class="card-tactica" style="padding: 10px !important;">', unsafe_allow_html=True)
-    st.markdown("🎤 **Entrada de Voz Directa
+    st.markdown("🎤 **Entrada de Voz Directa:**")
+    st.components.v1.html("""
+    <div style="text-align:center;">
+        <button id="btn_voice" style="background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:sans-serif; width:100%;">
+            🎙️ Presionar para hablar a JARVIS
+        </button>
+        <p id="tx_voice" style="color:#80f9ff; font-size:12px; margin-top:5px; font-family:sans-serif;"></p>
+    </div>
+    <script>
+        const btn = document.getElementById('btn_voice');
+        const tx = document.getElementById('tx_voice');
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const rec = new SpeechRecognition();
+            rec.lang = 'es-ES';
+            btn.onclick = () => {
+                rec.start();
+                tx.innerText = "Escuchando en el taller...";
+            };
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                tx.innerText = "Reconocido: " + text;
+                navigator.clipboard.writeText(text);
+            };
+        } else {
+            tx.innerText = "Reconocimiento de voz no soportado en este navegador.";
+        }
+    </script>
+    """, height=85)
+    st.caption("💡 *Presiona el botón para dictar. El texto se copiará automáticamente al portapapeles.*")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if "msgs_j" not in st.session_state:
+        st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
+
+    for idx, msg in enumerate(st.session_state.msgs_j):
+        with st.chat_message(msg["role"]):
+            st.markdown
