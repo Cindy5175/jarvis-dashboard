@@ -78,7 +78,7 @@ textos_ui = {
         "rendimiento": "💻 Rendimiento CPU/RAM",
         "clima": "🌤️ Clima Buin (En Vivo)",
         "proyectos": "🚀 Proyectos del Taller",
-        "mapa": "🛰️ Radar GPS & Satélite",
+        "mapa": "🛰️ Radar GPS & Telemetría Móvil",
         "iot": "🤖 Domótica del Taller (IoT)",
         "cronometro": "⏱️ Cuenta Regresiva Stark"
     },
@@ -92,7 +92,7 @@ textos_ui = {
         "rendimiento": "💻 CPU/RAM Performance",
         "clima": "🌤️ Buin Weather (Live)",
         "proyectos": "🚀 Workshop Projects",
-        "mapa": "🛰️ GPS Radar & Satellite",
+        "mapa": "🛰️ GPS Radar & Mobile Telemetry",
         "iot": "🤖 Workshop Smart Control (IoT)",
         "cronometro": "⏱️ Stark Countdown"
     },
@@ -106,7 +106,7 @@ textos_ui = {
         "rendimiento": "💻 Performance CPU/RAM",
         "clima": "🌤️ Météo Buin (En Direct)",
         "proyectos": "🚀 Projets d'Atelier",
-        "mapa": "🛰️ Radar GPS & Satellite",
+        "mapa": "🛰️ Radar GPS & Télémétrie Mobile",
         "iot": "🤖 Domotique d'Atelier (IoT)",
         "cronometro": "⏱️ Compte à rebours Stark"
     },
@@ -120,7 +120,7 @@ textos_ui = {
         "rendimiento": "💻 Desempenho CPU/RAM",
         "clima": "🌤️ Clima Buin (Ao Vivo)",
         "proyectos": "🚀 Projetos da Oficina",
-        "mapa": "🛰️ Radar GPS & Satélite",
+        "mapa": "🛰️ Radar GPS e Telemetria Móvel",
         "iot": "🤖 Domótica da Oficina (IoT)",
         "cronometro": "⏱️ Contagem Regressiva Stark"
     }
@@ -271,7 +271,7 @@ with col_i:
         guardar_memoria(memoria_actual)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ⏱️ LOCURA JARVIS 1: Cuenta Regresiva Stark (Cronómetro Táctico)
+    # ⏱️ Cuenta Regresiva Stark
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["cronometro"])
     min_sel = st.slider("Minutos de Tarea:", 1, 60, 15, key="stark_timer")
@@ -383,17 +383,44 @@ with col_d:
         st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 🛰️ LOCURA JARVIS 2: Radar GPS / Geoposicionamiento Buin
+    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["mapa"])
     modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
     filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
+    
+    # Componente con botón de geolocalización en vivo para rastreo fuera del taller
     st.components.v1.html(f'''
-    <div style="width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; filter:{filtro}; position:relative;">
-        <iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
-        <div style="position:absolute; bottom:5px; left:5px; background:rgba(0,0,0,0.8); color:#00f3ff; font-family:monospace; font-size:10px; padding:3px 6px; border:1px solid #00f3ff; border-radius:4px;">
-            GPS: -33.7333, -70.7417 (Buin, CL)
+    <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; background:#000a12; padding:5px;">
+        <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:5px; text-align:center;">
+            📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
         </div>
+        <div style="width:100%; aspect-ratio:1/1; filter:{filtro}; position:relative;">
+            <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
+        </div>
+        <button onclick="getLocation()" style="width:100%; margin-top:6px; background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:4px; padding:6px; cursor:pointer; font-family:monospace; font-size:11px;">
+            📍 Activar Rastreo GPS Satelital (Fuera del Taller)
+        </button>
     </div>
-    ''', height=210)
+    <script>
+        function getLocation() {{
+            const info = document.getElementById("gps_info");
+            const frame = document.getElementById("map_frame");
+            if (navigator.geolocation) {
+                info.innerText = "Buscando satélites LEO y señal GPS...";
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0.0;
+                    info.innerText = "GPS Activo | Lat: " + lat.toFixed(4) + " Lon: " + lon.toFixed(4) + " | Vel: " + speed + " km/h";
+                    frame.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + (lon-0.02) + "%2C" + (lat-0.02) + "%2C" + (lon+0.02) + "%2C" + (lat+0.02) + "&layer=mapnik&marker=" + lat + "%2C" + lon;
+                }, () => {
+                    info.innerText = "Error: Permiso de ubicación denegado.";
+                });
+            } else {
+                info.innerText = "Geolocalización no soportada en este navegador.";
+            }
+        }}
+    </script>
+    ''', height=310)
     st.markdown('</div>', unsafe_allow_html=True)
