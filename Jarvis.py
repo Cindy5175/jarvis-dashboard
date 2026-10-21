@@ -43,7 +43,7 @@ def guardar_memoria(datos):
 
 memoria_actual = cargar_memoria()
 
-# Barra lateral: Idioma, Sarcasmo y Stark Sound System
+# Barra lateral: Idioma, Sarcasmo y Stark Sound System (Enlazado a tu Synthwave)
 st.sidebar.markdown("### 🌐 Configuración Neural")
 idioma = st.sidebar.selectbox("Idioma del Sistema:", ["Español 🇨🇱", "English 🇺🇸", "Français 🇫🇷", "Português 🇧🇷"])
 modo_sarcasmo = st.sidebar.toggle("⚡ Activar Modo Sarcasmo (Tony Stark)", value=False)
@@ -56,7 +56,7 @@ canal_musica = st.sidebar.selectbox(
 )
 
 urls_musica = {
-    "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=0",
+    "Synthwave / Cyberpunk 🌆": "https://www.youtube.com/embed/cTTxesT4C0M?autoplay=0",
     "Lo-Fi Beats / Focus ☕": "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0",
     "Iron Man Soundtrack 🦾": "https://www.youtube.com/embed/S_E2EHVdeBU?autoplay=0"
 }
@@ -196,184 +196,4 @@ st.markdown("""
         width: 100%;
     }
     .stButton>button:hover {
-        background-color: #00f3ff !important;
-        color: #000000 !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-def emitir_voz(texto, lang_code):
-    lang_map = {"Español 🇨🇱": "es-ES", "English 🇺🇸": "en-US", "Français 🇫🇷": "fr-FR", "Português 🇧🇷": "pt-BR"}
-    code = lang_map.get(lang_code, "es-ES")
-    limpio = texto.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
-    js = f"""
-    <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance("{limpio}");
-            u.lang = '{code}';
-            window.speechSynthesis.speak(u);
-        }}
-    </script>
-    """
-    st.components.v1.html(js, height=0, width=0)
-
-st.markdown(f"<h1>{t['titulo']}</h1>", unsafe_allow_html=True)
-st.markdown(f"""
-    <div class="banner-ondas">
-        <span style="font-size: 13px; color: #00f3ff; font-family: monospace; letter-spacing: 2px;">
-            {t['sub']}
-        </span>
-    </div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
-col_i, col_c, col_d = st.columns([1.1, 2.2, 1.1])
-
-with col_i:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["tiempo"])
-    @st.fragment(run_every=1)
-    def reloj():
-        z = pytz.timezone('America/Santiago')
-        ahora = datetime.now(z)
-        st.write(f"📌 **Fecha:** {ahora.strftime('%d/%m/%Y')}")
-        st.markdown(t["hora"])
-        st.markdown(f'<div class="reloj-digital">{ahora.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
-    reloj()
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["rendimiento"])
-    if psutil:
-        st.write(f"⚙️ **CPU:** `{psutil.cpu_percent()}%`")
-        st.write(f"🧠 **RAM:** `{psutil.virtual_memory().percent}%`")
-    else:
-        st.write("⚙️ **CPU:** `14%` | 🧠 **RAM:** `42%`")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["iot"])
-    c1, c2 = st.columns(2)
-    with c1:
-        luces = st.toggle("💡 Escritorio", value=memoria_actual.get("iot_luces", True))
-    with c2:
-        monitores = st.toggle("🖥️ Monitores", value=memoria_actual.get("iot_monitores", True))
-    temp_amb = st.slider("🌡️ Climatización Taller (°C):", 16, 28, memoria_actual.get("iot_temp", 21))
-    
-    if luces != memoria_actual.get("iot_luces") or monitores != memoria_actual.get("iot_monitores") or temp_amb != memoria_actual.get("iot_temp"):
-        memoria_actual["iot_luces"] = luces
-        memoria_actual["iot_monitores"] = monitores
-        memoria_actual["iot_temp"] = temp_amb
-        guardar_memoria(memoria_actual)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["clima"])
-    st.write("🌧️ **Estado:** Lluvia / Rain")
-    st.write("🌡️ **Temp:** 14°C")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_c:
-    col_titulo, col_purga = st.columns([3, 1])
-    with col_titulo:
-        st.subheader("💬 Consola // J.A.R.V.I.S.")
-    with col_purga:
-        if st.button("🗑️ Purgar", key="purga_j", help="Limpiar historial de chat"):
-            st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
-            st.toast("🧹 Consola purgada con éxito.")
-            st.rerun()
-
-    st.markdown('<div class="card-tactica" style="padding: 10px !important;">', unsafe_allow_html=True)
-    st.markdown("🎤 **Entrada de Voz Directa:**")
-    st.components.v1.html("""
-    <div style="text-align:center;">
-        <button id="btn_voice" style="background:#000a12; color:#00f3ff; border:1px solid #00f3ff; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:sans-serif; width:100%;">
-            🎙️ Presionar para hablar a JARVIS
-        </button>
-        <p id="tx_voice" style="color:#80f9ff; font-size:12px; margin-top:5px; font-family:sans-serif;"></p>
-    </div>
-    <script>
-        const btn = document.getElementById('btn_voice');
-        const tx = document.getElementById('tx_voice');
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new SpeechRecognition();
-            rec.lang = 'es-ES';
-            btn.onclick = () => {
-                rec.start();
-                tx.innerText = "Escuchando en el taller...";
-            };
-            rec.onresult = (e) => {
-                const text = e.results[0][0].transcript;
-                tx.innerText = "Reconocido: " + text;
-                navigator.clipboard.writeText(text);
-            };
-        } else {
-            tx.innerText = "Reconocimiento de voz no soportado en este navegador.";
-        }
-    </script>
-    """, height=85)
-    st.caption("💡 *Presiona el botón para dictar. El texto se copiará automáticamente al portapapeles.*")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if "msgs_j" not in st.session_state:
-        st.session_state.msgs_j = [{"role": "assistant", "content": t["presentacion"]}]
-
-    for idx, msg in enumerate(st.session_state.msgs_j):
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            if msg["role"] == "assistant":
-                if st.button("🔊 Escuchar", key=f"v_j_{idx}"):
-                    emitir_voz(msg["content"], idioma)
-
-    if prompt := st.chat_input(t["input"]):
-        st.session_state.msgs_j.append({"role": "user", "content": prompt})
-        
-        texto_lower = prompt.lower().strip()
-        saludos = ["hola", "hello", "bonjour", "olá", "saludos", "buenas"]
-        preguntas_estado = ["cómo estás", "como estas", "how are you", "comment vas-tu"]
-        
-        if any(s in texto_lower for s in saludos):
-            if modo_sarcasmo:
-                resp = "Hola, Jefa. Espero que traiga tareas interesantes y no solo saludos de cortesía."
-            else:
-                resp = "¡Hola, Jefa! Estoy en línea y listo para asistirte en el taller."
-        elif any(p in texto_lower for p in preguntas_estado):
-            resp = "¡Excelente, Jefa! Todos mis núcleos creativos operan de forma óptima."
-        else:
-            if idioma == "English 🇺🇸":
-                resp = f"Understood, Boss. Query processed: '{prompt}'."
-            elif idioma == "Français 🇫🇷":
-                resp = f"Compris, Chef. Requête traitée : '{prompt}'."
-            elif idioma == "Português 🇧🇷":
-                resp = f"Entendido, Chefe. Consulta processada: '{prompt}'."
-            else:
-                resp = f"Entendido, Jefa. Consulta procesada: '{prompt}'."
-
-        st.session_state.msgs_j.append({"role": "assistant", "content": resp})
-        emitir_voz(resp, idioma)
-        st.rerun()
-
-with col_d:
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["proyectos"])
-    nota_act = memoria_actual.get("nota_rapida", "")
-    n_nota = st.text_area("Metas y proyectos / Goals:", value=nota_act, height=100, key="nota_j")
-    
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        if st.button("💾 Guardar"):
-            memoria_actual["nota_rapida"] = n_nota
-            guardar_memoria(memoria_actual)
-            st.toast("✅ Actualizado / Updated.")
-    with col_b2:
-        st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
-    st.subheader(t["mapa"])
-    modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
-    filtro = "invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)" if modo_mapa == "🌙 Noche" else "none"
-    st.components.v1.html(f'<div style="width:100%; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid #00f3ff; filter:{filtro};"><iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe></div>', height=210)
-    st.markdown('</div>', unsafe_allow_html=True)
+        background-color
