@@ -120,7 +120,7 @@ textos_ui = {
         "titulo": "⚡ J.A.R.V.I.S. IA AUTÔNOMA ⚡",
         "sub": "[ NÚCLEO NEURAL AUTÔNOMO & CONTROLE CRIATIVO ]",
         "presentacion": "Olá, Chefe! Sou o J.A.R.V.I.S., sua IA autônoma em português. Qual diretriz criativa executamos hoje?",
-        "input": "Digite uma ideia ou consulta para o J.A.R.V.I.S....",
+        "input": "Digite uma consulta para o J.A.R.V.I.S....",
         "tiempo": "📅 Sincronização Temporal",
         "hora": "⏱️ Hora (Chile):",
         "rendimiento": "💻 Desempenho CPU/RAM",
@@ -421,14 +421,19 @@ with col_d:
         st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 💻 Cascada Matrix Interactiva (Se detiene al mover el mouse o presionar una tecla)
+    # 💻 Cascada Matrix Interactiva (Controlada por Botón Interno)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["matrix"])
     matrix_html = """
-    <div style="background:#000; border:1px solid #00ff66; border-radius:6px; overflow:hidden; height:130px; position:relative;">
-        <canvas id="matrixCanvas" style="display:block; width:100%; height:100%;"></canvas>
-        <div id="matrix_status" style="position:absolute; bottom:2px; right:5px; color:#00ff66; font-family:monospace; font-size:9px; background:rgba(0,0,0,0.7); padding:2px 4px; border-radius:3px;">
-            ESTADO: ACTIVO (Mueve el mouse para pausar)
+    <div style="background:#000; border:1px solid #00ff66; border-radius:6px; overflow:hidden; height:140px; position:relative;">
+        <canvas id="matrixCanvas" style="display:block; width:100%; height:110px;"></canvas>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#001105; padding:4px 8px; border-top:1px solid #00ff66;">
+            <div id="matrix_status" style="color:#00ff66; font-family:monospace; font-size:9px;">
+                ESTADO: ACTIVO
+            </div>
+            <button onclick="toggleMatrix()" style="background:#00ff66; color:#000; border:none; border-radius:3px; padding:2px 8px; font-family:monospace; font-size:9px; font-weight:bold; cursor:pointer;">
+                [ PAUSAR / REINICIAR ]
+            </button>
         </div>
     </div>
     <script>
@@ -438,7 +443,7 @@ with col_d:
 
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
+            canvas.height = 110;
         }
         resizeCanvas();
         window.onresize = resizeCanvas;
@@ -474,23 +479,24 @@ with col_d:
 
         let matrixInterval = setInterval(drawMatrix, 35);
 
-        function stopMatrix() {
+        function toggleMatrix() {
             if (animating) {
                 animating = false;
                 clearInterval(matrixInterval);
-                statusEl.innerText = "ESTADO: PAUSADO (Interacción detectada)";
+                statusEl.innerText = "ESTADO: PAUSADO";
                 statusEl.style.color = "#ff0055";
                 canvas.style.opacity = "0.4";
+            } else {
+                animating = true;
+                matrixInterval = setInterval(drawMatrix, 35);
+                statusEl.innerText = "ESTADO: ACTIVO";
+                statusEl.style.color = "#00ff66";
+                canvas.style.opacity = "1";
             }
         }
-
-        // Eventos de interrupción por movimiento o teclado
-        window.addEventListener('mousemove', stopMatrix);
-        window.addEventListener('keydown', stopMatrix);
-        canvas.addEventListener('click', stopMatrix);
     </script>
     """
-    st.components.v1.html(matrix_html, height=145)
+    st.components.v1.html(matrix_html, height=155)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil (Enmarcado Completo)
