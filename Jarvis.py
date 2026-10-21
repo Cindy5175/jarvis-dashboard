@@ -383,7 +383,7 @@ with col_d:
         st.download_button(label="📥 Exportar", data=n_nota, file_name="jarvis_data.txt", mime="text/plain", key="down_j")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil (Optimizado y Azul Visible)
+    # 🛰️ Radar GPS con Telemetría de Movimiento en Vivo y Geolocalización Móvil (Enmarcado Completo y Optimizado)
     st.markdown('<div class="card-tactica">', unsafe_allow_html=True)
     st.subheader(t["mapa"])
     modo_mapa = st.radio("Espectro:", ["☀️ Día", "🌙 Noche"], horizontal=True, key="mapa_j")
@@ -394,7 +394,7 @@ with col_d:
         <div id="gps_info" style="color:#00f3ff; font-family:monospace; font-size:11px; margin-bottom:8px; text-align:center; font-weight:bold; text-shadow: 0px 0px 6px rgba(0,243,255,0.6);">
             📡 Satélite Serafín: Enlace Buin (Fijo) | Vel: 0 km/h
         </div>
-        <div style="width:100%; aspect-ratio:1/1; filter:__FILTRO__; position:relative; margin-bottom:8px;">
+        <div style="width:100%; height:260px; filter:__FILTRO__; position:relative; margin-bottom:8px;">
             <iframe id="map_frame" width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-70.7833%2C-33.7733%2C-70.7033%2C-33.6933&amp;layer=mapnik&amp;marker=-33.7333%2C-70.7417"></iframe>
         </div>
         <button onclick="getLocation()" style="width:100%; background:#001324; color:#00f3ff; border:2px solid #00f3ff; border-radius:6px; padding:10px; cursor:pointer; font-family:monospace; font-size:12px; font-weight:bold; box-shadow: 0px 0px 10px rgba(0,243,255,0.6);">
@@ -423,5 +423,5 @@ with col_d:
     </script>
     """.replace("__FILTRO__", filtro)
     
-    st.components.v1.html(html_mapa, height=350)
+    st.components.v1.html(html_mapa, height=410)
     st.markdown('</div>', unsafe_allow_html=True)
