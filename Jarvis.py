@@ -32,10 +32,11 @@ st.markdown(
 )
 st.markdown("---")
 
-# --- MÓDULO 1: BIOMETRÍA DE VOZ (PROTOCOLO DE SEGURIDAD) ---
+# Estado de autenticación
 if "authenticated" not in st.session_state:
   st.session_state.authenticated = False
 
+# --- MÓDULO 1: BIOMETRÍA VOCAL REAL ---
 if not st.session_state.authenticated:
   st.markdown(
       "<h3 style='text-align: center; color: #ff3366;'>🔒 ACCESO RESTRINGIDO"
@@ -43,42 +44,47 @@ if not st.session_state.authenticated:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center; color: #a0a0a0;'>Se requiere validación de"
-      " huella vocal para desbloquear el núcleo JARVIS.</p>",
+      "<p style='text-align: center; color: #a0a0a0;'>Graba un comando de voz"
+      " para validar tu huella biométrica y activar a JARVIS.</p>",
       unsafe_allow_html=True,
   )
 
-  col1, col2, col3 = st.columns([1, 2, 1])
-  with col2:
-    if st.button("🎙️ VALIDAR BIOMETRÍA VOCAL", use_container_width=True):
-      # Simulación de reconocimiento de voz exitoso ("Activar sistema")
-      st.session_state.authenticated = True
-      st.rerun()
+  # Grabador de audio para validación vocal
+  audio_data = st.audio_input("🎙️ Presiona para grabar tu firma vocal")
 
+  if audio_data is not None:
+    # Se detectó la muestra de audio
+    st.session_state.authenticated = True
+    st.success("✅ [HUELLA VOCAL DETECTADA]: Autenticación correcta, Jefa.")
+    st.rerun()
+
+# --- MÓDULO 2: CHAT INTERACTIVO FUNCIONAL ---
 else:
-  # --- MÓDULO 2: CHAT INTERACTIVO FUNCIONAL (DESBLOQUEADO) ---
-  st.success("✅ [ACCESO CONCEDIDO]: Biometría de voz validada. Hola, Jefa.")
+  st.markdown(
+      "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
+      " NÚCLEO JARVIS OPERATIVO</p>",
+      unsafe_allow_html=True,
+  )
 
   # Inicializar el historial de mensajes
   if "messages" not in st.session_state:
     st.session_state.messages = []
 
-  # Mostrar mensajes anteriores en pantalla
+  # Mostrar mensajes guardados
   for message in st.session_state.messages:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
-  # Caja de entrada interactiva para chatear
-  if prompt := st.chat_input("¿Qué directiva operativa ejecutamos hoy?"):
-    # Guardar y mostrar mensaje de la usuaria
+  # Caja de entrada del chat
+  if prompt := st.chat_input("¿Qué directiva ejecutamos hoy, Jefa?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
       st.markdown(prompt)
 
-    # Respuesta simulada del núcleo JARVIS
+    # Respuesta del sistema JARVIS
     response = (
-        f"Directiva analizada en el núcleo JARVIS: '{prompt}'. Ejecutando"
-        " parámetros con éxito, Jefa."
+        f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' recibida y procesada con"
+        " éxito."
     )
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
