@@ -77,10 +77,20 @@ else:
     with st.chat_message("user"):
       st.markdown(prompt)
 
-    response = (
-        f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' recibida y procesada con"
-        " éxito."
-    )
+    # Lógica de respuesta personalizada para JARVIS
+    prompt_lower = prompt.lower().strip()
+    if (
+        "despierto" in prompt_lower
+        or "estas despierto" in prompt_lower
+        or "despierta" in prompt_lower
+    ):
+      response = "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre."
+    else:
+      response = (
+          f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' recibida y procesada"
+          " con éxito."
+      )
+
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
       st.markdown(response)
