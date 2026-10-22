@@ -1,3 +1,4 @@
+import google.generativeai as genai
 import streamlit as st
 
 # Configuración de la página
@@ -32,7 +33,24 @@ st.markdown(
 )
 st.markdown("---")
 
-# Estado de autenticación y mensaje inicial de activación
+# Configurar el modelo de Inteligencia Artificial mediante Secrets
+try:
+  api_key = st.secrets["GEMINI_API_KEY"]
+  genai.configure(api_key=api_key)
+  model = genai.GenerativeModel(
+      model_name="gemini-1.5-flash",
+      system_instruction=(
+          "Eres J.A.R.V.I.S., la inteligencia artificial avanzada del taller"
+          " Stark. Te diriges a la usuaria como 'señorita' o 'Jefa'. Eres"
+          " sumamente educado, elegante, eficiente y leal. Respondes con datos"
+          " precisos e inteligencia real a cualquier consulta (clima,"
+          " información, ciencia, tareas)."
+      ),
+  )
+except Exception:
+  model = None
+
+# Estado de autenticación e historial
 if "authenticated" not in st.session_state:
   st.session_state.authenticated = False
 if "messages" not in st.session_state:
@@ -57,7 +75,6 @@ if not st.session_state.authenticated:
   if audio_data is not None:
     st.session_state.authenticated = True
 
-    # Guardar el intercambio inicial en el historial del chat
     st.session_state.messages.append(
         {"role": "user", "content": "🎙️ [Comando Vocal]: Jarvis, ¿estás despierto?"}
     )
@@ -69,7 +86,7 @@ if not st.session_state.authenticated:
     st.success("✅ [HUELLA VOCAL DETECTADA]: Autenticación biométrica correcta.")
     st.rerun()
 
-# --- MÓDULO 2: CHAT INTERACTIVO DESBLOQUEADO ---
+# --- MÓDULO 2: SUPER IA Y CHAT INTERACTIVO ---
 else:
   st.markdown(
       "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
@@ -77,28 +94,42 @@ else:
       unsafe_allow_html=True,
   )
 
-  # Mostrar todo el historial de conversación (incluyendo la respuesta de bienvenida)
+  # Mostrar el historial de la conversación
   for message in st.session_state.messages:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
-  # Entrada para continuar conversando por escrito
+  # Entrada para interactuar con la Super IA
   if prompt := st.chat_input("¿Qué directiva ejecutamos hoy, Jefa?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
       st.markdown(prompt)
 
     prompt_lower = prompt.lower().strip()
+
+    # 1. Regla especial de personalidad
     if (
         "despierto" in prompt_lower
         or "estas despierto" in prompt_lower
         or "despierta" in prompt_lower
     ):
       response = "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre."
+    # 2. Procesar con Inteligencia Artificial Real
+    elif model is not None:
+      try:
+        ai_response = model.generate_content(prompt)
+        response = f"🔵 **J.A.R.V.I.S.:** {ai_response.text}"
+      except Exception as e:
+        response = (
+            "🔵 **J.A.R.V.I.S.:** Ocurrió un inconveniente al conectar con los"
+            f" servidores de datos: {e}"
+        )
+    # 3. Respuesta de respaldo si no hay clave configurada en Secrets
     else:
       response = (
-          f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' recibida y procesada"
-          " con éxito."
+          f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' procesada. (Configure la"
+          " GEMINI_API_KEY en Secrets de Streamlit para habilitar la respuesta"
+          " de IA en tiempo real)."
       )
 
     st.session_state.messages.append({"role": "assistant", "content": response})
