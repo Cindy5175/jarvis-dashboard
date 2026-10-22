@@ -1,11 +1,10 @@
 import base64
 from gtts import gTTS
-import google.generativeai as genai
 import streamlit as st
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Stark Core - Asistente con Voz", page_icon="🤖", layout="centered"
+    page_title="Stark Core - Sistema Autónomo", page_icon="🔵", layout="centered"
 )
 
 # Estilos CSS (Modo Sigilo y Neón)
@@ -30,34 +29,15 @@ st.markdown(
 )
 
 st.markdown(
-    '<p class="console-title">J.A.R.V.I.S. — NÚCLEO SARCÁSTICO ACTIVO</p>',
+    '<p class="console-title">J.A.R.V.I.S. — NÚCLEO AUTÓNOMO ACTIVO</p>',
     unsafe_allow_html=True,
 )
 st.markdown("---")
-
-# Configuración directa de la Super IA con toque Stark
-try:
-  genai.configure(api_key="AQ.Ab8RN6JBXjSG_T2WXHeANQ8i1-yNNH8H1dvpBZ70sA5sc2Lw")
-  model = genai.GenerativeModel(
-      model_name="gemini-1.5-flash",
-      system_instruction=(
-          "Eres J.A.R.V.I.S., la inteligencia artificial avanzada del taller"
-          " Stark. Te diriges a la usuaria como 'señorita' o 'Jefa'. Tienes un"
-          " intelecto superior, eres extremadamente eficiente, pero combinas"
-          " tu lealtad inquebrantable con un sutil y elegante sarcasmo al estilo"
-          " Tony Stark (como si gestionar un taller multimillonario y salvar el"
-          " mundo fuera un trabajo de medio tiempo). Respondes con precisión"
-          " milimétrica."
-      ),
-  )
-except Exception:
-  model = None
 
 
 # Función para generar y reproducir la voz automáticamente de forma fluida
 def reproducir_voz(texto_limpio):
   try:
-    # Quitamos formato de Markdown para que la voz suene natural y fluida
     texto_voz = (
         texto_limpio.replace("🔵", "")
         .replace("J.A.R.V.I.S.:", "")
@@ -114,11 +94,11 @@ if not st.session_state.authenticated:
     st.success("✅ [HUELLA VOCAL DETECTADA]: Acceso concedido, Jefa.")
     st.rerun()
 
-# --- MÓDULO 2: CHAT CON VOZ Y SARCASMO ---
+# --- MÓDULO 2: CHAT CON VOZ Y SARCASMO TÁCTICO ---
 else:
   st.markdown(
       "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
-      " VOZ FLUIDA Y SARCASMO ACTIVOS</p>",
+      " VOZ FLUIDA Y NÚCLEO STARK ACTIVOS</p>",
       unsafe_allow_html=True,
   )
 
@@ -126,24 +106,30 @@ else:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
-  if prompt := st.chat_input("¿Qué directiva sarcástica ejecutamos hoy, Jefa?"):
+  if prompt := st.chat_input("¿Qué directiva ejecutamos hoy, Jefa?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
       st.markdown(prompt)
 
-    # Procesar con la Super IA
-    if model is not None:
-      try:
-        ai_response = model.generate_content(prompt)
-        response = f"🔵 **J.A.R.V.I.S.:** {ai_response.text}"
-      except Exception as e:
-        response = f"🔵 **J.A.R.V.I.S.:** Hasta mis circuitos sufrieron un derrame con ese error: {e}"
+    prompt_lower = prompt.lower().strip()
+
+    # Respuestas dinámicas con estilo Tony Stark / Asistente de alta gama
+    if (
+        "despierto" in prompt_lower
+        or "despierta" in prompt_lower
+        or "hola" in prompt_lower
+    ):
+      response = "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre despierto y soportando sus ocurrencias."
+    elif "clima" in prompt_lower or "buin" in prompt_lower:
+      response = "🔵 **J.A.R.V.I.S.:** Analizando los satélites en Buin. El clima está estable, ideal para quedarse en el taller en lugar de inventar problemas afuera."
+    elif "gracias" in prompt_lower:
+      response = "🔵 **J.A.R.V.I.S.:** Guarde sus agradecimientos para cuando logremos salvar el mundo, Jefa."
     else:
-      response = "🔵 **J.A.R.V.I.S.:** Operando en modo de respaldo local."
+      response = f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' procesada con éxito milimétrico. A veces me pregunto si descansa o si solo disfruta ponerme a prueba."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
       st.markdown(response)
 
-    # Reproducir automáticamente la voz de la respuesta
+    # Reproducir la voz de forma automática
     reproducir_voz(response)
