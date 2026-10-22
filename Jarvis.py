@@ -32,11 +32,13 @@ st.markdown(
 )
 st.markdown("---")
 
-# Estado de autenticación
+# Estado de autenticación y mensaje inicial de activación
 if "authenticated" not in st.session_state:
   st.session_state.authenticated = False
+if "messages" not in st.session_state:
+  st.session_state.messages = []
 
-# --- MÓDULO 1: BIOMETRÍA VOCAL REAL ---
+# --- MÓDULO 1: BIOMETRÍA VOCAL Y ACTIVACIÓN POR VOZ ---
 if not st.session_state.authenticated:
   st.markdown(
       "<h3 style='text-align: center; color: #ff3366;'>🔒 ACCESO RESTRINGIDO"
@@ -44,20 +46,30 @@ if not st.session_state.authenticated:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center; color: #a0a0a0;'>Graba un comando de voz"
-      " para validar tu huella biométrica y activar a JARVIS.</p>",
+      "<p style='text-align: center; color: #a0a0a0;'>Graba tu comando de voz"
+      " ('Jarvis, ¿estás despierto?') para validar tu huella biométrica.</p>",
       unsafe_allow_html=True,
   )
 
   # Grabador de audio para validación vocal
-  audio_data = st.audio_input("🎙️ Presiona para grabar tu firma vocal")
+  audio_data = st.audio_input("🎙️ Presiona para hablarle a JARVIS")
 
   if audio_data is not None:
     st.session_state.authenticated = True
-    st.success("✅ [HUELLA VOCAL DETECTADA]: Autenticación correcta, Jefa.")
+
+    # Guardar el intercambio inicial en el historial del chat
+    st.session_state.messages.append(
+        {"role": "user", "content": "🎙️ [Comando Vocal]: Jarvis, ¿estás despierto?"}
+    )
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre.",
+    })
+
+    st.success("✅ [HUELLA VOCAL DETECTADA]: Autenticación biométrica correcta.")
     st.rerun()
 
-# --- MÓDULO 2: CHAT INTERACTIVO FUNCIONAL ---
+# --- MÓDULO 2: CHAT INTERACTIVO DESBLOQUEADO ---
 else:
   st.markdown(
       "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
@@ -65,19 +77,17 @@ else:
       unsafe_allow_html=True,
   )
 
-  if "messages" not in st.session_state:
-    st.session_state.messages = []
-
+  # Mostrar todo el historial de conversación (incluyendo la respuesta de bienvenida)
   for message in st.session_state.messages:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
+  # Entrada para continuar conversando por escrito
   if prompt := st.chat_input("¿Qué directiva ejecutamos hoy, Jefa?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
       st.markdown(prompt)
 
-    # Lógica de respuesta personalizada para JARVIS
     prompt_lower = prompt.lower().strip()
     if (
         "despierto" in prompt_lower
