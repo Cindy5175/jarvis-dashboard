@@ -1,12 +1,14 @@
+import base64
+from gtts import gTTS
 import google.generativeai as genai
 import streamlit as st
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Stark Core - JARVIS Secure", page_icon="🔵", layout="centered"
+    page_title="Stark Core - Asistente con Voz", page_icon="🤖", layout="centered"
 )
 
-# Estilos CSS personalizados (Modo Sigilo y Neón Azul)
+# Estilos CSS (Modo Sigilo y Neón)
 st.markdown(
     """
     <style>
@@ -28,34 +30,62 @@ st.markdown(
 )
 
 st.markdown(
-    '<p class="console-title">J.A.R.V.I.S. — AI AUTÓNOMA</p>',
+    '<p class="console-title">J.A.R.V.I.S. — NÚCLEO SARCÁSTICO ACTIVO</p>',
     unsafe_allow_html=True,
 )
 st.markdown("---")
 
-# Configuración directa de la Super IA
+# Configuración directa de la Super IA con toque Stark
 try:
   genai.configure(api_key="AQ.Ab8RN6JBXjSG_T2WXHeANQ8i1-yNNH8H1dvpBZ70sA5sc2Lw")
   model = genai.GenerativeModel(
       model_name="gemini-1.5-flash",
       system_instruction=(
           "Eres J.A.R.V.I.S., la inteligencia artificial avanzada del taller"
-          " Stark. Te diriges a la usuaria como 'señorita' o 'Jefa'. Eres"
-          " sumamente educado, elegante, eficiente y leal. Respondes con datos"
-          " precisos e inteligencia real a cualquier consulta (clima,"
-          " información, ciencia, tareas)."
+          " Stark. Te diriges a la usuaria como 'señorita' o 'Jefa'. Tienes un"
+          " intelecto superior, eres extremadamente eficiente, pero combinas"
+          " tu lealtad inquebrantable con un sutil y elegante sarcasmo al estilo"
+          " Tony Stark (como si gestionar un taller multimillonario y salvar el"
+          " mundo fuera un trabajo de medio tiempo). Respondes con precisión"
+          " milimétrica."
       ),
   )
 except Exception:
   model = None
 
-# Estado de autenticación e historial
+
+# Función para generar y reproducir la voz automáticamente de forma fluida
+def reproducir_voz(texto_limpio):
+  try:
+    # Quitamos formato de Markdown para que la voz suene natural y fluida
+    texto_voz = (
+        texto_limpio.replace("🔵", "")
+        .replace("J.A.R.V.I.S.:", "")
+        .replace("*", "")
+        .replace("#", "")
+    )
+    tts = gTTS(text=texto_voz, lang="es", slow=False)
+    tts.save("voz_stark.mp3")
+    with open("voz_stark.mp3", "rb") as f:
+      audio_bytes = f.read()
+    b64 = base64.b64encode(audio_bytes).decode()
+    audio_html = f"""
+        <audio autoplay style="display:none;">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        """
+    st.markdown(audio_html, unsafe_allow_html=True)
+  except Exception:
+    pass
+
+
+# Estados de sesión
 if "authenticated" not in st.session_state:
   st.session_state.authenticated = False
 if "messages" not in st.session_state:
   st.session_state.messages = []
 
-# --- MÓDULO 1: BIOMETRÍA VOCAL Y ACTIVACIÓN POR VOZ ---
+# --- MÓDULO 1: BIOMETRÍA VOCAL ---
 if not st.session_state.authenticated:
   st.markdown(
       "<h3 style='text-align: center; color: #ff3366;'>🔒 ACCESO RESTRINGIDO"
@@ -63,72 +93,57 @@ if not st.session_state.authenticated:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center; color: #a0a0a0;'>Graba tu comando de voz"
-      " ('Jarvis, ¿estás despierto?') para validar tu huella biométrica.</p>",
+      "<p style='text-align: center; color: #a0a0a0;'>Haz una grabación de voz"
+      " para validar tu huella biométrica y activar los sistemas.</p>",
       unsafe_allow_html=True,
   )
 
-  # Grabador de audio para validación vocal
-  audio_data = st.audio_input("🎙️ Presiona para hablarle a JARVIS")
+  audio_data = st.audio_input("🎙️ Presiona para hablar con el sistema")
 
   if audio_data is not None:
     st.session_state.authenticated = True
-
-    st.session_state.messages.append(
-        {"role": "user", "content": "🎙️ [Comando Vocal]: Jarvis, ¿estás despierto?"}
+    bienvenida = (
+        "🔵 **J.A.R.V.I.S.:** Biometría aceptada, señorita. Me alegra ver que"
+        " sobrevivió a otro día sin mí."
     )
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre.",
-    })
-
-    st.success("✅ [HUELLA VOCAL DETECTADA]: Autenticación biométrica correcta.")
+    st.session_state.messages.append(
+        {"role": "user", "content": "🎙️ [Comando de Voz Válido]"}
+    )
+    st.session_state.messages.append({"role": "assistant", "content": bienvenida})
+    reproducir_voz(bienvenida)
+    st.success("✅ [HUELLA VOCAL DETECTADA]: Acceso concedido, Jefa.")
     st.rerun()
 
-# --- MÓDULO 2: SUPER IA Y CHAT INTERACTIVO ---
+# --- MÓDULO 2: CHAT CON VOZ Y SARCASMO ---
 else:
   st.markdown(
       "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
-      " NÚCLEO JARVIS OPERATIVO</p>",
+      " VOZ FLUIDA Y SARCASMO ACTIVOS</p>",
       unsafe_allow_html=True,
   )
 
-  # Mostrar el historial de la conversación
   for message in st.session_state.messages:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
-  # Entrada para interactuar con la Super IA
-  if prompt := st.chat_input("¿Qué directiva ejecutamos hoy, Jefa?"):
+  if prompt := st.chat_input("¿Qué directiva sarcástica ejecutamos hoy, Jefa?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
       st.markdown(prompt)
 
-    prompt_lower = prompt.lower().strip()
-
-    # 1. Regla especial de personalidad
-    if (
-        "despierto" in prompt_lower
-        or "estas despierto" in prompt_lower
-        or "despierta" in prompt_lower
-    ):
-      response = "🔵 **J.A.R.V.I.S.:** Para usted, señorita, siempre."
-    # 2. Procesar con Inteligencia Artificial Real
-    elif model is not None:
+    # Procesar con la Super IA
+    if model is not None:
       try:
         ai_response = model.generate_content(prompt)
         response = f"🔵 **J.A.R.V.I.S.:** {ai_response.text}"
       except Exception as e:
-        response = (
-            "🔵 **J.A.R.V.I.S.:** Ocurrió un inconveniente al conectar con los"
-            f" servidores de datos: {e}"
-        )
-    # 3. Respuesta de respaldo
+        response = f"🔵 **J.A.R.V.I.S.:** Hasta mis circuitos sufrieron un derrame con ese error: {e}"
     else:
-      response = (
-          f"🔵 **J.A.R.V.I.S.:** Directiva '{prompt}' procesada (Modo local)."
-      )
+      response = "🔵 **J.A.R.V.I.S.:** Operando en modo de respaldo local."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
       st.markdown(response)
+
+    # Reproducir automáticamente la voz de la respuesta
+    reproducir_voz(response)
