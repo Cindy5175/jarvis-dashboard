@@ -5,7 +5,7 @@ import streamlit as st
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Stark Core - Holo-Taller", page_icon="🔵", layout="centered"
+    page_title="Stark Core - IA Autónomo", page_icon="🔵", layout="centered"
 )
 
 # Estilos CSS (Modo Sigilo y Neón)
@@ -30,7 +30,7 @@ st.markdown(
 )
 
 st.markdown(
-    '<p class="console-title">J.A.R.V.I.S. — NÚCLEO TÁCTICO INTEGRAL</p>',
+    '<p class="console-title">J.A.R.V.I.S. — IA AUTÓNOMO</p>',
     unsafe_allow_html=True,
 )
 st.markdown("---")
@@ -93,8 +93,9 @@ with st.sidebar:
 
 # --- MÓDULO 1: BIOMETRÍA VOCAL ---
 if not st.session_state.authenticated:
+  # Cambio de color del acceso restringido a un cian/azul neón elegante
   st.markdown(
-      "<h3 style='text-align: center; color: #ff3366;'>🔒 ACCESO RESTRINGIDO"
+      "<h3 style='text-align: center; color: #00f0ff;'>🔒 ACCESO RESTRINGIDO"
       " — MODO SIGILO</h3>",
       unsafe_allow_html=True,
   )
@@ -109,8 +110,8 @@ if not st.session_state.authenticated:
   if audio_data is not None:
     st.session_state.authenticated = True
     bienvenida = (
-        "🔵 **J.A.R.V.I.S.:** Biometría aceptada, señorita. Sistemas holográficos"
-        " listos."
+        "🔵 **J.A.R.V.I.S.:** Biometría aceptada, señorita. Sistemas IA autónomo"
+        " activados."
     )
     st.session_state.messages.append(
         {"role": "user", "content": "🎙️ [Comando de Voz Válido]"}
@@ -124,7 +125,7 @@ if not st.session_state.authenticated:
 else:
   st.markdown(
       "<p style='color: #00f0ff; font-weight: bold;'>🔵 SISTEMA DESBLOQUEADO —"
-      " HOLO-TALLER ACTIVO</p>",
+      " IA AUTÓNOMO ACTIVO</p>",
       unsafe_allow_html=True,
   )
 
