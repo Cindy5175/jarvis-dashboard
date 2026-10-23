@@ -38,10 +38,10 @@ st.markdown("""
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
 # 2. Conexión directa y segura con la API de Groq
-groq_api_key = "gsk_PON_AQUI_TU_NUEVA_CLAVE"
+groq_api_key = "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"
 
 if not groq_api_key or "PON_AQUI" in groq_api_key:
-    st.error("⚠️ Por favor ingresa tu clave API de Groq en el código.")
+    st.error("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")
     st.stop()
 
 client = Groq(api_key=groq_api_key)
