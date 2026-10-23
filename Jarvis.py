@@ -74,7 +74,7 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
         
         try:
             completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+              model="llama-3.1-8b-instant",
                 messages=st.session_state.messages,
                 stream=True,
             )
