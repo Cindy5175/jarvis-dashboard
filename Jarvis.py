@@ -38,11 +38,10 @@ st.markdown("""
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
 # 2. Conexión directa y segura con la API de Groq
-# Reemplaza la clave entre comillas si vas a usar una clave nueva
-groq_api_key = "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"
+groq_api_key = "gsk_PON_AQUI_TU_NUEVA_CLAVE"
 
 if not groq_api_key or "PON_AQUI" in groq_api_key:
-    st.error("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")
+    st.error("⚠️ Por favor ingresa tu clave API de Groq en la línea 39 del código.")
     st.stop()
 
 client = Groq(api_key=groq_api_key)
@@ -68,14 +67,14 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Generar respuesta con la super IA de Groq (Modelo Llama 3.3 activo)
+    # Generar respuesta con la IA de Groq (Modelo Gemma 2 garantizado)
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
         
         try:
             completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="gemma2-9b-it",
                 messages=st.session_state.messages,
                 stream=True,
             )
