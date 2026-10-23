@@ -1,4 +1,6 @@
+import os
 import streamlit as st
+from groq import Groq
 
 # 1. Configuración de la página
 st.set_page_config(
@@ -7,10 +9,9 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilos CSS personalizados para centrar el título, diseño neón y ajustar la caja del chat
+# Estilos CSS personalizados
 st.markdown("""
     <style>
-    /* Centrar y estilizar el título con Reactor Arc */
     .neon-title {
         color: #00d2ff;
         text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff, 0 0 40px #0072ff;
@@ -21,15 +22,11 @@ st.markdown("""
         margin-top: -20px;
         margin-bottom: 25px;
     }
-    
-    /* Ajustar el ancho y centrar la caja principal de chat y contenedores */
     .block-container {
         max-width: 750px;
         padding-top: 2rem;
         padding-bottom: 5rem;
     }
-
-    /* Estilo personalizado para la barra de entrada de texto inferior */
     .stChatInput {
         max-width: 750px;
         margin: 0 auto;
@@ -40,28 +37,56 @@ st.markdown("""
 # Encabezado centrado con Reactor Arc
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
-# 2. Historial de chat en la sesión
+# 2. Conexión segura con la API de Groq
+groq_api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+
+if not groq_api_key:
+    st.error("⚠️ No se encontró la GROQ_API_KEY en los Secrets de Streamlit.")
+    st.stop()
+
+client = Groq(api_key=groq_api_key)
+
+# 3. Historial de chat en la sesión
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Reactor Arc al 100%, Jefa. Sistemas autónomos calibrados y listos. ¿Qué orden ejecutamos hoy?"}
+        {
+            "role": "system", 
+            "content": "Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa' y respondes con un tono servicial, astuto y resolutivo."
+        }
     ]
 
-# Mostrar los mensajes anteriores dentro del contenedor centrado
+# Mostrar los mensajes anteriores (omitiendo la instrucción del sistema)
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-# 3. Entrada de texto del usuario
+# 4. Entrada de texto del usuario
 if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S..."):
-    # Guardar y mostrar mensaje del usuario
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Respuesta del núcleo autónomo
+    # Generar respuesta con la super IA de Groq (Llama 3.3)
     with st.chat_message("assistant"):
-        full_response = f"Secuencia iniciada para: '{prompt}'. Parámetros estables, Jefa. Protocolo autónomo ejecutándose sin restricciones de red."
-        st.markdown(full_response)
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        try:
+            completion = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=st.session_state.messages,
+                stream=True,
+            )
+            
+            for chunk in completion:
+                content = chunk.choices[0].delta.content or ""
+                full_response += content
+                message_placeholder.markdown(full_response + "▌")
+            
+            message_placeholder.markdown(full_response)
+        except Exception as e:
+            st.error(f"Error al conectar con la IA: {e}")
+            full_response = "Lo siento, Jefa. Ocurrió un inconveniente al conectar con el motor central."
 
-    # Guardar respuesta en el historial
     st.session_state.messages.append({"role": "assistant", "content": full_response})
