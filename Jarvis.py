@@ -3,7 +3,7 @@ import streamlit as st
 from openai import OpenAI
 
 # Cargar la API Key de forma segura desde los Secrets
-api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+api_key = st.secrets.get("AQ.Ab8RN6JIdiOz_Adwc9oQzCpDTbNj6Ot9Aqb-aZwO3pAW-0Zq3A") or os.getenv("AQ.Ab8RN6JIdiOz_Adwc9oQzCpDTbNj6Ot9Aqb-aZwO3pAW-0Zq3A")
 
 if not api_key:
     st.error("⚠️ No se encontró la OPENAI_API_KEY en los Secrets.")
