@@ -37,11 +37,11 @@ st.markdown("""
 # Encabezado centrado con Reactor Arc
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
-# 2. Conexión segura con la API de Groq
-groq_api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+# 2. Conexión directa y segura con la API de Groq
+groq_api_key = "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"
 
 if not groq_api_key:
-    st.error("⚠️ No se encontró la GROQ_API_KEY en los Secrets de Streamlit.")
+    st.error("⚠️ No se encontró la GROQ_API_KEY.")
     st.stop()
 
 client = Groq(api_key=groq_api_key)
