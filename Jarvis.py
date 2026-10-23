@@ -2,34 +2,18 @@ import os
 import streamlit as st
 from openai import OpenAI
 
-# Cargar la API Key de forma segura desde los Secrets
+# Configuración de página de Streamlit
+st.set_page_config(page_title="JARVIS AI", page_icon="⚡", layout="wide")
+
+# 1. Obtener la clave desde los Secrets de Streamlit
 api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
 if not api_key:
     st.error("⚠️ No se encontró la OPENAI_API_KEY en los Secrets.")
-else:
-    client = OpenAI(api_key=api_key)
+    st.stop()
 
-def consultar_jarvis(prompt_usuario, historial=[]):
-    """Envia el prompt a GPT-4o manteniendo el tono de JARVIS."""
-    system_prompt = (
-        "Eres JARVIS, la Inteligencia Artificial de la Torre de Control. "
-        "Te diriges al usuario como 'Jefa' con un tono leal, elegante y resolutivo. "
-        "Ofreces soluciones directas y precisas a problemas complejos."
-    )
-    
-    messages = [{"role": "system", "content": system_prompt}]
-    for msg in historial:
-        messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": prompt_usuario})
+# 2. Inicializar cliente de OpenAI
+client = OpenAI(api_key=api_key)
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=800
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"⚠️ Error de conexión con el motor de OpenAI: {str(e)}"
+st.title("⚡ Panel de Control - JARVIS")
+st.success("¡Motor conectado y listo, Jefa!")
