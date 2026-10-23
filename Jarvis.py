@@ -54,15 +54,15 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Generar respuesta de GPT-4
+    # Generar respuesta de la IA
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
         
         try:
-            # Consulta a GPT-4o
+            # Consulta a gpt-4o-mini (compatible con cuentas gratuitas)
             response = client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4o-mini",
                 messages=st.session_state.messages,
                 stream=True,
             )
