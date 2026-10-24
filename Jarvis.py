@@ -17,7 +17,7 @@ if "modo_sistema" not in st.session_state:
 
 if "ubicacion_jefa" not in st.session_state:
     st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
-    st.session_state.lat_lon = "-33.7333, -70.7333" # Coordenadas aproximadas de Buin por defecto
+    st.session_state.lat_lon = "-33.7333, -70.7333"
 
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
@@ -32,7 +32,19 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 4. BARRA LATERAL OCULTA (Centro de Comando)
+# Configurar variables visuales según el modo seleccionado
+if "N.O.V.A." in st.session_state.modo_sistema:
+    color_neon = "#ff007f"
+    shadow_neon = "#ff007f"
+    titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
+    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon}). Úsalas en contexto cuando se requiera."
+else:
+    color_neon = "#00d2ff"
+    shadow_neon = "#0072ff"
+    titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
+    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon}). Tenlas presente para contextualizar respuestas."
+
+# 4. BARRA LATERAL OCULTA (Centro de Comando Avanzado)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
@@ -42,6 +54,19 @@ with st.sidebar:
         ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
     )
     st.session_state.modo_sistema = modo
+    
+    st.divider()
+    
+    # NUEVO: HUD Holográfico de Comunicaciones Globales (Inspirado en estética orbital)
+    st.markdown("### 🌐 HUD Holográfico Orbital")
+    st.markdown(f"""
+        <div style="background: rgba(10, 15, 30, 0.85); border: 1px solid {color_neon}; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px {color_neon}33;">
+            <div style="font-size: 0.75rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 4px;">SYSTEM_STATUS: SECURE_LINK</div>
+            <div style="font-size: 0.8rem; color: #fff;">📡 <b>Transmisión Global:</b> Activa</div>
+            <div style="font-size: 0.8rem; color: #ddd;">✉️ <b>Canal Encriptado:</b> OK</div>
+            <div style="font-size: 0.75rem; color: #aaa; margin-top: 5px;">🌍 Global Grid: Enlazado</div>
+        </div>
+    """, unsafe_allow_html=True)
     
     st.divider()
     
@@ -68,18 +93,18 @@ with st.sidebar:
     st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
     st.caption("📡 **Latencia:** 24 ms | **Señal:** Óptima")
     
-    st.markdown("""
+    st.markdown(f"""
         <div style="background-color: #111; border-radius: 10px; padding: 3px; border: 1px solid #333;">
-            <div style="background: linear-gradient(90deg, #00d2ff, #ff007f, #00d2ff); 
+            <div style="background: linear-gradient(90deg, {color_neon}, #ff007f, {color_neon}); 
                         height: 8px; border-radius: 8px; width: 100%; 
                         animation: pulseBar 2s infinite linear;"></div>
         </div>
         <style>
-        @keyframes pulseBar {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; filter: drop-shadow(0 0 5px #00d2ff); }
-            100% { opacity: 0.6; }
-        }
+        @keyframes pulseBar {{
+            0% {{ opacity: 0.6; }}
+            50% {{ opacity: 1; filter: drop-shadow(0 0 5px {color_neon}); }}
+            100% {{ opacity: 0.6; }}
+        }}
         </style>
     """, unsafe_allow_html=True)
     
@@ -117,24 +142,12 @@ with st.sidebar:
         mime="text/plain"
     )
 
-# Configurar variables visuales y contexto según el modo seleccionado
-if "N.O.V.A." in st.session_state.modo_sistema:
-    color_neon = "#ff007f"
-    shadow_neon = "#ff007f"
-    titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon}). Úsalas en contexto cuando se requiera."
-else:
-    color_neon = "#00d2ff"
-    shadow_neon = "#0072ff"
-    titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon}). Tenlas presente para contextualizar respuestas."
-
 if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
     st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS con Animación Neón
+# Estilos CSS con Animación Neón y HUD Holográfico
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
