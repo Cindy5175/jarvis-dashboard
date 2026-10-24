@@ -207,7 +207,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS Avanzados para Titulo y Radar Holográfico
+# Estilos CSS Avanzados para Título y HUD Holográfico Extendido
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -232,7 +232,7 @@ st.markdown(f"""
         padding-bottom: 5rem;
     }}
     
-    /* ANIMACIÓN RADAR HOLOGRÁFICO */
+    /* ANIMACIÓN RADAR HOLOGRÁFICO Y COMPONENTES SCI-FI */
     @keyframes rotateRadar {{
         from {{ transform: rotate(0deg); }}
         to {{ transform: rotate(360deg); }}
@@ -244,7 +244,7 @@ st.markdown(f"""
     }}
     
     .hud-container {{
-        background: rgba(5, 10, 25, 0.9);
+        background: rgba(5, 10, 25, 0.95);
         border: 1px solid {color_neon};
         border-radius: 12px;
         padding: 15px;
@@ -254,8 +254,8 @@ st.markdown(f"""
     }}
     
     .radar-box {{
-        width: 110px;
-        height: 110px;
+        width: 100px;
+        height: 100px;
         border: 2px dashed {color_neon};
         border-radius: 50%;
         position: relative;
@@ -275,8 +275,8 @@ st.markdown(f"""
     }}
     
     .radar-core {{
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         background: {color_neon};
         border-radius: 50%;
         position: absolute;
@@ -288,23 +288,50 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# PANTALLA HOLOGRÁFICA / RADAR ORBITAL EN PANTALLA PRINCIPAL
+# PANTALLA HOLOGRÁFICA EXPANDIDA (Nav Grid + Radar + Power Distribution)
 st.markdown(f"""
     <div class="hud-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 10px;">
-            <span>[ORBITAL TELEMETRY FEED]</span>
-            <span>INTEGRITY: {st.session_state.energia_arc}%</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px;">
+            <span>[ORBITAL & TACTICAL C2 FEED]</span>
+            <span>SYSTEMS INTEGRITY: {st.session_state.energia_arc}%</span>
         </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <!-- Nav Grid Box -->
+            <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
+                <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">NAV_GRID ACTIVE</div>
+                <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">🌍 {st.session_state.ubicacion_jefa}</div>
+                <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">SAT_TRACKING: 98% OK</div>
+            </div>
+            <!-- Power Distribution Box -->
+            <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
+                <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">POWER NETWORK</div>
+                <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">⚡ OUTPUT: 1.2 GW</div>
+                <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">EFFICIENCY: 99.1%</div>
+            </div>
+        </div>
+
+        <!-- Radar Central -->
         <div class="radar-box">
             <div class="radar-sweep"></div>
             <div class="radar-core"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; border-top: 1px solid #333; padding-top: 5px;">
+        
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 12px; border-top: 1px solid #333; padding-top: 6px;">
             <span>GRID: {st.session_state.lat_lon}</span>
-            <span>SYSTEM: ONLINE</span>
+            <span>STATUS: ONLINE</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
+
+# Botones de Comando Estilo Stark (Mission / Deploy)
+col_btn1, col_btn2 = st.columns(2)
+with col_btn1:
+    if st.button("🎯 MISSION: ASSIGN", use_container_width=True):
+        st.toast("¡Directiva de misión asignada con éxito, Jefa!", icon="🚀")
+with col_btn2:
+    if st.button("🚀 DEPLOY: UNIT", use_container_width=True):
+        st.toast("¡Unidad táctica desplegada en la red!", icon="⚡")
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
