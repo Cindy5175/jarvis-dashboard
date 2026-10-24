@@ -57,22 +57,80 @@ if "messages" not in st.session_state:
         }
     ]
 
-# 4. Sección desplegable para adjuntar archivos / imágenes
+# 4. BARRA LATERAL OCULTA (Las 4 funciones avanzadas se muestran solo cuando lo pides aquí)
+with st.sidebar:
+    st.markdown("### ⚙️ Panel de Control J.A.R.V.I.S.")
+    
+    # Función 1: Selector de Modelos
+    st.markdown("#### 🎛️ Selector de Motor")
+    modelo_seleccionado = st.selectbox(
+        "Modelo activo:",
+        [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b",
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
+            "llama-3.2-11b-vision-preview"
+        ],
+        index=0
+    )
+    
+    st.divider()
+    
+    # Función 2: Módulo de Voz (Configuración)
+    st.markdown("#### 🔊 Asistente de Voz")
+    activar_voz = st.checkbox("Habilitar síntesis de voz (JS)", value=False)
+    
+    st.divider()
+    
+    # Función 3: Exportar Chat
+    st.markdown("#### 💾 Respaldo de Sesión")
+    chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
+    st.download_button(
+        label="📥 Descargar Chat (.txt)",
+        data=chat_texto,
+        file_name="jarvis_chat_log.txt",
+        mime="text/plain"
+    )
+    
+    st.divider()
+    
+    # Función 4: Presets de Acceso Rápido
+    st.markdown("#### ⚡ Acciones Rápidas")
+    preset_elegido = None
+    if st.button("💡 Resumir última respuesta"):
+        preset_elegido = "Por favor, haz un resumen claro y ejecutivo de lo último que conversamos."
+    if st.button("💻 Explicar código adjunto"):
+        preset_elegido = "Analiza detalladamente el archivo o código que acabo de adjuntar."
+
+# Sección desplegable limpia para adjuntar archivos / imágenes
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
     archivo_subido = st.file_uploader(
-        "Carga una imagen (PNG, JPG, JPEG) o un archivo de texto/código (TXT, CSV, PY, MD):",
+        "Carga una imagen (PNG, JPG) o un archivo de texto/código (TXT, CSV, PY, MD):",
         type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
     )
 
 # Mostrar los mensajes anteriores (omitiendo la instrucción del sistema)
-for message in st.session_state.messages:
+for idx, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            
+            # Botón de voz integrado en las respuestas del asistente si está activo
+            if message["role"] == "assistant" and activar_voz:
+                # Script de navegador nativo para lectura de voz sin romper Streamlit
+                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
+                st.markdown(f"""
+                    <button onclick="let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\"); utterance.lang = 'es-ES'; window.speechSynthesis.speak(utterance);" style="background-color: #00d2ff; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                        🔊 Reproducir Audio
+                    </button>
+                """, unsafe_allow_html=True)
 
-# 5. Entrada de texto del usuario
-if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S..."):
-    
+# 5. Entrada de texto del usuario (o por preset rápido)
+prompt_usuario = st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S...")
+prompt = preset_elegido if preset_elegido else prompt_usuario
+
+if prompt:
     # Procesar archivo si fue adjuntado
     contenido_adjunto = ""
     imagen_base64 = None
@@ -110,13 +168,7 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
         message_placeholder = st.empty()
         full_response = ""
         
-        # Selección de modelos (usando visió/multimodal si hay imagen)
         if imagen_base64:
-            modelos_candidatos = [
-                "llama-3.2-11b-vision-preview",
-                "llama-3.2-90b-vision-preview"
-            ]
-            # Construir estructura especial para mensajes con imágenes
             mensajes_api = []
             for msg in st.session_state.messages:
                 if msg["role"] == "system":
@@ -139,17 +191,13 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
                         mensajes_api.append(msg)
                 else:
                     mensajes_api.append(msg)
+            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
         else:
-            modelos_candidatos = [
-                "openai/gpt-oss-120b",
-                "openai/gpt-oss-20b",
-                "qwen/qwen3.8-27b",
-                "meta-llama/llama-4-maverick-17b-128e-instruct"
-            ]
             mensajes_api = st.session_state.messages
+            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
 
         exito = False
-        for modelo_actual in modelos_candidatos:
+        for modelo_actual in modelos_a_probar:
             try:
                 completion = client.chat.completions.create(
                     model=modelo_actual,
@@ -169,7 +217,7 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
                 continue
         
         if not exito:
-            full_response = "Lo siento, Jefa. Tuve un inconveniente al procesar el archivo o comunicarme con los motores centrales."
+            full_response = "Lo siento, Jefa. Tuve un inconveniente al procesar la solicitud con el motor seleccionado."
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
