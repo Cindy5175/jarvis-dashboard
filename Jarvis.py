@@ -51,16 +51,21 @@ else:
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
-    # Conmutador de Personalidad / Tema
+    # Conmutador de Personalidad con recarga inmediata
     opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
     indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
     
-    modo = st.radio(
+    def cambiar_modo():
+        st.session_state.modo_sistema = st.session_state.radio_modo_input
+        st.rerun()
+
+    st.radio(
         "Selecciona Protocolo Activo:",
         opciones_modo,
-        index=indice_actual
+        index=indice_actual,
+        key="radio_modo_input",
+        on_change=cambiar_modo
     )
-    st.session_state.modo_sistema = modo
     
     st.divider()
     
