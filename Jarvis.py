@@ -4,18 +4,18 @@ import base64
 import streamlit as st
 from groq import Groq
 
-# 1. Configuración de la página
+# 1. Configuración da páxina
 st.set_page_config(
     page_title="Sistema C.I.T. / J.A.R.V.I.S.", 
     page_icon="⚛️", 
     layout="centered"
 )
 
-# Inicializar estado del tema en sesión
+# Inicializar estado do tema en sesión
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
-# 2. Conexión con la API de Groq
+# 2. Conexión directa coa API de Groq
 groq_api_key = "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"
 
 if not groq_api_key:
@@ -28,11 +28,11 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 4. BARRA LATERAL OCULTA (Panel de Control y Conmutador Dual)
+# 4. BARRA LATERAL OCULTA (Centro de Comando)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando")
     
-    # Conmutador de Personalidad / Tema
+    # Conmutador de Personalidade / Tema
     modo = st.radio(
         "Selecciona Protocolo Activo:",
         ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
@@ -41,11 +41,26 @@ with st.sidebar:
     
     st.divider()
     
-    # Módulo Starlink
+    # Módulo Starlink con animación
     st.markdown("### 🛰️ Enlace Satelital Starlink")
     st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
     st.caption("📡 **Latencia:** 24 ms | **Bajada:** 220 Mbps")
-    st.progress(0.95)
+    
+    # Efecto de barra de escaneo de enerxía
+    st.markdown("""
+        <div style="background-color: #111; border-radius: 10px; padding: 3px; border: 1px solid #333;">
+            <div style="background: linear-gradient(90deg, #00d2ff, #ff007f, #00d2ff); 
+                        height: 10px; border-radius: 8px; width: 100%; 
+                        animation: pulseBar 2s infinite linear;"></div>
+        </div>
+        <style>
+        @keyframes pulseBar {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; filter: drop-shadow(0 0 5px #00d2ff); }
+            100% { opacity: 0.6; }
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
     st.divider()
     
@@ -81,30 +96,33 @@ with st.sidebar:
         mime="text/plain"
     )
 
-# Configurar variables visuales y de contexto según el modo seleccionado
+# Configurar variables visuales e contexto
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
-    titulo_html = '<h1 class="neon-title">🟣 N.O.V.A. - C.I.T.</h1>'
+    titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
     system_prompt = "Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. altamente avanzado y tecnológico. Te diriges al usuario como 'Jefa', usas terminología de vanguardia, biometría y confirmaciones tácticas directas."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
-    titulo_html = '<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI</h1>'
+    titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
     system_prompt = "Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa' y respondes con un tono servicial, astuto y resolutivo."
 
-# Actualizar el system prompt en el historial si cambió el protocolo
 if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
     st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos Dinámicos CSS
+# CSS Avanzado con animacións de pulso de luz
 st.markdown(f"""
     <style>
+    @keyframes neonGlow {{
+        0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+        50% {{ text-shadow: 0 0 12px {color_neon}, 0 0 25px {color_neon}, 0 0 40px {shadow_neon}; }}
+        100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+    }}
     .neon-title {{
         color: {color_neon};
-        text-shadow: 0 0 8px {color_neon}, 0 0 15px {color_neon}, 0 0 30px {shadow_neon};
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
         font-size: 1.8rem;
@@ -112,6 +130,7 @@ st.markdown(f"""
         margin-top: -15px;
         margin-bottom: 20px;
         white-space: nowrap;
+        animation: neonGlow 2.5s infinite ease-in-out;
     }}
     .block-container {{
         max-width: 750px;
@@ -125,7 +144,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Título de la App
+# Título da App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
 # Lector Multimodal
@@ -148,7 +167,7 @@ for message in st.session_state.messages:
                     </button>
                 """, unsafe_allow_html=True)
 
-# Entrada de usuario
+# Entrada do usuario
 if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
     contenido_adjunto = ""
     imagen_base64 = None
