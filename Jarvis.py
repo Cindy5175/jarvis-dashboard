@@ -1,31 +1,6 @@
 import os
 import streamlit as st
-from groq import Groq
-
-# 1. Configuración de la página
-st.set_page_config(
-    page_title="J.A.R.V.I.S AI autónoma", 
-    page_icon="⚛️", 
-    layout="centered"
-)
-
-# Estilos CSS personalizados
-st.markdown("""
-    <style>
-    .neon-title {
-        color: #00d2ff;
-        text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff, 0 0 40px #0072ff;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        font-size: 2.3rem;
-        text-align: center;
-        margin-top: -20px;
-        margin-bottom: 25px;
-    }
-    .block-container {
-        max-width: 750px;
-        padding-top: 2rem;
-        padding-bottom: 5rem;
+-bottom: 5rem;
     }
     .stChatInput {
         max-width: 750px;
