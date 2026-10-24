@@ -11,13 +11,16 @@ st.set_page_config(
     layout="centered"
 )
 
-# Inicializar estado del tema y ubicación en sesión
+# Inicializar estados en sesión
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
 if "ubicacion_jefa" not in st.session_state:
     st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
     st.session_state.lat_lon = "-33.7333, -70.7333"
+
+if "energia_arc" not in st.session_state:
+    st.session_state.energia_arc = 98
 
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
@@ -37,18 +40,18 @@ if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
     titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon}). Úsalas en contexto cuando se requiera."
+    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon}). Tenlas presente para contextualizar respuestas."
+    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL OCULTA (Centro de Comando Avanzado)
+# 4. BARRA LATERAL (Centro de Comando Avanzado)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
-    # Conmutador de Personalidad / Tema corregido con índice de sesión
+    # Conmutador de Personalidad / Tema
     opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
     indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
     
@@ -59,6 +62,27 @@ with st.sidebar:
     )
     st.session_state.modo_sistema = modo
     
+    st.divider()
+    
+    # Selector de Protocolos Especiales
+    st.markdown("### 🛡️ Protocolos Especiales")
+    protocolo_extra = st.selectbox(
+        "Directiva de Análisis:",
+        [
+            "Estándar (Equilibrado)",
+            "Modo Depuración de Código 💻",
+            "Modo Resumen Ejecutivo 📊",
+            "Modo Análisis Financiero / Crypto 📈",
+            "Protocolo Clean Slate (Limpieza) 🧹"
+        ],
+        index=0
+    )
+    
+    if "Clean Slate" in protocolo_extra:
+        st.session_state.messages = []
+        st.success("¡Historial purgado, Jefa!")
+        st.rerun()
+
     st.divider()
     
     # HUD Holográfico de Comunicaciones Globales
@@ -72,6 +96,29 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     
+    st.divider()
+    
+    # Reactor Arc / Monitor de Energía
+    st.markdown("### ⚛️ Reactor Arc & Energía")
+    st.caption(f"⚡ **Potencia de Núcleo:** {st.session_state.energia_arc}%")
+    st.markdown(f"""
+        <div style="background-color: #111; border-radius: 6px; padding: 2px; border: 1px solid #333;">
+            <div style="background: {color_neon}; height: 6px; border-radius: 4px; width: {st.session_state.energia_arc}%;"></div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("🔋 Recargar Reactor Arc"):
+        st.session_state.energia_arc = 100
+        st.success("¡Núcleo al 100%, Jefa!")
+        st.rerun()
+
+    st.divider()
+    
+    # Diagnóstico Táctico de Errores y API
+    st.markdown("### 📊 Diagnóstico Táctico")
+    st.caption("🟢 **API Groq:** Operativa")
+    st.caption(f"🧠 **Memoria Activa:** {len(st.session_state.messages)} interacciones")
+    st.caption("🌡️ **Temperatura Térmica:** Óptima (34°C)")
+
     st.divider()
     
     # Módulo GPS y Coordenadas Dinámicas
@@ -103,13 +150,6 @@ with st.sidebar:
                         height: 8px; border-radius: 8px; width: 100%; 
                         animation: pulseBar 2s infinite linear;"></div>
         </div>
-        <style>
-        @keyframes pulseBar {{
-            0% {{ opacity: 0.6; }}
-            50% {{ opacity: 1; filter: drop-shadow(0 0 5px {color_neon}); }}
-            100% {{ opacity: 0.6; }}
-        }}
-        </style>
     """, unsafe_allow_html=True)
     
     st.divider()
@@ -146,12 +186,23 @@ with st.sidebar:
         mime="text/plain"
     )
 
+# Definir instrucción del sistema complementada
+prompt_protocolo_extra = ""
+if "Depuración" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Enfócate principalmente en depuración de código, análisis técnico de sintaxis y detección de errores con precisión quirúrgica]."
+elif "Resumen" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+elif "Crypto" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Actúa con enfoque analítico financiero experto en criptoactivos, bloques de red y tendencias de mercado con terminología especializada]."
+
+system_prompt = system_base + prompt_protocolo_extra
+
 if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
     st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS con Animación Neón y HUD Holográfico
+# Estilos CSS Avanzados para Titulo y Radar Holográfico
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -165,25 +216,90 @@ st.markdown(f"""
         font-weight: bold;
         font-size: 1.8rem;
         text-align: center;
-        margin-top: -15px;
-        margin-bottom: 20px;
+        margin-top: -10px;
+        margin-bottom: 10px;
         white-space: nowrap;
         animation: neonGlow 2.5s infinite ease-in-out;
     }}
     .block-container {{
         max-width: 750px;
-        padding-top: 2rem;
+        padding-top: 1.5rem;
         padding-bottom: 5rem;
     }}
-    .stChatInput {{
-        max-width: 750px;
+    
+    /* ANIMACIÓN RADAR HOLOGRÁFICO */
+    @keyframes rotateRadar {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    @keyframes pulseCore {{
+        0% {{ transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 10px {color_neon}; }}
+        50% {{ transform: scale(1.1); opacity: 1; box-shadow: 0 0 25px {color_neon}; }}
+        100% {{ transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 10px {color_neon}; }}
+    }}
+    
+    .hud-container {{
+        background: rgba(5, 10, 25, 0.9);
+        border: 1px solid {color_neon};
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: inset 0 0 15px {color_neon}22, 0 0 15px {color_neon}44;
+        margin-bottom: 20px;
+        font-family: 'Courier New', monospace;
+    }}
+    
+    .radar-box {{
+        width: 110px;
+        height: 110px;
+        border: 2px dashed {color_neon};
+        border-radius: 50%;
+        position: relative;
         margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    
+    .radar-sweep {{
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        position: absolute;
+        background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, {color_neon}66 360deg);
+        animation: rotateRadar 4s linear infinite;
+    }}
+    
+    .radar-core {{
+        width: 32px;
+        height: 32px;
+        background: {color_neon};
+        border-radius: 50%;
+        position: absolute;
+        animation: pulseCore 2s infinite ease-in-out;
     }}
     </style>
 """, unsafe_allow_html=True)
 
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
+
+# PANTALLA HOLOGRÁFICA / RADAR ORBITAL EN PANTALLA PRINCIPAL
+st.markdown(f"""
+    <div class="hud-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 10px;">
+            <span>[ORBITAL TELEMETRY FEED]</span>
+            <span>INTEGRITY: {st.session_state.energia_arc}%</span>
+        </div>
+        <div class="radar-box">
+            <div class="radar-sweep"></div>
+            <div class="radar-core"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; border-top: 1px solid #333; padding-top: 5px;">
+            <span>GRID: {st.session_state.lat_lon}</span>
+            <span>SYSTEM: ONLINE</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
