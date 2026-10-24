@@ -294,7 +294,7 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# PANTALLA HOLOGRÁFICA EXPANDIDA (Se muestra u oculta según el checkbox de la barra lateral)
+# PANTALLA HOLOGRÁFICA EXPANDIDA (Con unsafe_allow_html=True explícito)
 if mostrar_hud:
     st.markdown(f"""
         <div class="hud-container">
