@@ -48,16 +48,20 @@ else:
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
-    # Conmutador de Personalidad / Tema
+    # Conmutador de Personalidad / Tema corregido con índice de sesión
+    opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
+    indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
+    
     modo = st.radio(
         "Selecciona Protocolo Activo:",
-        ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
+        opciones_modo,
+        index=indice_actual
     )
     st.session_state.modo_sistema = modo
     
     st.divider()
     
-    # NUEVO: HUD Holográfico de Comunicaciones Globales (Inspirado en estética orbital)
+    # HUD Holográfico de Comunicaciones Globales
     st.markdown("### 🌐 HUD Holográfico Orbital")
     st.markdown(f"""
         <div style="background: rgba(10, 15, 30, 0.85); border: 1px solid {color_neon}; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px {color_neon}33;">
