@@ -34,10 +34,32 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# 2. Control de Acceso Privado (Contraseña Secreta)
+CLAVE_CORRECTA = "Jarvis estás despierto?"
+
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+
+if not st.session_state.autenticado:
+    st.markdown('<h1 class="neon-title">⚛️ Acceso Restringido</h1>', unsafe_allow_html=True)
+    st.write("🔒 Por favor, ingrese la clave de autorización para activar el panel.")
+    
+    clave_input = st.text_input("Clave de Acceso:", type="password")
+    
+    if st.button("Desbloquear Panel"):
+        if clave_input.strip() == CLAVE_CORRECTA:
+            st.session_state.autenticado = True
+            st.success("Acceso concedido, Jefa. Inicializando sistemas...")
+            st.rerun()
+        else:
+            st.error("Acceso denegado. Clave incorrecta.")
+    
+    st.stop() # Detiene la ejecución aquí si no está autenticado
+
 # Encabezado centrado con Reactor Arc
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
-# 2. Conexión directa y segura con la API de Groq
+# 3. Conexión directa y segura con la API de Groq
 groq_api_key = "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"
 
 if not groq_api_key:
@@ -46,7 +68,7 @@ if not groq_api_key:
 
 client = Groq(api_key=groq_api_key)
 
-# 3. Historial de chat en la sesión
+# 4. Historial de chat en la sesión
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
@@ -61,7 +83,7 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# 4. Entrada de texto del usuario
+# 5. Entrada de texto del usuario
 if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -84,11 +106,10 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
         try:
             model_list = client.models.list()
             modelos_disponibles = [m.id for m in model_list.data if getattr(m, 'active', True)]
-            # Priorizar los modelos disponibles de la lista obtenida
             if modelos_disponibles:
                 modelos_candidatos = modelos_disponibles + modelos_candidatos
         except Exception:
-            pass # Si falla listar, usamos la lista de respaldo
+            pass # Silencioso sin alertas en pantalla
             
         exito = False
         for modelo_actual in modelos_candidatos:
@@ -111,9 +132,7 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
                 continue
         
         if not exito:
-            full_response = "Lo siento, Jefa. Los servidores de Groq están reconfigurando modelos en este instante."
+            full_response = "Lo siento, Jefa. Los sistemas centrales están restableciendo comunicación."
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-
-
