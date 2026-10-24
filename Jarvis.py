@@ -11,12 +11,13 @@ st.set_page_config(
     layout="centered"
 )
 
-# Inicializar estado del tema en sesión
+# Inicializar estado del tema y ubicación en sesión
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
 if "ubicacion_jefa" not in st.session_state:
-    st.session_state.ubicacion_jefa = "Buin, Santiago, Chile (Predeterminada por Sistema)"
+    st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
+    st.session_state.lat_lon = "-33.7333, -70.7333" # Coordenadas aproximadas de Buin por defecto
 
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
@@ -44,16 +45,21 @@ with st.sidebar:
     
     st.divider()
     
-    # Módulo GPS / Ubicación Táctica
+    # Módulo GPS y Coordenadas Dinámicas
     st.markdown("### 📍 GPS & Telemetría Global")
-    st.caption(f"📍 **Posición actual:**\n{st.session_state.ubicacion_jefa}")
+    st.caption(f"📍 **Zona:** {st.session_state.ubicacion_jefa}")
+    st.caption(f"🧭 **Coordenadas:** {st.session_state.lat_lon}")
     
-    nueva_ubicacion = st.text_input("Actualizar coordenadas o zona:", placeholder="Ej: Santiago, Chile")
+    nueva_ubicacion = st.text_input("Nueva zona (Ej: Buin, Providencia...):", placeholder="Escribe un lugar")
+    nuevas_coords = st.text_input("Coordenadas Lat, Lon (Opcional):", placeholder="Ej: -33.73, -70.73")
+    
     if st.button("🛰️ Sincronizar Posición"):
         if nueva_ubicacion:
             st.session_state.ubicacion_jefa = nueva_ubicacion
-            st.success("¡Coordenadas actualizadas con éxito, Jefa!")
-            st.rerun()
+        if nuevas_coords:
+            st.session_state.lat_lon = nuevas_coords
+        st.success("¡Telemetría de posición actualizada, Jefa!")
+        st.rerun()
     
     st.divider()
     
@@ -111,17 +117,17 @@ with st.sidebar:
         mime="text/plain"
     )
 
-# Configurar variables visuales y contexto según el modo seleccionado (incluyendo la ubicación actual)
+# Configurar variables visuales y contexto según el modo seleccionado
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
     titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. altamente avanzado y tecnológico. Te diriges al usuario como 'Jefa'. Ubicación táctica actual de la Jefa: {st.session_state.ubicacion_jefa}. Úsala cuando sea relevante para las consultas."
+    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon}). Úsalas en contexto cuando se requiera."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa}. Tenla presente para contextualizar las respuestas."
+    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon}). Tenlas presente para contextualizar respuestas."
 
 if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
     st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
