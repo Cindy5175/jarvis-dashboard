@@ -11,18 +11,19 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilos CSS personalizados
+# Estilos CSS personalizados y optimizados para celular
 st.markdown("""
     <style>
     .neon-title {
         color: #00d2ff;
-        text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff, 0 0 40px #0072ff;
+        text-shadow: 0 0 8px #00d2ff, 0 0 15px #00d2ff, 0 0 30px #0072ff;
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        font-size: 2.3rem;
+        font-size: 1.8rem;
         text-align: center;
-        margin-top: -20px;
-        margin-bottom: 25px;
+        margin-top: -15px;
+        margin-bottom: 20px;
+        white-space: nowrap;
     }
     .block-container {
         max-width: 750px;
@@ -36,8 +37,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Encabezado centrado con Reactor Arc
-st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
+# Encabezado centrado con Reactor Arc (Todo en una línea fluida)
+st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI</h1>', unsafe_allow_html=True)
 
 # 2. Conexión directa y segura con la API de Groq
 groq_api_key = "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"
@@ -57,7 +58,7 @@ if "messages" not in st.session_state:
         }
     ]
 
-# 4. BARRA LATERAL OCULTA (Las 4 funciones avanzadas se muestran solo cuando lo pides aquí)
+# 4. BARRA LATERAL OCULTA (Panel de control avanzado)
 with st.sidebar:
     st.markdown("### ⚙️ Panel de Control J.A.R.V.I.S.")
     
@@ -77,7 +78,7 @@ with st.sidebar:
     
     st.divider()
     
-    # Función 2: Módulo de Voz (Configuración)
+    # Función 2: Módulo de Voz
     st.markdown("#### 🔊 Asistente de Voz")
     activar_voz = st.checkbox("Habilitar síntesis de voz (JS)", value=False)
     
@@ -103,22 +104,20 @@ with st.sidebar:
     if st.button("💻 Explicar código adjunto"):
         preset_elegido = "Analiza detalladamente el archivo o código que acabo de adjuntar."
 
-# Sección desplegable limpia para adjuntar archivos / imágenes
+# Sección desplegable para adjuntar archivos / imágenes
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
     archivo_subido = st.file_uploader(
         "Carga una imagen (PNG, JPG) o un archivo de texto/código (TXT, CSV, PY, MD):",
         type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
     )
 
-# Mostrar los mensajes anteriores (omitiendo la instrucción del sistema)
+# Mostrar los mensajes anteriores
 for idx, message in enumerate(st.session_state.messages):
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
-            # Botón de voz integrado en las respuestas del asistente si está activo
             if message["role"] == "assistant" and activar_voz:
-                # Script de navegador nativo para lectura de voz sin romper Streamlit
                 texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
                 st.markdown(f"""
                     <button onclick="let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\"); utterance.lang = 'es-ES'; window.speechSynthesis.speak(utterance);" style="background-color: #00d2ff; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
@@ -126,12 +125,11 @@ for idx, message in enumerate(st.session_state.messages):
                     </button>
                 """, unsafe_allow_html=True)
 
-# 5. Entrada de texto del usuario (o por preset rápido)
+# 5. Entrada de texto del usuario
 prompt_usuario = st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S...")
 prompt = preset_elegido if preset_elegido else prompt_usuario
 
 if prompt:
-    # Procesar archivo si fue adjuntado
     contenido_adjunto = ""
     imagen_base64 = None
     
@@ -152,7 +150,6 @@ if prompt:
 
     prompt_completo = prompt + contenido_adjunto
 
-    # Guardar en el historial
     st.session_state.messages.append({"role": "user", "content": prompt_completo})
     
     with st.chat_message("user"):
@@ -163,7 +160,6 @@ if prompt:
             else:
                 st.caption(f"📄 Archivo adjunto: {archivo_subido.name}")
 
-    # Generar respuesta con la IA de Groq
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
