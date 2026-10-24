@@ -4,18 +4,18 @@ import base64
 import streamlit as st
 from groq import Groq
 
-# 1. Configuración da páxina
+# 1. Configuración de la página
 st.set_page_config(
     page_title="Sistema C.I.T. / J.A.R.V.I.S.", 
     page_icon="⚛️", 
     layout="centered"
 )
 
-# Inicializar estado do tema en sesión
+# Inicializar estado del tema en sesión
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
-# 2. Conexión directa coa API de Groq
+# 2. Conexión con la API de Groq
 groq_api_key = "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"
 
 if not groq_api_key:
@@ -30,9 +30,9 @@ if "messages" not in st.session_state:
 
 # 4. BARRA LATERAL OCULTA (Centro de Comando)
 with st.sidebar:
-    st.markdown("### ⚙️ Centro de Comando")
+    st.markdown("### ⚙️ Centro de Comando Stark")
     
-    # Conmutador de Personalidade / Tema
+    # Conmutador de Personalidad / Tema
     modo = st.radio(
         "Selecciona Protocolo Activo:",
         ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
@@ -41,16 +41,41 @@ with st.sidebar:
     
     st.divider()
     
-    # Módulo Starlink con animación
-    st.markdown("### 🛰️ Enlace Satelital Starlink")
-    st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
-    st.caption("📡 **Latencia:** 24 ms | **Bajada:** 220 Mbps")
+    # Módulo GPS en Tiempo Real (Geolocalización por JS)
+    st.markdown("### 📍 GPS & Telemetría Global")
+    st.caption("Obtener ubicación actual del dispositivo:")
     
-    # Efecto de barra de escaneo de enerxía
+    # Componente HTML/JS interactivo para obtener coordenadas del celular
+    st.markdown("""
+        <div style="text-align: center;">
+            <button onclick="
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        alert('¡Ubicación adquirida, Jefa! Lat: ' + lat.toFixed(4) + ', Lon: ' + lon.toFixed(4));
+                    },
+                    (error) => {
+                        alert('Error al obtener GPS: Asegúrate de dar permisos de ubicación.');
+                    }
+                );
+            " style="background-color: #00d2ff; color: black; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 0.85rem;">
+                🌐 Sincronizar GPS Satelital
+            </button>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.divider()
+    
+    # Módulo Starlink con animación
+    st.markdown("### 🛰️ Enlace Starlink")
+    st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
+    st.caption("📡 **Latencia:** 24 ms | **Señal:** Óptima")
+    
     st.markdown("""
         <div style="background-color: #111; border-radius: 10px; padding: 3px; border: 1px solid #333;">
             <div style="background: linear-gradient(90deg, #00d2ff, #ff007f, #00d2ff); 
-                        height: 10px; border-radius: 8px; width: 100%; 
+                        height: 8px; border-radius: 8px; width: 100%; 
                         animation: pulseBar 2s infinite linear;"></div>
         </div>
         <style>
@@ -96,7 +121,7 @@ with st.sidebar:
         mime="text/plain"
     )
 
-# Configurar variables visuales e contexto
+# Configurar variables visuales y contexto según el modo seleccionado
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
@@ -113,7 +138,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# CSS Avanzado con animacións de pulso de luz
+# Estilos CSS con Animación Neón
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -144,7 +169,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Título da App
+# Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
 # Lector Multimodal
@@ -167,7 +192,7 @@ for message in st.session_state.messages:
                     </button>
                 """, unsafe_allow_html=True)
 
-# Entrada do usuario
+# Entrada del usuario
 if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
     contenido_adjunto = ""
     imagen_base64 = None
