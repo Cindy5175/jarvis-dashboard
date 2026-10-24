@@ -6,41 +6,16 @@ from groq import Groq
 
 # 1. Configuración de la página
 st.set_page_config(
-    page_title="J.A.R.V.I.S AI autónoma", 
+    page_title="Sistema C.I.T. / J.A.R.V.I.S.", 
     page_icon="⚛️", 
     layout="centered"
 )
 
-# Estilos CSS personalizados y optimizados para celular
-st.markdown("""
-    <style>
-    .neon-title {
-        color: #00d2ff;
-        text-shadow: 0 0 8px #00d2ff, 0 0 15px #00d2ff, 0 0 30px #0072ff;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        font-size: 1.8rem;
-        text-align: center;
-        margin-top: -15px;
-        margin-bottom: 20px;
-        white-space: nowrap;
-    }
-    .block-container {
-        max-width: 750px;
-        padding-top: 2rem;
-        padding-bottom: 5rem;
-    }
-    .stChatInput {
-        max-width: 750px;
-        margin: 0 auto;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Inicializar estado del tema en sesión
+if "modo_sistema" not in st.session_state:
+    st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
-# Encabezado centrado con Reactor Arc (Todo en una línea fluida)
-st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI</h1>', unsafe_allow_html=True)
-
-# 2. Conexión directa y segura con la API de Groq
+# 2. Conexión con la API de Groq
 groq_api_key = "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"
 
 if not groq_api_key:
@@ -49,20 +24,32 @@ if not groq_api_key:
 
 client = Groq(api_key=groq_api_key)
 
-# 3. Historial de chat en la sesión
+# 3. Historial de chat
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {
-            "role": "system", 
-            "content": "Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa' y respondes con un tono servicial, astuto y resolutivo."
-        }
-    ]
+    st.session_state.messages = []
 
-# 4. BARRA LATERAL OCULTA (Panel de control avanzado)
+# 4. BARRA LATERAL OCULTA (Panel de Control y Conmutador Dual)
 with st.sidebar:
-    st.markdown("### ⚙️ Panel de Control J.A.R.V.I.S.")
+    st.markdown("### ⚙️ Centro de Comando")
     
-    # Función 1: Selector de Modelos
+    # Conmutador de Personalidad / Tema
+    modo = st.radio(
+        "Selecciona Protocolo Activo:",
+        ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
+    )
+    st.session_state.modo_sistema = modo
+    
+    st.divider()
+    
+    # Módulo Starlink
+    st.markdown("### 🛰️ Enlace Satelital Starlink")
+    st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
+    st.caption("📡 **Latencia:** 24 ms | **Bajada:** 220 Mbps")
+    st.progress(0.95)
+    
+    st.divider()
+    
+    # Selector de Motor
     st.markdown("#### 🎛️ Selector de Motor")
     modelo_seleccionado = st.selectbox(
         "Modelo activo:",
@@ -78,58 +65,91 @@ with st.sidebar:
     
     st.divider()
     
-    # Función 2: Módulo de Voz
+    # Asistente de Voz
     st.markdown("#### 🔊 Asistente de Voz")
-    activar_voz = st.checkbox("Habilitar síntesis de voz (JS)", value=False)
+    activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
     
     st.divider()
     
-    # Función 3: Exportar Chat
-    st.markdown("#### 💾 Respaldo de Sesión")
+    # Respaldo
+    st.markdown("#### 💾 Respaldo")
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button(
         label="📥 Descargar Chat (.txt)",
         data=chat_texto,
-        file_name="jarvis_chat_log.txt",
+        file_name="cit_chat_log.txt",
         mime="text/plain"
     )
-    
-    st.divider()
-    
-    # Función 4: Presets de Acceso Rápido
-    st.markdown("#### ⚡ Acciones Rápidas")
-    preset_elegido = None
-    if st.button("💡 Resumir última respuesta"):
-        preset_elegido = "Por favor, haz un resumen claro y ejecutivo de lo último que conversamos."
-    if st.button("💻 Explicar código adjunto"):
-        preset_elegido = "Analiza detalladamente el archivo o código que acabo de adjuntar."
 
-# Sección desplegable para adjuntar archivos / imágenes
+# Configurar variables visuales y de contexto según el modo seleccionado
+if "N.O.V.A." in st.session_state.modo_sistema:
+    color_neon = "#ff007f"
+    shadow_neon = "#ff007f"
+    titulo_html = '<h1 class="neon-title">🟣 N.O.V.A. - C.I.T.</h1>'
+    system_prompt = "Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. altamente avanzado y tecnológico. Te diriges al usuario como 'Jefa', usas terminología de vanguardia, biometría y confirmaciones tácticas directas."
+else:
+    color_neon = "#00d2ff"
+    shadow_neon = "#0072ff"
+    titulo_html = '<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI</h1>'
+    system_prompt = "Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa' y respondes con un tono servicial, astuto y resolutivo."
+
+# Actualizar el system prompt en el historial si cambió el protocolo
+if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
+    st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
+else:
+    st.session_state.messages[0]["content"] = system_prompt
+
+# Estilos Dinámicos CSS
+st.markdown(f"""
+    <style>
+    .neon-title {{
+        color: {color_neon};
+        text-shadow: 0 0 8px {color_neon}, 0 0 15px {color_neon}, 0 0 30px {shadow_neon};
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1.8rem;
+        text-align: center;
+        margin-top: -15px;
+        margin-bottom: 20px;
+        white-space: nowrap;
+    }}
+    .block-container {{
+        max-width: 750px;
+        padding-top: 2rem;
+        padding-bottom: 5rem;
+    }}
+    .stChatInput {{
+        max-width: 750px;
+        margin: 0 auto;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+# Título de la App
+st.markdown(titulo_html, unsafe_allow_html=True)
+
+# Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
     archivo_subido = st.file_uploader(
-        "Carga una imagen (PNG, JPG) o un archivo de texto/código (TXT, CSV, PY, MD):",
+        "Carga una imagen o archivo de texto/código:",
         type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
     )
 
-# Mostrar los mensajes anteriores
-for idx, message in enumerate(st.session_state.messages):
+# Mostrar Historial
+for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            
             if message["role"] == "assistant" and activar_voz:
                 texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
                 st.markdown(f"""
-                    <button onclick="let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\"); utterance.lang = 'es-ES'; window.speechSynthesis.speak(utterance);" style="background-color: #00d2ff; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                    <button onclick="let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\"); utterance.lang = 'es-ES'; window.speechSynthesis.speak(utterance);" style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
                         🔊 Reproducir Audio
                     </button>
                 """, unsafe_allow_html=True)
 
-# 5. Entrada de texto del usuario
-prompt_usuario = st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S...")
-prompt = preset_elegido if preset_elegido else prompt_usuario
-
-if prompt:
+# Entrada de usuario
+if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
     contenido_adjunto = ""
     imagen_base64 = None
     
@@ -144,21 +164,20 @@ if prompt:
         else:
             try:
                 texto_archivo = archivo_subido.read().decode("utf-8")
-                contenido_adjunto = f"\n\n--- INICIO CONTENIDO DEL ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO DEL ARCHIVO ---"
+                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
             except Exception:
-                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}' como texto plano.]"
+                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
 
     prompt_completo = prompt + contenido_adjunto
-
     st.session_state.messages.append({"role": "user", "content": prompt_completo})
     
     with st.chat_message("user"):
         st.markdown(prompt)
         if archivo_subido is not None:
             if "image" in archivo_subido.type:
-                st.image(archivo_subido, caption=f"Imagen adjunta: {archivo_subido.name}", use_column_width=True)
+                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
             else:
-                st.caption(f"📄 Archivo adjunto: {archivo_subido.name}")
+                st.caption(f"📄 Archivo: {archivo_subido.name}")
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
@@ -213,7 +232,7 @@ if prompt:
                 continue
         
         if not exito:
-            full_response = "Lo siento, Jefa. Tuve un inconveniente al procesar la solicitud con el motor seleccionado."
+            full_response = "Lo siento, Jefa. Inconveniente en la conexión con los servidores centrales."
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
