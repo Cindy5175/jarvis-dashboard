@@ -69,6 +69,12 @@ with st.sidebar:
     
     st.divider()
     
+    # Control de Visibilidad del HUD Principal
+    st.markdown("### 👁️ Interfaz Visual")
+    mostrar_hud = st.checkbox("Mostrar HUD Holográfico Orbital", value=True)
+
+    st.divider()
+    
     # Selector de Protocolos Especiales
     st.markdown("### 🛡️ Protocolos Especiales")
     protocolo_extra = st.selectbox(
@@ -288,50 +294,51 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# PANTALLA HOLOGRÁFICA EXPANDIDA (Nav Grid + Radar + Power Distribution)
-st.markdown(f"""
-    <div class="hud-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px;">
-            <span>[ORBITAL & TACTICAL C2 FEED]</span>
-            <span>SYSTEMS INTEGRITY: {st.session_state.energia_arc}%</span>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <!-- Nav Grid Box -->
-            <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
-                <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">NAV_GRID ACTIVE</div>
-                <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">🌍 {st.session_state.ubicacion_jefa}</div>
-                <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">SAT_TRACKING: 98% OK</div>
+# PANTALLA HOLOGRÁFICA EXPANDIDA (Se muestra u oculta según el checkbox de la barra lateral)
+if mostrar_hud:
+    st.markdown(f"""
+        <div class="hud-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px;">
+                <span>[ORBITAL & TACTICAL C2 FEED]</span>
+                <span>SYSTEMS INTEGRITY: {st.session_state.energia_arc}%</span>
             </div>
-            <!-- Power Distribution Box -->
-            <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
-                <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">POWER NETWORK</div>
-                <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">⚡ OUTPUT: 1.2 GW</div>
-                <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">EFFICIENCY: 99.1%</div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <!-- Nav Grid Box -->
+                <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
+                    <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">NAV_GRID ACTIVE</div>
+                    <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">🌍 {st.session_state.ubicacion_jefa}</div>
+                    <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">SAT_TRACKING: 98% OK</div>
+                </div>
+                <!-- Power Distribution Box -->
+                <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
+                    <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">POWER NETWORK</div>
+                    <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">⚡ OUTPUT: 1.2 GW</div>
+                    <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">EFFICIENCY: 99.1%</div>
+                </div>
+            </div>
+
+            <!-- Radar Central -->
+            <div class="radar-box">
+                <div class="radar-sweep"></div>
+                <div class="radar-core"></div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 12px; border-top: 1px solid #333; padding-top: 6px;">
+                <span>GRID: {st.session_state.lat_lon}</span>
+                <span>STATUS: ONLINE</span>
             </div>
         </div>
+    """, unsafe_allow_html=True)
 
-        <!-- Radar Central -->
-        <div class="radar-box">
-            <div class="radar-sweep"></div>
-            <div class="radar-core"></div>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 12px; border-top: 1px solid #333; padding-top: 6px;">
-            <span>GRID: {st.session_state.lat_lon}</span>
-            <span>STATUS: ONLINE</span>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
-# Botones de Comando Estilo Stark (Mission / Deploy)
-col_btn1, col_btn2 = st.columns(2)
-with col_btn1:
-    if st.button("🎯 MISSION: ASSIGN", use_container_width=True):
-        st.toast("¡Directiva de misión asignada con éxito, Jefa!", icon="🚀")
-with col_btn2:
-    if st.button("🚀 DEPLOY: UNIT", use_container_width=True):
-        st.toast("¡Unidad táctica desplegada en la red!", icon="⚡")
+    # Botones de Comando Estilo Stark (Mission / Deploy)
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("🎯 MISSION: ASSIGN", use_container_width=True):
+            st.toast("¡Directiva de misión asignada con éxito, Jefa!", icon="🚀")
+    with col_btn2:
+        if st.button("🚀 DEPLOY: UNIT", use_container_width=True):
+            st.toast("¡Unidad táctica desplegada en la red!", icon="⚡")
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
