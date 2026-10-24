@@ -1,6 +1,31 @@
 import os
 import streamlit as st
--bottom: 5rem;
+from groq import Groq
+
+# 1. Configuración de la página
+st.set_page_config(
+    page_title="J.A.R.V.I.S AI autónoma", 
+    page_icon="⚛️", 
+    layout="centered"
+)
+
+# Estilos CSS personalizados
+st.markdown("""
+    <style>
+    .neon-title {
+        color: #00d2ff;
+        text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff, 0 0 40px #0072ff;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 2.3rem;
+        text-align: center;
+        margin-top: -20px;
+        margin-bottom: 25px;
+    }
+    .block-container {
+        max-width: 750px;
+        padding-top: 2rem;
+        padding-bottom: 5rem;
     }
     .stChatInput {
         max-width: 750px;
@@ -9,32 +34,10 @@ import streamlit as st
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Control de Acceso Privado (Contraseña Secreta)
-CLAVE_CORRECTA = "Jarvis estás despierto?"
-
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = False
-
-if not st.session_state.autenticado:
-    st.markdown('<h1 class="neon-title">⚛️ Acceso Restringido</h1>', unsafe_allow_html=True)
-    st.write("🔒 Por favor, ingrese la clave de autorización para activar el panel.")
-    
-    clave_input = st.text_input("Clave de Acceso:", type="password")
-    
-    if st.button("Desbloquear Panel"):
-        if clave_input.strip() == CLAVE_CORRECTA:
-            st.session_state.autenticado = True
-            st.success("Acceso concedido, Jefa. Inicializando sistemas...")
-            st.rerun()
-        else:
-            st.error("Acceso denegado. Clave incorrecta.")
-    
-    st.stop() # Detiene la ejecución aquí si no está autenticado
-
 # Encabezado centrado con Reactor Arc
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S AI autónoma</h1>', unsafe_allow_html=True)
 
-# 3. Conexión directa y segura con la API de Groq
+# 2. Conexión directa y segura con la API de Groq
 groq_api_key = "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"
 
 if not groq_api_key:
@@ -43,7 +46,7 @@ if not groq_api_key:
 
 client = Groq(api_key=groq_api_key)
 
-# 4. Historial de chat en la sesión
+# 3. Historial de chat en la sesión
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
@@ -58,7 +61,7 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# 5. Entrada de texto del usuario
+# 4. Entrada de texto del usuario
 if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
