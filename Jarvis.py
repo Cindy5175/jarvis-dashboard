@@ -51,7 +51,6 @@ else:
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
-    # Conmutador de Personalidad con recarga inmediata
     opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
     indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
     
@@ -67,12 +66,6 @@ with st.sidebar:
         on_change=cambiar_modo
     )
     
-    st.divider()
-    
-    # Control de Visibilidad del HUD Principal
-    st.markdown("### 👁️ Interfaz Visual")
-    mostrar_hud = st.checkbox("Mostrar HUD Holográfico Orbital", value=True)
-
     st.divider()
     
     # Selector de Protocolos Especiales
@@ -96,27 +89,18 @@ with st.sidebar:
 
     st.divider()
     
-    # HUD Holográfico de Comunicaciones Globales
-    st.markdown("### 🌐 HUD Holográfico Orbital")
+    st.markdown("### 🌐 HUD Holográfico de Comunicaciones")
     st.markdown(f"""
         <div style="background: rgba(10, 15, 30, 0.85); border: 1px solid {color_neon}; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px {color_neon}33;">
             <div style="font-size: 0.75rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 4px;">SYSTEM_STATUS: SECURE_LINK</div>
             <div style="font-size: 0.8rem; color: #fff;">📡 <b>Transmisión Global:</b> Activa</div>
-            <div style="font-size: 0.8rem; color: #ddd;">✉️ <b>Canal Encriptado:</b> OK</div>
-            <div style="font-size: 0.75rem; color: #aaa; margin-top: 5px;">🌍 Global Grid: Enlazado</div>
         </div>
     """, unsafe_allow_html=True)
     
     st.divider()
     
-    # Reactor Arc / Monitor de Energía
     st.markdown("### ⚛️ Reactor Arc & Energía")
     st.caption(f"⚡ **Potencia de Núcleo:** {st.session_state.energia_arc}%")
-    st.markdown(f"""
-        <div style="background-color: #111; border-radius: 6px; padding: 2px; border: 1px solid #333;">
-            <div style="background: {color_neon}; height: 6px; border-radius: 4px; width: {st.session_state.energia_arc}%;"></div>
-        </div>
-    """, unsafe_allow_html=True)
     if st.button("🔋 Recargar Reactor Arc"):
         st.session_state.energia_arc = 100
         st.success("¡Núcleo al 100%, Jefa!")
@@ -124,49 +108,17 @@ with st.sidebar:
 
     st.divider()
     
-    # Diagnóstico Táctico de Errores y API
-    st.markdown("### 📊 Diagnóstico Táctico")
-    st.caption("🟢 **API Groq:** Operativa")
-    st.caption(f"🧠 **Memoria Activa:** {len(st.session_state.messages)} interacciones")
-    st.caption("🌡️ **Temperatura Térmica:** Óptima (34°C)")
-
-    st.divider()
-    
-    # Módulo GPS y Coordenadas Dinámicas
     st.markdown("### 📍 GPS & Telemetría Global")
     st.caption(f"📍 **Zona:** {st.session_state.ubicacion_jefa}")
-    st.caption(f"🧭 **Coordenadas:** {st.session_state.lat_lon}")
-    
-    nueva_ubicacion = st.text_input("Nueva zona (Ej: Buin, Providencia...):", placeholder="Escribe un lugar")
-    nuevas_coords = st.text_input("Coordenadas Lat, Lon (Opcional):", placeholder="Ej: -33.73, -70.73")
-    
+    nueva_ubicacion = st.text_input("Nueva zona:", placeholder="Escribe un lugar")
     if st.button("🛰️ Sincronizar Posición"):
         if nueva_ubicacion:
             st.session_state.ubicacion_jefa = nueva_ubicacion
-        if nuevas_coords:
-            st.session_state.lat_lon = nuevas_coords
-        st.success("¡Telemetría de posición actualizada, Jefa!")
+        st.success("¡Actualizado, Jefa!")
         st.rerun()
     
     st.divider()
     
-    # Módulo Starlink con animación
-    st.markdown("### 🛰️ Enlace Starlink")
-    st.caption("🟢 **Estado:** Conectado (Órbita Baja)")
-    st.caption("📡 **Latencia:** 24 ms | **Señal:** Óptima")
-    
-    st.markdown(f"""
-        <div style="background-color: #111; border-radius: 10px; padding: 3px; border: 1px solid #333;">
-            <div style="background: linear-gradient(90deg, {color_neon}, #ff007f, {color_neon}); 
-                        height: 8px; border-radius: 8px; width: 100%; 
-                        animation: pulseBar 2s infinite linear;"></div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.divider()
-    
-    # Selector de Motor
-    st.markdown("#### 🎛️ Selector de Motor")
     modelo_seleccionado = st.selectbox(
         "Modelo activo:",
         [
@@ -179,23 +131,10 @@ with st.sidebar:
         index=0
     )
     
-    st.divider()
-    
-    # Asistente de Voz
-    st.markdown("#### 🔊 Asistente de Voz")
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
     
-    st.divider()
-    
-    # Respaldo
-    st.markdown("#### 💾 Respaldo")
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
-    st.download_button(
-        label="📥 Descargar Chat (.txt)",
-        data=chat_texto,
-        file_name="cit_chat_log.txt",
-        mime="text/plain"
-    )
+    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain")
 
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
@@ -213,7 +152,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS Avanzados para Título y HUD Holográfico Extendido
+# Estilos CSS
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -228,7 +167,7 @@ st.markdown(f"""
         font-size: 1.8rem;
         text-align: center;
         margin-top: -10px;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         white-space: nowrap;
         animation: neonGlow 2.5s infinite ease-in-out;
     }}
@@ -237,108 +176,11 @@ st.markdown(f"""
         padding-top: 1.5rem;
         padding-bottom: 5rem;
     }}
-    
-    /* ANIMACIÓN RADAR HOLOGRÁFICO Y COMPONENTES SCI-FI */
-    @keyframes rotateRadar {{
-        from {{ transform: rotate(0deg); }}
-        to {{ transform: rotate(360deg); }}
-    }}
-    @keyframes pulseCore {{
-        0% {{ transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 10px {color_neon}; }}
-        50% {{ transform: scale(1.1); opacity: 1; box-shadow: 0 0 25px {color_neon}; }}
-        100% {{ transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 10px {color_neon}; }}
-    }}
-    
-    .hud-container {{
-        background: rgba(5, 10, 25, 0.95);
-        border: 1px solid {color_neon};
-        border-radius: 12px;
-        padding: 15px;
-        box-shadow: inset 0 0 15px {color_neon}22, 0 0 15px {color_neon}44;
-        margin-bottom: 20px;
-        font-family: 'Courier New', monospace;
-    }}
-    
-    .radar-box {{
-        width: 100px;
-        height: 100px;
-        border: 2px dashed {color_neon};
-        border-radius: 50%;
-        position: relative;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }}
-    
-    .radar-sweep {{
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        position: absolute;
-        background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, {color_neon}66 360deg);
-        animation: rotateRadar 4s linear infinite;
-    }}
-    
-    .radar-core {{
-        width: 28px;
-        height: 28px;
-        background: {color_neon};
-        border-radius: 50%;
-        position: absolute;
-        animation: pulseCore 2s infinite ease-in-out;
-    }}
     </style>
 """, unsafe_allow_html=True)
 
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
-
-# PANTALLA HOLOGRÁFICA EXPANDIDA (Con unsafe_allow_html=True explícito)
-if mostrar_hud:
-    st.markdown(f"""
-        <div class="hud-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px;">
-                <span>[ORBITAL & TACTICAL C2 FEED]</span>
-                <span>SYSTEMS INTEGRITY: {st.session_state.energia_arc}%</span>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                <!-- Nav Grid Box -->
-                <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
-                    <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">NAV_GRID ACTIVE</div>
-                    <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">🌍 {st.session_state.ubicacion_jefa}</div>
-                    <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">SAT_TRACKING: 98% OK</div>
-                </div>
-                <!-- Power Distribution Box -->
-                <div style="border: 1px solid {color_neon}66; border-radius: 8px; padding: 8px; background: rgba(0,15,30,0.6);">
-                    <div style="font-size: 0.65rem; color: {color_neon}; font-weight: bold;">POWER NETWORK</div>
-                    <div style="font-size: 0.72rem; color: #fff; margin-top: 4px;">⚡ OUTPUT: 1.2 GW</div>
-                    <div style="font-size: 0.6rem; color: #aaa; margin-top: 2px;">EFFICIENCY: 99.1%</div>
-                </div>
-            </div>
-
-            <!-- Radar Central -->
-            <div class="radar-box">
-                <div class="radar-sweep"></div>
-                <div class="radar-core"></div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 12px; border-top: 1px solid #333; padding-top: 6px;">
-                <span>GRID: {st.session_state.lat_lon}</span>
-                <span>STATUS: ONLINE</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Botones de Comando Estilo Stark (Mission / Deploy)
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("🎯 MISSION: ASSIGN", use_container_width=True):
-            st.toast("¡Directiva de misión asignada con éxito, Jefa!", icon="🚀")
-    with col_btn2:
-        if st.button("🚀 DEPLOY: UNIT", use_container_width=True):
-            st.toast("¡Unidad táctica desplegada en la red!", icon="⚡")
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
