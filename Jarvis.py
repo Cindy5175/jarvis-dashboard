@@ -15,6 +15,9 @@ st.set_page_config(
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
+if "ubicacion_jefa" not in st.session_state:
+    st.session_state.ubicacion_jefa = "Buin, Santiago, Chile (Predeterminada por Sistema)"
+
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
 
@@ -41,29 +44,16 @@ with st.sidebar:
     
     st.divider()
     
-    # Módulo GPS en Tiempo Real (Geolocalización por JS)
+    # Módulo GPS / Ubicación Táctica
     st.markdown("### 📍 GPS & Telemetría Global")
-    st.caption("Obtener ubicación actual del dispositivo:")
+    st.caption(f"📍 **Posición actual:**\n{st.session_state.ubicacion_jefa}")
     
-    # Componente HTML/JS interactivo para obtener coordenadas del celular
-    st.markdown("""
-        <div style="text-align: center;">
-            <button onclick="
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        alert('¡Ubicación adquirida, Jefa! Lat: ' + lat.toFixed(4) + ', Lon: ' + lon.toFixed(4));
-                    },
-                    (error) => {
-                        alert('Error al obtener GPS: Asegúrate de dar permisos de ubicación.');
-                    }
-                );
-            " style="background-color: #00d2ff; color: black; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 0.85rem;">
-                🌐 Sincronizar GPS Satelital
-            </button>
-        </div>
-    """, unsafe_allow_html=True)
+    nueva_ubicacion = st.text_input("Actualizar coordenadas o zona:", placeholder="Ej: Santiago, Chile")
+    if st.button("🛰️ Sincronizar Posición"):
+        if nueva_ubicacion:
+            st.session_state.ubicacion_jefa = nueva_ubicacion
+            st.success("¡Coordenadas actualizadas con éxito, Jefa!")
+            st.rerun()
     
     st.divider()
     
@@ -121,17 +111,17 @@ with st.sidebar:
         mime="text/plain"
     )
 
-# Configurar variables visuales y contexto según el modo seleccionado
+# Configurar variables visuales y contexto según el modo seleccionado (incluyendo la ubicación actual)
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
     titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_prompt = "Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. altamente avanzado y tecnológico. Te diriges al usuario como 'Jefa', usas terminología de vanguardia, biometría y confirmaciones tácticas directas."
+    system_prompt = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. altamente avanzado y tecnológico. Te diriges al usuario como 'Jefa'. Ubicación táctica actual de la Jefa: {st.session_state.ubicacion_jefa}. Úsala cuando sea relevante para las consultas."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_prompt = "Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa' y respondes con un tono servicial, astuto y resolutivo."
+    system_prompt = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante, lógica, cercana y leal. Te diriges al usuario siempre como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa}. Tenla presente para contextualizar las respuestas."
 
 if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
     st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
