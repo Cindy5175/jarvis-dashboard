@@ -72,22 +72,48 @@ if prompt := st.chat_input("Escribe tu instrucción o pregunta para J.A.R.V.I.S.
         message_placeholder = st.empty()
         full_response = ""
         
+        # Lista de candidatos prioritarios actualizados
+        modelos_candidatos = [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b",
+            "meta-llama/llama-4-maverick-17b-128e-instruct"
+        ]
+        
+        # Intentar obtener modelos activos dinámicamente desde la cuenta
         try:
-            completion = client.chat.completions.create(
-                model="llama-3.3-70b-specdec",
-                messages=st.session_state.messages,
-                stream=True,
-            )
+            model_list = client.models.list()
+            modelos_disponibles = [m.id for m in model_list.data if getattr(m, 'active', True)]
+            # Priorizar los modelos disponibles de la lista obtenida
+            if modelos_disponibles:
+                modelos_candidatos = modelos_disponibles + modelos_candidatos
+        except Exception:
+            pass # Si falla listar, usamos la lista de respaldo
             
-            for chunk in completion:
-                content = chunk.choices[0].delta.content or ""
-                full_response += content
-                message_placeholder.markdown(full_response + "▌")
-            
+        exito = False
+        for modelo_actual in modelos_candidatos:
+            try:
+                completion = client.chat.completions.create(
+                    model=modelo_actual,
+                    messages=st.session_state.messages,
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    content = chunk.choices[0].delta.content or ""
+                    full_response += content
+                    message_placeholder.markdown(full_response + "▌")
+                
+                message_placeholder.markdown(full_response)
+                exito = True
+                break
+            except Exception:
+                continue
+        
+        if not exito:
+            full_response = "Lo siento, Jefa. Los servidores de Groq están reconfigurando modelos en este instante."
             message_placeholder.markdown(full_response)
-        except Exception as e:
-            st.error(f"Error al conectar con la IA: {e}")
-            full_response = "Lo siento, Jefa. Ocurrió un inconveniente al conectar con el motor central."
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+
 
