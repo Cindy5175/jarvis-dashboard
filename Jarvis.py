@@ -26,6 +26,9 @@ if "energia_arc" not in st.session_state:
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
+if "salvapantallas_activo" not in st.session_state:
+    st.session_state.salvapantallas_activo = False
+
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
@@ -87,7 +90,9 @@ system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y le
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
-    salvapantallas_activo = st.checkbox("🎬 Protocolo Salvapantallas Stark", value=False)
+    
+    # Checkbox sincronizado con el estado de sesión
+    st.session_state.salvapantallas_activo = st.checkbox("🎬 Protocolo Salvapantallas Stark", value=st.session_state.salvapantallas_activo)
 
     st.divider()
     
@@ -211,7 +216,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS con título responsivo y efectos interactivos (Corregido el f-string)
+# Estiglios CSS generales
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -279,23 +284,6 @@ css_estilos = f"""
     position: absolute;
     animation: pulseSphere 2.5s infinite ease-in-out;
 }}
-.screensaver-overlay {{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle, rgba(2,10,25,0.98) 0%, rgba(0,2,8,0.99) 100%);
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Courier New', monospace;
-    color: {color_neon};
-    overflow: hidden;
-    cursor: pointer;
-}}
 .scanline {{
     position: absolute;
     width: 100%;
@@ -326,52 +314,35 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 SALVAPANTALLAS INTERACTIVO
-if salvapantallas_activo:
-    salvapantallas_html = f"""
-    <div id="screensaver-element" class="screensaver-overlay" onclick="dismissScreensaver()" tabindex="0">
-        <div class="holo-grid"></div>
-        <div class="scanline"></div>
-        <div style="position: relative; z-index: 10; text-align: center; padding: 20px;">
-            <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
-                <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
-                <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
-                <div class="core-sphere" style="width: 45px; height: 45px;"></div>
+# 🎬 PANTALLA ACTIVA DE SALVAPANTALLAS NATIVA (Controlada por st.session_state)
+if st.session_state.salvapantallas_activo:
+    # Capa de fondo holográfica completa
+    st.markdown(
+        f"""
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(2,10,25,0.99) 0%, rgba(0,2,8,0.99) 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', monospace; color: {color_neon};">
+            <div class="holo-grid"></div>
+            <div class="scanline"></div>
+            <div style="position: relative; z-index: 10; text-align: center; padding: 20px;">
+                <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
+                    <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
+                    <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
+                    <div class="core-sphere" style="width: 45px; height: 45px;"></div>
+                </div>
+                <h1 style="color: {color_neon}; font-size: 1.8rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 2px; margin: 0; white-space: nowrap;">J.A.R.V.I.S. C2 SECURE</h1>
+                <p style="color: #88ccee; font-size: 0.85rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
             </div>
-            <h1 style="color: {color_neon}; font-size: 1.8rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 2px; margin: 0; white-space: nowrap;">J.A.R.V.I.S. C2 SECURE</h1>
-            <p style="color: #88ccee; font-size: 0.85rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
-            <p style="color: #00d2ffaa; font-size: 0.75rem; margin-top: 25px; border: 1px solid {color_neon}66; padding: 6px 12px; border-radius: 20px; display: inline-block;">
-                ⚡ Toca la pantalla, mueve el mouse o presiona cualquier tecla para desbloquear
-            </p>
         </div>
-    </div>
-
-    <script>
-    function dismissScreensaver() {{
-        const el = document.getElementById('screensaver-element');
-        if(el) {{
-            el.style.display = 'none';
-        }}
-    }}
-
-    let mouseMovedCount = 0;
-    window.addEventListener('mousemove', function() {{
-        mouseMovedCount++;
-        if(mouseMovedCount > 5) {{
-            dismissScreensaver();
-        }}
-    }}, {{once: false}});
-
-    window.addEventListener('keydown', function() {{
-        dismissScreensaver();
-    }});
-
-    window.addEventListener('touchstart', function() {{
-        dismissScreensaver();
-    }});
-    </script>
-    """
-    st.markdown(salvapantallas_html, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Botón flotante nativo de Streamlit sobre el overlay para desactivarlo al toque
+    st.markdown("<div style='position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 100000; width: 80%; max-width: 350px;'>", unsafe_allow_html=True)
+    if st.button("⚡ DESBLOQUEAR ESTACIÓN C2", use_container_width=True):
+        st.session_state.salvapantallas_activo = False
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
