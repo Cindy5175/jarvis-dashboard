@@ -84,7 +84,7 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configurar variables visuales y el PERSONALIDAD SARCÁSTICA Y ANALISTA ESTILO TONY STARK
+# Configuración de personalidad y colores
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
@@ -173,27 +173,27 @@ with st.sidebar:
     st.divider()
     
     # ---------------------------------------------------------
-    # 🔴 SENSORES BIOMÉTRICOS & VOZ (NATIVOS Y FUNCIONALES EN MÓVIL)
+    # 🔴 SENSORES BIOMÉTRICOS (Nativos, alineados y simétricos)
     # ---------------------------------------------------------
     st.markdown("### 👁️ Sensores Biométricos")
     
-    with st.expander("📡 1. Sensor de Movimiento Óptico"):
-        st.caption("Abre la cámara de forma nativa para análisis de flujo óptico.")
+    with st.expander("📡 1. Sensor Óptico de Movimiento"):
+        st.caption("Visor de flujo óptico nativo.")
         foto_mov = st.camera_input("Activar Sensor Óptico", key="cam_optico")
         if foto_mov:
-            st.success("¡Flujo óptico capturado con éxito, Jefa!")
+            st.success("¡Flujo óptico capturado, Jefa!")
 
     with st.expander("👤 2. Reconocimiento Facial"):
         st.caption("Escaneo biométrico de seguridad.")
         foto_rostro = st.camera_input("Escanear Rostro Biométrico", key="cam_rostro")
         if foto_rostro:
-            st.success("¡Identidad confirmada. Bienvenida, Jefa!")
+            st.success("¡Identidad confirmada, Jefa!")
 
     st.markdown(
         f"""
         <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-top: 5px; text-align: center;">
             🎙️ <b>3. Voz en Tiempo Real:</b><br>
-            Usa el botón de micrófono 🎤 integrado en el teclado virtual de tu celular para dictar tus mensajes de texto al instante de forma nativa.
+            Usa el micrófono 🎤 de tu teclado virtual para dictar mensajes con total fluidez.
         </div>
         """,
         unsafe_allow_html=True
@@ -221,12 +221,12 @@ with st.sidebar:
     
     col_izq_1, col_izq_2 = st.columns(2)
     with col_izq_1:
-        if st.button("🧹💬 Purgar"):
+        if st.button("🧹💬 Purgar", use_container_width=True):
             st.session_state.messages = []
             st.success("¡Purgado!")
             st.rerun()
     with col_izq_2:
-        if st.button("🩺 Escanear"):
+        if st.button("🩺 Escanear", use_container_width=True):
             with st.spinner("Escaneando..."):
                 time.sleep(1.0)
             st.success("¡Ok, Jefa!")
@@ -234,7 +234,7 @@ with st.sidebar:
     st.divider()
     st.markdown("### ⚛️ Reactor Arc & Energía")
     st.caption(f"⚡ **Potencia de Núcleo:** {st.session_state.energia_arc}%")
-    if st.button("🔋 Recargar Reactor Arc"):
+    if st.button("🔋 Recargar Reactor Arc", use_container_width=True):
         st.session_state.energia_arc = 100
         st.success("¡Núcleo al 100%, Jefa!")
         st.rerun()
@@ -255,10 +255,10 @@ with st.sidebar:
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
     
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
-    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain")
+    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
 
     st.divider()
-    if st.button("🔒 Bloquear Sistema"):
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
         st.session_state.autenticado = False
         st.rerun()
 
@@ -406,7 +406,7 @@ if mostrar_hud:
             
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
             st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=80)
-            if st.button("💾 Guardar Notas"):
+            if st.button("💾 Guardar Notas", use_container_width=True):
                 st.success("¡Bitácora sincronizada con la red central, Jefa!")
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
