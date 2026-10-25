@@ -90,8 +90,18 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Enlace directo optimizado para el rostro holográfico con anillos de neón[cite: 1, 2]
-url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
+# Carga de la cara holográfica local (cara_jarvis.png) o respaldo web
+def obtener_imagen_base64(ruta_imagen):
+    if os.path.exists(ruta_imagen):
+        with open(ruta_imagen, "rb") as f:
+            return base64.b64encode(f.read()).decode('utf-8')
+    return None
+
+base64_cara = obtener_imagen_base64("cara_jarvis.png")
+if base64_cara:
+    url_imagen_holo = f"data:image/png;base64,{base64_cara}"
+else:
+    url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
