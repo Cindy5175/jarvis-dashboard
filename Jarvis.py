@@ -12,6 +12,9 @@ st.set_page_config(
 )
 
 # Inicializar estados en sesión
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+
 if "modo_sistema" not in st.session_state:
     st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
@@ -24,6 +27,45 @@ if "energia_arc" not in st.session_state:
 
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Revisar despliegue en GitHub\n• Optimizar latencia de red"
+
+# -------------------------------------------------------------
+# 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
+# -------------------------------------------------------------
+PIN_SECRETO = "1970"  # Puedes cambiar este PIN cuando gustes, Jefa
+
+if not st.session_state.autenticado:
+    st.markdown("""
+        <style>
+        .login-box {
+            background: rgba(5, 12, 30, 0.95);
+            border: 2px solid #00d2ff;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 25px #00d2ff44;
+            font-family: 'Courier New', monospace;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        </style>
+        <div class="login-box">
+            <h2 style="color: #00d2ff; margin-bottom: 10px;">🔒 ACCESO RESTRINGIDO</h2>
+            <p style="color: #aaa; font-size: 0.85rem;">Introduce el código de seguridad para desbloquear la estación de comando C.I.T.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        pin_ingresado = st.text_input("PIN de Acceso:", type="password", placeholder="Código secreto")
+        if st.button("🔓 Desbloquear Sistema", use_container_width=True):
+            if pin_ingresado == PIN_SECRETO:
+                st.session_state.autenticado = True
+                st.success("¡Acceso concedido, Jefa!")
+                st.rerun()
+            else:
+                st.error("⚠️ PIN incorrecto. Acceso denegado.")
+    st.stop()
+# -------------------------------------------------------------
 
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
@@ -50,7 +92,7 @@ else:
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
     system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL (Centro de Comando Avanzado)
+# 4. BARRA LATERAL (Centro de Comando Avanzado + Módulo de Archivos a la Izquierda)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
@@ -73,6 +115,15 @@ with st.sidebar:
     
     # Interruptor de visibilidad (Modo oculto de la estación)
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
+
+    st.divider()
+    
+    # MÓDULO DE AJUSTE DE ARCHIVO O IMAGEN UBICADO A LA IZQUIERDA (BARRA LATERAL)
+    st.markdown("### 📎 Carga Multimodal")
+    archivo_subido = st.file_uploader(
+        "Adjunta imagen o archivo:",
+        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
+    )
 
     st.divider()
     
@@ -127,6 +178,11 @@ with st.sidebar:
     
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain")
+
+    st.divider()
+    if st.button("🔒 Bloquear Sistema"):
+        st.session_state.autenticado = False
+        st.rerun()
 
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
@@ -214,12 +270,12 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Ocultable) + LAS 3 NUEVAS FUNCIONES INTEGRAN LAS SECCIONES
+# ESTACIÓN DE COMANDO PRINCIPAL (Ocultable)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
-        # 1. Orbe Holográfico en la parte superior
+        # 1. Orbe Holográfico
         st.markdown("""
             <div class="sphere-wrapper">
                 <div class="orbit-ring-1"></div>
@@ -230,7 +286,7 @@ if mostrar_hud:
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # 2. Módulo de Sensores en la parte inferior
+        # 2. Sensores
         st.markdown(f"""
             <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
                 <b style="color: {color_neon};">SENSORS TELEMETRY FEED</b><br>
@@ -239,14 +295,9 @@ if mostrar_hud:
             </div>
         """, unsafe_allow_html=True)
 
-        # -------------------------------------------------------------
-        # 🚀 INTEGRACIÓN DE LOS 3 PUNTOS NUEVOS EN LA ESTACIÓN
-        # -------------------------------------------------------------
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Expandible con las 3 nuevas capacidades tácticas
         with st.expander("🌐 Sub-Sistemas Avanzados [Clima, Rendimiento & Bitácora]"):
-            # Punto 1: Clima en tiempo real simulado/conectado para la zona
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>🌤️ Módulo Climático ({st.session_state.ubicacion_jefa})</b>", unsafe_allow_html=True)
             col_c1, col_c2, col_c3 = st.columns(3)
             col_c1.metric("Temperatura", "18°C", "Óptima")
@@ -255,7 +306,6 @@ if mostrar_hud:
             
             st.divider()
             
-            # Punto 2: Gráfico interactivo de rendimiento de red
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📈 Gráfico de Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
             import pandas as pd
             import numpy as np
@@ -267,21 +317,36 @@ if mostrar_hud:
             
             st.divider()
             
-            # Punto 3: Bitácora / Notas rápidas de misión en sesión
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
             st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=80)
             if st.button("💾 Guardar Notas"):
                 st.success("¡Bitácora sincronizada con la red central, Jefa!")
-        # -------------------------------------------------------------
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
-# Lector Multimodal
-with st.expander("📎 Adjuntar archivo o imagen para análisis"):
-    archivo_subido = st.file_uploader(
-        "Carga una imagen o archivo de texto/código:",
-        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
-    )
+# -------------------------------------------------------------
+# 🎤 MÓDULO DE ACTIVACIÓN POR VOZ (Micrófono nativo del navegador)
+# -------------------------------------------------------------
+st.markdown(f"""
+    <div style="background: rgba(0,15,30,0.5); border: 1px dashed {color_neon}; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
+        <span style="font-size: 0.75rem; color: {color_neon}; font-family: monospace; font-weight: bold;">🎙️ CONTROL DE VOZ TÁCTICO:</span><br>
+        <button onclick="
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.onresult = function(event) {{
+                const speechToText = event.results[0][0].transcript;
+                const inputField = document.querySelector('input[aria-label*=\'Escribe\'], textarea[aria-label*=\'Escribe\'], input[type=\'text\']');
+                if(inputField) {{
+                    inputField.value = speechToText;
+                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }};
+            recognition.start();
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-top: 6px;">
+            🔴 Activar Micrófono e Hablar
+        </button>
+    </div>
+""", unsafe_allow_html=True)
 
 # Mostrar Historial
 for message in st.session_state.messages:
