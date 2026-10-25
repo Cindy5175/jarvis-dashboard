@@ -81,14 +81,12 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Búsqueda automática basada en la ruta exacta del script (directorio local)
+# Búsqueda automática que incluye 'Reactor.png' con mayúscula y variaciones
 def obtener_imagen_base64():
-    directorio_actual = os.path.dirname(os.path.abspath(__file__))
-    candidatos = ["reactor.png", "Reactor.png", "reactor.jpg", "Reactor.jpg", "cubos.png", "cara_jarvis.png", "holograma.png"]
+    candidatos = ["Reactor.png", "reactor.png", "Reactor.jpg", "reactor.jpg", "cubos.png", "cara_jarvis.png", "holograma.png"]
     for archivo in candidatos:
-        ruta_completa = os.path.join(directorio_actual, archivo)
-        if os.path.exists(ruta_completa):
-            with open(ruta_completa, "rb") as f:
+        if os.path.exists(archivo):
+            with open(archivo, "rb") as f:
                 return base64.b64encode(f.read()).decode('utf-8')
     return None
 
