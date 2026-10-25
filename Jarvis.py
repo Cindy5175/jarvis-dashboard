@@ -339,10 +339,10 @@ if mostrar_hud:
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
-# 🎤 BOTÓN DE VOZ TÁCTICO INTEGRADO (Justo antes de la caja de chat)
+# 🎙️ BOTÓN DE VOZ MINIMALISTA (Solo el icono flotando exactamente donde lo pediste)
 st.markdown(
     f"""
-    <div style="display: flex; justify-content: flex-end; margin-bottom: -5px; position: relative; z-index: 10;">
+    <div style="display: flex; justify-content: flex-end; margin-bottom: -8px; position: relative; z-index: 10;">
         <button onclick="
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'es-ES';
@@ -355,8 +355,8 @@ st.markdown(
                 }}
             }};
             recognition.start();
-        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px {color_neon}66;">
-            🎙️ Hablar con Jarvis
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; box-shadow: 0 0 12px {color_neon}88; display: flex; align-items: center; justify-content: center;">
+            🎙️
         </button>
     </div>
     """,
