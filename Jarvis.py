@@ -218,7 +218,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales limpios (sin f-string masivo para evitar errores de sintaxis)
+# Estilos CSS generales limpios
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -320,12 +320,12 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 if st.session_state.modo_holografico:
     st.markdown(
         f"""
-        <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 0 35px {color_neon}66; font-family: 'Courier New', monospace; margin-bottom: 20px; position: relative; overflow: hidden;">
+        <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 15px; margin-bottom: 15px; position: relative; overflow: hidden;">
             <div class="scanline"></div>
             <h2 style="color: {color_neon}; text-shadow: 0 0 15px {color_neon}; letter-spacing: 2px; margin-top: 0;">🔮 ESTACIÓN HOLOGRÁFICA C2</h2>
             <p style="color: #88ccee; font-size: 0.85rem;">[NÚCLEO CUÁNTICO ACTIVO - TELEMETRÍA EN TIEMPO REAL]</p>
             
-            <div class="sphere-wrapper" style="width: 130px; height: 130px; margin: 25px auto;">
+            <div class="sphere-wrapper" style="width: 130px; height: 130px; margin: 15px auto;">
                 <div class="orbit-ring-1" style="width: 120px; height: 120px;"></div>
                 <div class="orbit-ring-2" style="width: 85px; height: 85px;"></div>
                 <div class="core-sphere" style="width: 40px; height: 40px;"></div>
