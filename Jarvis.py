@@ -12,6 +12,12 @@ st.set_page_config(
     layout="centered"
 )
 
+# Gestionar desactivación por movimiento del salvapantallas vía URL Query Params
+if "screensaver" in st.query_params and st.query_params["screensaver"] == "off":
+    st.session_state.salvapantallas_activo = False
+    st.query_params.clear()
+    st.rerun()
+
 # Inicializar estados en sesión
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -86,7 +92,7 @@ titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL (Centro de Comando Avanzado Izquierdo - Siempre Accesible)
+# 4. BARRA LATERAL (Centro de Comando Avanzado Izquierdo)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
@@ -314,39 +320,61 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 PANTALLA ACTIVA DE SALVAPANTALLAS (Permite hacer clic o tocar en cualquier parte para desactivar)
+# 🎬 PANTALLA ACTIVA DE SALVAPANTALLAS CON DETECTOR DE MOVIMIENTO Y TECLADO
 if st.session_state.salvapantallas_activo:
-    # Contenedor visual del salvapantallas que cubre la pantalla principal pero deja la barra lateral accesible
-    st.markdown(
-        f"""
-        <div id="screensaver-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(2,10,25,0.99) 0%, rgba(0,2,8,0.99) 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', monospace; color: {color_neon};">
-            <div class="holo-grid"></div>
-            <div class="scanline"></div>
-            <div style="position: relative; z-index: 10; text-align: center; padding: 20px;">
-                <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
-                    <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
-                    <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
-                    <div class="core-sphere" style="width: 45px; height: 45px;"></div>
-                </div>
-                <h1 style="color: {color_neon}; font-size: 1.8rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 2px; margin: 0; white-space: nowrap;">J.A.R.V.I.S. C2 SECURE</h1>
-                <p style="color: #88ccee; font-size: 0.85rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
-                <p style="color: #00d2ffaa; font-size: 0.75rem; margin-top: 25px; border: 1px solid {color_neon}66; padding: 6px 12px; border-radius: 20px; display: inline-block;">
-                    ⚡ Haz clic en cualquier parte o usa el menú lateral para desbloquear
-                </p>
+    screensaver_code = f"""
+    <div id="screensaver-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(2,10,25,0.99) 0%, rgba(0,2,8,0.99) 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', monospace; color: {color_neon}; cursor: pointer;">
+        <div class="holo-grid"></div>
+        <div class="scanline"></div>
+        <div style="position: relative; z-index: 10; text-align: center; padding: 20px;">
+            <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
+                <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
+                <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
+                <div class="core-sphere" style="width: 45px; height: 45px;"></div>
             </div>
+            <h1 style="color: {color_neon}; font-size: 1.8rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 2px; margin: 0; white-space: nowrap;">J.A.R.V.I.S. C2 SECURE</h1>
+            <p style="color: #88ccee; font-size: 0.85rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
+            <p style="color: #00d2ffaa; font-size: 0.75rem; margin-top: 25px; border: 1px solid {color_neon}66; padding: 6px 12px; border-radius: 20px; display: inline-block;">
+                ⚡ Mueve el mouse, presiona una tecla o toca la pantalla para desbloquear
+            </p>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    # Botón central flotante de alta prioridad para desactivar al instante
-    col_s1, col_s2, col_s3 = st.columns([1, 2, 1])
-    with col_s2:
-        st.markdown("<div style='position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 100000; width: 250px;'>", unsafe_allow_html=True)
-        if st.button("⚡ DESBLOQUEAR ESTACIÓN", use_container_width=True):
-            st.session_state.salvapantallas_activo = False
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+    </div>
+
+    <script>
+    let triggered = false;
+    function dismissScreensaver() {{
+        if (triggered) return;
+        triggered = true;
+        window.location.href = window.location.pathname + "?screensaver=off";
+    }}
+
+    // Detectar movimiento de mouse (con un pequeño umbral para evitar falsos positivos)
+    let moveCount = 0;
+    window.addEventListener('mousemove', function() {{
+        moveCount++;
+        if (moveCount > 2) {{
+            dismissScreensaver();
+        }}
+    }});
+
+    // Detectar cualquier tecla presionada
+    window.addEventListener('keydown', function() {{
+        dismissScreensaver();
+    }});
+
+    // Detectar toque en pantallas táctiles (celular/tablet)
+    window.addEventListener('touchstart', function() {{
+        dismissScreensaver();
+    }});
+
+    // Clic directo
+    window.addEventListener('click', function() {{
+        dismissScreensaver();
+    }});
+    </script>
+    """
+    st.markdown(screensaver_code, unsafe_allow_html=True)
+    st.stop()
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
