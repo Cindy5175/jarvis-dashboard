@@ -26,6 +26,9 @@ if "energia_arc" not in st.session_state:
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
+if "imagen_core_bytes" not in st.session_state:
+    st.session_state.imagen_core_bytes = None
+
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
@@ -81,25 +84,21 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Carga de tu imagen exacta local (cara_jarvis.png)
-def obtener_imagen_base64(ruta_imagen):
-    if os.path.exists(ruta_imagen):
-        with open(ruta_imagen, "rb") as f:
-            return base64.b64encode(f.read()).decode('utf-8')
-    return None
-
-base64_cara = obtener_imagen_base64("cara_jarvis.png")
-if base64_cara:
-    url_imagen_holo = f"data:image/png;base64,{base64_cara}"
-else:
-    url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
-
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
+
+    st.divider()
+    
+    # NUEVO: Selector directo para proyectar la imagen exacta que desees en el núcleo
+    st.markdown("### 🖼️ Proyector del Núcleo C2")
+    archivo_nucleo = st.file_uploader("Sube tu imagen de los cubos:", type=["png", "jpg", "jpeg"], key="upload_core")
+    if archivo_nucleo is not None:
+        st.session_state.imagen_core_bytes = archivo_nucleo.read()
+        st.success("¡Estructura cargada al núcleo, Jefa!")
 
     st.divider()
     
@@ -145,8 +144,9 @@ with st.sidebar:
     st.divider()
     
     archivo_subido = st.file_uploader(
-        "Adjunta imagen o archivo:",
-        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
+        "Adjunta archivo para análisis:",
+        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"],
+        key="upload_chat"
     )
 
     st.divider()
@@ -266,6 +266,13 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
+# Procesar la imagen del núcleo (si subió una, usarla en base64; si no, usar respaldo)
+if st.session_state.imagen_core_bytes is not None:
+    b64_core = base64.b64encode(st.session_state.imagen_core_bytes).decode('utf-8')
+    url_imagen_holo = f"data:image/png;base64,{b64_core}"
+else:
+    url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
+
 # ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
@@ -274,7 +281,7 @@ if mostrar_hud:
         st.markdown(
             f"""
             <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
-                <img src="{url_imagen_holo}" style="width: 100%; max-height: 220px; object-fit: contain; border-radius: 12px; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
+                <img src="{url_imagen_holo}" style="width: 100%; max-height: 260px; object-fit: contain; border-radius: 12px; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
                 <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin: 0; font-size: 1.1rem;">ESTRUCTURA NEURAL C2</h3>
                 <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
                     <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
