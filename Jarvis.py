@@ -81,12 +81,14 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Búsqueda automática optimizada (busca primero 'reactor.png' y luego alternativas)
+# Búsqueda automática basada en la ruta exacta del script (directorio local)
 def obtener_imagen_base64():
-    candidatos = ["reactor.png", "reactor.jpg", "cubos.png", "cara_jarvis.png", "holograma.png", "cubos.jpg", "cara_jarvis.jpg", "holograma.jpg"]
+    directorio_actual = os.path.dirname(os.path.abspath(__file__))
+    candidatos = ["reactor.png", "Reactor.png", "reactor.jpg", "Reactor.jpg", "cubos.png", "cara_jarvis.png", "holograma.png"]
     for archivo in candidatos:
-        if os.path.exists(archivo):
-            with open(archivo, "rb") as f:
+        ruta_completa = os.path.join(directorio_actual, archivo)
+        if os.path.exists(ruta_completa):
+            with open(ruta_completa, "rb") as f:
                 return base64.b64encode(f.read()).decode('utf-8')
     return None
 
@@ -385,7 +387,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
                 contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
 
     prompt_completo = prompt + contenido_adjunto
-    st.session_state.messages.append({"role": "user", "content": prompt_completrado := prompt_completo})
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
     
     with st.chat_message("user"):
         st.markdown(prompt)
