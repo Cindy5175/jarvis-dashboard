@@ -22,6 +22,9 @@ if "ubicacion_jefa" not in st.session_state:
 if "energia_arc" not in st.session_state:
     st.session_state.energia_arc = 98
 
+if "notas_mision" not in st.session_state:
+    st.session_state.notas_mision = "• Revisar despliegue en GitHub\n• Optimizar latencia de red"
+
 # 2. Conexión con la API de Groq
 groq_api_key = "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"
 
@@ -68,6 +71,7 @@ with st.sidebar:
     
     st.divider()
     
+    # Interruptor de visibilidad (Modo oculto de la estación)
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
@@ -118,7 +122,9 @@ with st.sidebar:
         ],
         index=0
     )
+    
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
+    
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain")
 
@@ -208,7 +214,7 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO: ORBE PRIMERO Y MÓDULO DE SENSORES ABAJO
+# ESTACIÓN DE COMANDO PRINCIPAL (Ocultable) + LAS 3 NUEVAS FUNCIONES INTEGRAN LAS SECCIONES
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
@@ -232,6 +238,41 @@ if mostrar_hud:
                 ⚡ THRUSTERS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
             </div>
         """, unsafe_allow_html=True)
+
+        # -------------------------------------------------------------
+        # 🚀 INTEGRACIÓN DE LOS 3 PUNTOS NUEVOS EN LA ESTACIÓN
+        # -------------------------------------------------------------
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Expandible con las 3 nuevas capacidades tácticas
+        with st.expander("🌐 Sub-Sistemas Avanzados [Clima, Rendimiento & Bitácora]"):
+            # Punto 1: Clima en tiempo real simulado/conectado para la zona
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>🌤️ Módulo Climático ({st.session_state.ubicacion_jefa})</b>", unsafe_allow_html=True)
+            col_c1, col_c2, col_c3 = st.columns(3)
+            col_c1.metric("Temperatura", "18°C", "Óptima")
+            col_c2.metric("Humedad", "45%", "-2%")
+            col_c3.metric("Viento", "12 km/h", "SSE")
+            
+            st.divider()
+            
+            # Punto 2: Gráfico interactivo de rendimiento de red
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📈 Gráfico de Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
+            import pandas as pd
+            import numpy as np
+            chart_data = pd.DataFrame(
+                np.random.randn(15, 2) * [5, 10] + [50, 120],
+                columns=["Enlace Satelital", "Flujo Neuronal"]
+            )
+            st.line_chart(chart_data, height=150)
+            
+            st.divider()
+            
+            # Punto 3: Bitácora / Notas rápidas de misión en sesión
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=80)
+            if st.button("💾 Guardar Notas"):
+                st.success("¡Bitácora sincronizada con la red central, Jefa!")
+        # -------------------------------------------------------------
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
