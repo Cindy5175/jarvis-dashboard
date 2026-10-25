@@ -76,7 +76,7 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Estética fija: Azul Neón con identidad autónoma (sin comas)
+# Estética fija: Azul Neón con identidad autónoma
 color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
@@ -196,9 +196,9 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas directas al grano y estructuradas en viñetas ejecutivas]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
 system_prompt = system_base + prompt_protocolo_extra
 
@@ -212,13 +212,13 @@ st.markdown(
     f"""
     <style>
     @keyframes neonGlow {{
-        0% {{ text-shadow: 0 0 5px {color_neon} 0 0 10px {color_neon} 0 0 20px {shadow_neon}; }}
-        50% {{ text-shadow: 0 0 12px {color_neon} 0 0 25px {color_neon} 0 0 40px {shadow_neon}; }}
-        100% {{ text-shadow: 0 0 5px {color_neon} 0 0 10px {color_neon} 0 0 20px {shadow_neon}; }}
+        0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+        50% {{ text-shadow: 0 0 12px {color_neon}, 0 0 25px {color_neon}, 0 0 40px {shadow_neon}; }}
+        100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
     }}
     .neon-title {{
         color: {color_neon};
-        font-family: 'Courier New' Courier monospace;
+        font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
         font-size: 1.8rem;
         text-align: center;
@@ -269,7 +269,7 @@ st.markdown(
     .core-sphere {{
         width: 35px;
         height: 35px;
-        background: radial-gradient(circle #ffffff 10% {color_neon} 70% #000000 100%);
+        background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
         border-radius: 50%;
         position: absolute;
         animation: pulseSphere 2.5s infinite ease-in-out;
@@ -301,7 +301,7 @@ if mostrar_hud:
         
         st.markdown(
             f"""
-            <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(015300.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
+            <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
                 <b style="color: {color_neon};">SENSORS TELEMETRY FEED</b><br>
                 📡 NAV_SYS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🛡️ SHIELD: 100%<br>
                 ⚡ THRUSTERS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
@@ -314,4 +314,140 @@ if mostrar_hud:
         
         # Módulo Climático y Sub-Sistemas ocultos en expander
         with st.expander(f"🌤️ Módulo Climático & Sub-Sistemas ({st.session_state.ubicacion_jefa})"):
-            col_c
+            col_c1, col_c2, col_c3 = st.columns(3)
+            col_c1.metric("Temperatura", "18°C", "Óptima")
+            col_c2.metric("Humedad", "45%", "-2%")
+            col_c3.metric("Viento", "12 km/h", "SSE")
+            
+            st.divider()
+            
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📈 Gráfico de Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
+            import pandas as pd
+            import numpy as np
+            chart_data = pd.DataFrame(
+                np.random.randn(15, 2) * [5, 10] + [50, 120],
+                columns=["Enlace Satelital", "Flujo Neuronal"]
+            )
+            st.line_chart(chart_data, height=150)
+            
+            st.divider()
+            
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=80)
+            if st.button("💾 Guardar Notas", use_container_width=True):
+                st.success("¡Bitácora sincronizada con la red central Jefa!")
+            
+        st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
+
+# 💬 HISTORIAL DE CHAT
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            if message["role"] == "assistant" and activar_voz:
+                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
+                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
+                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
+                st.markdown(
+                    f"""
+                    <button onclick="
+                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
+                        utterance.lang = 'es-ES';
+                        utterance.rate = {velocidad_voz};
+                        utterance.pitch = {pitch_voz};
+                        window.speechSynthesis.speak(utterance);
+                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                        🔊 Reproducir Audio
+                    </button>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+# 💬 CAJA DE CHAT PRINCIPAL (Siempre visible abajo)
+if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
+    contenido_adjunto = ""
+    imagen_base64 = None
+    
+    if archivo_subido is not None:
+        nombre_archivo = archivo_subido.name
+        tipo_archivo = archivo_subido.type
+        
+        if "image" in tipo_archivo:
+            bytes_data = archivo_subido.read()
+            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
+            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
+        else:
+            try:
+                texto_archivo = archivo_subido.read().decode("utf-8")
+                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
+            except Exception:
+                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
+
+    prompt_completo = prompt + contenido_adjunto
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if archivo_subido is not None:
+            if "image" in archivo_subido.type:
+                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
+            else:
+                st.caption(f"📄 Archivo: {archivo_subido.name}")
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        if imagen_base64:
+            mensajes_api = []
+            for msg in st.session_state.messages:
+                if msg["role"] == "system":
+                    mensajes_api.append(msg)
+                elif msg["role"] == "user":
+                    if msg == st.session_state.messages[-1]:
+                        mensajes_api.append({
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt_completo},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{archivo_subido.type};base64,{imagen_base64}"
+                                    }
+                                }
+                            ]
+                        })
+                    else:
+                        mensajes_api.append(msg)
+                else:
+                    mensajes_api.append(msg)
+            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
+        else:
+            mensajes_api = st.session_state.messages
+            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
+
+        exito = False
+        for modelo_actual in modelos_a_probar:
+            try:
+                completion = client.chat.completions.create(
+                    model=modelo_actual,
+                    messages=mensajes_api,
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    content = chunk.choices[0].delta.content or ""
+                    full_response += content
+                    message_placeholder.markdown(full_response + "▌")
+                
+                message_placeholder.markdown(full_response)
+                exito = True
+                break
+            except Exception:
+                continue
+        
+        if not exito:
+            full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
+            message_placeholder.markdown(full_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
