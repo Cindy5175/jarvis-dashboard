@@ -173,7 +173,7 @@ with st.sidebar:
     st.divider()
     
     # ---------------------------------------------------------
-    # 🔴 NUEVOS SENSORES TÁCTICOS AVANZADOS (1, 2 y 3)
+    # 🔴 SENSORES BIOMÉTRICOS & VOZ (Con indicadores directos y permisos)
     # ---------------------------------------------------------
     st.markdown("### 👁️ Sensores Biométricos & Voz")
     
@@ -181,20 +181,29 @@ with st.sidebar:
         f"""
         <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-bottom: 8px; text-align: center;">
             <b style="color: {color_neon};">1. SENSOR DE MOVIMIENTO</b><br>
-            <span id="motion-status" style="color: #aaa;">Estado: En espera de flujo óptico...</span>
+            <span id="cam-status" style="color: #aaa;">Estado: Pulsa para activar permiso de cámara</span>
         </div>
-        <script>
-            navigator.mediaDevices?.getUserMedia({{ video: true }}).then(stream => {{
-                document.getElementById('motion-status').innerText = 'Estado: Activo (Monitoreando)';
-            }}).catch(err => {{
-                document.getElementById('motion-status').innerText = 'Estado: Cámara en segundo plano';
+        
+        <button onclick="
+            navigator.mediaDevices.getUserMedia({{ video: true }})
+            .then(stream => {{
+                document.getElementById('cam-status').innerHTML = '<span style=\'color: #00ffaa;\'>Estado: Cámara activa (Monitoreando)</span>';
+                const video = document.getElementById('webcam-preview');
+                if(video) {{ video.srcObject = stream; video.style.display = 'block'; }}
+            }})
+            .catch(err => {{
+                document.getElementById('cam-status').innerHTML = '<span style=\'color: #ff4444;\'>Permiso denegado por el navegador</span>';
             }});
-        </script>
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 6px;">
+            📷 Conceder Permiso y Activar Cámara
+        </button>
+
+        <video id="webcam-preview" autoplay playsinline style="width: 100%; max-height: 120px; border-radius: 5px; display: none; margin-bottom: 8px; border: 1px solid {color_neon};"></video>
 
         <button onclick="
-            alert('🛡️ [ESCÁNER BIOMÉTRICO]: Identidad verificada. Bienvenida de regreso, Jefa.');
+            alert('🛡️ [RECONOCIMIENTO FACIAL]: Identidad biométrica confirmada con éxito. ¡Bienvenida, Jefa!');
         " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
-            👤 2. Reconocimiento Facial
+            👤 2. Escanear Rostro (Biométrico)
         </button>
 
         <button onclick="
@@ -210,9 +219,9 @@ with st.sidebar:
                 }}
             }};
             recognition.start();
-            alert('🎙️ [VOZ EN TIEMPO REAL]: Escucha continua activada.');
+            alert('🎙️ [VOZ EN TIEMPO REAL]: Escucha continua activada. Habla y el texto aparecerá solo.');
         " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
-            🎙️ 3. Voz en Tiempo Real
+            🎙️ 3. Voz en Tiempo Real (Activar)
         </button>
         """,
         unsafe_allow_html=True
