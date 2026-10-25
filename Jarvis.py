@@ -252,11 +252,136 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Imagen eliminada por completo)
+# ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
         st.markdown(
             f"""
-            <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center
+            <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
+                <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin-top: 0; font-size: 1.1rem;">ESTRUCTURA NEURAL C2</h3>
+                <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
+                    <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
+                    📡 Enlace Satelital: ESTABLE (100%)<br>
+                    🛡️ Escudo Cuántico: OPERATIVO<br>
+                    ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br>
+                    📍 Grid: {st.session_state.ubicacion_jefa}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with st.expander(f"🌤️ Módulo Climático & Alertas ({st.session_state.ubicacion_jefa})"):
+            col_c1, col_c2, col_c3 = st.columns(3)
+            col_c1.metric("Temp", "18°C", "Óptima")
+            col_c2.metric("Humedad", "45%", "-2%")
+            col_c3.metric("Viento", "12 km/h", "SSE")
+            
+            st.divider()
+            
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📈 Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
+            import pandas as pd
+            import numpy as np
+            chart_data = pd.DataFrame(
+                np.random.randn(15, 2) * [5, 10] + [50, 120],
+                columns=["Enlace Satelital", "Flujo Neuronal"]
+            )
+            st.line_chart(chart_data, height=130)
+            
+            st.divider()
+            
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=70)
+            if st.button("💾 Guardar Notas", use_container_width=True):
+                st.success("¡Bitácora sincronizada Jefa!")
+            
+        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
+
+# 💬 HISTORIAL DE CHAT
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            if message["role"] == "assistant" and activar_voz:
+                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
+                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
+                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
+                st.markdown(
+                    f"""
+                    <button onclick="
+                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
+                        utterance.lang = 'es-ES';
+                        utterance.rate = {velocidad_voz};
+                        utterance.pitch = {pitch_voz};
+                        window.speechSynthesis.speak(utterance);
+                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                        🔊 Reproducir Audio
+                    </button>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+# 🎙️ BOTÓN DE VOZ TÁCTICO
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: flex-end; padding-right: 8px; margin-bottom: 2px;">
+        <button onclick="
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.onresult = function(event) {{
+                const speechToText = event.results[0][0].transcript;
+                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
+                if(inputField) {{
+                    inputField.value = speechToText;
+                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }};
+            recognition.start();
+        " style="background-color: {color_neon}; color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px {color_neon}88; display: flex; align-items: center; justify-content: center;">
+            🎙️
+        </button>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# 💬 CAJA DE CHAT PRINCIPAL
+if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
+    contenido_adjunto = ""
+    imagen_base64 = None
+    
+    if archivo_subido is not None:
+        nombre_archivo = archivo_subido.name
+        tipo_archivo = archivo_subido.type
+        
+        if "image" in tipo_archivo:
+            bytes_data = archivo_subido.read()
+            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
+            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
+        else:
+            try:
+                texto_archivo = archivo_subido.read().decode("utf-8")
+                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
+            except Exception:
+                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
+
+    prompt_completo = prompt + contenido_adjunto
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if archivo_subido is not None:
+            if "image" in archivo_subido.type:
+                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
+            else:
+                st.caption(f"📄 Archivo: {archivo_subido.name}")
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        if imagen_base64:
+            mensajes_api = []
+            for msg in
