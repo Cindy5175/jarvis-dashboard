@@ -272,4 +272,97 @@ with st.sidebar:
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
     
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
-    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text
+    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
+
+    st.divider()
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
+
+# Definir instrucción del sistema complementada
+prompt_protocolo_extra = ""
+if "Auditoría" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+elif "Resumen" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+
+system_prompt = system_base + prompt_protocolo_extra
+
+if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
+    st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
+else:
+    st.session_state.messages[0]["content"] = system_prompt
+
+# Estilos CSS dinámicos
+st.markdown(
+    f"""
+    <style>
+    @keyframes neonGlow {{
+        0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+        50% {{ text-shadow: 0 0 12px {color_neon}, 0 0 25px {color_neon}, 0 0 40px {shadow_neon}; }}
+        100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+    }}
+    .neon-title {{
+        color: {color_neon};
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1.8rem;
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        white-space: nowrap;
+        animation: neonGlow 2.5s infinite ease-in-out;
+    }}
+    .block-container {{
+        max-width: 750px;
+        padding-top: 1.5rem;
+        padding-bottom: 5rem;
+    }}
+    @keyframes rotateRing {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    @keyframes pulseSphere {{
+        0% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
+        50% {{ transform: scale(1.05); opacity: 1; box-shadow: 0 0 35px {color_neon}; }}
+        100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
+    }}
+    .sphere-wrapper {{
+        width: 110px;
+        height: 110px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    .orbit-ring-1 {{
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border: 2px dashed {color_neon};
+        border-radius: 50%;
+        animation: rotateRing 8s linear infinite;
+    }}
+    .orbit-ring-2 {{
+        position: absolute;
+        width: 75px;
+        height: 75px;
+        border: 1px solid {color_neon}aa;
+        border-radius: 50%;
+        animation: rotateRing 5s linear infinite reverse;
+    }}
+    .core-sphere {{
+        width: 35px;
+        height: 35px;
+        background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
+        border-radius: 50%;
+        position: absolute;
+        animation: pulseSphere 2.5s infinite ease-in-out;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(titulo_html, unsafe_allow_html=True)
