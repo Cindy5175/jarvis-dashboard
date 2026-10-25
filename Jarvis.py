@@ -26,15 +26,6 @@ if "energia_arc" not in st.session_state:
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
-if "salvapantallas_activo" not in st.session_state:
-    st.session_state.salvapantallas_activo = False
-
-# Gestionar desactivación por interacción del salvapantallas vía URL Query Params
-if "screensaver" in st.query_params and st.query_params["screensaver"] == "off":
-    st.session_state.salvapantallas_activo = False
-    st.query_params.clear()
-    st.rerun()
-
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
@@ -90,19 +81,8 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Carga de la cara holográfica exacta (busca 'cara_jarvis.png' en tu carpeta local)
-def obtener_imagen_base64(ruta_imagen):
-    if os.path.exists(ruta_imagen):
-        with open(ruta_imagen, "rb") as f:
-            return base64.b64encode(f.read()).decode('utf-8')
-    return None
-
-base64_cara = obtener_imagen_base64("cara_jarvis.png")
-if base64_cara:
-    url_imagen_holo = f"data:image/png;base64,{base64_cara}"
-else:
-    # Enlace de respaldo directo de alta fidelidad si el archivo local aún no se sube
-    url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
+# Imagen del reactor/núcleo holográfico exacto que proporcionaste[cite: 5]
+url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
@@ -110,8 +90,6 @@ system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y le
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
-    
-    st.session_state.salvapantallas_activo = st.checkbox("🎬 Protocolo Salvapantallas Stark", value=st.session_state.salvapantallas_activo)
 
     st.divider()
     
@@ -223,7 +201,7 @@ if "Auditoría" in protocolo_extra:
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 elif "Ciberseguridad" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría de ciberseguridad, análisis de vulnerabilidades y encriptado táctico de nivel militar]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de ciberseguridad, análisis de vulnerabilidades y encriptado táctico de nivel militar]."
 
 system_prompt = system_base + prompt_protocolo_extra
 
@@ -276,40 +254,9 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 PANTALLA DE SALVAPANTALLAS CON DESBLOQUEO TÁCTICO ULTRA SENSIBLE
-if st.session_state.salvapantallas_activo:
-    screensaver_code = "".join([
-        f'<div id="screensaver-layer" onclick="dismissScreensaver()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: \'Courier New\', monospace; color: {color_neon}; cursor: pointer;">',
-        '<div class="scanline"></div>',
-        '<div style="position: relative; z-index: 5; text-align: center; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; align-items: center;">',
-        f'<img src="{url_imagen_holo}" style="width: 280px; height: 280px; object-fit: cover; border-radius: 50%; border: 3px solid {color_neon}; box-shadow: 0 0 40px {color_neon}cc; margin-bottom: 20px;" />',
-        f'<h1 style="color: {color_neon}; font-size: 1.5rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 2px; margin: 0;">J.A.R.V.I.S. C2 SECURE</h1>',
-        '<p style="color: #88ccee; font-size: 0.8rem; margin-top: 8px;">[NÚCLEO NEURAL BIOMÉTRICO EN ESPERA]</p>',
-        f'<p style="color: #00d2ffaa; font-size: 0.7rem; margin-top: 15px; border: 1px solid {color_neon}66; padding: 5px 10px; border-radius: 15px;">',
-        '⚡ Toca la pantalla, mueve el mouse o presiona una tecla para desbloquear',
-        '</p>',
-        '</div>',
-        '</div>',
-        '<script>',
-        'let unlocked = false;',
-        'function dismissScreensaver() {',
-        '    if (unlocked) return;',
-        '    unlocked = true;',
-        '    window.location.href = window.location.pathname + "?screensaver=off";',
-        '}',
-        'window.addEventListener("pointerdown", dismissScreensaver, {once: true});',
-        'window.addEventListener("touchstart", dismissScreensaver, {once: true});',
-        'window.addEventListener("click", dismissScreensaver, {once: true});',
-        'window.addEventListener("keydown", dismissScreensaver, {once: true});',
-        'window.addEventListener("mousemove", function() { dismissScreensaver(); }, {once: true});',
-        '</script>'
-    ])
-    st.markdown(screensaver_code, unsafe_allow_html=True)
-    st.stop()
-
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL
+# ESTACIÓN DE COMANDO PRINCIPAL (Holograma Permanente Estilo Stark)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
@@ -317,7 +264,7 @@ if mostrar_hud:
         st.markdown(
             f"""
             <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
-                <img src="{url_imagen_holo}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 2px solid {color_neon}; box-shadow: 0 0 20px {color_neon}aa; margin-bottom: 10px;" />
+                <img src="{url_imagen_holo}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 50%; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
                 <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin: 0; font-size: 1.1rem;">NÚCLEO NEURAL C2</h3>
                 <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
                     <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
