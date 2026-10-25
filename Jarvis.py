@@ -68,14 +68,10 @@ with st.sidebar:
     
     st.divider()
     
-    # Control de Visibilidad de la Estación
-    st.markdown("### 👁️ Interfaz Visual")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
     
-    # Selector de Protocolos Especiales
-    st.markdown("### 🛡️ Protocolos Especiales")
     protocolo_extra = st.selectbox(
         "Directiva de Análisis:",
         [
@@ -94,17 +90,6 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
-    
-    st.markdown("### 🌐 HUD Holográfico de Comunicaciones")
-    st.markdown(f"""
-        <div style="background: rgba(10, 15, 30, 0.85); border: 1px solid {color_neon}; border-radius: 8px; padding: 10px; box-shadow: 0 0 10px {color_neon}33;">
-            <div style="font-size: 0.75rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 4px;">SYSTEM_STATUS: SECURE_LINK</div>
-            <div style="font-size: 0.8rem; color: #fff;">📡 <b>Transmisión Global:</b> Activa</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.divider()
-    
     st.markdown("### ⚛️ Reactor Arc & Energía")
     st.caption(f"⚡ **Potencia de Núcleo:** {st.session_state.energia_arc}%")
     if st.button("🔋 Recargar Reactor Arc"):
@@ -113,7 +98,6 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
-    
     st.markdown("### 📍 GPS & Telemetría Global")
     st.caption(f"📍 **Zona:** {st.session_state.ubicacion_jefa}")
     nueva_ubicacion = st.text_input("Nueva zona:", placeholder="Escribe un lugar")
@@ -124,7 +108,6 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
-    
     modelo_seleccionado = st.selectbox(
         "Modelos activos:",
         [
@@ -136,9 +119,7 @@ with st.sidebar:
         ],
         index=0
     )
-    
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
-    
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain")
 
@@ -158,7 +139,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS Avanzados para la Estación de Comando Completa
+# Estilos CSS
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -182,7 +163,6 @@ st.markdown(f"""
         padding-top: 1.5rem;
         padding-bottom: 5rem;
     }}
-    
     @keyframes rotateRing {{
         from {{ transform: rotate(0deg); }}
         to {{ transform: rotate(360deg); }}
@@ -192,57 +172,34 @@ st.markdown(f"""
         50% {{ transform: scale(1.05); opacity: 1; box-shadow: 0 0 35px {color_neon}; }}
         100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
     }}
-
-    .command-station {{
-        background: rgba(5, 12, 30, 0.95);
-        border: 1px solid {color_neon};
-        border-radius: 12px;
-        padding: 15px;
-        box-shadow: inset 0 0 20px {color_neon}33, 0 0 20px {color_neon}55;
-        margin-bottom: 20px;
-        font-family: 'Courier New', monospace;
-    }}
-
-    .side-panel {{
-        background: rgba(0, 15, 30, 0.7);
-        border: 1px solid {color_neon}55;
-        border-radius: 8px;
-        padding: 10px;
-        font-size: 0.62rem;
-        color: #ddd;
-    }}
-
     .sphere-wrapper {{
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
         margin: 0 auto;
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
     }}
-
     .orbit-ring-1 {{
         position: absolute;
-        width: 110px;
-        height: 110px;
+        width: 100px;
+        height: 100px;
         border: 2px dashed {color_neon};
         border-radius: 50%;
         animation: rotateRing 8s linear infinite;
     }}
-
     .orbit-ring-2 {{
         position: absolute;
-        width: 85px;
-        height: 85px;
+        width: 75px;
+        height: 75px;
         border: 1px solid {color_neon}aa;
         border-radius: 50%;
         animation: rotateRing 5s linear infinite reverse;
     }}
-
     .core-sphere {{
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
         border-radius: 50%;
         position: absolute;
@@ -254,48 +211,45 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO COMPLETA (Con unsafe_allow_html=True explícito)
+# ESTACIÓN DE COMANDO CON COLUMNAS NATIVAS DE STREAMLIT (Adiós errores de HTML)
 if mostrar_hud:
-    st.markdown(f"""
-        <div class="command-station">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px;">
-                <span>[COMMAND STATION - C2 ACTIVE]</span>
-                <span>INTEGRITY: {st.session_state.energia_arc}%</span>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 6px; align-items: center;">
-                <!-- Panel Lateral Izquierdo: Diagnóstico de Sensores -->
-                <div class="side-panel">
-                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">SENSORS</div>
-                    <div>📡 NAV: 100%</div>
-                    <div>🛡️ SHIELD: 100%</div>
-                    <div>⚡ THRUST: 100%</div>
-                    <div>🧬 LIFE: OPT</div>
+    with st.container(border=True):
+        st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 1.2, 1])
+        
+        with col1:
+            st.markdown(f"""
+                <div style="font-family: monospace; font-size: 0.62rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
+                    <b style="color: {color_neon};">SENSORS</b><br>
+                    📡 NAV: 100%<br>
+                    🛡️ SHIELD: 100%<br>
+                    ⚡ THRUST: 100%<br>
+                    🧬 LIFE: OPT
                 </div>
-
-                <!-- Esfera Central Holográfica -->
+            """, unsafe_allow_html=True)
+            
+        with col2:
+            st.markdown("""
                 <div class="sphere-wrapper">
                     <div class="orbit-ring-1"></div>
                     <div class="orbit-ring-2"></div>
                     <div class="core-sphere"></div>
                 </div>
-
-                <!-- Panel Lateral Derecho: Finanzas y Cripto -->
-                <div class="side-panel">
-                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">ASSET_FEED</div>
-                    <div>📈 BTC: $92.4k</div>
-                    <div>💎 ETH: $3.4k</div>
-                    <div>🌐 HASH: OK</div>
-                    <div>⚡ 1.2 GW</div>
+            """, unsafe_allow_html=True)
+            
+        with col3:
+            st.markdown(f"""
+                <div style="font-family: monospace; font-size: 0.62rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
+                    <b style="color: {color_neon};">ASSET_FEED</b><br>
+                    📈 BTC: $92.4k<br>
+                    💎 ETH: $3.4k<br>
+                    🌐 HASH: OK<br>
+                    ⚡ 1.2 GW
                 </div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 15px; border-top: 1px solid #333; padding-top: 6px;">
-                <span>GRID: {st.session_state.lat_lon}</span>
-                <span>STATUS: ONLINE</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+            
+        st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 5px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
