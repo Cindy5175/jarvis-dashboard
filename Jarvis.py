@@ -90,8 +90,8 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Enlace limpio para el núcleo holográfico
-url_imagen_holo = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"
+# Enlace directo exacto hacia la cara cibernética con anillos de neón
+url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
@@ -265,10 +265,10 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 PANTALLA DE SALVAPANTALLAS CON EL NÚCLEO HOLOGRÁFICO Y AUTO-DESBLOQUEO
+# 🎬 PANTALLA DE SALVAPANTALLAS CON LA CARA HOLOGRÁFICA Y AUTO-DESBLOQUEO INMEDIATO
 if st.session_state.salvapantallas_activo:
     screensaver_code = "".join([
-        f'<div id="screensaver-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: \'Courier New\', monospace; color: {color_neon}; cursor: pointer;">',
+        f'<div id="screensaver-layer" onclick="dismissScreensaver()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: \'Courier New\', monospace; color: {color_neon}; cursor: pointer;">',
         '<div class="scanline"></div>',
         '<div style="position: relative; z-index: 5; text-align: center; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; align-items: center;">',
         f'<img src="{url_imagen_holo}" style="width: 280px; height: 280px; object-fit: cover; border-radius: 50%; border: 3px solid {color_neon}; box-shadow: 0 0 40px {color_neon}cc; margin-bottom: 20px;" />',
@@ -280,20 +280,13 @@ if st.session_state.salvapantallas_activo:
         '</div>',
         '</div>',
         '<script>',
-        'let triggered = false;',
         'function dismissScreensaver() {',
-        '    if (triggered) return;',
-        '    triggered = true;',
         '    window.location.href = window.location.pathname + "?screensaver=off";',
         '}',
-        'let moveCount = 0;',
-        'window.addEventListener("mousemove", function() {',
-        '    moveCount++;',
-        '    if (moveCount > 2) { dismissScreensaver(); }',
-        '});',
-        'window.addEventListener("keydown", function() { dismissScreensaver(); });',
-        'window.addEventListener("touchstart", function() { dismissScreensaver(); });',
-        'window.addEventListener("click", function() { dismissScreensaver(); });',
+        'window.addEventListener("click", dismissScreensaver);',
+        'window.addEventListener("touchstart", dismissScreensaver);',
+        'window.addEventListener("keydown", dismissScreensaver);',
+        'window.addEventListener("mousemove", function() { dismissScreensaver(); });',
         '</script>'
     ])
     st.markdown(screensaver_code, unsafe_allow_html=True)
@@ -480,6 +473,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             except Exception:
                 continue
         
+        print(f"DEBUG: exito={exito}") # Added print statement to avoid empty block
         if not exito:
             full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
             message_placeholder.markdown(full_response)
