@@ -80,19 +80,19 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configurar variables visuales según el modo seleccionado
+# Configurar variables visuales y el PERSONALIDAD SARCÁSTICA ESTILO TONY STARK
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
     titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
+    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Tienes un tono inteligente, sumamente leal pero con un toque refinado de sarcasmo e ironía al estilo Tony Stark. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
+    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia y un toque medido de sarcasmo irónico e ingenioso al estilo Tony Stark. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL (Centro de Comando Avanzado con las 4 Nuevas Ideas a la Izquierda 👈)
+# 4. BARRA LATERAL (Centro de Comando Avanzado)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
@@ -116,15 +116,9 @@ with st.sidebar:
 
     st.divider()
     
-    # -------------------------------------------------------------
-    # 👈 LAS 4 IDEAS INTEGRadas A LA IZQUIERDA (BARRA LATERAL)
-    # -------------------------------------------------------------
     st.markdown("### 🛠️ Módulos Tácticos Izquierdos")
-    
-    # Idea 1: Selector de Protocolos de Voz Personalizados
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
-    # Idea 2: Botón de Pantalla Completa Táctico (Fullscreen)
     st.markdown(f"""
         <button onclick="
             if (!document.fullscreenElement) {{
@@ -137,7 +131,6 @@ with st.sidebar:
         </button>
     """, unsafe_allow_html=True)
     
-    # Idea 3: Registro de Coordenadas Guardadas (Selector Rápido de Zona)
     zona_preset = st.selectbox("Preset de Coordenadas:", ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"], index=0)
     if "Santiago" in zona_preset:
         st.session_state.ubicacion_jefa = "Santiago Centro, Chile"
@@ -149,7 +142,6 @@ with st.sidebar:
         st.session_state.ubicacion_jefa = "Sector Orbital / Desconocido"
         st.session_state.lat_lon = "00.0000, 00.0000"
 
-    # Idea 4: Alerta de Estado de Batería del Dispositivo (API JS del navegador)
     st.markdown("""
         <div id="battery-status" style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 6px; border-radius: 5px; border: 1px solid #444; margin-top: 5px; text-align: center;">
             🔋 Batería Dispositivo: Sincronizando...
@@ -167,11 +159,9 @@ with st.sidebar:
             });
         </script>
     """, unsafe_allow_html=True)
-    # -------------------------------------------------------------
 
     st.divider()
     
-    # Módulo de Carga Multimodal a la izquierda
     st.markdown("### 📎 Carga Multimodal")
     archivo_subido = st.file_uploader(
         "Adjunta imagen o archivo:",
@@ -229,7 +219,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Depuración" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Enfócate principalmente en depuración de código, análisis técnico de sintaxis y detección de errores con precisión quirúrgica]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Enfócate principalmente en depuración de código, análisis técnico de sintaxis y detección de errores con precisión quirúrgica y algo de ironía técnica]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
@@ -396,7 +386,6 @@ for message in st.session_state.messages:
             if message["role"] == "assistant" and activar_voz:
                 texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
                 
-                # Ajustar velocidad/tono según el selector izquierdo
                 velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
                 pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
                 
