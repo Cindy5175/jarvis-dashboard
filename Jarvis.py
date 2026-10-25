@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS con alineación izquierda estricta
+# Estilos CSS generales
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -226,18 +226,25 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Alineada a la izquierda)
+# ESTACIÓN DE COMANDO PRINCIPAL (Todo alineado estrictamente a la izquierda)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
         
         st.markdown("### ⚛️ ESTRUCTURA NEURAL C2")
-        st.info(
-            f"**DIAGNÓSTICO DE SISTEMAS:**\n\n"
-            f"📡 Enlace Satelital: ESTABLE (100%)\n\n"
-            f"🛡️ Escudo Cuántico: OPERATIVO\n\n"
-            f"⚡ Reactor Core: {st.session_state.energia_arc}% de potencia\n\n"
-            f"📍 Grid: {st.session_state.ubicacion_jefa}"
+        
+        # Diagnóstico de sistemas forzado a la izquierda con HTML limpio
+        st.markdown(
+            f"""
+            <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 8px; padding: 12px; text-align: left; font-family: 'Courier New', monospace; margin-bottom: 10px;">
+                <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br><br>
+                📡 Enlace Satelital: ESTABLE (100%)<br><br>
+                🛡️ Escudo Cuántico: OPERATIVO<br><br>
+                ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br><br>
+                📍 Grid: {st.session_state.ubicacion_jefa}
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
         # Módulo Climático (Expandible)
