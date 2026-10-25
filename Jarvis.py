@@ -174,13 +174,13 @@ with st.sidebar:
         [
             "Estándar (Equilibrado)",
             "Modo Auditoría de Arquitectura / Jarvis.py 💻",
-            "Modo Resumen Ejecutivo 📊",
-            "Protocolo Clean Slate 🧹💬 (Purgar Chat)"
+            "Modo Resumen Ejecutivo 📊"
         ],
         index=0
     )
     
-    if "Clean Slate" in protocolo_extra:
+    # 🧹 BOTÓN DIRECTO DE PURGA DE CHAT EN LA BARRA LATERAL
+    if st.button("🧹💬 Purgar Chat"):
         st.session_state.messages = []
         st.success("¡Historial purgado con éxito, Jefa!")
         st.rerun()
@@ -489,4 +489,3 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-
