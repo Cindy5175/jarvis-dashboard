@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estiglios CSS optimizados con adaptabilidad móvil simétrica
+# Estilos CSS optimizados para simetría móvil perfecta
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -225,7 +225,7 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Simétrica y adaptada a móviles)
+# ESTACIÓN DE COMANDO PRINCIPAL (Con módulos expandibles simétricos)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
@@ -239,14 +239,16 @@ if mostrar_hud:
             f"📍 Grid: {st.session_state.ubicacion_jefa}"
         )
 
-        with st.expander(f"🌤️ Módulo Climático & Alertas"):
+        # Módulo Climático (Expandible)
+        with st.expander("🌤️ Módulo Climático & Alertas"):
             col_c1, col_c2, col_c3 = st.columns(3)
             col_c1.metric("Temp", "18°C", "Óptima")
             col_c2.metric("Humedad", "45%", "-2%")
             col_c3.metric("Viento", "12 km/h", "SSE")
             
-            st.divider()
-            st.markdown("**📈 Ancho de Banda y Red (Mbps)**")
+        # Módulo de Red y Bitácora (Oculto en expandible idéntico para mantener simetría)
+        with st.expander("📈 Diagnóstico de Red & Bitácora"):
+            st.markdown("**Ancho de Banda y Red (Mbps)**")
             import pandas as pd
             import numpy as np
             chart_data = pd.DataFrame(
@@ -256,11 +258,11 @@ if mostrar_hud:
             st.line_chart(chart_data, height=110)
             
             st.divider()
-            st.markdown("**📝 Bitácora de Misión Rápida**")
+            st.markdown("**Bitácora de Misión Rápida**")
             st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=60)
             if st.button("💾 Guardar Notas", use_container_width=True):
                 st.success("¡Bitácora sincronizada Jefa!")
-            
+
         st.caption(f"GRID: {st.session_state.lat_lon} | STATUS: ONLINE")
 
 # 💬 HISTORIAL DE CHAT
