@@ -31,7 +31,7 @@ if "notas_mision" not in st.session_state:
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
-PIN_SECRETO = "1970"  # Puedes cambiar este PIN cuando gustes, Jefa
+PIN_SECRETO = "1970"  # Pin clásico intergaláctico de la Jefa
 
 if not st.session_state.autenticado:
     st.markdown("""
@@ -92,7 +92,7 @@ else:
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
     system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, leal y brillante. Te diriges al usuario como 'Jefa'. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL (Centro de Comando Avanzado + Módulo de Archivos a la Izquierda)
+# 4. BARRA LATERAL (Centro de Comando Avanzado con las 4 Nuevas Ideas a la Izquierda 👈)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
@@ -112,13 +112,66 @@ with st.sidebar:
     )
     
     st.divider()
-    
-    # Interruptor de visibilidad (Modo oculto de la estación)
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
     
-    # MÓDULO DE AJUSTE DE ARCHIVO O IMAGEN UBICADO A LA IZQUIERDA (BARRA LATERAL)
+    # -------------------------------------------------------------
+    # 👈 LAS 4 IDEAS INTEGRadas A LA IZQUIERDA (BARRA LATERAL)
+    # -------------------------------------------------------------
+    st.markdown("### 🛠️ Módulos Tácticos Izquierdos")
+    
+    # Idea 1: Selector de Protocolos de Voz Personalizados
+    estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
+    
+    # Idea 2: Botón de Pantalla Completa Táctico (Fullscreen)
+    st.markdown(f"""
+        <button onclick="
+            if (!document.fullscreenElement) {{
+                document.documentElement.requestFullscreen();
+            }} else {{
+                if (document.exitFullscreen) {{ document.exitFullscreen(); }}
+            }}
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; margin-bottom: 5px;">
+            🖥️ Alternar Pantalla Completa
+        </button>
+    """, unsafe_allow_html=True)
+    
+    # Idea 3: Registro de Coordenadas Guardadas (Selector Rápido de Zona)
+    zona_preset = st.selectbox("Preset de Coordenadas:", ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"], index=0)
+    if "Santiago" in zona_preset:
+        st.session_state.ubicacion_jefa = "Santiago Centro, Chile"
+        st.session_state.lat_lon = "-33.4489, -70.6693"
+    elif "Buin" in zona_preset:
+        st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
+        st.session_state.lat_lon = "-33.7333, -70.7333"
+    else:
+        st.session_state.ubicacion_jefa = "Sector Orbital / Desconocido"
+        st.session_state.lat_lon = "00.0000, 00.0000"
+
+    # Idea 4: Alerta de Estado de Batería del Dispositivo (API JS del navegador)
+    st.markdown("""
+        <div id="battery-status" style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 6px; border-radius: 5px; border: 1px solid #444; margin-top: 5px; text-align: center;">
+            🔋 Batería Dispositivo: Sincronizando...
+        </div>
+        <script>
+            navigator.getBattery?.().then(function(battery) {
+                function updateBattery() {
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? '⚡ (Cargando)' : '';
+                    document.getElementById('battery-status').innerText = '🔋 Batería Dispositivo: ' + level + '% ' + charging;
+                }
+                updateBattery();
+                battery.addEventListener('levelchange', updateBattery);
+                battery.addEventListener('chargingchange', updateBattery);
+            });
+        </script>
+    """, unsafe_allow_html=True)
+    # -------------------------------------------------------------
+
+    st.divider()
+    
+    # Módulo de Carga Multimodal a la izquierda
     st.markdown("### 📎 Carga Multimodal")
     archivo_subido = st.file_uploader(
         "Adjunta imagen o archivo:",
@@ -126,7 +179,6 @@ with st.sidebar:
     )
 
     st.divider()
-    
     protocolo_extra = st.selectbox(
         "Directiva de Análisis:",
         [
@@ -151,16 +203,6 @@ with st.sidebar:
         st.success("¡Núcleo al 100%, Jefa!")
         st.rerun()
 
-    st.divider()
-    st.markdown("### 📍 GPS & Telemetría Global")
-    st.caption(f"📍 **Zona:** {st.session_state.ubicacion_jefa}")
-    nueva_ubicacion = st.text_input("Nueva zona:", placeholder="Escribe un lugar")
-    if st.button("🛰️ Sincronizar Posición"):
-        if nueva_ubicacion:
-            st.session_state.ubicacion_jefa = nueva_ubicacion
-        st.success("¡Actualizado, Jefa!")
-        st.rerun()
-    
     st.divider()
     modelo_seleccionado = st.selectbox(
         "Modelos activos:",
@@ -324,9 +366,7 @@ if mostrar_hud:
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# 🎤 MÓDULO DE ACTIVACIÓN POR VOZ (Micrófono nativo del navegador)
-# -------------------------------------------------------------
+# 🎤 MÓDULO DE ACTIVACIÓN POR VOZ
 st.markdown(f"""
     <div style="background: rgba(0,15,30,0.5); border: 1px dashed {color_neon}; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
         <span style="font-size: 0.75rem; color: {color_neon}; font-family: monospace; font-weight: bold;">🎙️ CONTROL DE VOZ TÁCTICO:</span><br>
@@ -355,8 +395,19 @@ for message in st.session_state.messages:
             st.markdown(message["content"])
             if message["role"] == "assistant" and activar_voz:
                 texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
+                
+                # Ajustar velocidad/tono según el selector izquierdo
+                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
+                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
+                
                 st.markdown(f"""
-                    <button onclick="let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\"); utterance.lang = 'es-ES'; window.speechSynthesis.speak(utterance);" style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                    <button onclick="
+                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
+                        utterance.lang = 'es-ES';
+                        utterance.rate = {velocidad_voz};
+                        utterance.pitch = {pitch_voz};
+                        window.speechSynthesis.speak(utterance);
+                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
                         🔊 Reproducir Audio
                     </button>
                 """, unsafe_allow_html=True)
