@@ -1,6 +1,4 @@
 import os
-import io
-import base64
 import time
 import streamlit as st
 from groq import Groq
@@ -81,12 +79,32 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
+# Localizar la ruta exacta del archivo de imagen local (reactor.png / Reactor.png)
+def obtener_ruta_imagen():
+    directorio_actual = os.path.dirname(os.path.abspath(__file__))
+    candidatos = ["reactor.png", "Reactor.png", "reactor.jpg", "Reactor.jpg", "cubos.png", "cara_jarvis.png"]
+    for archivo in candidatos:
+        ruta_completa = os.path.join(directorio_actual, archivo)
+        if os.path.exists(ruta_completa):
+            return ruta_completa
+    return None
+
+path_imagen = obtener_ruta_imagen()
+
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
+
+    st.divider()
+    
+    st.markdown("### ⚛️ Selector Manual de Núcleo")
+    archivo_selector = st.file_uploader("Sube tu reactor.png aquí si falla la ruta:", type=["png", "jpg", "jpeg"])
+    if archivo_selector is not None:
+        st.session_state.imagen_cargada_bytes = archivo_selector.read()
+        st.success("¡Reactor enlazado al núcleo, Jefa!")
 
     st.divider()
     
@@ -132,7 +150,7 @@ with st.sidebar:
     st.divider()
     
     archivo_subido = st.file_uploader(
-        "Adjunta imagen o archivo al chat:",
+        "Adjunta archivo al chat:",
         type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"],
         key="chat_file"
     )
@@ -254,19 +272,30 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# Imagen del reactor cargada mediante URL directa en alta definición de la estructura exacta que enviaste
-url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
-
-# ESTACIÓN DE COMANDO PRINCIPAL
+# ESTACIÓN DE COMANDO PRINCIPAL (Usando st.image nativo de Streamlit para evitar bloqueos HTML)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
+        # Contenedor visual del núcleo con st.image nativo
         st.markdown(
             f"""
             <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
-                <img src="{url_imagen_holo}" style="width: 100%; max-height: 280px; object-fit: contain; border-radius: 12px; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
-                <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin: 0; font-size: 1.1rem;">ESTRUCTURA NEURAL C2</h3>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Renderizado nativo robusto (aquí Streamlit pinta la imagen sin fallar)
+        if "imagen_cargada_bytes" in st.session_state and st.session_state.imagen_cargada_bytes is not None:
+            st.image(st.session_state.imagen_cargada_bytes, use_column_width=True)
+        elif path_imagen:
+            st.image(path_imagen, use_column_width=True)
+        else:
+            st.image("https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop", use_column_width=True)
+
+        st.markdown(
+            f"""
+                <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin-top: 10px; font-size: 1.1rem;">ESTRUCTURA NEURAL C2</h3>
                 <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
                     <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
                     📡 Enlace Satelital: ESTABLE (100%)<br>
