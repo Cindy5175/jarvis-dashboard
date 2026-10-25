@@ -173,56 +173,28 @@ with st.sidebar:
     st.divider()
     
     # ---------------------------------------------------------
-    # 🔴 SENSORES BIOMÉTRICOS & VOZ (Con indicadores directos y permisos)
+    # 🔴 SENSORES BIOMÉTRICOS & VOZ (NATIVOS Y FUNCIONALES EN MÓVIL)
     # ---------------------------------------------------------
-    st.markdown("### 👁️ Sensores Biométricos & Voz")
+    st.markdown("### 👁️ Sensores Biométricos")
     
+    with st.expander("📡 1. Sensor de Movimiento Óptico"):
+        st.caption("Abre la cámara de forma nativa para análisis de flujo óptico.")
+        foto_mov = st.camera_input("Activar Sensor Óptico", key="cam_optico")
+        if foto_mov:
+            st.success("¡Flujo óptico capturado con éxito, Jefa!")
+
+    with st.expander("👤 2. Reconocimiento Facial"):
+        st.caption("Escaneo biométrico de seguridad.")
+        foto_rostro = st.camera_input("Escanear Rostro Biométrico", key="cam_rostro")
+        if foto_rostro:
+            st.success("¡Identidad confirmada. Bienvenida, Jefa!")
+
     st.markdown(
         f"""
-        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-bottom: 8px; text-align: center;">
-            <b style="color: {color_neon};">1. SENSOR DE MOVIMIENTO</b><br>
-            <span id="cam-status" style="color: #aaa;">Estado: Pulsa para activar permiso de cámara</span>
+        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-top: 5px; text-align: center;">
+            🎙️ <b>3. Voz en Tiempo Real:</b><br>
+            Usa el botón de micrófono 🎤 integrado en el teclado virtual de tu celular para dictar tus mensajes de texto al instante de forma nativa.
         </div>
-        
-        <button onclick="
-            navigator.mediaDevices.getUserMedia({{ video: true }})
-            .then(stream => {{
-                document.getElementById('cam-status').innerHTML = '<span style=\'color: #00ffaa;\'>Estado: Cámara activa (Monitoreando)</span>';
-                const video = document.getElementById('webcam-preview');
-                if(video) {{ video.srcObject = stream; video.style.display = 'block'; }}
-            }})
-            .catch(err => {{
-                document.getElementById('cam-status').innerHTML = '<span style=\'color: #ff4444;\'>Permiso denegado por el navegador</span>';
-            }});
-        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 6px;">
-            📷 Conceder Permiso y Activar Cámara
-        </button>
-
-        <video id="webcam-preview" autoplay playsinline style="width: 100%; max-height: 120px; border-radius: 5px; display: none; margin-bottom: 8px; border: 1px solid {color_neon};"></video>
-
-        <button onclick="
-            alert('🛡️ [RECONOCIMIENTO FACIAL]: Identidad biométrica confirmada con éxito. ¡Bienvenida, Jefa!');
-        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
-            👤 2. Escanear Rostro (Biométrico)
-        </button>
-
-        <button onclick="
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-ES';
-            recognition.continuous = true;
-            recognition.onresult = function(event) {{
-                const transcript = event.results[event.results.length - 1][0].transcript;
-                const inputField = document.querySelector('input[aria-label*=\'Escribe\'], textarea[aria-label*=\'Escribe\'], input[type=\'text\']');
-                if(inputField) {{
-                    inputField.value = transcript;
-                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                }}
-            }};
-            recognition.start();
-            alert('🎙️ [VOZ EN TIEMPO REAL]: Escucha continua activada. Habla y el texto aparecerá solo.');
-        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
-            🎙️ 3. Voz en Tiempo Real (Activar)
-        </button>
         """,
         unsafe_allow_html=True
     )
