@@ -92,7 +92,6 @@ base64_cara = obtener_imagen_base64("cara_jarvis.png")
 if base64_cara:
     url_imagen_holo = f"data:image/png;base64,{base64_cara}"
 else:
-    # Respaldo visual directo si el archivo local aún no se coloca en la carpeta
     url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
@@ -267,7 +266,7 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL CON TU IMAGEN EXACTA
+# ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
@@ -313,4 +312,141 @@ if mostrar_hud:
             if st.button("💾 Guardar Notas", use_container_width=True):
                 st.success("¡Bitácora sincronizada Jefa!")
             
-        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space
+        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
+
+# 💬 HISTORIAL DE CHAT
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            if message["role"] == "assistant" and activar_voz:
+                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
+                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
+                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
+                st.markdown(
+                    f"""
+                    <button onclick="
+                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
+                        utterance.lang = 'es-ES';
+                        utterance.rate = {velocidad_voz};
+                        utterance.pitch = {pitch_voz};
+                        window.speechSynthesis.speak(utterance);
+                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
+                        🔊 Reproducir Audio
+                    </button>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+# 🎙️ BOTÓN DE VOZ TÁCTICO
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: flex-end; padding-right: 8px; margin-bottom: 2px;">
+        <button onclick="
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.onresult = function(event) {{
+                const speechToText = event.results[0][0].transcript;
+                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
+                if(inputField) {{
+                    inputField.value = speechToText;
+                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }};
+            recognition.start();
+        " style="background-color: {color_neon}; color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px {color_neon}88; display: flex; align-items: center; justify-content: center;">
+            🎙️
+        </button>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# 💬 CAJA DE CHAT PRINCIPAL
+if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
+    contenido_adjunto = ""
+    imagen_base64 = None
+    
+    if archivo_subido is not None:
+        nombre_archivo = archivo_subido.name
+        tipo_archivo = archivo_subido.type
+        
+        if "image" in tipo_archivo:
+            bytes_data = archivo_subido.read()
+            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
+            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
+        else:
+            try:
+                texto_archivo = archivo_subido.read().decode("utf-8")
+                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
+            except Exception:
+                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
+
+    prompt_completo = prompt + contenido_adjunto
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if archivo_subido is not None:
+            if "image" in archivo_subido.type:
+                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
+            else:
+                st.caption(f"📄 Archivo: {archivo_subido.name}")
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        if imagen_base64:
+            mensajes_api = []
+            for msg in st.session_state.messages:
+                if msg["role"] == "system":
+                    mensajes_api.append(msg)
+                elif msg["role"] == "user":
+                    if msg == st.session_state.messages[-1]:
+                        mensajes_api.append({
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt_completo},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{archivo_subido.type};base64,{imagen_base64}"
+                                    }
+                                }
+                            ]
+                        })
+                    else:
+                        mensajes_api.append(msg)
+                else:
+                    mensajes_api.append(msg)
+            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
+        else:
+            mensajes_api = st.session_state.messages
+            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
+
+        exito = False
+        for modelo_actual in modelos_a_probar:
+            try:
+                completion = client.chat.completions.create(
+                    model=modelo_actual,
+                    messages=mensajes_api,
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    content = chunk.choices[0].delta.content or ""
+                    full_response += content
+                    message_placeholder.markdown(full_response + "▌")
+                
+                message_placeholder.markdown(full_response)
+                exito = True
+                break
+            except Exception:
+                continue
+        
+        if not exito:
+            full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
+            message_placeholder.markdown(full_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
