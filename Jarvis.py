@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales
+# Estiglios CSS generales
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -226,17 +226,16 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Todo alineado estrictamente a la izquierda)
+# ESTACIÓN DE COMANDO PRINCIPAL (Todo integrado, limpio y alineado a la izquierda)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
         
-        st.markdown("### ⚛️ ESTRUCTURA NEURAL C2")
-        
-        # Diagnóstico de sistemas forzado a la izquierda con HTML limpio
+        # Bloque unificado HTML para la Estructura Neural y Diagnóstico estrictamente a la izquierda
         st.markdown(
             f"""
-            <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 8px; padding: 12px; text-align: left; font-family: 'Courier New', monospace; margin-bottom: 10px;">
+            <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 10px; padding: 15px; text-align: left; font-family: 'Courier New', monospace; margin-bottom: 10px;">
+                <h3 style="color: {color_neon}; text-shadow: 0 0 8px {color_neon}; margin-top: 0; margin-bottom: 15px; font-size: 1.1rem;">⚛️ ESTRUCTURA NEURAL C2</h3>
                 <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br><br>
                 📡 Enlace Satelital: ESTABLE (100%)<br><br>
                 🛡️ Escudo Cuántico: OPERATIVO<br><br>
