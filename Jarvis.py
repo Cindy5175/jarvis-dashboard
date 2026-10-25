@@ -32,9 +32,9 @@ PIN_SECRETO = "Jarvis"
 if not st.session_state.autenticado:
     st.markdown(
         """
-        <div style="background: rgba(5, 12, 30, 0.95); border: 2px solid #00d2ff; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 0 25px #00d2ff44; font-family: 'Courier New', monospace; max-width: 90%; margin: 50px auto;">
-            <h2 style="color: #00d2ff; margin-bottom: 10px; font-size: 1.4rem;">🔒 ACCESO RESTRINGIDO</h2>
-            <p style="color: #aaa; font-size: 0.8rem;">Introduce la clave de seguridad para desbloquear la estación de comando C.I.T.</p>
+        <div style="background: rgba(5, 12, 30, 0.95); border: 2px solid #00d2ff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 25px #00d2ff44; font-family: 'Courier New', monospace; max-width: 90%; margin: 40px auto;">
+            <h2 style="color: #00d2ff; margin-bottom: 10px; font-size: 1.2rem;">🔒 ACCESO RESTRINGIDO</h2>
+            <p style="color: #aaa; font-size: 0.75rem;">Introduce la clave de seguridad para desbloquear la estación C.I.T.</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -64,7 +64,6 @@ if "messages" not in st.session_state:
 # Estética fija: Azul Neón Cuántico
 color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
-titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
@@ -193,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales limpios
+# Estiglios CSS optimizados con adaptabilidad móvil simétrica
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -205,30 +204,31 @@ css_estilos = f"""
     color: {color_neon};
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+    font-size: clamp(0.9rem, 4vw, 1.4rem);
     text-align: center;
     margin-top: -10px;
-    margin-bottom: 20px;
-    white-space: nowrap;
+    margin-bottom: 15px;
+    width: 100%;
+    word-break: break-word;
     animation: neonGlow 2.5s infinite ease-in-out;
 }}
 .block-container {{
     max-width: 100% !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    padding-top: 1rem !important;
-    padding-bottom: 6rem !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 5rem !important;
 }}
 </style>
 """
 
 st.markdown(css_estilos, unsafe_allow_html=True)
-st.markdown(titulo_html, unsafe_allow_html=True)
+st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Sin imagen, ultra limpia)
+# ESTACIÓN DE COMANDO PRINCIPAL (Simétrica y adaptada a móviles)
 if mostrar_hud:
     with st.container(border=True):
-        st.markdown(f"**[COMMAND STATION - C2 ACTIVE]** &nbsp;&nbsp; **INTEGRITY:** {st.session_state.energia_arc}%")
+        st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
         
         st.markdown("### ⚛️ ESTRUCTURA NEURAL C2")
         st.info(
@@ -239,7 +239,7 @@ if mostrar_hud:
             f"📍 Grid: {st.session_state.ubicacion_jefa}"
         )
 
-        with st.expander(f"🌤️ Módulo Climático & Alertas ({st.session_state.ubicacion_jefa})"):
+        with st.expander(f"🌤️ Módulo Climático & Alertas"):
             col_c1, col_c2, col_c3 = st.columns(3)
             col_c1.metric("Temp", "18°C", "Óptima")
             col_c2.metric("Humedad", "45%", "-2%")
@@ -250,14 +250,14 @@ if mostrar_hud:
             import pandas as pd
             import numpy as np
             chart_data = pd.DataFrame(
-                np.random.randn(15, 2) * [5, 10] + [50, 120],
-                columns=["Enlace Satelital", "Flujo Neuronal"]
+                np.random.randn(12, 2) * [5, 10] + [50, 120],
+                columns=["Satelital", "Neuronal"]
             )
-            st.line_chart(chart_data, height=130)
+            st.line_chart(chart_data, height=110)
             
             st.divider()
             st.markdown("**📝 Bitácora de Misión Rápida**")
-            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=70)
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=60)
             if st.button("💾 Guardar Notas", use_container_width=True):
                 st.success("¡Bitácora sincronizada Jefa!")
             
