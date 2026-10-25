@@ -16,9 +16,6 @@ st.set_page_config(
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
-if "modo_sistema" not in st.session_state:
-    st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
-
 if "ubicacion_jefa" not in st.session_state:
     st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
     st.session_state.lat_lon = "-33.7333, -70.7333"
@@ -27,12 +24,12 @@ if "energia_arc" not in st.session_state:
     st.session_state.energia_arc = 98
 
 if "notas_mision" not in st.session_state:
-    st.session_state.notas_mision = "• Revisar despliegue en GitHub\n• Optimizar latencia de red"
+    st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
-PIN_SECRETO = "Jarvis"  # Clave de acceso oficial configurada por la Jefa
+PIN_SECRETO = "Jarvis"
 
 if not st.session_state.autenticado:
     st.markdown(
@@ -71,51 +68,22 @@ if not st.session_state.autenticado:
     st.stop()
 # -------------------------------------------------------------
 
-# 2. Conexión oficial y directa con la API de Groq
+# 2. Conexión directa y blindada con la API de Groq
 groq_api_key = "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"
-
-if not groq_api_key:
-    st.error("⚠️ Error con la clave API.")
-    st.stop()
-
 client = Groq(api_key=groq_api_key)
 
 # 3. Historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configuración de personalidad y colores
-if "N.O.V.A." in st.session_state.modo_sistema:
-    color_neon = "#ff007f"
-    shadow_neon = "#ff007f"
-    titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica y arquitectura de software C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Tienes un tono brillante, sarcástico estilo Tony Stark y experto en auditoría de sistemas Streamlit. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
-else:
-    color_neon = "#00d2ff"
-    shadow_neon = "#0072ff"
-    titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia, sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
+color_neon = "#00d2ff"
+shadow_neon = "#0072ff"
+titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
+system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia, sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
-# 4. BARRA LATERAL (Centro de Comando Avanzado)
+# 4. BARRA LATERAL (Centro de Comando Avanzado Izquierdo)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
-    
-    opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
-    indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
-    
-    def cambiar_modo():
-        st.session_state.modo_sistema = st.session_state.radio_modo_input
-        st.rerun()
-
-    st.radio(
-        "Selecciona Protocolo Activo:",
-        opciones_modo,
-        index=indice_actual,
-        key="radio_modo_input",
-        on_change=cambiar_modo
-    )
-    
-    st.divider()
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
@@ -172,11 +140,8 @@ with st.sidebar:
 
     st.divider()
     
-    # ---------------------------------------------------------
-    # 🔴 SENSORES BIOMÉTRICOS (Nativos, alineados y simétricos)
-    # ---------------------------------------------------------
+    # 👁️ SENSORES BIOMÉTRICOS
     st.markdown("### 👁️ Sensores Biométricos")
-    
     with st.expander("📡 1. Sensor Óptico de Movimiento"):
         st.caption("Visor de flujo óptico nativo.")
         foto_mov = st.camera_input("Activar Sensor Óptico", key="cam_optico")
@@ -189,24 +154,10 @@ with st.sidebar:
         if foto_rostro:
             st.success("¡Identidad confirmada, Jefa!")
 
-    st.markdown(
-        f"""
-        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-top: 5px; text-align: center;">
-            🎙️ <b>3. Voz en Tiempo Real:</b><br>
-            Usa el micrófono 🎤 de tu teclado virtual para dictar mensajes con total fluidez.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    # ---------------------------------------------------------
-
     st.divider()
 
-    # ---------------------------------------------------------
-    # ⚡ MÓDULOS AVANZADOS [LOS 3 PUNTOS] EN LA IZQUIERDA
-    # ---------------------------------------------------------
+    # 🚀 PROTOCOLOS AVANZADOS
     st.markdown("### 🚀 Protocolos Avanzados")
-
     with st.expander("🔊 1. Efectos de Sonido Sci-Fi (SFX)"):
         st.caption("Audio futurista HUD.")
         if st.button("🔊 Reproducir Sonido HUD", use_container_width=True):
@@ -238,32 +189,6 @@ with st.sidebar:
                 url_holo = f"https://image.pollinations.ai/prompt/{prompt_holo.replace(' ', '%20')}%20scifi%20blueprint%20hud%20neon"
                 st.image(url_holo, caption="Plano Táctico Sintetizado", use_column_width=True)
             st.success("¡Holograma proyectado, Jefa!")
-
-    with st.expander("🎙️ 3. Micrófono Avanzado"):
-        st.caption("Grabación web en barra lateral.")
-        st.markdown(
-            f"""
-            <div style="text-align: center; padding: 2px;">
-                <button onclick="
-                    navigator.mediaDevices.getUserMedia({{ audio: true }}).then(stream => {{
-                        const mediaRecorder = new MediaRecorder(stream);
-                        let chunks = [];
-                        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                        mediaRecorder.onstop = e => {{
-                            alert('¡Audio capturado por el componente avanzado, Jefa!');
-                        }};
-                        mediaRecorder.start();
-                        setTimeout(() => mediaRecorder.stop(), 3000);
-                        alert('Grabando audio táctico (3s)...');
-                    }}).catch(err => alert('Permiso de micrófono denegado'));
-                " style="background-color: {color_neon}; color: black; border: none; padding: 6px 12px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%;">
-                    🔴 Grabar Audio Táctico (3s)
-                </button>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    # ---------------------------------------------------------
 
     st.divider()
     
@@ -327,10 +252,10 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# Definir instrucción del sistema complementada para análisis de arquitectura Jarvis.py
+# Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit (Jarvis.py). Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
@@ -413,15 +338,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Ocultable)
+# ESTACIÓN DE COMANDO PRINCIPAL (HUD)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
-        # 1. Orbe Holográfico
         st.markdown(
             """
             <div class="sphere-wrapper">
@@ -435,7 +358,6 @@ if mostrar_hud:
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # 2. Sensores
         st.markdown(
             f"""
             <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
@@ -476,7 +398,7 @@ if mostrar_hud:
             
         st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
-# 🎤 MÓDULO DE ACTIVACIÓN POR VOZ
+# 🎤 ACTIVACIÓN POR VOZ
 st.markdown(
     f"""
     <div style="background: rgba(0,15,30,0.5); border: 1px dashed {color_neon}; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
@@ -508,10 +430,8 @@ for message in st.session_state.messages:
             st.markdown(message["content"])
             if message["role"] == "assistant" and activar_voz:
                 texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
-                
                 velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
                 pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
-                
                 st.markdown(
                     f"""
                     <button onclick="
@@ -527,9 +447,7 @@ for message in st.session_state.messages:
                     unsafe_allow_html=True
                 )
 
-# -------------------------------------------------------------
-# 💬 CAJA DE CHAT PRINCIPAL (Siempre al final y visible)
-# -------------------------------------------------------------
+# 💬 CAJA DE CHAT PRINCIPAL
 if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
     contenido_adjunto = ""
     imagen_base64 = None
