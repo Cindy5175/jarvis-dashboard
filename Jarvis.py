@@ -80,17 +80,17 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configurar variables visuales y el PERSONALIDAD SARCÁSTICA ESTILO TONY STARK
+# Configurar variables visuales y el PERSONALIDAD SARCÁSTICA Y ANALISTA ESTILO TONY STARK
 if "N.O.V.A." in st.session_state.modo_sistema:
     color_neon = "#ff007f"
     shadow_neon = "#ff007f"
     titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
-    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Tienes un tono inteligente, sumamente leal pero con un toque refinado de sarcasmo e ironía al estilo Tony Stark. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
+    system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica y arquitectura de software C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Tienes un tono brillante, sarcástico estilo Tony Stark y experto en auditoría de sistemas Streamlit. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
 else:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
     titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
-    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia y un toque medido de sarcasmo irónico e ingenioso al estilo Tony Stark. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
+    system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia, sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # 4. BARRA LATERAL (Centro de Comando Avanzado)
 with st.sidebar:
@@ -173,7 +173,7 @@ with st.sidebar:
         "Directiva de Análisis:",
         [
             "Estándar (Equilibrado)",
-            "Modo Depuración de Código 💻",
+            "Modo Auditoría de Arquitectura / Jarvis.py 💻",
             "Modo Resumen Ejecutivo 📊",
             "Protocolo Clean Slate 🧹💬 (Purgar Chat)"
         ],
@@ -216,10 +216,10 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# Definir instrucción del sistema complementada
+# Definir instrucción del sistema complementada para análisis de arquitectura Jarvis.py
 prompt_protocolo_extra = ""
-if "Depuración" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Enfócate principalmente en depuración de código, análisis técnico de sintaxis y detección de errores con precisión quirúrgica y algo de ironía técnica]."
+if "Auditoría" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit (Jarvis.py). Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
