@@ -489,3 +489,4 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+
