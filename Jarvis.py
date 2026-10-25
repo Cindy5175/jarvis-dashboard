@@ -76,7 +76,7 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Estética fija: Azul Neón con identidad autónoma
+# Estética fija: Azul Neón Cuántico
 color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
@@ -87,8 +87,6 @@ system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y le
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
-    
-    # 🎬 NUEVO: Interruptor de Salvapantallas Holográfico
     salvapantallas_activo = st.checkbox("🎬 Protocolo Salvapantallas Stark", value=False)
 
     st.divider()
@@ -148,7 +146,8 @@ with st.sidebar:
         [
             "Estándar (Equilibrado)",
             "Modo Auditoría de Arquitectura / Jarvis.py 💻",
-            "Modo Resumen Ejecutivo 📊"
+            "Modo Resumen Ejecutivo 📊",
+            "Modo Táctico de Ciberseguridad 🛡️"
         ],
         index=0
     )
@@ -199,9 +198,11 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+elif "Ciberseguridad" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría de ciberseguridad, análisis de vulnerabilidades y encriptado táctico de nivel militar]."
 
 system_prompt = system_base + prompt_protocolo_extra
 
@@ -210,337 +211,20 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS dinámicos avanzados con efectos de salvapantallas holográfico
+# Estilos CSS con título responsivo y efectos interactivos
 st.markdown(
     f"""
     <style>
     @keyframes neonGlow {{
         0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
-        50% {{ text-shadow: 0 0 12px {color_neon}, 0 0 25px {color_neon}, 0 0 40px {shadow_neon}; }}
+        50% {{ text-shadow: 0 0 14px {color_neon}, 0 0 28px {color_neon}, 0 0 45px {shadow_neon}; }}
         100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
     }}
     .neon-title {{
         color: {color_neon};
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        font-size: 1.5rem;
+        font-size: clamp(1.1rem, 4.5vw, 1.6rem);
         text-align: center;
         margin-top: -10px;
-        margin-bottom: 20px;
-        animation: neonGlow 2.5s infinite ease-in-out;
-    }}
-    .block-container {{
-        max-width: 100% !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-        padding-top: 1rem !important;
-        padding-bottom: 6rem !important;
-    }}
-    @keyframes rotateRing {{
-        from {{ transform: rotate(0deg); }}
-        to {{ transform: rotate(360deg); }}
-    }}
-    @keyframes pulseSphere {{
-        0% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
-        50% {{ transform: scale(1.05); opacity: 1; box-shadow: 0 0 35px {color_neon}; }}
-        100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
-    }}
-    .sphere-wrapper {{
-        width: 100px;
-        height: 100px;
-        margin: 0 auto;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }}
-    .orbit-ring-1 {{
-        position: absolute;
-        width: 90px;
-        height: 90px;
-        border: 2px dashed {color_neon};
-        border-radius: 50%;
-        animation: rotateRing 8s linear infinite;
-    }}
-    .orbit-ring-2 {{
-        position: absolute;
-        width: 65px;
-        height: 65px;
-        border: 1px solid {color_neon}aa;
-        border-radius: 50%;
-        animation: rotateRing 5s linear infinite reverse;
-    }}
-    .core-sphere {{
-        width: 30px;
-        height: 30px;
-        background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
-        border-radius: 50%;
-        position: absolute;
-        animation: pulseSphere 2.5s infinite ease-in-out;
-    }}
-    
-    /* 🎬 ESTILOS DEL SALVAPANTALLAS HOLOGRÁFICO */
-    .screensaver-overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: radial-gradient(circle, rgba(2,10,25,0.98) 0%, rgba(0,2,8,0.99) 100%);
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Courier New', monospace;
-        color: {color_neon};
-        overflow: hidden;
-    }}
-    .scanline {{
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        background: rgba(0, 210, 255, 0.5);
-        box-shadow: 0 0 10px {color_neon};
-        animation: scan 3s linear infinite;
-    }}
-    @keyframes scan {{
-        0% {{ top: 0%; }}
-        100% {{ top: 100%; }}
-    }}
-    .holo-grid {{
-        position: absolute;
-        width: 200vw;
-        height: 200vh;
-        background-image: linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
-        background-size: 40px 40px;
-        animation: gridMove 20s linear infinite;
-    }}
-    @keyframes gridMove {{
-        0% {{ transform: translate(0, 0); }}
-        100% {{ transform: translate(40px, 40px); }}
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# 🎬 PANTALLA ACTIVA DE SALVAPANTALLAS HOLOGRÁFICO SI ESTÁ ACTIVADO
-if salvapantallas_activo:
-    st.markdown(
-        f"""
-        <div class="screensaver-overlay">
-            <div class="holo-grid"></div>
-            <div class="scanline"></div>
-            <div style="position: relative; z-index: 10; text-align: center;">
-                <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
-                    <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
-                    <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
-                    <div class="core-sphere" style="width: 45px; height: 45px;"></div>
-                </div>
-                <h1 style="color: {color_neon}; font-size: 2rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 3px; margin: 0;">J.A.R.V.I.S. C2 SECURE</h1>
-                <p style="color: #88ccee; font-size: 0.9rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
-                <p style="color: #00d2ff88; font-size: 0.75rem; margin-top: 30px;">Desactiva el protocolo en la barra lateral para volver al comando táctico</p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-st.markdown(titulo_html, unsafe_allow_html=True)
-
-# ESTACIÓN DE COMANDO PRINCIPAL (HUD con Clima Escondido en Expander)
-if mostrar_hud:
-    with st.container(border=True):
-        st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
-        
-        st.markdown(
-            """
-            <div class="sphere-wrapper">
-                <div class="orbit-ring-1"></div>
-                <div class="orbit-ring-2"></div>
-                <div class="core-sphere"></div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        st.markdown(
-            f"""
-            <div style="font-family: monospace; font-size: 0.65rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
-                <b style="color: {color_neon};">SENSORS TELEMETRY FEED</b><br>
-                📡 NAV_SYS: 100% &nbsp;|&nbsp; 🛡️ SHIELD: 100%<br>
-                ⚡ THRUSTERS: 100% &nbsp;|&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Módulo Climático y Sub-Sistemas ocultos en expander
-        with st.expander(f"🌤️ Módulo Climático ({st.session_state.ubicacion_jefa})"):
-            col_c1, col_c2, col_c3 = st.columns(3)
-            col_c1.metric("Temp", "18°C", "Óptima")
-            col_c2.metric("Humedad", "45%", "-2%")
-            col_c3.metric("Viento", "12 km/h", "SSE")
-            
-            st.divider()
-            
-            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📈 Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
-            import pandas as pd
-            import numpy as np
-            chart_data = pd.DataFrame(
-                np.random.randn(15, 2) * [5, 10] + [50, 120],
-                columns=["Enlace Satelital", "Flujo Neuronal"]
-            )
-            st.line_chart(chart_data, height=130)
-            
-            st.divider()
-            
-            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
-            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=70)
-            if st.button("💾 Guardar Notas", use_container_width=True):
-                st.success("¡Bitácora sincronizada Jefa!")
-            
-        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
-
-# 💬 HISTORIAL DE CHAT
-for message in st.session_state.messages:
-    if message["role"] != "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            if message["role"] == "assistant" and activar_voz:
-                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
-                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
-                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
-                st.markdown(
-                    f"""
-                    <button onclick="
-                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
-                        utterance.lang = 'es-ES';
-                        utterance.rate = {velocidad_voz};
-                        utterance.pitch = {pitch_voz};
-                        window.speechSynthesis.speak(utterance);
-                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
-                        🔊 Reproducir Audio
-                    </button>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-# 🎙️ BOTÓN DE VOZ TÁCTICO (Perfectamente alineado justo arriba de la caja de chat)
-st.markdown(
-    f"""
-    <div style="display: flex; justify-content: flex-end; padding-right: 8px; margin-bottom: 2px;">
-        <button onclick="
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-ES';
-            recognition.onresult = function(event) {{
-                const speechToText = event.results[0][0].transcript;
-                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
-                if(inputField) {{
-                    inputField.value = speechToText;
-                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                }}
-            }};
-            recognition.start();
-        " style="background-color: {color_neon}; color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px {color_neon}88; display: flex; align-items: center; justify-content: center;">
-            🎙️
-        </button>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# 💬 CAJA DE CHAT PRINCIPAL (Siempre visible abajo)
-if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
-    contenido_adjunto = ""
-    imagen_base64 = None
-    
-    if archivo_subido is not None:
-        nombre_archivo = archivo_subido.name
-        tipo_archivo = archivo_subido.type
-        
-        if "image" in tipo_archivo:
-            bytes_data = archivo_subido.read()
-            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
-            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
-        else:
-            try:
-                texto_archivo = archivo_subido.read().decode("utf-8")
-                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
-            except Exception:
-                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
-
-    prompt_completo = prompt + contenido_adjunto
-    st.session_state.messages.append({"role": "user", "content": prompt_completo})
-    
-    with st.chat_message("user"):
-        st.markdown(prompt)
-        if archivo_subido is not None:
-            if "image" in archivo_subido.type:
-                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
-            else:
-                st.caption(f"📄 Archivo: {archivo_subido.name}")
-
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        
-        if imagen_base64:
-            mensajes_api = []
-            for msg in st.session_state.messages:
-                if msg["role"] == "system":
-                    mensajes_api.append(msg)
-                elif msg["role"] == "user":
-                    if msg == st.session_state.messages[-1]:
-                        mensajes_api.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": prompt_completo},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{archivo_subido.type};base64,{imagen_base64}"
-                                    }
-                                }
-                            ]
-                        })
-                    else:
-                        mensajes_api.append(msg)
-                else:
-                    mensajes_api.append(msg)
-            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
-        else:
-            mensajes_api = st.session_state.messages
-            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
-
-        exito = False
-        for modelo_actual in modelos_a_probar:
-            try:
-                completion = client.chat.completions.create(
-                    model=modelo_actual,
-                    messages=mensajes_api,
-                    stream=True,
-                )
-                
-                for chunk in completion:
-                    content = chunk.choices[0].delta.content or ""
-                    full_response += content
-                    message_placeholder.markdown(full_response + "▌")
-                
-                message_placeholder.markdown(full_response)
-                exito = True
-                break
-            except Exception:
-                continue
-        
-        if not exito:
-            full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
-            message_placeholder.markdown(full_response)
-
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+        margin-bottom:
