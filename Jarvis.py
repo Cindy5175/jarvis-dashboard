@@ -7,8 +7,8 @@ from groq import Groq
 
 # 1. Configuración de la página
 st.set_page_config(
-    page_title="Sistema C.I.T. / N.O.V.A.", 
-    page_icon="🟢", 
+    page_title="Sistema C.I.T. / J.A.R.V.I.S.", 
+    page_icon="⚛️", 
     layout="centered"
 )
 
@@ -17,7 +17,7 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 if "modo_sistema" not in st.session_state:
-    st.session_state.modo_sistema = "N.O.V.A. - C.I.T. (Verde Suave)"
+    st.session_state.modo_sistema = "J.A.R.V.I.S. (Azul Neón)"
 
 if "ubicacion_jefa" not in st.session_state:
     st.session_state.ubicacion_jefa = "Buin, Santiago, Chile"
@@ -39,19 +39,19 @@ if not st.session_state.autenticado:
         """
         <style>
         .login-box {
-            background: rgba(5, 20, 15, 0.95);
-            border: 2px solid #00ff88;
+            background: rgba(5, 12, 30, 0.95);
+            border: 2px solid #00d2ff;
             border-radius: 12px;
             padding: 30px;
             text-align: center;
-            box-shadow: 0 0 25px #00ff8844;
+            box-shadow: 0 0 25px #00d2ff44;
             font-family: 'Courier New', monospace;
             max-width: 400px;
             margin: 50px auto;
         }
         </style>
         <div class="login-box">
-            <h2 style="color: #00ff88; margin-bottom: 10px;">🔒 ACCESO RESTRINGIDO</h2>
+            <h2 style="color: #00d2ff; margin-bottom: 10px;">🔒 ACCESO RESTRINGIDO</h2>
             <p style="color: #aaa; font-size: 0.85rem;">Introduce el código de seguridad para desbloquear la estación de comando C.I.T.</p>
         </div>
         """,
@@ -84,11 +84,11 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configuración de personalidad y colores (N.O.V.A. en Verde Suave)
+# Configuración de personalidad y colores
 if "N.O.V.A." in st.session_state.modo_sistema:
-    color_neon = "#00ff88"
-    shadow_neon = "#00cc66"
-    titulo_html = '<h1 class="neon-title glow-anim">🟢 N.O.V.A. - C.I.T.</h1>'
+    color_neon = "#ff007f"
+    shadow_neon = "#ff007f"
+    titulo_html = '<h1 class="neon-title glow-anim">🟣 N.O.V.A. - C.I.T.</h1>'
     system_base = f"Eres N.O.V.A., un sistema de inteligencia táctica y arquitectura de software C.I.T. avanzado. Te diriges al usuario como 'Jefa'. Tienes un tono brillante, sarcástico estilo Tony Stark y experto en auditoría de sistemas Streamlit. Ubicación táctica activa: {st.session_state.ubicacion_jefa} (Coordenadas: {st.session_state.lat_lon})."
 else:
     color_neon = "#00d2ff"
@@ -100,7 +100,7 @@ else:
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     
-    opciones_modo = ["N.O.V.A. - C.I.T. (Verde Suave)", "J.A.R.V.I.S. (Azul Neón)"]
+    opciones_modo = ["J.A.R.V.I.S. (Azul Neón)", "N.O.V.A. - C.I.T. (Fucsia Cyber)"]
     indice_actual = opciones_modo.index(st.session_state.modo_sistema) if st.session_state.modo_sistema in opciones_modo else 0
     
     def cambiar_modo():
@@ -151,7 +151,7 @@ with st.sidebar:
 
     st.markdown(
         """
-        <div id="battery-status" style="font-size: 0.7rem; font-family: monospace; background: rgba(0,20,15,0.6); padding: 6px; border-radius: 5px; border: 1px solid #444; margin-top: 5px; text-align: center;">
+        <div id="battery-status" style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 6px; border-radius: 5px; border: 1px solid #444; margin-top: 5px; text-align: center;">
             🔋 Batería Dispositivo: Sincronizando...
         </div>
         <script>
@@ -191,13 +191,78 @@ with st.sidebar:
 
     st.markdown(
         f"""
-        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,20,15,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-top: 5px; text-align: center;">
+        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-top: 5px; text-align: center;">
             🎙️ <b>3. Voz en Tiempo Real:</b><br>
             Usa el micrófono 🎤 de tu teclado virtual para dictar mensajes con total fluidez.
         </div>
         """,
         unsafe_allow_html=True
     )
+    # ---------------------------------------------------------
+
+    st.divider()
+
+    # ---------------------------------------------------------
+    # ⚡ MÓDULOS AVANZADOS [LOS 3 PUNTOS] EN LA IZQUIERDA
+    # ---------------------------------------------------------
+    st.markdown("### 🚀 Protocolos Avanzados")
+
+    with st.expander("🔊 1. Efectos de Sonido Sci-Fi (SFX)"):
+        st.caption("Audio futurista HUD.")
+        if st.button("🔊 Reproducir Sonido HUD", use_container_width=True):
+            st.markdown(
+                f"""
+                <script>
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
+            st.success("¡Pulso de audio emitido, Jefa!")
+
+    with st.expander("🎨 2. Generador de Hologramas"):
+        st.caption("Esquemas y planos visuales.")
+        prompt_holo = st.text_input("Prompt de holograma:", "Reactor Arc schematic HUD blueprint")
+        if st.button("🔮 Generar Holograma", use_container_width=True):
+            with st.spinner("Sintetizando plano holográfico..."):
+                time.sleep(1.0)
+                url_holo = f"https://image.pollinations.ai/prompt/{prompt_holo.replace(' ', '%20')}%20scifi%20blueprint%20hud%20neon"
+                st.image(url_holo, caption="Plano Táctico Sintetizado", use_column_width=True)
+            st.success("¡Holograma proyectado, Jefa!")
+
+    with st.expander("🎙️ 3. Micrófono Avanzado"):
+        st.caption("Grabación web en barra lateral.")
+        st.markdown(
+            f"""
+            <div style="text-align: center; padding: 2px;">
+                <button onclick="
+                    navigator.mediaDevices.getUserMedia({{ audio: true }}).then(stream => {{
+                        const mediaRecorder = new MediaRecorder(stream);
+                        let chunks = [];
+                        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                        mediaRecorder.onstop = e => {{
+                            alert('¡Audio capturado por el componente avanzado, Jefa!');
+                        }};
+                        mediaRecorder.start();
+                        setTimeout(() => mediaRecorder.stop(), 3000);
+                        alert('Grabando audio táctico (3s)...');
+                    }}).catch(err => alert('Permiso de micrófono denegado'));
+                " style="background-color: {color_neon}; color: black; border: none; padding: 6px 12px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%;">
+                    🔴 Grabar Audio Táctico (3s)
+                </button>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     # ---------------------------------------------------------
 
     st.divider()
@@ -242,3 +307,131 @@ with st.sidebar:
     st.divider()
     modelo_seleccionado = st.selectbox(
         "Modelos activos:",
+        [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b",
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
+            "llama-3.2-11b-vision-preview"
+        ],
+        index=0
+    )
+    
+    activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
+    
+    chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
+    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
+
+    st.divider()
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
+
+# Definir instrucción del sistema complementada para análisis de arquitectura Jarvis.py
+prompt_protocolo_extra = ""
+if "Auditoría" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit (Jarvis.py). Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+elif "Resumen" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+
+system_prompt = system_base + prompt_protocolo_extra
+
+if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
+    st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
+else:
+    st.session_state.messages[0]["content"] = system_prompt
+
+# Estilos CSS
+st.markdown(
+    f"""
+    <style>
+    @keyframes neonGlow {{
+        0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+        50% {{ text-shadow: 0 0 12px {color_neon}, 0 0 25px {color_neon}, 0 0 40px {shadow_neon}; }}
+        100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+    }}
+    .neon-title {{
+        color: {color_neon};
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1.8rem;
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        white-space: nowrap;
+        animation: neonGlow 2.5s infinite ease-in-out;
+    }}
+    .block-container {{
+        max-width: 750px;
+        padding-top: 1.5rem;
+        padding-bottom: 5rem;
+    }}
+    @keyframes rotateRing {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    @keyframes pulseSphere {{
+        0% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
+        50% {{ transform: scale(1.05); opacity: 1; box-shadow: 0 0 35px {color_neon}; }}
+        100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
+    }}
+    .sphere-wrapper {{
+        width: 110px;
+        height: 110px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    .orbit-ring-1 {{
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border: 2px dashed {color_neon};
+        border-radius: 50%;
+        animation: rotateRing 8s linear infinite;
+    }}
+    .orbit-ring-2 {{
+        position: absolute;
+        width: 75px;
+        height: 75px;
+        border: 1px solid {color_neon}aa;
+        border-radius: 50%;
+        animation: rotateRing 5s linear infinite reverse;
+    }}
+    .core-sphere {{
+        width: 35px;
+        height: 35px;
+        background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
+        border-radius: 50%;
+        position: absolute;
+        animation: pulseSphere 2.5s infinite ease-in-out;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Título de la App
+st.markdown(titulo_html, unsafe_allow_html=True)
+
+# ESTACIÓN DE COMANDO PRINCIPAL (Ocultable)
+if mostrar_hud:
+    with st.container(border=True):
+        st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
+        
+        # 1. Orbe Holográfico
+        st.markdown(
+            """
+            <div class="sphere-wrapper">
+                <div class="orbit-ring-1"></div>
+                <div class="orbit-ring-2"></div>
+                <div class="core-sphere"></div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
