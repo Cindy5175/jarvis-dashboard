@@ -87,6 +87,9 @@ system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y le
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
+    
+    # 🎬 NUEVO: Interruptor de Salvapantallas Holográfico
+    salvapantallas_activo = st.checkbox("🎬 Protocolo Salvapantallas Stark", value=False)
 
     st.divider()
     
@@ -196,7 +199,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
@@ -207,7 +210,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS dinámicos optimizados y simétricos
+# Estilos CSS dinámicos avanzados con efectos de salvapantallas holográfico
 st.markdown(
     f"""
     <style>
@@ -275,10 +278,75 @@ st.markdown(
         position: absolute;
         animation: pulseSphere 2.5s infinite ease-in-out;
     }}
+    
+    /* 🎬 ESTILOS DEL SALVAPANTALLAS HOLOGRÁFICO */
+    .screensaver-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle, rgba(2,10,25,0.98) 0%, rgba(0,2,8,0.99) 100%);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Courier New', monospace;
+        color: {color_neon};
+        overflow: hidden;
+    }}
+    .scanline {{
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: rgba(0, 210, 255, 0.5);
+        box-shadow: 0 0 10px {color_neon};
+        animation: scan 3s linear infinite;
+    }}
+    @keyframes scan {{
+        0% {{ top: 0%; }}
+        100% {{ top: 100%; }}
+    }}
+    .holo-grid {{
+        position: absolute;
+        width: 200vw;
+        height: 200vh;
+        background-image: linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: gridMove 20s linear infinite;
+    }}
+    @keyframes gridMove {{
+        0% {{ transform: translate(0, 0); }}
+        100% {{ transform: translate(40px, 40px); }}
+    }}
     </style>
     """,
     unsafe_allow_html=True
 )
+
+# 🎬 PANTALLA ACTIVA DE SALVAPANTALLAS HOLOGRÁFICO SI ESTÁ ACTIVADO
+if salvapantallas_activo:
+    st.markdown(
+        f"""
+        <div class="screensaver-overlay">
+            <div class="holo-grid"></div>
+            <div class="scanline"></div>
+            <div style="position: relative; z-index: 10; text-align: center;">
+                <div class="sphere-wrapper" style="width: 140px; height: 140px; margin-bottom: 25px;">
+                    <div class="orbit-ring-1" style="width: 130px; height: 130px;"></div>
+                    <div class="orbit-ring-2" style="width: 95px; height: 95px;"></div>
+                    <div class="core-sphere" style="width: 45px; height: 45px;"></div>
+                </div>
+                <h1 style="color: {color_neon}; font-size: 2rem; text-shadow: 0 0 20px {color_neon}; letter-spacing: 3px; margin: 0;">J.A.R.V.I.S. C2 SECURE</h1>
+                <p style="color: #88ccee; font-size: 0.9rem; margin-top: 10px; font-family: monospace;">[ESTACIÓN HOLOGRÁFICA EN ESPERA - GRID ACTIVO]</p>
+                <p style="color: #00d2ff88; font-size: 0.75rem; margin-top: 30px;">Desactiva el protocolo en la barra lateral para volver al comando táctico</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
