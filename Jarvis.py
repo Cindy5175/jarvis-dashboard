@@ -90,8 +90,8 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Enlace directo exacto hacia la cara cibernética con anillos de neón
-url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
+# Enlace verificado de alta definición para el núcleo holográfico (limpio y sin candados)
+url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
@@ -265,7 +265,7 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 PANTALLA DE SALVAPANTALLAS CON LA CARA HOLOGRÁFICA Y AUTO-DESBLOQUEO INMEDIATO
+# 🎬 PANTALLA DE SALVAPANTALLAS CON EL NÚCLEO HOLOGRÁFICO Y AUTO-DESBLOQUEO INMEDIATO
 if st.session_state.salvapantallas_activo:
     screensaver_code = "".join([
         f'<div id="screensaver-layer" onclick="dismissScreensaver()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: \'Courier New\', monospace; color: {color_neon}; cursor: pointer;">',
@@ -473,7 +473,6 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             except Exception:
                 continue
         
-        print(f"DEBUG: exito={exito}") # Added print statement to avoid empty block
         if not exito:
             full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
             message_placeholder.markdown(full_response)
