@@ -108,11 +108,11 @@ with st.sidebar:
     
     st.divider()
     
-    # 🔌 Selector de Proveedor de API (Groq vs FreeLLMAPI / Local)
+    # 🔌 Selector de Proveedor limpio y sin etiquetas extrañas
     st.markdown("### 🌐 Enlace de Red de IA")
     proveedor_api = st.selectbox(
         "Proveedor Backend:",
-        ["Groq Oficial (Cloud)", "FreeLLMAPI / Servidor Local[span_1](start_span)[span_1](end_span)"],
+        ["Groq Oficial (Cloud)", "FreeLLMAPI / Servidor Local"],
         index=0
     )
     
@@ -329,10 +329,9 @@ with st.sidebar:
 
 # Configuración del cliente según el proveedor seleccionado
 if "FreeLLMAPI" in proveedor_api:
-    # Endpoint local o alternativo libre compatible con la estructura
     client = Groq(
         api_key="freellmapi-token-dummy", 
-        base_url="http://localhost:8000/v1"  # Puedes cambiar la URL según tu entorno local
+        base_url="http://localhost:8000/v1"
     )
 else:
     groq_api_key = "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"
@@ -624,7 +623,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
                 continue
         
         if not exito:
-            full_response = "Lo siento, Jefa. Inconveniente en la conexión con el servidor de red seleccionado."
+            full_response = "Lo siento, Jefa. Inconveniente en la conexión con el servidor seleccionado (asegúrate de que Groq esté activo o tu servidor local esté corriendo)."
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
