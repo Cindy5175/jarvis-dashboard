@@ -68,9 +68,9 @@ with st.sidebar:
     
     st.divider()
     
-    # Control de Visibilidad de la Esfera Orbital
+    # Control de Visibilidad del Comando Extendido
     st.markdown("### 👁️ Interfaz Visual")
-    mostrar_esfera = st.checkbox("Mostrar Esfera Holográfica Orbital", value=True)
+    mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
     
@@ -126,7 +126,7 @@ with st.sidebar:
     st.divider()
     
     modelo_seleccionado = st.selectbox(
-        "Modelo activo:",
+        "Modelos activos:",
         [
             "openai/gpt-oss-120b",
             "openai/gpt-oss-20b",
@@ -158,7 +158,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS Avanzados para la Esfera Holográfica Orbital
+# Estilos CSS Avanzados para la Estación de Comando Completa
 st.markdown(f"""
     <style>
     @keyframes neonGlow {{
@@ -183,7 +183,7 @@ st.markdown(f"""
         padding-bottom: 5rem;
     }}
     
-    /* ESTILOS DE LA ESFERA ORBITAL HOLOGRÁFICA */
+    /* ANIMACIONES Y DISEÑO ESTACIÓN DE COMANDO */
     @keyframes rotateRing {{
         from {{ transform: rotate(0deg); }}
         to {{ transform: rotate(360deg); }}
@@ -194,20 +194,28 @@ st.markdown(f"""
         100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
     }}
 
-    .sphere-container {{
+    .command-station {{
         background: rgba(5, 12, 30, 0.95);
         border: 1px solid {color_neon};
         border-radius: 12px;
-        padding: 20px;
+        padding: 15px;
         box-shadow: inset 0 0 20px {color_neon}33, 0 0 20px {color_neon}55;
         margin-bottom: 20px;
-        text-align: center;
         font-family: 'Courier New', monospace;
     }}
 
+    .side-panel {{
+        background: rgba(0, 15, 30, 0.7);
+        border: 1px solid {color_neon}55;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 0.65rem;
+        color: #ddd;
+    }}
+
     .sphere-wrapper {{
-        width: 160px;
-        height: 160px;
+        width: 130px;
+        height: 130px;
         margin: 0 auto;
         position: relative;
         display: flex;
@@ -217,8 +225,8 @@ st.markdown(f"""
 
     .orbit-ring-1 {{
         position: absolute;
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
         border: 2px dashed {color_neon};
         border-radius: 50%;
         animation: rotateRing 8s linear infinite;
@@ -226,16 +234,16 @@ st.markdown(f"""
 
     .orbit-ring-2 {{
         position: absolute;
-        width: 120px;
-        height: 120px;
+        width: 95px;
+        height: 95px;
         border: 1px solid {color_neon}aa;
         border-radius: 50%;
         animation: rotateRing 5s linear infinite reverse;
     }}
 
     .core-sphere {{
-        width: 60px;
-        height: 60px;
+        width: 45px;
+        height: 45px;
         background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
         border-radius: 50%;
         position: absolute;
@@ -247,21 +255,45 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# PANTALLA DE LA ESFERA ORBITAL (Controlada por el interruptor)
-if mostrar_esfera:
+# ESTACIÓN DE COMANDO COMPLETA (Esfera Central + Paneles Laterales de Diagnóstico y Crypto/Finanzas)
+if mostrar_hud:
     st.markdown(f"""
-        <div class="sphere-container">
-            <div style="font-size: 0.75rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px; letter-spacing: 2px;">
-                [HOLOGRAPHIC ORBITAL SPHERE - ACTIVE]
+        <div class="command-station">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: {color_neon}; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px;">
+                <span>[COMMAND STATION - C2 ACTIVE]</span>
+                <span>INTEGRITY: {st.session_state.energia_arc}%</span>
             </div>
-            <div class="sphere-wrapper">
-                <div class="orbit-ring-1"></div>
-                <div class="orbit-ring-2"></div>
-                <div class="core-sphere"></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; align-items: center;">
+                <!-- Panel Lateral Izquierdo: Diagnóstico de Sensores -->
+                <div class="side-panel">
+                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">SYSTEM_SENSORS</div>
+                    <div>📡 NAV_SYS: 100%</div>
+                    <div>🛡️ SHIELD: 100%</div>
+                    <div>⚡ THRUSTERS: 100%</div>
+                    <div>🧬 LIFE SUPPORT: OPTIMAL</div>
+                </div>
+
+                <!-- Esfera Central Holográfica -->
+                <div class="sphere-wrapper">
+                    <div class="orbit-ring-1"></div>
+                    <div class="orbit-ring-2"></div>
+                    <div class="core-sphere"></div>
+                </div>
+
+                <!-- Panel Lateral Derecho: Finanzas y Cripto -->
+                <div class="side-panel">
+                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">ASSET_FEED</div>
+                    <div>📈 BTC/USD: $92,400</div>
+                    <div>💎 ETH/USD: $3,450</div>
+                    <div>🌐 NET_HASH: OK</div>
+                    <div>⚡ OUTPUT: 1.2 GW</div>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 15px; border-top: 1px solid #333; padding-top: 8px;">
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 15px; border-top: 1px solid #333; padding-top: 6px;">
                 <span>GRID: {st.session_state.lat_lon}</span>
-                <span>STATUS: ONLINE</span>
+                <span>STATUS: SECURE_ONLINE</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
