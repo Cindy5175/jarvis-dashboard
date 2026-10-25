@@ -68,7 +68,7 @@ with st.sidebar:
     
     st.divider()
     
-    # Control de Visibilidad del Comando Extendido
+    # Control de Visibilidad de la Estación
     st.markdown("### 👁️ Interfaz Visual")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
@@ -183,7 +183,6 @@ st.markdown(f"""
         padding-bottom: 5rem;
     }}
     
-    /* ANIMACIONES Y DISEÑO ESTACIÓN DE COMANDO */
     @keyframes rotateRing {{
         from {{ transform: rotate(0deg); }}
         to {{ transform: rotate(360deg); }}
@@ -209,13 +208,13 @@ st.markdown(f"""
         border: 1px solid {color_neon}55;
         border-radius: 8px;
         padding: 10px;
-        font-size: 0.65rem;
+        font-size: 0.62rem;
         color: #ddd;
     }}
 
     .sphere-wrapper {{
-        width: 130px;
-        height: 130px;
+        width: 120px;
+        height: 120px;
         margin: 0 auto;
         position: relative;
         display: flex;
@@ -225,8 +224,8 @@ st.markdown(f"""
 
     .orbit-ring-1 {{
         position: absolute;
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
         border: 2px dashed {color_neon};
         border-radius: 50%;
         animation: rotateRing 8s linear infinite;
@@ -234,16 +233,16 @@ st.markdown(f"""
 
     .orbit-ring-2 {{
         position: absolute;
-        width: 95px;
-        height: 95px;
+        width: 85px;
+        height: 85px;
         border: 1px solid {color_neon}aa;
         border-radius: 50%;
         animation: rotateRing 5s linear infinite reverse;
     }}
 
     .core-sphere {{
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
         background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
         border-radius: 50%;
         position: absolute;
@@ -255,7 +254,7 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO COMPLETA (Esfera Central + Paneles Laterales de Diagnóstico y Crypto/Finanzas)
+# ESTACIÓN DE COMANDO COMPLETA (Con unsafe_allow_html=True explícito)
 if mostrar_hud:
     st.markdown(f"""
         <div class="command-station">
@@ -264,14 +263,14 @@ if mostrar_hud:
                 <span>INTEGRITY: {st.session_state.energia_arc}%</span>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; align-items: center;">
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 6px; align-items: center;">
                 <!-- Panel Lateral Izquierdo: Diagnóstico de Sensores -->
                 <div class="side-panel">
-                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">SYSTEM_SENSORS</div>
-                    <div>📡 NAV_SYS: 100%</div>
+                    <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">SENSORS</div>
+                    <div>📡 NAV: 100%</div>
                     <div>🛡️ SHIELD: 100%</div>
-                    <div>⚡ THRUSTERS: 100%</div>
-                    <div>🧬 LIFE SUPPORT: OPTIMAL</div>
+                    <div>⚡ THRUST: 100%</div>
+                    <div>🧬 LIFE: OPT</div>
                 </div>
 
                 <!-- Esfera Central Holográfica -->
@@ -284,16 +283,16 @@ if mostrar_hud:
                 <!-- Panel Lateral Derecho: Finanzas y Cripto -->
                 <div class="side-panel">
                     <div style="color: {color_neon}; font-weight: bold; margin-bottom: 4px;">ASSET_FEED</div>
-                    <div>📈 BTC/USD: $92,400</div>
-                    <div>💎 ETH/USD: $3,450</div>
-                    <div>🌐 NET_HASH: OK</div>
-                    <div>⚡ OUTPUT: 1.2 GW</div>
+                    <div>📈 BTC: $92.4k</div>
+                    <div>💎 ETH: $3.4k</div>
+                    <div>🌐 HASH: OK</div>
+                    <div>⚡ 1.2 GW</div>
                 </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 15px; border-top: 1px solid #333; padding-top: 6px;">
                 <span>GRID: {st.session_state.lat_lon}</span>
-                <span>STATUS: SECURE_ONLINE</span>
+                <span>STATUS: ONLINE</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
