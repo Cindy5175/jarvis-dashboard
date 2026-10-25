@@ -76,12 +76,12 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Estética fija: Azul Neón clásico de J.A.R.V.I.S.
+# Estética fija: Azul Neón con identidad autónoma
 color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
-titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI</h1>'
+titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI (Autónoma)</h1>'
 
-system_base = f"Eres J.A.R.V.I.S., una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia, sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
+system_base = f"Eres J.A.R.V.I.S. Autónoma, una super IA avanzada, brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia, eficiencia, sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # 4. BARRA LATERAL (Centro de Comando Avanzado Izquierdo)
 with st.sidebar:
@@ -281,7 +281,7 @@ st.markdown(
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (HUD con Clima Visible)
+# ESTACIÓN DE COMANDO PRINCIPAL (HUD con Clima Escondido en Expander)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
@@ -299,15 +299,6 @@ if mostrar_hud:
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Módulo Climático Directo y Visible
-        st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>🌤️ Módulo Climático ({st.session_state.ubicacion_jefa})</b>", unsafe_allow_html=True)
-        col_c1, col_c2, col_c3 = st.columns(3)
-        col_c1.metric("Temperatura", "18°C", "Óptima")
-        col_c2.metric("Humedad", "45%", "-2%")
-        col_c3.metric("Viento", "12 km/h", "SSE")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        
         st.markdown(
             f"""
             <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
@@ -321,7 +312,15 @@ if mostrar_hud:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        with st.expander("🌐 Sub-Sistemas Avanzados [Rendimiento & Bitácora]"):
+        # Módulo Climático y Sub-Sistemas ocultos/ordenados en expander
+        with st.expander(f"🌤️ Módulo Climático & Sub-Sistemas ({st.session_state.ubicacion_jefa})"):
+            col_c1, col_c2, col_c3 = st.columns(3)
+            col_c1.metric("Temperatura", "18°C", "Óptima")
+            col_c2.metric("Humedad", "45%", "-2%")
+            col_c3.metric("Viento", "12 km/h", "SSE")
+            
+            st.divider()
+            
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📈 Gráfico de Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
             import pandas as pd
             import numpy as np
