@@ -175,14 +175,14 @@ with st.sidebar:
             "Estándar (Equilibrado)",
             "Modo Depuración de Código 💻",
             "Modo Resumen Ejecutivo 📊",
-            "Protocolo Clean Slate (Limpieza) 🧹"
+            "Protocolo Clean Slate 🧹💬 (Purgar Chat)"
         ],
         index=0
     )
     
     if "Clean Slate" in protocolo_extra:
         st.session_state.messages = []
-        st.success("¡Historial purgado, Jefa!")
+        st.success("¡Historial purgado con éxito, Jefa!")
         st.rerun()
 
     st.divider()
