@@ -26,9 +26,6 @@ if "energia_arc" not in st.session_state:
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
-if "imagen_core_bytes" not in st.session_state:
-    st.session_state.imagen_core_bytes = None
-
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
@@ -84,21 +81,27 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
+# Búsqueda automática optimizada para archivos PNG locales de la estructura
+def obtener_imagen_base64():
+    candidatos = ["cubos.png", "cara_jarvis.png", "holograma.png", "cubos.jpg", "cara_jarvis.jpg", "holograma.jpg"]
+    for archivo in candidatos:
+        if os.path.exists(archivo):
+            with open(archivo, "rb") as f:
+                return base64.b64encode(f.read()).decode('utf-8')
+    return None
+
+base64_cara = obtener_imagen_base64()
+if base64_cara:
+    url_imagen_holo = f"data:image/png;base64,{base64_cara}"
+else:
+    url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
+
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
-
-    st.divider()
-    
-    # NUEVO: Selector directo para proyectar la imagen exacta que desees en el núcleo
-    st.markdown("### 🖼️ Proyector del Núcleo C2")
-    archivo_nucleo = st.file_uploader("Sube tu imagen de los cubos:", type=["png", "jpg", "jpeg"], key="upload_core")
-    if archivo_nucleo is not None:
-        st.session_state.imagen_core_bytes = archivo_nucleo.read()
-        st.success("¡Estructura cargada al núcleo, Jefa!")
 
     st.divider()
     
@@ -144,9 +147,8 @@ with st.sidebar:
     st.divider()
     
     archivo_subido = st.file_uploader(
-        "Adjunta archivo para análisis:",
-        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"],
-        key="upload_chat"
+        "Adjunta imagen o archivo:",
+        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
     )
 
     st.divider()
@@ -266,13 +268,6 @@ st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# Procesar la imagen del núcleo (si subió una, usarla en base64; si no, usar respaldo)
-if st.session_state.imagen_core_bytes is not None:
-    b64_core = base64.b64encode(st.session_state.imagen_core_bytes).decode('utf-8')
-    url_imagen_holo = f"data:image/png;base64,{b64_core}"
-else:
-    url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
-
 # ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
@@ -281,7 +276,7 @@ if mostrar_hud:
         st.markdown(
             f"""
             <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
-                <img src="{url_imagen_holo}" style="width: 100%; max-height: 260px; object-fit: contain; border-radius: 12px; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
+                <img src="{url_imagen_holo}" style="width: 100%; max-height: 280px; object-fit: contain; border-radius: 12px; border: 2px solid {color_neon}; box-shadow: 0 0 25px {color_neon}aa; margin-bottom: 10px;" />
                 <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin: 0; font-size: 1.1rem;">ESTRUCTURA NEURAL C2</h3>
                 <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
                     <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
@@ -315,145 +310,4 @@ if mostrar_hud:
             st.divider()
             
             st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
-            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=70)
-            if st.button("💾 Guardar Notas", use_container_width=True):
-                st.success("¡Bitácora sincronizada Jefa!")
-            
-        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
-
-# 💬 HISTORIAL DE CHAT
-for message in st.session_state.messages:
-    if message["role"] != "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            if message["role"] == "assistant" and activar_voz:
-                texto_seguro = message["content"].replace('"', "'").replace('\n', ' ')
-                velocidad_voz = 1.2 if "Rápido" in estilo_voz else 1.0
-                pitch_voz = 0.8 if "Robótico" in estilo_voz else 1.0
-                st.markdown(
-                    f"""
-                    <button onclick="
-                        let utterance = new SpeechSynthesisUtterance(\"{texto_seguro}\");
-                        utterance.lang = 'es-ES';
-                        utterance.rate = {velocidad_voz};
-                        utterance.pitch = {pitch_voz};
-                        window.speechSynthesis.speak(utterance);
-                    " style="background-color: {color_neon}; color: black; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;">
-                        🔊 Reproducir Audio
-                    </button>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-# 🎙️ BOTÓN DE VOZ TÁCTICO
-st.markdown(
-    f"""
-    <div style="display: flex; justify-content: flex-end; padding-right: 8px; margin-bottom: 2px;">
-        <button onclick="
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-ES';
-            recognition.onresult = function(event) {{
-                const speechToText = event.results[0][0].transcript;
-                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
-                if(inputField) {{
-                    inputField.value = speechToText;
-                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                }}
-            }};
-            recognition.start();
-        " style="background-color: {color_neon}; color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px {color_neon}88; display: flex; align-items: center; justify-content: center;">
-            🎙️
-        </button>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# 💬 CAJA DE CHAT PRINCIPAL
-if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
-    contenido_adjunto = ""
-    imagen_base64 = None
-    
-    if archivo_subido is not None:
-        nombre_archivo = archivo_subido.name
-        tipo_archivo = archivo_subido.type
-        
-        if "image" in tipo_archivo:
-            bytes_data = archivo_subido.read()
-            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
-            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
-        else:
-            try:
-                texto_archivo = archivo_subido.read().decode("utf-8")
-                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
-            except Exception:
-                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
-
-    prompt_completo = prompt + contenido_adjunto
-    st.session_state.messages.append({"role": "user", "content": prompt_completo})
-    
-    with st.chat_message("user"):
-        st.markdown(prompt)
-        if archivo_subido is not None:
-            if "image" in archivo_subido.type:
-                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
-            else:
-                st.caption(f"📄 Archivo: {archivo_subido.name}")
-
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        
-        if imagen_base64:
-            mensajes_api = []
-            for msg in st.session_state.messages:
-                if msg["role"] == "system":
-                    mensajes_api.append(msg)
-                elif msg["role"] == "user":
-                    if msg == st.session_state.messages[-1]:
-                        mensajes_api.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": prompt_completo},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{archivo_subido.type};base64,{imagen_base64}"
-                                    }
-                                }
-                            ]
-                        })
-                    else:
-                        mensajes_api.append(msg)
-                else:
-                    mensajes_api.append(msg)
-            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
-        else:
-            mensajes_api = st.session_state.messages
-            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
-
-        exito = False
-        for modelo_actual in modelos_a_probar:
-            try:
-                completion = client.chat.completions.create(
-                    model=modelo_actual,
-                    messages=mensajes_api,
-                    stream=True,
-                )
-                
-                for chunk in completion:
-                    content = chunk.choices[0].delta.content or ""
-                    full_response += content
-                    message_placeholder.markdown(full_response + "▌")
-                
-                message_placeholder.markdown(full_response)
-                exito = True
-                break
-            except Exception:
-                continue
-        
-        if not exito:
-            full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
-            message_placeholder.markdown(full_response)
-
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height
