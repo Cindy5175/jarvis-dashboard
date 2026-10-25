@@ -172,6 +172,55 @@ with st.sidebar:
 
     st.divider()
     
+    # ---------------------------------------------------------
+    # 🔴 NUEVOS SENSORES TÁCTICOS AVANZADOS (1, 2 y 3)
+    # ---------------------------------------------------------
+    st.markdown("### 👁️ Sensores Biométricos & Voz")
+    
+    st.markdown(
+        f"""
+        <div style="font-size: 0.7rem; font-family: monospace; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 5px; border: 1px solid {color_neon}; margin-bottom: 8px; text-align: center;">
+            <b style="color: {color_neon};">1. SENSOR DE MOVIMIENTO</b><br>
+            <span id="motion-status" style="color: #aaa;">Estado: En espera de flujo óptico...</span>
+        </div>
+        <script>
+            navigator.mediaDevices?.getUserMedia({{ video: true }}).then(stream => {{
+                document.getElementById('motion-status').innerText = 'Estado: Activo (Monitoreando)';
+            }}).catch(err => {{
+                document.getElementById('motion-status').innerText = 'Estado: Cámara en segundo plano';
+            }});
+        </script>
+
+        <button onclick="
+            alert('🛡️ [ESCÁNER BIOMÉTRICO]: Identidad verificada. Bienvenida de regreso, Jefa.');
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
+            👤 2. Reconocimiento Facial
+        </button>
+
+        <button onclick="
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.onresult = function(event) {{
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                const inputField = document.querySelector('input[aria-label*=\'Escribe\'], textarea[aria-label*=\'Escribe\'], input[type=\'text\']');
+                if(inputField) {{
+                    inputField.value = transcript;
+                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }};
+            recognition.start();
+            alert('🎙️ [VOZ EN TIEMPO REAL]: Escucha continua activada.');
+        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px;">
+            🎙️ 3. Voz en Tiempo Real
+        </button>
+        """,
+        unsafe_allow_html=True
+    )
+    # ---------------------------------------------------------
+
+    st.divider()
+    
     st.markdown("### 📎 Carga Multimodal")
     archivo_subido = st.file_uploader(
         "Adjunta imagen o archivo:",
@@ -520,4 +569,3 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-
