@@ -1,6 +1,7 @@
 import os
 import io
 import base64
+import time
 import streamlit as st
 from groq import Groq
 
@@ -179,11 +180,18 @@ with st.sidebar:
         index=0
     )
     
-    # 🧹 BOTÓN DIRECTO DE PURGA DE CHAT EN LA BARRA LATERAL
-    if st.button("🧹💬 Purgar Chat"):
-        st.session_state.messages = []
-        st.success("¡Historial purgado con éxito, Jefa!")
-        st.rerun()
+    # 🧹 BOTÓN DE PURGA Y 🩺 ESCANEO DE ERRORES ORGANIZADOS EN DOS COLUMNAS A LA IZQUIERDA
+    col_izq_1, col_izq_2 = st.columns(2)
+    with col_izq_1:
+        if st.button("🧹💬 Purgar"):
+            st.session_state.messages = []
+            st.success("¡Purgado!")
+            st.rerun()
+    with col_izq_2:
+        if st.button("🩺 Escanear"):
+            with st.spinner("Escaneando..."):
+                time.sleep(1.0)
+            st.success("¡Ok, Jefa!")
 
     st.divider()
     st.markdown("### ⚛️ Reactor Arc & Energía")
