@@ -39,23 +39,23 @@ if not st.session_state.autenticado:
             background: rgba(5, 12, 30, 0.95);
             border: 2px solid #00d2ff;
             border-radius: 12px;
-            padding: 30px;
+            padding: 25px;
             text-align: center;
             box-shadow: 0 0 25px #00d2ff44;
             font-family: 'Courier New', monospace;
-            max-width: 400px;
+            max-width: 90%;
             margin: 50px auto;
         }
         </style>
         <div class="login-box">
-            <h2 style="color: #00d2ff; margin-bottom: 10px;">🔒 ACCESO RESTRINGIDO</h2>
-            <p style="color: #aaa; font-size: 0.85rem;">Introduce la clave de seguridad para desbloquear la estación de comando C.I.T.</p>
+            <h2 style="color: #00d2ff; margin-bottom: 10px; font-size: 1.4rem;">🔒 ACCESO RESTRINGIDO</h2>
+            <p style="color: #aaa; font-size: 0.8rem;">Introduce la clave de seguridad para desbloquear la estación de comando C.I.T.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    col_l1, col_l2, col_l3 = st.columns([1, 4, 1])
     with col_l2:
         pin_ingresado = st.text_input("Clave de Acceso:", type="password", placeholder="Contraseña secreta")
         if st.button("🔓 Desbloquear Sistema", use_container_width=True):
@@ -207,7 +207,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS dinámicos
+# Estilos CSS dinámicos optimizados y simétricos
 st.markdown(
     f"""
     <style>
@@ -220,17 +220,18 @@ st.markdown(
         color: {color_neon};
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         text-align: center;
         margin-top: -10px;
         margin-bottom: 20px;
-        white-space: nowrap;
         animation: neonGlow 2.5s infinite ease-in-out;
     }}
     .block-container {{
-        max-width: 750px;
-        padding-top: 1.5rem;
-        padding-bottom: 5rem;
+        max-width: 100% !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 6rem !important;
     }}
     @keyframes rotateRing {{
         from {{ transform: rotate(0deg); }}
@@ -242,8 +243,8 @@ st.markdown(
         100% {{ transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 15px {color_neon}; }}
     }}
     .sphere-wrapper {{
-        width: 110px;
-        height: 110px;
+        width: 100px;
+        height: 100px;
         margin: 0 auto;
         position: relative;
         display: flex;
@@ -252,23 +253,23 @@ st.markdown(
     }}
     .orbit-ring-1 {{
         position: absolute;
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 90px;
         border: 2px dashed {color_neon};
         border-radius: 50%;
         animation: rotateRing 8s linear infinite;
     }}
     .orbit-ring-2 {{
         position: absolute;
-        width: 75px;
-        height: 75px;
+        width: 65px;
+        height: 65px;
         border: 1px solid {color_neon}aa;
         border-radius: 50%;
         animation: rotateRing 5s linear infinite reverse;
     }}
     .core-sphere {{
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         background: radial-gradient(circle, #ffffff 10%, {color_neon} 70%, #000000 100%);
         border-radius: 50%;
         position: absolute;
@@ -284,7 +285,7 @@ st.markdown(titulo_html, unsafe_allow_html=True)
 # ESTACIÓN DE COMANDO PRINCIPAL (HUD con Clima Escondido en Expander)
 if mostrar_hud:
     with st.container(border=True):
-        st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size: 0.65rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 8px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
         st.markdown(
             """
@@ -301,10 +302,10 @@ if mostrar_hud:
         
         st.markdown(
             f"""
-            <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
+            <div style="font-family: monospace; font-size: 0.65rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
                 <b style="color: {color_neon};">SENSORS TELEMETRY FEED</b><br>
-                📡 NAV_SYS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🛡️ SHIELD: 100%<br>
-                ⚡ THRUSTERS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
+                📡 NAV_SYS: 100% &nbsp;|&nbsp; 🛡️ SHIELD: 100%<br>
+                ⚡ THRUSTERS: 100% &nbsp;|&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
             </div>
             """,
             unsafe_allow_html=True
@@ -313,55 +314,31 @@ if mostrar_hud:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Módulo Climático y Sub-Sistemas ocultos en expander
-        with st.expander(f"🌤️ Módulo Climático & Sub-Sistemas ({st.session_state.ubicacion_jefa})"):
+        with st.expander(f"🌤️ Módulo Climático ({st.session_state.ubicacion_jefa})"):
             col_c1, col_c2, col_c3 = st.columns(3)
-            col_c1.metric("Temperatura", "18°C", "Óptima")
+            col_c1.metric("Temp", "18°C", "Óptima")
             col_c2.metric("Humedad", "45%", "-2%")
             col_c3.metric("Viento", "12 km/h", "SSE")
             
             st.divider()
             
-            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📈 Gráfico de Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📈 Ancho de Banda y Red (Mbps)</b>", unsafe_allow_html=True)
             import pandas as pd
             import numpy as np
             chart_data = pd.DataFrame(
                 np.random.randn(15, 2) * [5, 10] + [50, 120],
                 columns=["Enlace Satelital", "Flujo Neuronal"]
             )
-            st.line_chart(chart_data, height=150)
+            st.line_chart(chart_data, height=130)
             
             st.divider()
             
-            st.markdown(f"<b style='color: {color_neon}; font-size: 0.8rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
-            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=80)
+            st.markdown(f"<b style='color: {color_neon}; font-size: 0.75rem;'>📝 Bitácora de Misión Rápida</b>", unsafe_allow_html=True)
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=70)
             if st.button("💾 Guardar Notas", use_container_width=True):
-                st.success("¡Bitácora sincronizada con la red central Jefa!")
+                st.success("¡Bitácora sincronizada Jefa!")
             
-        st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
-
-# 🎙️ BOTÓN DE VOZ MINIMALISTA (Solo el icono flotando exactamente donde lo pediste)
-st.markdown(
-    f"""
-    <div style="display: flex; justify-content: flex-end; margin-bottom: -8px; position: relative; z-index: 10;">
-        <button onclick="
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-ES';
-            recognition.onresult = function(event) {{
-                const speechToText = event.results[0][0].transcript;
-                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
-                if(inputField) {{
-                    inputField.value = speechToText;
-                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                }}
-            }};
-            recognition.start();
-        " style="background-color: {color_neon}; color: black; border: none; padding: 6px 10px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; box-shadow: 0 0 12px {color_neon}88; display: flex; align-items: center; justify-content: center;">
-            🎙️
-        </button>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        st.markdown(f"<div style='font-size: 0.6rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 8px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
 # 💬 HISTORIAL DE CHAT
 for message in st.session_state.messages:
@@ -386,6 +363,30 @@ for message in st.session_state.messages:
                     """,
                     unsafe_allow_html=True
                 )
+
+# 🎙️ BOTÓN DE VOZ TÁCTICO (Perfectamente alineado justo arriba de la caja de chat)
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: flex-end; padding-right: 8px; margin-bottom: 2px;">
+        <button onclick="
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.onresult = function(event) {{
+                const speechToText = event.results[0][0].transcript;
+                const inputField = document.querySelector('input[aria-label*=\\'Escribe\\'], textarea[aria-label*=\\'Escribe\\'], input[type=\\'text\\']');
+                if(inputField) {{
+                    inputField.value = speechToText;
+                    inputField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }};
+            recognition.start();
+        " style="background-color: {color_neon}; color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 0 10px {color_neon}88; display: flex; align-items: center; justify-content: center;">
+            🎙️
+        </button>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # 💬 CAJA DE CHAT PRINCIPAL (Siempre visible abajo)
 if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
@@ -475,4 +476,3 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-
