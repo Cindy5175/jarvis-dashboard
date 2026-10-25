@@ -26,6 +26,9 @@ if "energia_arc" not in st.session_state:
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
 
+if "imagen_cargada_bytes" not in st.session_state:
+    st.session_state.imagen_cargada_bytes = None
+
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
@@ -81,27 +84,21 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
-# Búsqueda automática que incluye 'Reactor.png' con mayúscula y variaciones
-def obtener_imagen_base64():
-    candidatos = ["Reactor.png", "reactor.png", "Reactor.jpg", "reactor.jpg", "cubos.png", "cara_jarvis.png", "holograma.png"]
-    for archivo in candidatos:
-        if os.path.exists(archivo):
-            with open(archivo, "rb") as f:
-                return base64.b64encode(f.read()).decode('utf-8')
-    return None
-
-base64_cara = obtener_imagen_base64()
-if base64_cara:
-    url_imagen_holo = f"data:image/png;base64,{base64_cara}"
-else:
-    url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
-
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
+
+    st.divider()
+    
+    # selector directo en vivo para forzar el reactor.png
+    st.markdown("### ⚛️ Selector Manual de Núcleo")
+    archivo_selector = st.file_uploader("Sube tu reactor.png aquí:", type=["png", "jpg", "jpeg"])
+    if archivo_selector is not None:
+        st.session_state.imagen_cargada_bytes = archivo_selector.read()
+        st.success("¡Reactor enlazado al núcleo, Jefa!")
 
     st.divider()
     
@@ -147,8 +144,9 @@ with st.sidebar:
     st.divider()
     
     archivo_subido = st.file_uploader(
-        "Adjunta imagen o archivo:",
-        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"]
+        "Adjunta imagen o archivo al chat:",
+        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"],
+        key="chat_file"
     )
 
     st.divider()
@@ -267,6 +265,25 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 
 st.markdown(titulo_html, unsafe_allow_html=True)
+
+# Lógica para obtener la imagen: prioridad a la subida manual, luego búsqueda local, luego respaldo
+if st.session_state.imagen_cargada_bytes is not None:
+    b64_img = base64.b64encode(st.session_state.imagen_cargada_bytes).decode('utf-8')
+    url_imagen_holo = f"data:image/png;base64,{b64_img}"
+else:
+    directorio_actual = os.path.dirname(os.path.abspath(__file__))
+    candidatos = ["reactor.png", "Reactor.png", "reactor.jpg", "Reactor.jpg", "cubos.png", "cara_jarvis.png"]
+    encontrado = False
+    for archivo in candidatos:
+        ruta_completa = os.path.join(directorio_actual, archivo)
+        if os.path.exists(ruta_completa):
+            with open(ruta_completa, "rb") as f:
+                b64_img = base64.b64encode(f.read()).decode('utf-8')
+                url_imagen_holo = f"data:image/png;base64,{b64_img}"
+                encontrado = True
+                break
+    if not encontrado:
+        url_imagen_holo = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000&auto=format&fit=crop"
 
 # ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
