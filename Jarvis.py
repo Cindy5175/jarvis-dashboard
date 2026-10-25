@@ -32,7 +32,7 @@ if "notas_mision" not in st.session_state:
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
 # -------------------------------------------------------------
-PIN_SECRETO = "Jarvis"  # Clave de acceso configurada por la Jefa
+PIN_SECRETO = "Jarvis"  # Clave de acceso oficial configurada por la Jefa
 
 if not st.session_state.autenticado:
     st.markdown(
@@ -71,6 +71,15 @@ if not st.session_state.autenticado:
     st.stop()
 # -------------------------------------------------------------
 
+# 2. Conexión oficial y directa con la API de Groq
+groq_api_key = "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"
+
+if not groq_api_key:
+    st.error("⚠️ Error con la clave API.")
+    st.stop()
+
+client = Groq(api_key=groq_api_key)
+
 # 3. Historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -107,15 +116,6 @@ with st.sidebar:
     )
     
     st.divider()
-    
-    # 🔌 Selector de Proveedor limpio y sin etiquetas extrañas
-    st.markdown("### 🌐 Enlace de Red de IA")
-    proveedor_api = st.selectbox(
-        "Proveedor Backend:",
-        ["Groq Oficial (Cloud)", "FreeLLMAPI / Servidor Local"],
-        index=0
-    )
-    
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica Completa", value=True)
 
     st.divider()
@@ -173,7 +173,7 @@ with st.sidebar:
     st.divider()
     
     # ---------------------------------------------------------
-    # 🔴 SENSORES BIOMÉTRICOS
+    # 🔴 SENSORES BIOMÉTRICOS (Nativos, alineados y simétricos)
     # ---------------------------------------------------------
     st.markdown("### 👁️ Sensores Biométricos")
     
@@ -327,20 +327,10 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# Configuración del cliente según el proveedor seleccionado
-if "FreeLLMAPI" in proveedor_api:
-    client = Groq(
-        api_key="freellmapi-token-dummy", 
-        base_url="http://localhost:8000/v1"
-    )
-else:
-    groq_api_key = "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"
-    client = Groq(api_key=groq_api_key)
-
-# Definir instrucción del sistema complementada
+# Definir instrucción del sistema complementada para análisis de arquitectura Jarvis.py
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit (Jarvis.py). Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit (Jarvis.py). Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 
@@ -623,7 +613,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
                 continue
         
         if not exito:
-            full_response = "Lo siento, Jefa. Inconveniente en la conexión con el servidor seleccionado (asegúrate de que Groq esté activo o tu servidor local esté corriendo)."
+            full_response = "Lo siento, Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
