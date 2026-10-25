@@ -32,7 +32,7 @@ PIN_SECRETO = "Jarvis"
 if not st.session_state.autenticado:
     st.markdown(
         """
-        <div style="background: rgba(5, 12, 30, 0.95); border: 2px solid #00d2ff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 25px #00d2ff44; font-family: 'Courier New', monospace; max-width: 90%; margin: 40px auto;">
+        <div style="background: rgba(5, 12, 30, 0.95); border: 2px solid #00d2ff; border-radius: 12px; padding: 20px; text-align: left; box-shadow: 0 0 25px #00d2ff44; font-family: 'Courier New', monospace; max-width: 100%; margin: 20px auto;">
             <h2 style="color: #00d2ff; margin-bottom: 10px; font-size: 1.2rem;">🔒 ACCESO RESTRINGIDO</h2>
             <p style="color: #aaa; font-size: 0.75rem;">Introduce la clave de seguridad para desbloquear la estación C.I.T.</p>
         </div>
@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS optimizados para simetría móvil perfecta
+# Estilos CSS con alineación izquierda estricta
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -204,19 +204,20 @@ css_estilos = f"""
     color: {color_neon};
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    font-size: clamp(0.9rem, 4vw, 1.4rem);
-    text-align: center;
-    margin-top: -10px;
+    font-size: clamp(1rem, 4.5vw, 1.5rem);
+    text-align: left !important;
+    margin-top: -5px;
     margin-bottom: 15px;
     width: 100%;
+    padding-left: 2px;
     word-break: break-word;
     animation: neonGlow 2.5s infinite ease-in-out;
 }}
 .block-container {{
     max-width: 100% !important;
-    padding-left: 0.8rem !important;
-    padding-right: 0.8rem !important;
-    padding-top: 0.8rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    padding-top: 0.5rem !important;
     padding-bottom: 5rem !important;
 }}
 </style>
@@ -225,7 +226,7 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Con módulos expandibles simétricos)
+# ESTACIÓN DE COMANDO PRINCIPAL (Alineada a la izquierda)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
@@ -246,7 +247,7 @@ if mostrar_hud:
             col_c2.metric("Humedad", "45%", "-2%")
             col_c3.metric("Viento", "12 km/h", "SSE")
             
-        # Módulo de Red y Bitácora (Oculto en expandible idéntico para mantener simetría)
+        # Módulo de Red y Bitácora (Expandible)
         with st.expander("📈 Diagnóstico de Red & Bitácora"):
             st.markdown("**Ancho de Banda y Red (Mbps)**")
             import pandas as pd
