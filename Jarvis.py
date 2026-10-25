@@ -90,6 +90,9 @@ color_neon = "#00d2ff"
 shadow_neon = "#0072ff"
 titulo_html = '<h1 class="neon-title glow-anim">⚛️ J.A.R.V.I.S. AI Autónoma</h1>'
 
+# Enlace directo optimizado para el rostro holográfico con anillos de neón[cite: 3]
+url_imagen_holo = "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=1000&auto=format&fit=crop"
+
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
 # 4. BARRA LATERAL (Centro de Comando Avanzado Izquierdo)
@@ -139,8 +142,8 @@ with st.sidebar:
         if st.button("🔮 Generar Holograma", use_container_width=True):
             with st.spinner("Sintetizando plano holográfico..."):
                 time.sleep(1.0)
-                url_holo = f"https://image.pollinations.ai/prompt/{prompt_holo.replace(' ', '%20')}%20scifi%20blueprint%20hud%20neon"
-                st.image(url_holo, caption="Plano Táctico Sintetizado", use_column_width=True)
+                url_holo_gen = f"https://image.pollinations.ai/prompt/{prompt_holo.replace(' ', '%20')}%20scifi%20blueprint%20hud%20neon"
+                st.image(url_holo_gen, caption="Plano Táctico Sintetizado", use_column_width=True)
             st.success("¡Holograma proyectado Jefa!")
 
     st.divider()
@@ -266,13 +269,13 @@ css_estilos = f"""
 
 st.markdown(css_estilos, unsafe_allow_html=True)
 
-# 🎬 PANTALLA DE SALVAPANTALLAS CON TU IMAGEN HOLOGRÁFICA Y AUTO-DESBLOQUEO
+# 🎬 PANTALLA DE SALVAPANTALLAS CON LA IMAGEN HOLOGRÁFICA Y AUTO-DESBLOQUEO
 if st.session_state.salvapantallas_activo:
     screensaver_code = (
         '<div id="screensaver-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: \'Courier New\', monospace; color: ' + color_neon + '; cursor: pointer;">'
         '<div class="scanline"></div>'
         '<div style="position: relative; z-index: 5; text-align: center; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; align-items: center;">'
-        '<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" style="width: 280px; height: 280px; object-fit: cover; border-radius: 50%; border: 3px solid ' + color_neon + '; box-shadow: 0 0 35px ' + color_neon + 'aa; margin-bottom: 20px;" />'
+        '<img src="' + url_imagen_holo + '" style="width: 260px; height: 260px; object-fit: cover; border-radius: 50%; border: 3px solid ' + color_neon + '; box-shadow: 0 0 40px ' + color_neon + 'cc; margin-bottom: 20px;" />'
         '<h1 style="color: ' + color_neon + '; font-size: 1.5rem; text-shadow: 0 0 20px ' + color_neon + '; letter-spacing: 2px; margin: 0;">J.A.R.V.I.S. C2 SECURE</h1>'
         '<p style="color: #88ccee; font-size: 0.8rem; margin-top: 8px;">[NÚCLEO NEURAL BIOMÉTRICO EN ESPERA]</p>'
         '<p style="color: #00d2ffaa; font-size: 0.7rem; margin-top: 15px; border: 1px solid ' + color_neon + '66; padding: 5px 10px; border-radius: 15px;">'
@@ -310,7 +313,7 @@ if mostrar_hud:
         st.markdown(
             f"""
             <div style="background: radial-gradient(circle, rgba(2,10,25,0.95) 0%, rgba(0,2,8,0.98) 100%); border: 2px solid {color_neon}; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 0 30px {color_neon}66; font-family: 'Courier New', monospace; margin-top: 10px; margin-bottom: 15px;">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" style="width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 2px solid {color_neon}; box-shadow: 0 0 20px {color_neon}aa; margin-bottom: 10px;" />
+                <img src="{url_imagen_holo}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 2px solid {color_neon}; box-shadow: 0 0 20px {color_neon}aa; margin-bottom: 10px;" />
                 <h3 style="color: {color_neon}; text-shadow: 0 0 10px {color_neon}; margin: 0; font-size: 1.1rem;">NÚCLEO NEURAL C2</h3>
                 <div style="font-size: 0.7rem; color: #ddd; background: rgba(0,15,30,0.8); padding: 10px; border-radius: 8px; border: 1px solid {color_neon}44; text-align: left; margin-top: 10px;">
                     <b style="color: {color_neon};">DIAGNÓSTICO DE SISTEMAS:</b><br>
