@@ -78,7 +78,6 @@ with st.sidebar:
             "Estándar (Equilibrado)",
             "Modo Depuración de Código 💻",
             "Modo Resumen Ejecutivo 📊",
-            "Modo Análisis Financiero / Crypto 📈",
             "Protocolo Clean Slate (Limpieza) 🧹"
         ],
         index=0
@@ -129,8 +128,6 @@ if "Depuración" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Enfócate principalmente en depuración de código, análisis técnico de sintaxis y detección de errores con precisión quirúrgica]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
-elif "Crypto" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Actúa con enfoque analítico financiero experto en criptoactivos, bloques de red y tendencias de mercado con terminología especializada]."
 
 system_prompt = system_base + prompt_protocolo_extra
 
@@ -211,45 +208,32 @@ st.markdown(f"""
 # Título de la App
 st.markdown(titulo_html, unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO CON COLUMNAS NATIVAS DE STREAMLIT (Adiós errores de HTML)
+# ESTACIÓN DE COMANDO: ORBE PRIMERO Y MÓDULO DE SENSORES ABAJO
 if mostrar_hud:
     with st.container(border=True):
-        st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size: 0.7rem; color: {color_neon}; font-family: monospace; font-weight: bold; margin-bottom: 10px;'>[COMMAND STATION - C2 ACTIVE] &nbsp;&nbsp;&nbsp;&nbsp; INTEGRITY: {st.session_state.energia_arc}%</div>", unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns([1, 1.2, 1])
+        # 1. Orbe Holográfico en la parte superior
+        st.markdown("""
+            <div class="sphere-wrapper">
+                <div class="orbit-ring-1"></div>
+                <div class="orbit-ring-2"></div>
+                <div class="core-sphere"></div>
+            </div>
+        """, unsafe_allow_html=True)
         
-        with col1:
-            st.markdown(f"""
-                <div style="font-family: monospace; font-size: 0.62rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
-                    <b style="color: {color_neon};">SENSORS</b><br>
-                    📡 NAV: 100%<br>
-                    🛡️ SHIELD: 100%<br>
-                    ⚡ THRUST: 100%<br>
-                    🧬 LIFE: OPT
-                </div>
-            """, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # 2. Módulo de Sensores en la parte inferior
+        st.markdown(f"""
+            <div style="font-family: monospace; font-size: 0.68rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon}44;">
+                <b style="color: {color_neon};">SENSORS TELEMETRY FEED</b><br>
+                📡 NAV_SYS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🛡️ SHIELD: 100%<br>
+                ⚡ THRUSTERS: 100% &nbsp;&nbsp;|&nbsp;&nbsp; 🧬 LIFE SUPPORT: OPTIMAL
+            </div>
+        """, unsafe_allow_html=True)
             
-        with col2:
-            st.markdown("""
-                <div class="sphere-wrapper">
-                    <div class="orbit-ring-1"></div>
-                    <div class="orbit-ring-2"></div>
-                    <div class="core-sphere"></div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-        with col3:
-            st.markdown(f"""
-                <div style="font-family: monospace; font-size: 0.62rem; color: #ddd; background: rgba(0,15,30,0.6); padding: 8px; border-radius: 6px; border: 1px solid {color_neon}44;">
-                    <b style="color: {color_neon};">ASSET_FEED</b><br>
-                    📈 BTC: $92.4k<br>
-                    💎 ETH: $3.4k<br>
-                    🌐 HASH: OK<br>
-                    ⚡ 1.2 GW
-                </div>
-            """, unsafe_allow_html=True)
-            
-        st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 5px; margin-top: 5px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size: 0.65rem; color: #aaa; font-family: monospace; border-top: 1px solid #333; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between;'><span>GRID: {st.session_state.lat_lon}</span><span>STATUS: ONLINE</span></div>", unsafe_allow_html=True)
 
 # Lector Multimodal
 with st.expander("📎 Adjuntar archivo o imagen para análisis"):
