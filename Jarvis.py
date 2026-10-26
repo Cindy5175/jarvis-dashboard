@@ -74,7 +74,7 @@ with st.sidebar:
 
     st.divider()
     
-    st.markdown("### 🛠️ Módulos Tácticos Izquierdos")
+    st.markdown("### 🛠️ Módulos Tácticos")
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
     opciones_preset = ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"]
@@ -86,7 +86,7 @@ with st.sidebar:
 
     zona_preset = st.selectbox("Preset de Coordenadas:", opciones_preset, index=indice_actual)
     
-    # Asignación corregida y directa para cada base
+    # Asignación correcta e independiente de coordenadas
     if "Buin" in zona_preset:
         st.session_state.ubicacion_jefa = "Buin Santiago Chile"
         st.session_state.lat_lon = "-33.7333 -70.7333"
