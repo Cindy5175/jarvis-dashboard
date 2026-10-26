@@ -115,4 +115,110 @@ st.markdown(f"""
 # ESTACIÓN HUD
 if mostrar_hud:
     with st.container(border=True):
-        col_h1, col_h2 = st.columns(
+        col_h1, col_h2 = st.columns([3, 1])
+        with col_h1:
+            st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
+        with col_h2:
+            if st.button(st.session_state.modo_dia_noche, use_container_width=True):
+                st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
+                st.rerun()
+
+        st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
+
+        with st.expander("🌤️ Clima & Alertas"):
+            cc1, cc2, cc3 = st.columns(3)
+            cc1.metric("Temp", "18°C", "Buin")
+            cc2.metric("Humedad", "45%", "-2%")
+            cc3.metric("Viento", "12 km/h", "SSE")
+            
+        with st.expander("📈 Red & Bitácora"):
+            st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
+            st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
+
+        # Visor Cartográfico Global
+        st.markdown("---")
+        st.markdown(f"🌍 **Visor Satelital ({st.session_state.modo_dia_noche}):**")
+        filtro = "filter: brightness(0.6) invert(1) contrast(1.3) hue-rotate(200deg);" if "🌙" in st.session_state.modo_dia_noche else ""
+        
+        mapa_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <style>#map {{ width: 100%; height: 320px; border-radius: 6px; {filtro} }}</style>
+        </head>
+        <body style="margin:0; background:transparent;">
+            <div id="map"></div>
+            <script>
+                var map = L.map('map').setView([-33.58, -70.7], 10);
+                L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 19 }}).addTo(map);
+                L.marker([-33.7333, -70.7333]).addTo(map).bindPopup("<b>Buin (Central)</b>");
+                L.marker([-33.4489, -70.6693]).addTo(map).bindPopup("<b>Santiago Centro</b>");
+            </script>
+        </body>
+        </html>
+        """
+        components.html(mapa_html, height=340)
+
+# Historial de Chat
+for msg in st.session_state.messages:
+    if msg["role"] != "system":
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+# Interacción por Chat
+if prompt := st.chat_input("Directiva táctica..."):
+    adjunto, img_b64 = "", None
+    if archivo_subido:
+        if "image" in archivo_subido.type:
+            import base64
+            img_b64 = base64.b64encode(archivo_subido.read()).decode('utf-8')
+            adjunto = f"\n\n[Imagen adjunta: {archivo_subido.name}]"
+        else:
+            try:
+                adjunto = f"\n\n--- ARCHIVO '{archivo_subido.name}' ---\n{archivo_subido.read().decode('utf-8')}\n--- FIN ---"
+            except:
+                adjunto = f"\n\n[Archivo no legible]"
+
+    p_completo = prompt + adjunto
+    st.session_state.messages.append({"role": "user", "content": p_completo})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if archivo_subido and "image" in archivo_subido.type:
+            st.image(archivo_subido, use_column_width=True)
+
+    with st.chat_message("assistant"):
+        ph = st.empty()
+        resp = ""
+        
+        msgs_api = st.session_state.messages
+        models = [modelo, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
+        
+        exito = False
+        for m in models:
+            try:
+                stream = client.chat.completions.create(model=m, messages=msgs_api, stream=True)
+                for chunk in stream:
+                    resp += chunk.choices[0].delta.content or ""
+                    ph.markdown(resp + "▌")
+                ph.markdown(resp)
+                exito = True
+                break
+            except:
+                continue
+        if not exito:
+            resp = "Error de enlace con los servidores de Groq, Jefa."
+            ph.markdown(resp)
+
+        if activar_voz and resp:
+            try:
+                tts = gTTS(text=resp, lang='es', slow=False)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+                    tts.save(fp.name)
+                    st.audio(fp.name, format="audio/mp3", autoplay=True)
+            except:
+                pass
+
+    st.session_state.messages.append({"role": "assistant", "content": resp})
