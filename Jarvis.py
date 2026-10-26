@@ -94,12 +94,7 @@ with st.sidebar:
     st.divider()
     
     st.markdown("### 🛠️ Módulos Tácticos")
-    st.selectbox(
-        "Tema Holográfico HUD:", 
-        ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], 
-        key="tema_hud",
-        on_change=lambda: st.rerun()
-    )
+    st.selectbox("Tema Holográfico HUD:", ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], key="tema_hud", on_change=lambda: st.rerun())
     
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
@@ -144,4 +139,135 @@ with st.sidebar:
             with st.spinner("Sintetizando plano holográfico..."):
                 time.sleep(1.0)
                 url_holo_gen = f"https://image.pollinations.ai/prompt/{prompt_holo.replace(' ', '%20')}%20scifi%20blueprint%20hud%20neon"
-                st.
+                st.image(url_holo_gen, caption="Plano Táctico Sintetizado", use_column_width=True)
+            st.success("¡Holograma proyectado Jefa!")
+
+    st.divider()
+    
+    archivo_subido = st.file_uploader(
+        "Adjunta archivo al chat:",
+        type=["png", "jpg", "jpeg", "txt", "csv", "py", "md"],
+        key="chat_file"
+    )
+
+    st.divider()
+    protocolo_extra = st.selectbox(
+        "Directiva de Análisis:",
+        [
+            "Estándar (Equilibrado)",
+            "Modo Auditoría de Arquitectura / Jarvis.py 💻",
+            "Modo Resumen Ejecutivo 📊",
+            "Modo Táctico de Ciberseguridad 🛡️"
+        ],
+        index=0
+    )
+    
+    col_izq_1, col_izq_2 = st.columns(2)
+    with col_izq_1:
+        if st.button("🧹💬 Purgar", use_container_width=True):
+            st.session_state.messages = []
+            st.success("¡Purgado!")
+            st.rerun()
+    with col_izq_2:
+        if st.button("🩺 Escanear", use_container_width=True):
+            with st.spinner("Escaneando..."):
+                time.sleep(1.0)
+            st.success("¡Ok Jefa!")
+
+    st.divider()
+    st.markdown("### ⚛️ Reactor Arc & Energía")
+    st.caption(f"⚡ **Potencia de Núcleo:** {st.session_state.energia_arc}%")
+    if st.button("🔋 Recargar Reactor Arc", use_container_width=True):
+        st.session_state.energia_arc = 100
+        st.success("¡Núcleo al 100% Jefa!")
+        st.rerun()
+
+    st.divider()
+    modelo_seleccionado = st.selectbox(
+        "Modelos activos:",
+        [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b",
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
+            "llama-3.2-11b-vision-preview"
+        ],
+        index=0
+    )
+    
+    activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
+    
+    # 📦 Caja Negra: Exportación de datos de sesión en JSON
+    datos_caja_negra = {
+        "ubicacion": st.session_state.ubicacion_jefa,
+        "coordenadas": st.session_state.lat_lon,
+        "energia": st.session_state.energia_arc,
+        "modo": st.session_state.modo_dia_noche,
+        "mensajes": st.session_state.messages
+    }
+    json_caja_negra = json.dumps(datos_caja_negra, ensure_ascii=False, indent=4)
+    st.download_button("📦 Descargar Caja Negra (.json)", data=json_caja_negra, file_name="cit_caja_negra.json", mime="application/json", use_container_width=True)
+
+    chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
+    st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
+
+    st.divider()
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
+
+# Definir instrucción del sistema complementada
+prompt_protocolo_extra = ""
+if "Auditoría" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+elif "Resumen" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+elif "Ciberseguridad" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de ciberseguridad, análisis de vulnerabilidades y encriptado táctico de nivel militar]."
+
+system_prompt = system_base + prompt_protocolo_extra
+
+if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
+    st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
+else:
+    st.session_state.messages[0]["content"] = system_prompt
+
+# Estilos CSS generales
+css_estilos = f"""
+<style>
+@keyframes neonGlow {{
+    0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+    50% {{ text-shadow: 0 0 14px {color_neon}, 0 0 28px {color_neon}, 0 0 45px {shadow_neon}; }}
+    100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+}}
+.neon-title {{
+    color: {color_neon};
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: clamp(1.1rem, 5.2vw, 1.6rem);
+    text-align: left !important;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+    word-break: break-word;
+    animation: neonGlow 2.5s infinite ease-in-out;
+}}
+.block-container {{
+    max-width: 100% !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 5rem !important;
+}}
+</style>
+"""
+
+st.markdown(css_estilos, unsafe_allow_html=True)
+st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
+
+# ESTACIÓN DE COMANDO PRINCIPAL
+if mostrar_hud:
+    with st.container(border=True):
+        col_h1, col_h2 = st.columns([3, 1])
+        with col_h1:
+            st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc
