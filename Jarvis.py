@@ -2,7 +2,7 @@ import os, time, json, tempfile
 import streamlit as st
 from groq import Groq
 from gtts import gTTS
-import pandas as p
+import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
 
@@ -115,14 +115,7 @@ st.markdown(f"""
 # ESTACIÓN HUD
 if mostrar_hud:
     with st.container(border=True):
-        col_h1, col_h2 = st.columns([3, 1])
-        with col_h1:
-            st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
-        with col_h2:
-            if st.button(st.session_state.modo_dia_noche, use_container_width=True):
-                st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
-                st.rerun()
-
+        st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
         st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
 
         with st.expander("🌤️ Clima & Alertas"):
@@ -135,9 +128,16 @@ if mostrar_hud:
             st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
             st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
 
-        # Visor Cartográfico Global
+        # Visor Cartográfico Global con el botón al lado de los puntos
         st.markdown("---")
-        st.markdown(f"🌍 **Visor Satelital ({st.session_state.modo_dia_noche}):**")
+        col_m1, col_m2 = st.columns([3, 1])
+        with col_m1:
+            st.markdown(f"🌍 **Visor Satelital (Dos Puntos):**")
+        with col_m2:
+            if st.button(st.session_state.modo_dia_noche, use_container_width=True):
+                st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
+                st.rerun()
+
         filtro = "filter: brightness(0.6) invert(1) contrast(1.3) hue-rotate(200deg);" if "🌙" in st.session_state.modo_dia_noche else ""
         
         mapa_html = f"""
