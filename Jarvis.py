@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales con ajuste dinámico y seguro para móviles (sin nowrap)
+# Estilos CSS generales con ajuste dinámico y seguro para móviles
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -290,7 +290,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
                 contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
 
     prompt_completo = prompt + contenido_adjunto
-    st.session_state.messages.append({"role": "user", "content": prompt_completrado := prompt_completo})
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
     
     with st.chat_message("user"):
         st.markdown(prompt)
