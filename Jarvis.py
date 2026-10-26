@@ -77,7 +77,6 @@ with st.sidebar:
     st.markdown("### 🛠️ Módulos Tácticos Izquierdos")
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
-    # Asignar índice por defecto según la ubicación actual para que siempre muestre el valor correcto
     opciones_preset = ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"]
     indice_actual = 0
     if "Santiago" in st.session_state.ubicacion_jefa:
@@ -87,12 +86,13 @@ with st.sidebar:
 
     zona_preset = st.selectbox("Preset de Coordenadas:", opciones_preset, index=indice_actual)
     
-    if "Santiago" in zona_preset:
-        st.session_state.ubicacion_jefa = "Santiago Centro Chile"
-        st.session_state.lat_lon = "-33.4489 -70.6693"
-    elif "Buin" in zona_preset:
+    # Asignación corregida y directa para cada base
+    if "Buin" in zona_preset:
         st.session_state.ubicacion_jefa = "Buin Santiago Chile"
         st.session_state.lat_lon = "-33.7333 -70.7333"
+    elif "Santiago" in zona_preset:
+        st.session_state.ubicacion_jefa = "Santiago Centro Chile"
+        st.session_state.lat_lon = "-33.4489 -70.6693"
     else:
         st.session_state.ubicacion_jefa = "Sector Orbital / Desconocido"
         st.session_state.lat_lon = "00.0000 00.0000"
@@ -201,7 +201,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estiglios CSS generales con ajuste dinámico y seguro para móviles
+# Estilos CSS generales
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
