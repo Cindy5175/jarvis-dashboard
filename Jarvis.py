@@ -213,7 +213,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 elif "Ciberseguridad" in protocolo_extra:
@@ -226,7 +226,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales adaptados al tema holográfico activo
+# Estilos CSS generales corregidos (margen superior positivo para evitar el corte en notebooks)
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -240,7 +240,7 @@ css_estilos = f"""
     font-weight: bold;
     font-size: clamp(1.1rem, 5.2vw, 1.6rem);
     text-align: left !important;
-    margin-top: -5px;
+    margin-top: 10px;
     margin-bottom: 15px;
     width: 100%;
     word-break: break-word;
@@ -250,7 +250,7 @@ css_estilos = f"""
     max-width: 100% !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
-    padding-top: 0.5rem !important;
+    padding-top: 1rem !important;
     padding-bottom: 5rem !important;
 }}
 </style>
@@ -270,7 +270,7 @@ if mostrar_hud:
         st.markdown(f"⚡ Reactor Core: {st.session_state.energia_arc}% de potencia")
         st.markdown(f"📍 Grid: {st.session_state.ubicacion_jefa}")
 
-        # Módulo Climático Dinámico (Reacciona al preset de ubicación)
+        # Módulo Climático Dinámico
         with st.expander("🌤️ Módulo Climático & Alertas"):
             col_c1, col_c2, col_c3 = st.columns(3)
             if "Buin" in st.session_state.ubicacion_jefa:
@@ -397,7 +397,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
             message_placeholder.markdown(full_response)
 
-        # 🔊 Síntesis de Voz Real con gTTS (si está activada)
+        # 🔊 Síntesis de Voz Real con gTTS
         if activar_voz and full_response:
             try:
                 tts = gTTS(text=full_response, lang='es', slow=False)
