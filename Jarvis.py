@@ -232,24 +232,4 @@ if mostrar_hud:
                             bubbles: true
                         });
                         inputElem.dispatchEvent(enterEvent);
-                    }, 500);
-                }
-            };
-
-            recognition.onerror = function(event) {
-                document.getElementById('estado-voz').innerText = "⚠️ Error de audio. Reiniciando enlace...";
-                setTimeout(iniciarEscuchaContinua, 1000);
-            };
-
-            recognition.onend = function() {
-                try { recognition.start(); } catch(e) {}
-            };
-
-            recognition.start();
-        }
-        </script>
-        """
-        components.html(script_voz_continua, height=130)
-
-        # Visor Cartográfico Global (Centrado en la posición actual de la Jefa)
-        st.markdown("
+                    
