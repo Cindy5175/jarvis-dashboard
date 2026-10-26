@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estiglios CSS generales con título optimizado
+# Estilos CSS generales optimizados
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -225,28 +225,16 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL
+# ESTACIÓN DE COMANDO PRINCIPAL CON COMPONENTES NATIVOS (Cero riesgo de HTML plano)
 if mostrar_hud:
     with st.container(border=True):
-        st.markdown(
-            f"""
-            <div style="font-family: 'Courier New', monospace; text-align: left !important; width: 100%;">
-                <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px;">[COMMAND STATION - C2] &nbsp;&nbsp; <b>INT:</b> {st.session_state.energia_arc}%</div>
-                
-                <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 10px; padding: 14px; text-align: left !important; margin-bottom: 10px;">
-                    <div style="color: {color_neon}; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; text-shadow: 0 0 6px {color_neon}; text-align: left !important;">⚛️ ESTRUCTURA NEURAL C2</div>
-                    <div style="color: {color_neon}; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: left !important;">DIAGNÓSTICO DE SISTEMAS:</div>
-                    <div style="color: #ddd; font-size: 0.85rem; line-height: 1.5; text-align: left !important;">
-                        📡 Enlace Satelital: ESTABLE (100%)<br>
-                        🛡️ Escudo Cuántico: OPERATIVO<br>
-                        ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br>
-                        📍 Grid: {st.session_state.ubicacion_jefa}
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
+        st.markdown("### ⚛️ ESTRUCTURA NEURAL C2")
+        st.markdown("**DIAGNÓSTICO DE SISTEMAS:**")
+        st.markdown("📡 Enlace Satelital: ESTABLE (100%)")
+        st.markdown("🛡️ Escudo Cuántico: OPERATIVO")
+        st.markdown(f"⚡ Reactor Core: {st.session_state.energia_arc}% de potencia")
+        st.markdown(f"📍 Grid: {st.session_state.ubicacion_jefa}")
 
         # Módulo Climático (Expandible)
         with st.expander("🌤️ Módulo Climático & Alertas"):
@@ -369,4 +357,3 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
             message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-
