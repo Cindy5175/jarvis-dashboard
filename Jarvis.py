@@ -65,6 +65,14 @@ with st.sidebar:
         st.session_state.ubicacion_jefa, st.session_state.lat_lon = "Orbital", "00.0000 00.0000"
 
     st.divider()
+    
+    # MÓDULO 4: Escáner Biométrico Facial en Barra Lateral
+    with st.expander("👤 Escáner Biométrico Facial"):
+        foto = st.camera_input("Escanear Rostro", key="cam_biometria")
+        if foto:
+            st.success("¡Identidad Biométrica Confirmada: Jefa!")
+
+    st.divider()
     archivo_subido = st.file_uploader("Adjuntar archivo:", type=["png", "jpg", "txt", "csv", "py"])
     protocolo = st.selectbox("Directiva:", ["Estándar", "Auditoría 💻", "Resumen 📊", "Ciberseguridad 🛡️"])
     
@@ -127,6 +135,52 @@ if mostrar_hud:
         with st.expander("📈 Red & Bitácora"):
             st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
             st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
+
+        # MÓDULO 2: Ticker Financiero Táctico
+        with st.expander("💹 Ticker Financiero & Cripto"):
+            f1, f2, f3 = st.columns(3)
+            f1.metric("Bitcoin", "$67,420 USD", "+2.4%")
+            f2.metric("USDT", "$1.00 USD", "0.0%")
+            f3.metric("S&P 500", "5,815 pts", "+0.8%")
+
+        # MÓDULO 3: Telemetría de Hardware
+        with st.expander("🖥️ Telemetría de Hardware Server"):
+            h1, h2, h3 = st.columns(3)
+            h1.metric("Uso CPU", "18%", "Óptimo")
+            h2.metric("RAM Server", "4.2 GB", "32% Libre")
+            h3.metric("Ping Neural", "14 ms", "Sincronizado")
+
+        # MÓDULO 5: Agenda & Recordatorios de Misión
+        with st.expander("📅 Agenda & Alertas de Misión"):
+            st.markdown("• **08:00 AM:** Reporte Matutino Automático Buin (Amanecer)")
+            st.markdown("• **12:00 PM:** Auditoría de red C2")
+            st.markdown("• **06:00 PM:** Respaldo de Caja Negra JSON")
+
+        # MÓDULO 1: Reconocimiento de Voz Web
+        st.markdown("---")
+        st.markdown("🎙️ **Dictado por Voz Directo:**")
+        
+        script_dictado = """
+        <script>
+        function dictarVoz() {
+            var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.start();
+            recognition.onresult = function(event) {
+                var texto = event.results[0][0].transcript;
+                var inputElem = window.parent.document.querySelector('textarea[data-testid="stChatInputTextArea"]');
+                if (inputElem) {
+                    inputElem.value = texto;
+                    inputElem.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            };
+        }
+        </script>
+        <button onclick="dictarVoz()" style="background-color: #00d2ff; color: #000; font-weight: bold; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%;">
+            🎙️ Activar Grabación de Voz (Dictar a J.A.R.V.I.S.)
+        </button>
+        """
+        components.html(script_dictado, height=50)
 
         # Visor Cartográfico Global
         st.markdown("---")
