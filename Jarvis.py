@@ -66,7 +66,7 @@ with st.sidebar:
 
     st.divider()
     
-    # MÓDULO 4: Escáner Biométrico Facial en Barra Lateral
+    # Escáner Biométrico Facial
     with st.expander("👤 Escáner Biométrico Facial"):
         foto = st.camera_input("Escanear Rostro", key="cam_biometria")
         if foto:
@@ -136,27 +136,27 @@ if mostrar_hud:
             st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
             st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
 
-        # MÓDULO 2: Ticker Financiero Táctico
+        # Ticker Financiero Táctico
         with st.expander("💹 Ticker Financiero & Cripto"):
             f1, f2, f3 = st.columns(3)
             f1.metric("Bitcoin", "$67,420 USD", "+2.4%")
             f2.metric("USDT", "$1.00 USD", "0.0%")
             f3.metric("S&P 500", "5,815 pts", "+0.8%")
 
-        # MÓDULO 3: Telemetría de Hardware
+        # Telemetría de Hardware
         with st.expander("🖥️ Telemetría de Hardware Server"):
             h1, h2, h3 = st.columns(3)
             h1.metric("Uso CPU", "18%", "Óptimo")
             h2.metric("RAM Server", "4.2 GB", "32% Libre")
             h3.metric("Ping Neural", "14 ms", "Sincronizado")
 
-        # MÓDULO 5: Agenda & Recordatorios de Misión
+        # Agenda & Recordatorios de Misión
         with st.expander("📅 Agenda & Alertas de Misión"):
             st.markdown("• **08:00 AM:** Reporte Matutino Automático Buin (Amanecer)")
             st.markdown("• **12:00 PM:** Auditoría de red C2")
             st.markdown("• **06:00 PM:** Respaldo de Caja Negra JSON")
 
-        # MÓDULO 1: Reconocimiento de Voz Web
+        # Reconocimiento de Voz Web
         st.markdown("---")
         st.markdown("🎙️ **Dictado por Voz Directo:**")
         
@@ -182,11 +182,11 @@ if mostrar_hud:
         """
         components.html(script_dictado, height=50)
 
-        # Visor Cartográfico Global
+        # Visor Cartográfico Global (Encabezado Limpio y Botón Alineado)
         st.markdown("---")
-        col_m1, col_m2 = st.columns([3, 1])
+        col_m1, col_m2 = st.columns([3, 1.2])
         with col_m1:
-            st.markdown(f"🌍 **Visor Satelital (Dos Puntos):**")
+            st.markdown("🌍 **Visor Satelital**")
         with col_m2:
             if st.button(st.session_state.modo_dia_noche, use_container_width=True):
                 st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
