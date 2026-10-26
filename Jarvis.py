@@ -77,7 +77,16 @@ with st.sidebar:
     st.markdown("### 🛠️ Módulos Tácticos Izquierdos")
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
-    zona_preset = st.selectbox("Preset de Coordenadas:", ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"], index=0)
+    # Asignar índice por defecto según la ubicación actual para que siempre muestre el valor correcto
+    opciones_preset = ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"]
+    indice_actual = 0
+    if "Santiago" in st.session_state.ubicacion_jefa:
+        indice_actual = 1
+    elif "Orbital" in st.session_state.ubicacion_jefa:
+        indice_actual = 2
+
+    zona_preset = st.selectbox("Preset de Coordenadas:", opciones_preset, index=indice_actual)
+    
     if "Santiago" in zona_preset:
         st.session_state.ubicacion_jefa = "Santiago Centro Chile"
         st.session_state.lat_lon = "-33.4489 -70.6693"
@@ -192,7 +201,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales con ajuste dinámico y seguro para móviles
+# Estiglios CSS generales con ajuste dinámico y seguro para móviles
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
