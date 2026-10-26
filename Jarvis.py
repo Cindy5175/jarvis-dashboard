@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales optimizados
+# Estilos CSS generales con ajuste dinámico y seguro para móviles (sin nowrap)
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -204,12 +204,12 @@ css_estilos = f"""
     color: {color_neon};
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    font-size: clamp(0.95rem, 3.8vw, 1.4rem);
+    font-size: clamp(1.1rem, 5.2vw, 1.6rem);
     text-align: left !important;
     margin-top: -5px;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     width: 100%;
-    white-space: nowrap;
+    word-break: break-word;
     animation: neonGlow 2.5s infinite ease-in-out;
 }}
 .block-container {{
@@ -225,7 +225,7 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL CON COMPONENTES NATIVOS (Cero riesgo de HTML plano)
+# ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
@@ -290,7 +290,7 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
                 contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
 
     prompt_completo = prompt + contenido_adjunto
-    st.session_state.messages.append({"role": "user", "content": prompt_completo})
+    st.session_state.messages.append({"role": "user", "content": prompt_completrado := prompt_completo})
     
     with st.chat_message("user"):
         st.markdown(prompt)
