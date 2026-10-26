@@ -136,6 +136,13 @@ if mostrar_hud:
             st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
             st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
 
+        # MÓDULO DE MÚSICA SPOTIFY TÁCTICO
+        with st.expander("🎵 Reproductor de Música (Spotify)"):
+            spotify_html = """
+            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLEN7aqioXM?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            """
+            components.html(spotify_html, height=165)
+
         # Ticker Financiero Táctico
         with st.expander("💹 Ticker Financiero & Cripto"):
             f1, f2, f3 = st.columns(3)
