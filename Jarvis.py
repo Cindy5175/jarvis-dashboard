@@ -2,7 +2,7 @@ import os, time, json, tempfile
 import streamlit as st
 from groq import Groq
 from gtts import gTTS
-import pandas as pd
+import pandas as p
 import numpy as np
 import streamlit.components.v1 as components
 
