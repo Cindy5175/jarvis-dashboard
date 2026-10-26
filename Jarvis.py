@@ -226,4 +226,248 @@ prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
-    prompt_protocolo
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
+elif "Ciberseguridad" in protocolo_extra:
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de ciberseguridad, análisis de vulnerabilidades y encriptado táctico de nivel militar]."
+
+system_prompt = system_base + prompt_protocolo_extra
+
+if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] != "system":
+    st.session_state.messages.insert(0, {"role": "system", "content": system_prompt})
+else:
+    st.session_state.messages[0]["content"] = system_prompt
+
+# Estilos CSS generales
+css_estilos = f"""
+<style>
+@keyframes neonGlow {{
+    0% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+    50% {{ text-shadow: 0 0 14px {color_neon}, 0 0 28px {color_neon}, 0 0 45px {shadow_neon}; }}
+    100% {{ text-shadow: 0 0 5px {color_neon}, 0 0 10px {color_neon}, 0 0 20px {shadow_neon}; }}
+}}
+.neon-title {{
+    color: {color_neon};
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: clamp(1.1rem, 5.2vw, 1.6rem);
+    text-align: left !important;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+    word-break: break-word;
+    animation: neonGlow 2.5s infinite ease-in-out;
+}}
+.block-container {{
+    max-width: 100% !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 5rem !important;
+}}
+</style>
+"""
+
+st.markdown(css_estilos, unsafe_allow_html=True)
+st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
+
+# ESTACIÓN DE COMANDO PRINCIPAL
+if mostrar_hud:
+    with st.container(border=True):
+        col_h1, col_h2 = st.columns([3, 1])
+        with col_h1:
+            st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
+        with col_h2:
+            # Botón de Cambio Día / Noche
+            if st.button(st.session_state.modo_dia_noche, use_container_width=True, help="Alternar Modo Ambiental"):
+                st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
+                st.rerun()
+
+        st.markdown("### ⚛️ ESTRUCTURA NEURAL C2")
+        st.markdown("**DIAGNÓSTICO DE SISTEMAS:**")
+        st.markdown("📡 Enlace Satelital: ESTABLE (100%)")
+        st.markdown("🛡️ Escudo Cuántico: OPERATIVO")
+        st.markdown(f"⚡ Reactor Core: {st.session_state.energia_arc}% de potencia")
+        st.markdown(f"📍 Grid: {st.session_state.ubicacion_jefa} ({st.session_state.modo_dia_noche})")
+
+        # Módulo Climático Dinámico
+        with st.expander("🌤️ Módulo Climático & Alertas"):
+            col_c1, col_c2, col_c3 = st.columns(3)
+            if "Buin" in st.session_state.ubicacion_jefa:
+                col_c1.metric("Temp", "18°C", "Buin Óptima")
+                col_c2.metric("Humedad", "45%", "-2%")
+                col_c3.metric("Viento", "12 km/h", "SSE")
+            elif "Santiago" in st.session_state.ubicacion_jefa:
+                col_c1.metric("Temp", "22°C", "Urbana")
+                col_c2.metric("Humedad", "38%", "+1%")
+                col_c3.metric("Viento", "15 km/h", "NW")
+            else:
+                col_c1.metric("Temp", "-50°C", "Orbital")
+                col_c2.metric("Humedad", "0%", "Vacío")
+                col_c3.metric("Viento", "0 km/h", "N/A")
+            
+        # Módulo de Red y Bitácora (Expandible)
+        with st.expander("📈 Diagnóstico de Red & Bitácora"):
+            st.markdown("**Ancho de Banda y Red (Mbps)**")
+            chart_data = pd.DataFrame(
+                np.random.randn(12, 2) * [5, 10] + [50, 120],
+                columns=["Satelital", "Neuronal"]
+            )
+            st.line_chart(chart_data, height=110)
+            
+            st.divider()
+            st.markdown("**Bitácora de Misión Rápida**")
+            st.session_state.notas_mision = st.text_area("Notas directas de la Jefa:", value=st.session_state.notas_mision, height=60)
+            if st.button("💾 Guardar Notas", use_container_width=True):
+                st.success("¡Bitácora sincronizada Jefa!")
+
+        # 🗺️ Módulo de Mapa Satelital Avanzado con Dos Puntos y Modo Día/Noche
+        st.markdown("---")
+        st.markdown("🗺️ **Radar Satelital de Posicionamiento (Múltiples Puntos):**")
+        
+        # Coordenadas de los dos puntos clave (Buin y Santiago Centro)
+        puntos_df = pd.DataFrame({
+            "lat": [-33.7333, -33.4489],
+            "lon": [-70.7333, -70.6693],
+            "base": ["Buin (Base Central)", "Santiago Centro"]
+        })
+
+        try:
+            lat_str, lon_str = st.session_state.lat_lon.split()
+            lat_val, lon_val = float(lat_str), float(lon_str)
+        except:
+            lat_val, lon_val = -33.7333, -70.7333
+
+        # Determinar estilo de mapa según el botón Día / Noche
+        estilo_mapa_pydeck = "dark" if "🌙" in st.session_state.modo_dia_noche else "light"
+
+        # Configuración de capa Pydeck para mostrar los dos puntos
+        capa_puntos = pdk.Layer(
+            "ScatterplotLayer",
+            data=puntos_df,
+            get_position=["lon", "lat"],
+            get_color=[0, 210, 255, 200] if "Azul" in st.session_state.tema_hud else [255, 51, 51, 200],
+            get_radius=8000,
+            pickable=True,
+        )
+
+        vista_radar = pdk.ViewState(
+            latitude=lat_val,
+            longitude=lon_val,
+            zoom=9,
+            pitch=0,
+        )
+
+        mapa_deck = pdk.Deck(
+            layers=[capa_puntos],
+            initial_view_state=vista_radar,
+            map_style=estilo_mapa_pydeck
+        )
+
+        st.pydeck_chart(mapa_deck)
+        st.caption(f"GRID: {st.session_state.lat_lon} | MODO: {st.session_state.modo_dia_noche} | STATUS: ONLINE")
+
+# 💬 HISTORIAL DE CHAT
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+# 💬 CAJA DE CHAT PRINCIPAL
+if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
+    contenido_adjunto = ""
+    imagen_base64 = None
+    
+    if archivo_subido is not None:
+        nombre_archivo = archivo_subido.name
+        tipo_archivo = archivo_subido.type
+        
+        if "image" in tipo_archivo:
+            import base64
+            bytes_data = archivo_subido.read()
+            imagen_base64 = base64.b64encode(bytes_data).decode('utf-8')
+            contenido_adjunto = f"\n\n[El usuario adjuntó la imagen: {nombre_archivo}]"
+        else:
+            try:
+                texto_archivo = archivo_subido.read().decode("utf-8")
+                contenido_adjunto = f"\n\n--- INICIO CONTENIDO ARCHIVO '{nombre_archivo}' ---\n{texto_archivo}\n--- FIN CONTENIDO ARCHIVO ---"
+            except Exception:
+                contenido_adjunto = f"\n\n[No se pudo leer el archivo '{nombre_archivo}']"
+
+    prompt_completo = prompt + contenido_adjunto
+    st.session_state.messages.append({"role": "user", "content": prompt_completo})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if archivo_subido is not None:
+            if "image" in archivo_subido.type:
+                st.image(archivo_subido, caption=f"Imagen: {archivo_subido.name}", use_column_width=True)
+            else:
+                st.caption(f"📄 Archivo: {archivo_subido.name}")
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        if imagen_base64:
+            mensajes_api = []
+            for msg in st.session_state.messages:
+                if msg["role"] == "system":
+                    mensajes_api.append(msg)
+                elif msg["role"] == "user":
+                    if msg == st.session_state.messages[-1]:
+                        mensajes_api.append({
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt_completo},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{archivo_subido.type};base64,{imagen_base64}"
+                                    }
+                                }
+                            ]
+                        })
+                    else:
+                        mensajes_api.append(msg)
+                else:
+                    mensajes_api.append(msg)
+            modelos_a_probar = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
+        else:
+            mensajes_api = st.session_state.messages
+            modelos_a_probar = [modelo_seleccionado, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
+
+        exito = False
+        for modelo_actual in modelos_a_probar:
+            try:
+                completion = client.chat.completions.create(
+                    model=modelo_actual,
+                    messages=mensajes_api,
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    content = chunk.choices[0].delta.content or ""
+                    full_response += content
+                    message_placeholder.markdown(full_response + "▌")
+                
+                message_placeholder.markdown(full_response)
+                exito = True
+                break
+            except Exception:
+                continue
+        
+        if not exito:
+            full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
+            message_placeholder.markdown(full_response)
+
+        # 🔊 Síntesis de Voz Real con gTTS
+        if activar_voz and full_response:
+            try:
+                tts = gTTS(text=full_response, lang='es', slow=False)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+                    tts.save(fp.name)
+                    st.audio(fp.name, format="audio/mp3", autoplay=True)
+            except Exception:
+                pass
+
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
