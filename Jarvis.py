@@ -258,16 +258,3 @@ css_estilos = f"""
     padding-right: 0.5rem !important;
     padding-top: 1rem !important;
     padding-bottom: 5rem !important;
-}}
-</style>
-"""
-
-st.markdown(css_estilos, unsafe_allow_html=True)
-st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
-
-# ESTACIÓN DE COMANDO PRINCIPAL
-if mostrar_hud:
-    with st.container(border=True):
-        col_h1, col_h2 = st.columns([3, 1])
-        with col_h1:
-            st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc
