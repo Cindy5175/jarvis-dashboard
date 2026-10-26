@@ -213,7 +213,7 @@ with st.sidebar:
     json_caja_negra = json.dumps(datos_caja_negra, ensure_ascii=False, indent=4)
     st.download_button("📦 Descargar Caja Negra (.json)", data=json_caja_negra, file_name="cit_caja_negra.json", mime="application/json", use_container_width=True)
 
-    chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'] )
+    chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
 
     st.divider()
@@ -320,51 +320,61 @@ if mostrar_hud:
             if st.button("💾 Guardar Notas", use_container_width=True):
                 st.success("¡Bitácora sincronizada Jefa!")
 
-        # 🗺️ Módulo de Mapa Satelital Avanzado con Dos Puntos y Modo Día/Noche
+        # 🗺️ Módulo de Radar Satelital de Nivel Experto (Pydeck + Carto Basemaps)
         st.markdown("---")
-        st.markdown("🗺️ **Radar Satelital de Posicionamiento (Múltiples Puntos):**")
+        st.markdown(f"🗺️ **Radar Satelital Táctico C2 ({st.session_state.modo_dia_noche}):**")
         
-        # Coordenadas de los dos puntos clave (Buin y Santiago Centro)
-        puntos_df = pd.DataFrame({
+        puntos_expertos = pd.DataFrame({
             "lat": [-33.7333, -33.4489],
             "lon": [-70.7333, -70.6693],
-            "base": ["Buin (Base Central)", "Santiago Centro"]
+            "base": ["Buin (Base Central)", "Santiago Centro"],
+            "radio": [12000, 10000]
         })
 
-        try:
-            lat_str, lon_str = st.session_state.lat_lon.split()
-            lat_val, lon_val = float(lat_str), float(lon_str)
-        except:
-            lat_val, lon_val = -33.7333, -70.7333
+        # Estilos Carto profesionales que NO requieren token de Mapbox
+        if "🌙" in st.session_state.modo_dia_noche:
+            estilo_carto = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+        else:
+            estilo_carto = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
 
-        # Determinar estilo de mapa según el botón Día / Noche
-        estilo_mapa_pydeck = "dark" if "🌙" in st.session_state.modo_dia_noche else "light"
+        # Color RGBA adaptado al tema HUD activo
+        if "Azul" in st.session_state.tema_hud:
+            color_rgb = [0, 210, 255, 230]
+        elif "Rojo" in st.session_state.tema_hud:
+            color_rgb = [255, 51, 51, 230]
+        else:
+            color_rgb = [0, 255, 102, 230]
 
-        # Configuración de capa Pydeck para mostrar los dos puntos
-        capa_puntos = pdk.Layer(
+        capa_radar_experto = pdk.Layer(
             "ScatterplotLayer",
-            data=puntos_df,
+            data=puntos_expertos,
             get_position=["lon", "lat"],
-            get_color=[0, 210, 255, 200] if "Azul" in st.session_state.tema_hud else [255, 51, 51, 200],
-            get_radius=8000,
+            get_color=color_rgb,
+            get_radius="radio",
             pickable=True,
+            stroked=True,
+            filled=True,
+            line_width_min_pixels=2,
+            get_line_color=[255, 255, 255, 255]
         )
 
-        vista_radar = pdk.ViewState(
-            latitude=lat_val,
-            longitude=lon_val,
-            zoom=9,
-            pitch=0,
+        view_state_experto = pdk.ViewState(
+            latitude=-33.58,
+            longitude=-70.7,
+            zoom=9.2,
+            pitch=25,
+            bearing=0
         )
 
-        mapa_deck = pdk.Deck(
-            layers=[capa_puntos],
-            initial_view_state=vista_radar,
-            map_style=estilo_mapa_pydeck
+        deck_experto = pdk.Deck(
+            layers=[capa_radar_experto],
+            initial_view_state=view_state_experto,
+            map_style=estilo_carto,
+            tooltip={"html": "<b>Base Táctica:</b> {base}<br><b>Coordenadas:</b> {lat}, {lon}"}
         )
 
-        st.pydeck_chart(mapa_deck)
-        st.caption(f"GRID: {st.session_state.lat_lon} | MODO: {st.session_state.modo_dia_noche} | STATUS: ONLINE")
+        st.pydeck_chart(deck_experto)
+        st.caption(f"GRID METROPOLITANO | MODO: {st.session_state.modo_dia_noche} | STATUS: ONLINE")
 
 # 💬 HISTORIAL DE CHAT
 for message in st.session_state.messages:
