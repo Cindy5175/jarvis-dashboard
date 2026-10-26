@@ -179,7 +179,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 elif "Ciberseguridad" in protocolo_extra:
@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales
+# Estilos CSS generales con título optimizado para que quepa perfecto en una línea en mobile
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -204,13 +204,12 @@ css_estilos = f"""
     color: {color_neon};
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    font-size: clamp(1rem, 4.5vw, 1.5rem);
+    font-size: clamp(0.95rem, 3.8vw, 1.4rem);
     text-align: left !important;
     margin-top: -5px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     width: 100%;
-    padding-left: 2px;
-    word-break: break-word;
+    white-space: nowrap;
     animation: neonGlow 2.5s infinite ease-in-out;
 }}
 .block-container {{
@@ -226,21 +225,23 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Caja HTML única con alineación izquierda forzada)
+# ESTACIÓN DE COMANDO PRINCIPAL (Todo integrado en un bloque HTML limpio alineado a la izquierda)
 if mostrar_hud:
     with st.container(border=True):
-        st.markdown(f"**[COMMAND STATION - C2]** &nbsp;&nbsp; **INT:** {st.session_state.energia_arc}%")
-        
         st.markdown(
             f"""
-            <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 10px; padding: 15px; text-align: left !important; font-family: 'Courier New', monospace; margin-bottom: 10px; width: 100%;">
-                <h3 style="color: {color_neon}; text-shadow: 0 0 8px {color_neon}; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; text-align: left !important;">⚛️ ESTRUCTURA NEURAL C2</h3>
-                <div style="color: {color_neon}; font-weight: bold; margin-bottom: 10px; text-align: left !important;">DIAGNÓSTICO DE SISTEMAS:</div>
-                <div style="color: #ddd; font-size: 0.9rem; line-height: 1.6; text-align: left !important;">
-                    📡 Enlace Satelital: ESTABLE (100%)<br>
-                    🛡️ Escudo Cuántico: OPERATIVO<br>
-                    ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br>
-                    📍 Grid: {st.session_state.ubicacion_jefa}
+            <div style="font-family: 'Courier New', monospace; text-align: left !important; width: 100%;">
+                <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px;">[COMMAND STATION - C2] &nbsp;&nbsp; <b>INT:</b> {st.session_state.energia_arc}%</div>
+                
+                <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 10px; padding: 14px; text-align: left !important; margin-bottom: 10px;">
+                    <div style="color: {color_neon}; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; text-shadow: 0 0 6px {color_neon};">⚛️ ESTRUCTURA NEURAL C2</div>
+                    <div style="color: {color_neon}; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px;">DIAGNÓSTICO DE SISTEMAS:</div>
+                    <div style="color: #ddd; font-size: 0.85rem; line-height: 1.5;">
+                        📡 Enlace Satelital: ESTABLE (100%)<br>
+                        🛡️ Escudo Cuántico: OPERATIVO<br>
+                        ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br>
+                        📍 Grid: {st.session_state.ubicacion_jefa}
+                    </div>
                 </div>
             </div>
             """,
