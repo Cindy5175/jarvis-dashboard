@@ -44,7 +44,7 @@ else:
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma, leal y brillante. Te diriges al usuario como 'Jefa' con elegancia y estilo Tony Stark. Ubicación: {st.session_state.ubicacion_jefa} ({st.session_state.lat_lon}). Modo: {st.session_state.modo_dia_noche}."
 
-# BARRA LATERAL (Con todos los módulos tácticos organizados a la izquierda)
+# BARRA LATERAL (Módulos Tácticos)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica", value=True)
@@ -66,7 +66,6 @@ with st.sidebar:
 
     st.divider()
 
-    # MÓDULOS EN BARRA LATERAL (IZQUIERDA)
     with st.expander("🌤️ Clima & Alertas"):
         st.metric("Temp", "18°C", "Buin")
         st.metric("Humedad", "45%", "-2%")
@@ -150,39 +149,73 @@ st.markdown(f"""
 <h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>
 """, unsafe_allow_html=True)
 
-# ESTACIÓN HUD (PANTALLA PRINCIPAL: SOLO VISOR SATELITAL Y ESTADO LIMPIO)
+# ESTACIÓN HUD (PANTALLA PRINCIPAL CON NÚCLEO Y ESCUCHA ACTIVA)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
         st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
 
-        # Reconocimiento de Voz Web
+        # NÚCLEO HOLOGRÁFICO Y ESCUCHA DE VOZ AUTOMÁTICA
         st.markdown("---")
-        st.markdown("🎙️ **Dictado por Voz Directo:**")
+        st.markdown("🎙️ **Enlace Neuronal por Voz (Modo Manos Libres):**")
         
-        script_dictado = """
+        script_voz_continua = """
+        <div style="text-align: center; padding: 10px; background: rgba(0, 210, 255, 0.05); border: 1px dashed #00d2ff; border-radius: 8px;">
+            <p id="estado-voz" style="color: #00d2ff; font-family: monospace; font-size: 0.9rem; margin-bottom: 8px;">⚡ Núcleo de Voz: En espera de comandos...</p>
+            <button onclick="iniciarEscuchaContinua()" style="background-color: #00d2ff; color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-family: monospace;">
+                🎙️ Activar Escucha Automática de Voz
+            </button>
+        </div>
+
         <script>
-        function dictarVoz() {
+        function iniciarEscuchaContinua() {
             var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'es-ES';
-            recognition.start();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            document.getElementById('estado-voz').innerText = "🔴 Escuchando activamente... (Hable ahora)";
+
             recognition.onresult = function(event) {
-                var texto = event.results[0][0].transcript;
+                var transcript = event.results[event.results.length - 1][0].transcript;
+                document.getElementById('estado-voz').innerText = "💬 Comando recibido: " + transcript;
+                
                 var inputElem = window.parent.document.querySelector('textarea[data-testid="stChatInputTextArea"]');
                 if (inputElem) {
-                    inputElem.value = texto;
+                    inputElem.value = transcript;
                     inputElem.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    // Simular envío automático presionando Enter
+                    setTimeout(function() {
+                        var enterEvent = new KeyboardEvent('keydown', {
+                            key: 'Enter',
+                            code: 'Enter',
+                            keyCode: 13,
+                            which: 13,
+                            bubbles: true
+                        });
+                        inputElem.dispatchEvent(enterEvent);
+                    }, 500);
                 }
             };
+
+            recognition.onerror = function(event) {
+                document.getElementById('estado-voz').innerText = "⚠️ Error de audio. Reiniciando enlace...";
+                setTimeout(iniciarEscuchaContinua, 1000);
+            };
+
+            recognition.onend = function() {
+                // Mantener el ciclo de escucha abierto automáticamente
+                try { recognition.start(); } catch(e) {}
+            };
+
+            recognition.start();
         }
         </script>
-        <button onclick="dictarVoz()" style="background-color: #00d2ff; color: #000; font-weight: bold; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%;">
-            🎙️ Activar Grabación de Voz (Dictar a J.A.R.V.I.S.)
-        </button>
         """
-        components.html(script_dictado, height=50)
+        components.html(script_voz_continua, height=130)
 
-        # Visor Cartográfico Global (Encabezado Limpio y Botón Alineado)
+        # Visor Cartográfico Global
         st.markdown("---")
         col_m1, col_m2 = st.columns([3, 1.2])
         with col_m1:
