@@ -102,12 +102,12 @@ if not st.session_state.messages or st.session_state.messages[0]["role"] != "sys
 else:
     st.session_state.messages[0]["content"] = sys_msg
 
-# CSS optimizado
+# CSS optimizado con margen superior corregido para evitar solapamiento
 st.markdown(f"""
 <style>
 @keyframes glow {{ 0%, 100% {{ text-shadow: 0 0 5px {c_neon}, 0 0 15px {c_shadow}; }} 50% {{ text-shadow: 0 0 20px {c_neon}, 0 0 35px {c_shadow}; }} }}
-.neon-title {{ color: {c_neon}; font-family: monospace; font-weight: bold; font-size: 1.5rem; animation: glow 2.5s infinite; }}
-.block-container {{ max-width: 100% !important; padding: 1rem 0.5rem 5rem 0.5rem !important; }}
+.neon-title {{ color: {c_neon}; font-family: monospace; font-weight: bold; font-size: 1.4rem; animation: glow 2.5s infinite; margin-top: 15px; margin-bottom: 10px; }}
+.block-container {{ max-width: 100% !important; padding: 2.5rem 0.5rem 5rem 0.5rem !important; }}
 </style>
 <h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>
 """, unsafe_allow_html=True)
@@ -128,7 +128,7 @@ if mostrar_hud:
             st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
             st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
 
-        # Visor Cartográfico Global con el botón al lado de los puntos
+        # Visor Cartográfico Global
         st.markdown("---")
         col_m1, col_m2 = st.columns([3, 1])
         with col_m1:
