@@ -18,6 +18,7 @@ st.session_state.setdefault("energia_arc", 98)
 st.session_state.setdefault("notas_mision", "• Sincronizar red\n• Optimizar módulos")
 st.session_state.setdefault("tema_hud", "Azul Arc")
 st.session_state.setdefault("modo_dia_noche", "🌙 Noche")
+st.session_state.setdefault("reporte_inicial_hecho", False)
 
 # Capturar coordenadas si vienen por URL (geolocalización automática)
 query_params = st.query_params
@@ -46,6 +47,16 @@ if not st.session_state.autenticado:
 
 client = Groq(api_key="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")
 st.session_state.setdefault("messages", [])
+
+# Saludo de inicio automático si no hay mensajes
+if not st.session_state.messages and not st.session_state.reporte_inicial_hecho:
+    saludo_inicial = (
+        "Buenos días, Jefa. Los sistemas principales de la estación C2 en Buin operan al 100%. "
+        f"El reactor Arc se encuentra al {st.session_state.energia_arc}%, los mercados financieros muestran estabilidad "
+        "y el enlace satelital está sincronizado. ¿Cuál es nuestra directiva para hoy?"
+    )
+    st.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
+    st.session_state.reporte_inicial_hecho = True
 
 # Colores HUD
 if "Azul" in st.session_state.tema_hud:
