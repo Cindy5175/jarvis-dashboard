@@ -1,7 +1,12 @@
 import os
 import time
+import json
+import tempfile
 import streamlit as st
 from groq import Groq
+from gtts import gTTS
+import pandas as pd
+import numpy as np
 
 # 1. Configuración de la página
 st.set_page_config(
@@ -23,6 +28,9 @@ if "energia_arc" not in st.session_state:
 
 if "notas_mision" not in st.session_state:
     st.session_state.notas_mision = "• Sincronizar protocolos de red\n• Optimizar módulos tácticos"
+
+if "tema_hud" not in st.session_state:
+    st.session_state.tema_hud = "Azul Arc"
 
 # -------------------------------------------------------------
 # 🔐 MÓDULO DE CLAVE DE ACCESO (PIN DE SEGURIDAD)
@@ -61,9 +69,16 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Estética fija: Azul Neón Cuántico
-color_neon = "#00d2ff"
-shadow_neon = "#0072ff"
+# Configuración de Colores según el Tema Holográfico seleccionado
+if "Azul" in st.session_state.tema_hud:
+    color_neon = "#00d2ff"
+    shadow_neon = "#0072ff"
+elif "Rojo" in st.session_state.tema_hud:
+    color_neon = "#ff3333"
+    shadow_neon = "#990000"
+else:  # Verde Sigilo
+    color_neon = "#00ff66"
+    shadow_neon = "#006622"
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma una super IA avanzada brillante y leal. Te diriges al usuario siempre como 'Jefa'. Respondes con la elegancia eficiencia sarcasmo irónico estilo Tony Stark y capacidad analítica total para auditar código de sistemas. Ubicación actual de la Jefa: {st.session_state.ubicacion_jefa} (Coordenadas satelitales: {st.session_state.lat_lon})."
 
@@ -75,6 +90,7 @@ with st.sidebar:
     st.divider()
     
     st.markdown("### 🛠️ Módulos Tácticos")
+    st.session_state.tema_hud = st.selectbox("Tema Holográfico HUD:", ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], index=0)
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
     opciones_preset = ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"]
@@ -86,7 +102,6 @@ with st.sidebar:
 
     zona_preset = st.selectbox("Preset de Coordenadas:", opciones_preset, index=indice_actual)
     
-    # Asignación correcta e independiente de coordenadas
     if "Buin" in zona_preset:
         st.session_state.ubicacion_jefa = "Buin Santiago Chile"
         st.session_state.lat_lon = "-33.7333 -70.7333"
@@ -177,6 +192,16 @@ with st.sidebar:
     
     activar_voz = st.checkbox("Habilitar síntesis de voz", value=False)
     
+    # 📦 Caja Negra: Exportación de datos de sesión en JSON
+    datos_caja_negra = {
+        "ubicacion": st.session_state.ubicacion_jefa,
+        "coordenadas": st.session_state.lat_lon,
+        "energia": st.session_state.energia_arc,
+        "mensajes": st.session_state.messages
+    }
+    json_caja_negra = json.dumps(datos_caja_negra, ensure_ascii=False, indent=4)
+    st.download_button("📦 Descargar Caja Negra (.json)", data=json_caja_negra, file_name="cit_caja_negra.json", mime="application/json", use_container_width=True)
+
     chat_texto = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if m['role'] != 'system'])
     st.download_button("📥 Descargar Chat (.txt)", data=chat_texto, file_name="cit_chat_log.txt", mime="text/plain", use_container_width=True)
 
@@ -201,7 +226,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales
+# Estilos CSS generales adaptados al tema holográfico activo
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -245,18 +270,25 @@ if mostrar_hud:
         st.markdown(f"⚡ Reactor Core: {st.session_state.energia_arc}% de potencia")
         st.markdown(f"📍 Grid: {st.session_state.ubicacion_jefa}")
 
-        # Módulo Climático (Expandible)
+        # Módulo Climático Dinámico (Reacciona al preset de ubicación)
         with st.expander("🌤️ Módulo Climático & Alertas"):
             col_c1, col_c2, col_c3 = st.columns(3)
-            col_c1.metric("Temp", "18°C", "Óptima")
-            col_c2.metric("Humedad", "45%", "-2%")
-            col_c3.metric("Viento", "12 km/h", "SSE")
+            if "Buin" in st.session_state.ubicacion_jefa:
+                col_c1.metric("Temp", "18°C", "Buin Óptima")
+                col_c2.metric("Humedad", "45%", "-2%")
+                col_c3.metric("Viento", "12 km/h", "SSE")
+            elif "Santiago" in st.session_state.ubicacion_jefa:
+                col_c1.metric("Temp", "22°C", "Urbana")
+                col_c2.metric("Humedad", "38%", "+1%")
+                col_c3.metric("Viento", "15 km/h", "NW")
+            else:
+                col_c1.metric("Temp", "-50°C", "Orbital")
+                col_c2.metric("Humedad", "0%", "Vacío")
+                col_c3.metric("Viento", "0 km/h", "N/A")
             
         # Módulo de Red y Bitácora (Expandible)
         with st.expander("📈 Diagnóstico de Red & Bitácora"):
             st.markdown("**Ancho de Banda y Red (Mbps)**")
-            import pandas as pd
-            import numpy as np
             chart_data = pd.DataFrame(
                 np.random.randn(12, 2) * [5, 10] + [50, 120],
                 columns=["Satelital", "Neuronal"]
@@ -364,5 +396,15 @@ if prompt := st.chat_input("Escribe tu instrucción o directiva..."):
         if not exito:
             full_response = "Lo siento Jefa. Inconveniente en la conexión con los servidores centrales de Groq."
             message_placeholder.markdown(full_response)
+
+        # 🔊 Síntesis de Voz Real con gTTS (si está activada)
+        if activar_voz and full_response:
+            try:
+                tts = gTTS(text=full_response, lang='es', slow=False)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+                    tts.save(fp.name)
+                    st.audio(fp.name, format="audio/mp3", autoplay=True)
+            except Exception:
+                pass
 
     st.session_state.messages.append({"role": "assistant", "content": full_response})
