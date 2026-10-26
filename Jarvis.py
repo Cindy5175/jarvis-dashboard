@@ -11,7 +11,6 @@ st.set_page_config(page_title="C.I.T. / J.A.R.V.I.S.", page_icon="⚛️", layou
 # Estados de sesión
 st.session_state.setdefault("autenticado", False)
 st.session_state.setdefault("ubicacion_jefa", "Buin Santiago Chile")
-st.session_state.setdefault("lat_lon", "-33.7333 -70.7333")
 st.session_state.setdefault("lat_val", -33.7333)
 st.session_state.setdefault("lon_val", -70.7333)
 st.session_state.setdefault("energia_arc", 98)
@@ -19,17 +18,6 @@ st.session_state.setdefault("notas_mision", "• Sincronizar red\n• Optimizar 
 st.session_state.setdefault("tema_hud", "Azul Arc")
 st.session_state.setdefault("modo_dia_noche", "🌙 Noche")
 st.session_state.setdefault("reporte_inicial_hecho", False)
-
-# Capturar coordenadas si vienen por URL (geolocalización automática)
-query_params = st.query_params
-if "lat" in query_params and "lon" in query_params:
-    try:
-        st.session_state.lat_val = float(query_params["lat"])
-        st.session_state.lon_val = float(query_params["lon"])
-        st.session_state.ubicacion_jefa = f"GPS Activo ({st.session_state.lat_val:.4f}, {st.session_state.lon_val:.4f})"
-        st.session_state.lat_lon = f"{st.session_state.lat_val} {st.session_state.lon_val}"
-    except:
-        pass
 
 # PIN DE SEGURIDAD
 if not st.session_state.autenticado:
@@ -48,7 +36,7 @@ if not st.session_state.autenticado:
 client = Groq(api_key="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")
 st.session_state.setdefault("messages", [])
 
-# Saludo de inicio automático si no hay mensajes
+# Saludo de inicio automático
 if not st.session_state.messages and not st.session_state.reporte_inicial_hecho:
     saludo_inicial = (
         "Buenos días, Jefa. Los sistemas principales de la estación C2 en Buin operan al 100%. "
@@ -66,7 +54,7 @@ elif "Rojo" in st.session_state.tema_hud:
 else:
     c_neon, c_shadow = "#00ff66", "#006622"
 
-system_base = f"Eres J.A.R.V.I.S. Autónoma, leal y brillante. Te diriges al usuario como 'Jefa' con elegancia y estilo Tony Stark. Ubicación: {st.session_state.ubicacion_jefa} ({st.session_state.lat_lon}). Modo: {st.session_state.modo_dia_noche}."
+system_base = f"Eres J.A.R.V.I.S. Autónoma, leal y brillante. Te diriges al usuario como 'Jefa' con elegancia y estilo Tony Stark. Ubicación: {st.session_state.ubicacion_jefa} ({st.session_state.lat_val}, {st.session_state.lon_val}). Modo: {st.session_state.modo_dia_noche}."
 
 # BARRA LATERAL (Módulos Tácticos)
 with st.sidebar:
@@ -77,16 +65,17 @@ with st.sidebar:
     st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], key="tema_hud", on_change=st.rerun)
     estilo_voz = st.selectbox("Voz:", ["Táctico", "Formal", "Fluido"])
     
+    # SELECTOR MANUAL DE COORDENADAS (INFALIBLE)
     presets = ["Buin (Base Central)", "Santiago Centro", "Orbital"]
     idx = 1 if "Santiago" in st.session_state.ubicacion_jefa else (2 if "Orbital" in st.session_state.ubicacion_jefa else 0)
-    zona = st.selectbox("Preset Coordenadas:", presets, index=idx)
+    zona = st.selectbox("Grid Táctico:", presets, index=idx)
     
     if "Buin" in zona:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Buin Santiago Chile", "-33.7333 -70.7333", -33.7333, -70.7333
+        st.session_state.ubicacion_jefa, st.session_state.lat_val, st.session_state.lon_val = "Buin Santiago Chile", -33.7333, -70.7333
     elif "Santiago" in zona:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Santiago Centro Chile", "-33.4489 -70.6693", -33.4489, -70.6693
+        st.session_state.ubicacion_jefa, st.session_state.lat_val, st.session_state.lon_val = "Santiago Centro Chile", -33.4489, -70.6693
     else:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Orbital", "00.0000 00.0000", 0.0, 0.0
+        st.session_state.ubicacion_jefa, st.session_state.lat_val, st.session_state.lon_val = "Orbital", 0.0, 0.0
 
     st.divider()
 
@@ -171,36 +160,11 @@ st.markdown(f"""
 <h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>
 """, unsafe_allow_html=True)
 
-# ESTACIÓN HUD (PANTALLA PRINCIPAL CON NÚCLEO, GPS Y ESCUCHA ACTIVA)
+# ESTACIÓN HUD (PANTALLA PRINCIPAL CON NÚCLEO Y ESCUCHA ACTIVA)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
         st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
-
-        # BOTÓN DE RASTREO GPS AUTOMÁTICO
-        script_gps = (
-            '<div style="margin-top: 10px; margin-bottom: 10px;">'
-            '<button onclick="obtenerGPS()" style="background-color: #0072ff; color: #fff; font-weight: bold; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-family: monospace;">'
-            '🛰️ Sincronizar GPS Satelital Automático'
-            '</button>'
-            '</div>'
-            '<script>'
-            'function obtenerGPS() {'
-            '    if (navigator.geolocation) {'
-            '        navigator.geolocation.getCurrentPosition(function(position) {'
-            '            var lat = position.coords.latitude;'
-            '            var lon = position.coords.longitude;'
-            '            window.parent.location.href = window.parent.location.origin + window.parent.location.pathname + "?lat=" + lat + "&lon=" + lon;'
-            '        }, function(error) {'
-            '            alert("⚠️ No se pudo obtener la ubicación GPS.");'
-            '        });'
-            '    } else {'
-            '        alert("Geolocalización no soportada.");'
-            '    }'
-            '}'
-            '</script>'
-        )
-        components.html(script_gps, height=50)
 
         # NÚCLEO HOLOGRÁFICO Y ESCUCHA DE VOZ AUTOMÁTICA
         st.markdown("---")
@@ -244,7 +208,7 @@ if mostrar_hud:
         )
         components.html(script_voz_continua, height=130)
 
-        # Visor Cartográfico Global
+        # Visor Cartográfico Global (Vinculado al Grid seleccionado)
         st.markdown("---")
         col_m1, col_m2 = st.columns([3, 1.2])
         with col_m1:
@@ -269,7 +233,7 @@ if mostrar_hud:
             <script>
                 var map = L.map('map').setView([{st.session_state.lat_val}, {st.session_state.lon_val}], 13);
                 L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 19 }}).addTo(map);
-                L.marker([{st.session_state.lat_val}, {st.session_state.lon_val}]).addTo(map).bindPopup("<b>Posición Actual (Jefa)</b>");
+                L.marker([{st.session_state.lat_val}, {st.session_state.lon_val}]).addTo(map).bindPopup("<b>Grid: {st.session_state.ubicacion_jefa}</b>");
             </script>
         </body>
         </html>
