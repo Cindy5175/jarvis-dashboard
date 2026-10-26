@@ -12,10 +12,23 @@ st.set_page_config(page_title="C.I.T. / J.A.R.V.I.S.", page_icon="⚛️", layou
 st.session_state.setdefault("autenticado", False)
 st.session_state.setdefault("ubicacion_jefa", "Buin Santiago Chile")
 st.session_state.setdefault("lat_lon", "-33.7333 -70.7333")
+st.session_state.setdefault("lat_val", -33.7333)
+st.session_state.setdefault("lon_val", -70.7333)
 st.session_state.setdefault("energia_arc", 98)
 st.session_state.setdefault("notas_mision", "• Sincronizar red\n• Optimizar módulos")
 st.session_state.setdefault("tema_hud", "Azul Arc")
 st.session_state.setdefault("modo_dia_noche", "🌙 Noche")
+
+# Capturar coordenadas si vienen por URL (geolocalización automática)
+query_params = st.query_params
+if "lat" in query_params and "lon" in query_params:
+    try:
+        st.session_state.lat_val = float(query_params["lat"])
+        st.session_state.lon_val = float(query_params["lon"])
+        st.session_state.ubicacion_jefa = f"GPS Activo ({st.session_state.lat_val:.4f}, {st.session_state.lon_val:.4f})"
+        st.session_state.lat_lon = f"{st.session_state.lat_val} {st.session_state.lon_val}"
+    except:
+        pass
 
 # PIN DE SEGURIDAD
 if not st.session_state.autenticado:
@@ -58,11 +71,11 @@ with st.sidebar:
     zona = st.selectbox("Preset Coordenadas:", presets, index=idx)
     
     if "Buin" in zona:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon = "Buin Santiago Chile", "-33.7333 -70.7333"
+        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Buin Santiago Chile", "-33.7333 -70.7333", -33.7333, -70.7333
     elif "Santiago" in zona:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon = "Santiago Centro Chile", "-33.4489 -70.6693"
+        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Santiago Centro Chile", "-33.4489 -70.6693", -33.4489, -70.6693
     else:
-        st.session_state.ubicacion_jefa, st.session_state.lat_lon = "Orbital", "00.0000 00.0000"
+        st.session_state.ubicacion_jefa, st.session_state.lat_lon, st.session_state.lat_val, st.session_state.lon_val = "Orbital", "00.0000 00.0000", 0.0, 0.0
 
     st.divider()
 
@@ -149,11 +162,36 @@ st.markdown(f"""
 <h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>
 """, unsafe_allow_html=True)
 
-# ESTACIÓN HUD (PANTALLA PRINCIPAL CON NÚCLEO Y ESCUCHA ACTIVA)
+# ESTACIÓN HUD (PANTALLA PRINCIPAL CON NÚCLEO, GPS Y ESCUCHA ACTIVA)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
         st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
+
+        # BOTÓN DE RASTREO GPS AUTOMÁTICO
+        script_gps = """
+        <div style="margin-top: 10px; margin-bottom: 10px;">
+            <button onclick="obtenerGPS()" style="background-color: #0072ff; color: #fff; font-weight: bold; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-family: monospace;">
+                🛰️ Sincronizar GPS Satelital Automático
+            </button>
+        </div>
+        <script>
+        function obtenerGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+                    window.parent.location.href = window.parent.location.origin + window.parent.location.pathname + "?lat=" + lat + "&lon=" + lon;
+                }, function(error) {
+                    alert("⚠️ No se pudo obtener la ubicación GPS.");
+                });
+            } else {
+                alert("Geolocalización no soportada en este navegador.");
+            }
+        }
+        </script>
+        """
+        components.html(script_gps, height=50)
 
         # NÚCLEO HOLOGRÁFICO Y ESCUCHA DE VOZ AUTOMÁTICA
         st.markdown("---")
@@ -185,7 +223,6 @@ if mostrar_hud:
                     inputElem.value = transcript;
                     inputElem.dispatchEvent(new Event('input', { bubbles: true }));
                     
-                    // Simular envío automático presionando Enter
                     setTimeout(function() {
                         var enterEvent = new KeyboardEvent('keydown', {
                             key: 'Enter',
@@ -205,7 +242,6 @@ if mostrar_hud:
             };
 
             recognition.onend = function() {
-                // Mantener el ciclo de escucha abierto automáticamente
                 try { recognition.start(); } catch(e) {}
             };
 
@@ -215,97 +251,5 @@ if mostrar_hud:
         """
         components.html(script_voz_continua, height=130)
 
-        # Visor Cartográfico Global
-        st.markdown("---")
-        col_m1, col_m2 = st.columns([3, 1.2])
-        with col_m1:
-            st.markdown("🌍 **Visor Satelital**")
-        with col_m2:
-            if st.button(st.session_state.modo_dia_noche, use_container_width=True):
-                st.session_state.modo_dia_noche = "☀️ Día" if st.session_state.modo_dia_noche == "🌙 Noche" else "🌙 Noche"
-                st.rerun()
-
-        filtro = "filter: brightness(0.6) invert(1) contrast(1.3) hue-rotate(200deg);" if "🌙" in st.session_state.modo_dia_noche else ""
-        
-        mapa_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-            <style>#map {{ width: 100%; height: 320px; border-radius: 6px; {filtro} }}</style>
-        </head>
-        <body style="margin:0; background:transparent;">
-            <div id="map"></div>
-            <script>
-                var map = L.map('map').setView([-33.58, -70.7], 10);
-                L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 19 }}).addTo(map);
-                L.marker([-33.7333, -70.7333]).addTo(map).bindPopup("<b>Buin (Central)</b>");
-                L.marker([-33.4489, -70.6693]).addTo(map).bindPopup("<b>Santiago Centro</b>");
-            </script>
-        </body>
-        </html>
-        """
-        components.html(mapa_html, height=340)
-
-# Historial de Chat
-for msg in st.session_state.messages:
-    if msg["role"] != "system":
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-# Interacción por Chat
-if prompt := st.chat_input("Directiva táctica..."):
-    adjunto, img_b64 = "", None
-    if archivo_subido:
-        if "image" in archivo_subido.type:
-            import base64
-            img_b64 = base64.b64encode(archivo_subido.read()).decode('utf-8')
-            adjunto = f"\n\n[Imagen adjunta: {archivo_subido.name}]"
-        else:
-            try:
-                adjunto = f"\n\n--- ARCHIVO '{archivo_subido.name}' ---\n{archivo_subido.read().decode('utf-8')}\n--- FIN ---"
-            except:
-                adjunto = f"\n\n[Archivo no legible]"
-
-    p_completo = prompt + adjunto
-    st.session_state.messages.append({"role": "user", "content": p_completo})
-    
-    with st.chat_message("user"):
-        st.markdown(prompt)
-        if archivo_subido and "image" in archivo_subido.type:
-            st.image(archivo_subido, use_column_width=True)
-
-    with st.chat_message("assistant"):
-        ph = st.empty()
-        resp = ""
-        
-        msgs_api = st.session_state.messages
-        models = [modelo, "openai/gpt-oss-120b", "qwen/qwen3.8-27b"]
-        
-        exito = False
-        for m in models:
-            try:
-                stream = client.chat.completions.create(model=m, messages=msgs_api, stream=True)
-                for chunk in stream:
-                    resp += chunk.choices[0].delta.content or ""
-                    ph.markdown(resp + "▌")
-                ph.markdown(resp)
-                exito = True
-                break
-            except:
-                continue
-        if not exito:
-            resp = "Error de enlace con los servidores de Groq, Jefa."
-            ph.markdown(resp)
-
-        if activar_voz and resp:
-            try:
-                tts = gTTS(text=resp, lang='es', slow=False)
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-                    tts.save(fp.name)
-                    st.audio(fp.name, format="audio/mp3", autoplay=True)
-            except:
-                pass
-
-    st.session_state.messages.append({"role": "assistant", "content": resp})
+        # Visor Cartográfico Global (Centrado en la posición actual de la Jefa)
+        st.markdown("
