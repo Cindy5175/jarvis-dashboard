@@ -179,7 +179,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 elif "Ciberseguridad" in protocolo_extra:
@@ -192,7 +192,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales con título optimizado para que quepa perfecto en una línea en mobile
+# Estiglios CSS generales con título optimizado
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
@@ -225,7 +225,7 @@ css_estilos = f"""
 st.markdown(css_estilos, unsafe_allow_html=True)
 st.markdown('<h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>', unsafe_allow_html=True)
 
-# ESTACIÓN DE COMANDO PRINCIPAL (Todo integrado en un bloque HTML limpio alineado a la izquierda)
+# ESTACIÓN DE COMANDO PRINCIPAL
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(
@@ -234,9 +234,9 @@ if mostrar_hud:
                 <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px;">[COMMAND STATION - C2] &nbsp;&nbsp; <b>INT:</b> {st.session_state.energia_arc}%</div>
                 
                 <div style="background-color: #0b1626; border: 1px solid #1a365d; border-radius: 10px; padding: 14px; text-align: left !important; margin-bottom: 10px;">
-                    <div style="color: {color_neon}; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; text-shadow: 0 0 6px {color_neon};">⚛️ ESTRUCTURA NEURAL C2</div>
-                    <div style="color: {color_neon}; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px;">DIAGNÓSTICO DE SISTEMAS:</div>
-                    <div style="color: #ddd; font-size: 0.85rem; line-height: 1.5;">
+                    <div style="color: {color_neon}; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; text-shadow: 0 0 6px {color_neon}; text-align: left !important;">⚛️ ESTRUCTURA NEURAL C2</div>
+                    <div style="color: {color_neon}; font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; text-align: left !important;">DIAGNÓSTICO DE SISTEMAS:</div>
+                    <div style="color: #ddd; font-size: 0.85rem; line-height: 1.5; text-align: left !important;">
                         📡 Enlace Satelital: ESTABLE (100%)<br>
                         🛡️ Escudo Cuántico: OPERATIVO<br>
                         ⚡ Reactor Core: {st.session_state.energia_arc}% de potencia<br>
