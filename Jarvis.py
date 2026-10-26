@@ -44,7 +44,7 @@ else:
 
 system_base = f"Eres J.A.R.V.I.S. Autónoma, leal y brillante. Te diriges al usuario como 'Jefa' con elegancia y estilo Tony Stark. Ubicación: {st.session_state.ubicacion_jefa} ({st.session_state.lat_lon}). Modo: {st.session_state.modo_dia_noche}."
 
-# BARRA LATERAL
+# BARRA LATERAL (Con todos los módulos tácticos organizados a la izquierda)
 with st.sidebar:
     st.markdown("### ⚙️ Centro de Comando Stark")
     mostrar_hud = st.checkbox("Mostrar Estación Holográfica", value=True)
@@ -65,8 +65,38 @@ with st.sidebar:
         st.session_state.ubicacion_jefa, st.session_state.lat_lon = "Orbital", "00.0000 00.0000"
 
     st.divider()
-    
-    # Escáner Biométrico Facial
+
+    # MÓDULOS EN BARRA LATERAL (IZQUIERDA)
+    with st.expander("🌤️ Clima & Alertas"):
+        st.metric("Temp", "18°C", "Buin")
+        st.metric("Humedad", "45%", "-2%")
+        st.metric("Viento", "12 km/h", "SSE")
+        
+    with st.expander("📈 Red & Bitácora"):
+        st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
+        st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
+
+    with st.expander("🎵 Reproductor de Música (Spotify)"):
+        spotify_html = """
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLEN7aqioXM?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        """
+        components.html(spotify_html, height=165)
+
+    with st.expander("💹 Ticker Financiero & Cripto"):
+        st.metric("Bitcoin", "$67,420 USD", "+2.4%")
+        st.metric("USDT", "$1.00 USD", "0.0%")
+        st.metric("S&P 500", "5,815 pts", "+0.8%")
+
+    with st.expander("🖥️ Telemetría de Hardware Server"):
+        st.metric("Uso CPU", "18%", "Óptimo")
+        st.metric("RAM Server", "4.2 GB", "32% Libre")
+        st.metric("Ping Neural", "14 ms", "Sincronizado")
+
+    with st.expander("📅 Agenda & Alertas de Misión"):
+        st.markdown("• **08:00 AM:** Reporte Matutino Automático Buin (Amanecer)")
+        st.markdown("• **12:00 PM:** Auditoría de red C2")
+        st.markdown("• **06:00 PM:** Respaldo de Caja Negra JSON")
+
     with st.expander("👤 Escáner Biométrico Facial"):
         foto = st.camera_input("Escanear Rostro", key="cam_biometria")
         if foto:
@@ -110,7 +140,7 @@ if not st.session_state.messages or st.session_state.messages[0]["role"] != "sys
 else:
     st.session_state.messages[0]["content"] = sys_msg
 
-# CSS optimizado con margen superior corregido para evitar solapamiento
+# CSS optimizado
 st.markdown(f"""
 <style>
 @keyframes glow {{ 0%, 100% {{ text-shadow: 0 0 5px {c_neon}, 0 0 15px {c_shadow}; }} 50% {{ text-shadow: 0 0 20px {c_neon}, 0 0 35px {c_shadow}; }} }}
@@ -120,48 +150,11 @@ st.markdown(f"""
 <h1 class="neon-title">⚛️ J.A.R.V.I.S. AI Autónoma</h1>
 """, unsafe_allow_html=True)
 
-# ESTACIÓN HUD
+# ESTACIÓN HUD (PANTALLA PRINCIPAL: SOLO VISOR SATELITAL Y ESTADO LIMPIO)
 if mostrar_hud:
     with st.container(border=True):
         st.markdown(f"**[C2 STATION]** | ⚡ INT: {st.session_state.energia_arc}%")
         st.markdown(f"📡 Satélite: OK | 🛡️ Escudo: ACTIVO | 📍 Grid: {st.session_state.ubicacion_jefa}")
-
-        with st.expander("🌤️ Clima & Alertas"):
-            cc1, cc2, cc3 = st.columns(3)
-            cc1.metric("Temp", "18°C", "Buin")
-            cc2.metric("Humedad", "45%", "-2%")
-            cc3.metric("Viento", "12 km/h", "SSE")
-            
-        with st.expander("📈 Red & Bitácora"):
-            st.line_chart(pd.DataFrame(np.random.randn(10, 2) * [5, 10] + [50, 100], columns=["Sat", "Neural"]), height=90)
-            st.session_state.notas_mision = st.text_area("Bitácora:", value=st.session_state.notas_mision, height=50)
-
-        # MÓDULO DE MÚSICA SPOTIFY TÁCTICO
-        with st.expander("🎵 Reproductor de Música (Spotify)"):
-            spotify_html = """
-            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLEN7aqioXM?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-            """
-            components.html(spotify_html, height=165)
-
-        # Ticker Financiero Táctico
-        with st.expander("💹 Ticker Financiero & Cripto"):
-            f1, f2, f3 = st.columns(3)
-            f1.metric("Bitcoin", "$67,420 USD", "+2.4%")
-            f2.metric("USDT", "$1.00 USD", "0.0%")
-            f3.metric("S&P 500", "5,815 pts", "+0.8%")
-
-        # Telemetría de Hardware
-        with st.expander("🖥️ Telemetría de Hardware Server"):
-            h1, h2, h3 = st.columns(3)
-            h1.metric("Uso CPU", "18%", "Óptimo")
-            h2.metric("RAM Server", "4.2 GB", "32% Libre")
-            h3.metric("Ping Neural", "14 ms", "Sincronizado")
-
-        # Agenda & Recordatorios de Misión
-        with st.expander("📅 Agenda & Alertas de Misión"):
-            st.markdown("• **08:00 AM:** Reporte Matutino Automático Buin (Amanecer)")
-            st.markdown("• **12:00 PM:** Auditoría de red C2")
-            st.markdown("• **06:00 PM:** Respaldo de Caja Negra JSON")
 
         # Reconocimiento de Voz Web
         st.markdown("---")
