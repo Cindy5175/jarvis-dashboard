@@ -69,7 +69,7 @@ client = Groq(api_key=groq_api_key)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Configuración de Colores según el Tema Holográfico seleccionado
+# Configuración de Colores instantáneos según el Tema Holográfico seleccionado
 if "Azul" in st.session_state.tema_hud:
     color_neon = "#00d2ff"
     shadow_neon = "#0072ff"
@@ -90,7 +90,15 @@ with st.sidebar:
     st.divider()
     
     st.markdown("### 🛠️ Módulos Tácticos")
-    st.session_state.tema_hud = st.selectbox("Tema Holográfico HUD:", ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], index=0)
+    
+    # Selector con respuesta inmediata gracias a on_change=st.rerun
+    st.selectbox(
+        "Tema Holográfico HUD:", 
+        ["Azul Arc", "Rojo Mark VII", "Verde Sigilo"], 
+        key="tema_hud",
+        on_change=lambda: st.rerun()
+    )
+    
     estilo_voz = st.selectbox("Selector Estilo de Voz:", ["Táctico Estándar", "Formal / Robótico", "Fluido Rápido"], index=0)
     
     opciones_preset = ["Buin (Base Central)", "Santiago Centro", "Estación Orbital Norte"]
@@ -213,7 +221,7 @@ with st.sidebar:
 # Definir instrucción del sistema complementada
 prompt_protocolo_extra = ""
 if "Auditoría" in protocolo_extra:
-    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y proposes mejoras con rigor técnico e ironía Stark]."
+    prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Activa protocolo de auditoría profunda de arquitectura de software y código Streamlit. Diagnostica componentes, cuellos de botella y propone mejoras con rigor técnico e ironía Stark]."
 elif "Resumen" in protocolo_extra:
     prompt_protocolo_extra = " [DIRECTIVA ACTIVA: Entrega siempre respuestas ultra resumidas, directas al grano y estructuradas en viñetas ejecutivas]."
 elif "Ciberseguridad" in protocolo_extra:
@@ -226,7 +234,7 @@ if len(st.session_state.messages) == 0 or st.session_state.messages[0]["role"] !
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# Estilos CSS generales corregidos (margen superior positivo para evitar el corte en notebooks)
+# Estilos CSS generales con actualización instantánea de colores neón
 css_estilos = f"""
 <style>
 @keyframes neonGlow {{
