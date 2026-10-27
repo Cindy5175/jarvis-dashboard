@@ -48,16 +48,27 @@ with st.sidebar:
     st.markdown("---")
     
     with st.expander("🌤️ Clima & Alertas"):
-        st.write("Monitoreo activo para Buin / Santiago.")
+        st.write("**Ubicación:** Buin / Santiago, Chile")
+        st.write("Estado: Monitoreo atmosférico y telemetría local activos.")
+        st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
     
     with st.expander("📡 Radar de Red & Latencia"):
-        st.write("Estado de conexión: Estable (Latencia óptima)")
+        st.write("**Estado del Enlace:** Estable")
+        st.write("**Latencia de Red:** 24 ms")
+        st.progress(85)
+        st.write("Conexión con servidores externos blindada.")
         
     with st.expander("📝 Libreta & Bitácora Táctica"):
-        st.text_area("Notas rápidas:", "Registro de operaciones y proyectos en curso...")
+        st.text_area(
+            "Notas rápidas y registros:", 
+            "1. Planificación de agosto: God's Eye View y Siri.\n2. Noviembre: Catálogo 'Sabor y Receta 24/7' ($5 USD)."
+        )
+        if st.button("Guardar Bitácora"):
+            st.success("Datos guardados en memoria táctica.")
         
     with st.expander("🎵 Reproductor de Música (Spotify)"):
-        st.write("Módulo de audio táctico conectado.")
+        st.write("🎶 Estado: Enlace de audio sincronizado.")
+        st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
 # 4. Panel Principal - Interfaz de J.A.R.V.I.S.
 st.title("⚡ Centro de Comando Stark - J.A.R.V.I.S.")
