@@ -1,4 +1,5 @@
 streamlit
 groq
 gtts
-fpdf
+yfinance
+audio-recorder-streamlit
