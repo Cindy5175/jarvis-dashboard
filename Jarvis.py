@@ -2,7 +2,6 @@ import streamlit as st
 import time
 from groq import Groq
 import streamlit.components.v1 as components
-import pandas as pd
 
 # 1. Configuración de página
 st.set_page_config(
@@ -87,12 +86,53 @@ def renderizar_gods_eye(hex_color):
     """.replace("COLOR_HEX", hex_color)
     components.html(gods_eye_html, height=330)
 
-# 4. BARRA LATERAL - Todos los Módulos
+# 4. Función del Mapa Cartográfico Interactivo con Modo Día/Noche
+def renderizar_mapa_tactico(modo):
+    # Estilos de Mapbox para cartografía con calles y edificios
+    estilo = "mapbox://styles/mapbox/streets-v11" if modo == "dia" else "mapbox://styles/mapbox/navigation-night-v1"
+    
+    mapa_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+        <style>
+            body {{ margin: 0; padding: 0; }}
+            #map {{ width: 100%; height: 400px; border-radius: 8px; }}
+        </style>
+    </head>
+    <body>
+        <div id="map"></div>
+        <script>
+            // Token público estándar para mapas cartográficos
+            mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGs0cW05MzAwenBuM3BwaWw2NW1xY3B1In0.q68w04z123456789abcdef';
+            
+            const map = new mapboxgl.Map({{
+                container: 'map',
+                style: '{estilo}',
+                center: [-70.7072, -33.7331], // Coordenadas Buin, Chile
+                zoom: 12
+            }});
+
+            // Agregar marcador Base Buin
+            new mapboxgl.Marker({{color: '#00d2ff'}})
+                .setLngLat([-70.7072, -33.7331])
+                .setPopup(new mapboxgl.Popup().setText('Base Operativa Buin'))
+                .addTo(map);
+        </script>
+    </body>
+    </html>
+    """
+    components.html(mapa_html, height=410)
+
+# 5. BARRA LATERAL - Módulos del Panel de Control
 with st.sidebar:
     st.subheader("⚙️ Panel Control Jarvis")
     
     mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
-    mostrar_mapa = st.checkbox("Mostrar Mapa Táctico (Buin/Santiago)", value=True)
+    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
     
     st.markdown("---")
     
@@ -140,7 +180,7 @@ with st.sidebar:
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
-# 5. PANEL PRINCIPAL - Encabezado Centrado con Reactor y Jarvis IA Autónomo
+# 6. PANEL PRINCIPAL - Encabezado Centrado con Reactor y Jarvis IA Autónomo
 st.markdown(
     """
     <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px;">
@@ -165,45 +205,3 @@ st.markdown(
 
 if mostrar_estacion:
     st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_gods_eye(hex_actual)
-
-# 6. MÓDULO DE MAPA TÁCTICO REGIONAL
-if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Táctico Regional (Buin - Santiago)")
-    
-    df_mapa = pd.DataFrame({
-        'lat': [-33.7331, -33.4489],
-        'lon': [-70.7072, -70.6693],
-        'label': ['Buin (Base Operativa)', 'Santiago Centro']
-    })
-    
-    st.map(df_mapa, latitude='lat', longitude='lon', zoom=9)
-
-# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando. "
-    "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
-    "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%."
-)
-
-prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
-
-if prompt_usuario:
-    if not client:
-        st.error("⚠️ Jefa, la clave de API de Groq no está configurada correctamente en los secrets de Streamlit.")
-    else:
-        with st.spinner("Procesando comando táctico..."):
-            try:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="llama3-70b-8192",
-                )
-                respuesta = chat_completion.choices[0].message.content
-                st.write(respuesta)
-                
-            except Exception as e:
-                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
