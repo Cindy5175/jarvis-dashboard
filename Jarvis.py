@@ -23,7 +23,7 @@ def obtener_cliente_groq():
 
 client = obtener_cliente_groq()
 
-# 3. Función del Visor Holográfico 3D con Conexión Sísmica Mundial y Clic Interactivo
+# 3. Función del Visor Holográfico 3D con Telemetría Sísmica y Enlace de Cámaras Globales
 def renderizar_gods_eye(hex_color):
     gods_eye_html = """
     <!DOCTYPE html>
@@ -46,12 +46,20 @@ def renderizar_gods_eye(hex_color):
                 background: rgba(0,0,0,0.7); padding: 3px 6px; border-radius: 3px;
                 z-index: 10;
             }
+            #cam-link {
+                position: absolute; top: 10px; right: 10px;
+                font-family: monospace; color: #ffffff; font-size: 10px;
+                background: rgba(0, 150, 255, 0.6); padding: 4px 8px; border-radius: 4px;
+                text-decoration: none; z-index: 10; border: 1px solid #00d2ff;
+            }
+            #cam-link:hover { background: rgba(0, 210, 255, 0.9); }
         </style>
     </head>
     <body>
-        <div id="canvas-container" title="Haga clic para alternar modo de escaneo sísmico global">
-            <div id="hud-text">GOD's EYE VIEW // RED SÍSMICA GLOBAL & ESTACIÓN BUIN</div>
-            <div id="seismic-hud">Conectando a red sísmica mundial...</div>
+        <div id="canvas-container" title="Haga clic para alternar protocolo de escaneo táctico">
+            <div id="hud-text">GOD's EYE VIEW // RED SÍSMICA GLOBAL & CÁMARAS EN VIVO</div>
+            <div id="seismic-hud">Sincronizando telemetría mundial...</div>
+            <a id="cam-link" href="https://www.windy.com/-Webcams/Chile/Santiago/Santiago/webcams/1423152643" target="_blank">📹 Ver Cámaras Globales</a>
         </div>
         <script>
             try {
@@ -82,27 +90,30 @@ def renderizar_gods_eye(hex_color):
                 let velocidadRotacion = 0.004;
                 let modoAlerta = false;
 
+                // Consulta de sismos en tiempo real (USGS)
                 fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.geojson')
                     .then(response => response.json())
                     .then(data => {
                         const sismos = data.features;
                         if (sismos.length > 0) {
                             const ultimo = sismos[0].properties;
-                            seismicHud.innerText = `⚠️ SÍSMICO GLOBAL: M${ultimo.mag} - ${ultimo.place}`;
-                            velocidadRotacion = 0.015;
+                            seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${ultimo.mag} - ${ultimo.place}`;
+                            velocidadRotacion = 0.02;
                             line.material.color.set('#ff3333');
                         } else {
-                            seismicHud.innerText = `🟢 RED GLOBAL ESTABLE - SIN ALERTAS MAYORES`;
+                            seismicHud.innerText = `🟢 RED GLOBAL ESTABLE - BUIN / SANTIAGO OPERATIVO`;
                         }
                     })
                     .catch(err => {
-                        seismicHud.innerText = `📡 TELEMETRÍA ACTIVA // BUIN - SANTIAGO`;
+                        seismicHud.innerText = `📡 TELEMETRÍA TÁCTICA ACTIVA // BUIN`;
                     });
 
-                container.addEventListener('click', () => {
+                container.addEventListener('click', (e) => {
+                    // Evitar que el clic abra el link si solo quieren rotar la esfera
+                    if (e.target.id === 'cam-link') return;
                     modoAlerta = !modoAlerta;
-                    velocidadRotacion = modoAlerta ? 0.03 : 0.004;
-                    seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO TÁCTICO PROFUNDO ACTIVO" : "🟢 ESTACIÓN EN ESPERA";
+                    velocidadRotacion = modoAlerta ? 0.035 : 0.004;
+                    seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO SÍSMICO PROFUNDO ACTIVADO" : "🟢 ESTACIÓN EN ESPERA";
                 });
 
                 function animate() {
@@ -277,26 +288,4 @@ prompt_sistema_jarvis = (
     "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando. "
     "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
     "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%."
-)
-
-prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
-
-if prompt_usuario:
-    if not client:
-        st.error("⚠️ Jefa, la clave de API de Groq no está configurada correctamente en los secrets de Streamlit.")
-    else:
-        with st.spinner("Procesando comando táctico..."):
-            try:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="llama3-70b-8192",
-                )
-                respuesta = chat_completion.choices[0].message.content
-                st.write(respuesta)
-                
-            except Exception as e:
-                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
+    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%
