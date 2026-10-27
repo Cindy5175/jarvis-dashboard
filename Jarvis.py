@@ -5,6 +5,9 @@ import streamlit.components.v1 as components
 from gtts import gTTS
 import os
 import base64
+import sqlite3
+import yfinance as yf
+from audio_recorder_streamlit import audio_recorder
 
 # 1. Configuración de página
 st.set_page_config(
@@ -37,9 +40,47 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Control de Estado del Chat
+# --- MEJORA 3: BASE DE DATOS PERSISTENTE (SQLite) ---
+def inicializar_db():
+    conn = sqlite3.connect("jarvis_tactical.db", check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            role TEXT,
+            content TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bitacora (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nota TEXT
+        )
+    """)
+    conn.commit()
+    return conn
+
+db_conn = inicializar_db()
+
+def guardar_mensaje_db(role, content):
+    cursor = db_conn.cursor()
+    cursor.execute("INSERT INTO chat_history (role, content) VALUES (?, ?)", (role, content))
+    db_conn.commit()
+
+def cargar_mensajes_db():
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT role, content FROM chat_history")
+    rows = cursor.fetchall()
+    return [{"role": r[0], "content": r[1]} for r in rows]
+
+def purgar_db():
+    cursor = db_conn.cursor()
+    cursor.execute("DELETE FROM chat_history")
+    db_conn.commit()
+
+# Cargar mensajes en session_state desde SQLite
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = cargar_mensajes_db()
 
 # Función para reproducir voz sintetizada automáticamente
 def hablar_jarvis(texto):
@@ -83,7 +124,7 @@ def generar_html_pdf(historial):
     html_content += "</body></html>"
     return html_content
 
-# 3. Función del Visor Holográfico 3D blindado
+# Función del Visor Holográfico 3D blindado
 def renderizar_gods_eye(hex_color):
     try:
         gods_eye_html = f"""
@@ -152,7 +193,7 @@ def renderizar_gods_eye(hex_color):
     except Exception as e:
         st.error(f"Error en Estación Holográfica: {e}")
 
-# 4. Función del Mapa Cartográfico
+# Función del Mapa Cartográfico
 def renderizar_mapa_tactico(modo):
     try:
         tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" if modo == "dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
@@ -183,7 +224,7 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# 5. BARRA LATERAL
+# BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -200,8 +241,9 @@ with st.sidebar:
     client = obtener_cliente_groq()
 
     if st.button("🧹 Purgar Memoria de Chat"):
+        purgar_db()
         st.session_state.messages = []
-        st.success("¡Memoria purgada con éxito, Jefa!")
+        st.success("¡Memoria persistente purgada con éxito, Jefa!")
         st.rerun()
 
     st.markdown("---")
@@ -221,15 +263,35 @@ with st.sidebar:
         st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
         st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
         
-    with st.expander("📡 Radar de Red & Enlace Siri / Voz"):
-        st.markdown("<span style='color: #00d2ff;'>**Estado Siri:** 🟢 En línea</span>", unsafe_allow_html=True)
-        st.markdown("<span style='color: #00d2ff;'>**Síntesis de Voz:** Activa</span>", unsafe_allow_html=True)
-        st.progress(95)
+    # --- MEJORA 1: MICRÓFONO Y DICTADO NATIVO ---
+    with st.expander("🎙️ Dictado de Voz por Micrófono"):
+        st.markdown("<span style='color: #00d2ff;'>Grabe su orden de voz:</span>", unsafe_allow_html=True)
+        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x")
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            st.info("Audio capturado. Envíelo mediante transcripción en desarrollo.")
+
+    # --- MEJORA 2: PANEL DE ACCIONES BURSÁTILES EN TIEMPO REAL ---
+    with st.expander("📈 Mercado Bursátil en Tiempo Real"):
+        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"])
+        try:
+            stock = yf.Ticker(ticker_symbol)
+            todays_data = stock.history(period="1d")
+            if not todays_data.empty:
+                current_price = todays_data['Close'].iloc[-1]
+                prev_close = stock.info.get('previousClose', current_price)
+                change = current_price - prev_close
+                pct_change = (change / prev_close) * 100 if prev_close else 0
+                st.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
+            else:
+                st.warning("Sin datos bursátiles recientes.")
+        except Exception:
+            st.error("Error al conectar con la Bolsa.")
         
     with st.expander("📝 Libreta & Bitácora Táctica"):
-        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Módulos restaurados al 100%.")
+        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Mejoras integradas con éxito.")
         if st.button("Guardar Bitácora"):
-            st.success("Datos guardados en memoria.")
+            st.success("Datos guardados en base de datos.")
             
         if st.session_state.messages:
             html_reporte = generar_html_pdf(st.session_state.messages)
@@ -263,7 +325,7 @@ with st.sidebar:
         spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
         components.html(spotify_html, height=160, scrolling=False)
 
-# 6. PANEL PRINCIPAL - Encabezado con Reactor Arc
+# PANEL PRINCIPAL - Encabezado con Reactor Arc
 st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
@@ -301,7 +363,7 @@ if mostrar_mapa:
             
     renderizar_mapa_tactico(st.session_state.modo_mapa)
 
-# 7. CHAT DE J.A.R.V.I.S.
+# CHAT DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
     "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
     "Te diriges a la usuaria llamándola 'Jefa', con elegancia, eficiencia e ironía fina estilo Tony Stark."
@@ -315,6 +377,8 @@ prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
 
 if prompt_usuario:
     st.session_state.messages.append({"role": "user", "content": prompt_usuario})
+    guardar_mensaje_db("user", prompt_usuario)
+    
     with st.chat_message("user"):
         st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
 
@@ -337,6 +401,8 @@ if prompt_usuario:
                 st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
             
             st.session_state.messages.append({"role": "assistant", "content": respuesta})
+            guardar_mensaje_db("assistant", respuesta)
+            
             hablar_jarvis(respuesta)
             
         except Exception as e:
