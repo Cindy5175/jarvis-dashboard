@@ -13,6 +13,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Estilos globales para forzar el azul neón en textos clave
+st.markdown("""
+    <style>
+    h1, h2, h3, h4, h5, h6, span.neon-title {
+        color: #00d2ff !important;
+        text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+    }
+    .stMarkdown p, label {
+        color: #e0f7ff !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # 2. Inicialización de cliente Groq seguro
 @st.cache_resource
 def obtener_cliente_groq():
@@ -133,7 +146,7 @@ def renderizar_gods_eye(hex_color):
                     modoAlerta = !modoAlerta;
                     velocidadRotacion = modoAlerta ? 0.035 : 0.004;
                     seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO SÍSMICO PROFUNDO ACTIVADO" : "🟢 ESTACIÓN EN ESPERA";
-                }});
+                });
 
                 function animate() {{
                     requestAnimationFrame(animate);
@@ -182,14 +195,14 @@ def renderizar_mapa_tactico(modo):
 
 # 5. BARRA LATERAL
 with st.sidebar:
-    st.subheader("⚙️ Panel Control J.A.R.V.I.S.")
+    st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
     mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
     mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
     
     st.markdown("---")
     
-    tema_hud = st.selectbox("Tema HUD:", ["Rojo Cobre/Terracota", "Azul Arc", "Grafito Oscuro"])
+    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
     color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
     hex_actual = color_map.get(tema_hud, "#00d2ff")
     
@@ -231,7 +244,7 @@ st.markdown(
                 filter: drop-shadow(0 0 5px #00d2ff);
             "></div>
         </div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">J.A.R.V.I.S. IA Autónomo</h1>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
     </div>
     <style>
     @keyframes pulse-arc {
@@ -291,7 +304,7 @@ if prompt_usuario:
             else:
                 respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
             
-            st.write(respuesta)
+            st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
             hablar_jarvis(respuesta)
             
         except Exception as e:
