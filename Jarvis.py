@@ -38,6 +38,7 @@ def renderizar_gods_eye(hex_color):
                 font-family: monospace; color: COLOR_HEX; font-size: 11px;
                 background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
                 border: 1px solid COLOR_HEX;
+                z-index: 10;
             }
         </style>
     </head>
@@ -86,18 +87,21 @@ def renderizar_gods_eye(hex_color):
     """.replace("COLOR_HEX", hex_color)
     components.html(gods_eye_html, height=330)
 
-# 4. Función del Mapa Cartográfico Interactivo con Modo Día/Noche
+# 4. Función del Mapa Cartográfico con Leaflet (Calles, Edificios y Modo Día/Noche real)
 def renderizar_mapa_tactico(modo):
-    # Estilos de Mapbox para cartografía con calles y edificios
-    estilo = "mapbox://styles/mapbox/streets-v11" if modo == "dia" else "mapbox://styles/mapbox/navigation-night-v1"
+    tile_layer = (
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+        if modo == "dia" 
+        else "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    )
     
     mapa_html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
-        <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-        <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <style>
             body {{ margin: 0; padding: 0; }}
             #map {{ width: 100%; height: 400px; border-radius: 8px; }}
@@ -106,28 +110,26 @@ def renderizar_mapa_tactico(modo):
     <body>
         <div id="map"></div>
         <script>
-            // Token público estándar para mapas cartográficos
-            mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGs0cW05MzAwenBuM3BwaWw2NW1xY3B1In0.q68w04z123456789abcdef';
+            const map = L.map('map').setView([-33.7331, -70.7072], 12);
             
-            const map = new mapboxgl.Map({{
-                container: 'map',
-                style: '{estilo}',
-                center: [-70.7072, -33.7331], // Coordenadas Buin, Chile
-                zoom: 12
-            }});
+            L.tileLayer('{tile_layer}', {{
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }}).addTo(map);
 
-            // Agregar marcador Base Buin
-            new mapboxgl.Marker({{color: '#00d2ff'}})
-                .setLngLat([-70.7072, -33.7331])
-                .setPopup(new mapboxgl.Popup().setText('Base Operativa Buin'))
-                .addTo(map);
+            L.marker([-33.7331, -70.7072]).addTo(map)
+                .bindPopup('<b>Base Operativa Buin</b><br>Telemetría activa.')
+                .openPopup();
+
+            L.marker([-33.4489, -70.6693]).addTo(map)
+                .bindPopup('<b>Santiago Centro</b><br>Grid Táctico.');
         </script>
     </body>
     </html>
     """
     components.html(mapa_html, height=410)
 
-# 5. BARRA LATERAL - Módulos del Panel de Control
+# 5. BARRA LATERAL
 with st.sidebar:
     st.subheader("⚙️ Panel Control Jarvis")
     
@@ -205,3 +207,52 @@ st.markdown(
 
 if mostrar_estacion:
     st.markdown("### 🌐 Estación Holográfica God's Eye View")
+    renderizar_gods_eye(hex_actual)
+
+# 7. MÓDULO DE MAPA CARTOGRÁFICO CON BOTONES DE DÍA Y NOCHE OPERATIVOS
+if mostrar_mapa:
+    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
+    
+    if "modo_mapa" not in st.session_state:
+        st.session_state.modo_mapa = "noche"
+        
+    col_d, col_n, _ = st.columns([1, 1, 4])
+    with col_d:
+        if st.button("☀️ Modo Día"):
+            st.session_state.modo_mapa = "dia"
+            st.rerun()
+    with col_n:
+        if st.button("🌙 Modo Noche"):
+            st.session_state.modo_mapa = "noche"
+            st.rerun()
+            
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
+
+# 8. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
+prompt_sistema_jarvis = (
+    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando. "
+    "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
+    "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
+    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%."
+)
+
+prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
+
+if prompt_usuario:
+    if not client:
+        st.error("⚠️ Jefa, la clave de API de Groq no está configurada correctamente en los secrets de Streamlit.")
+    else:
+        with st.spinner("Procesando comando táctico..."):
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": prompt_sistema_jarvis},
+                        {"role": "user", "content": prompt_usuario}
+                    ],
+                    model="llama3-70b-8192",
+                )
+                respuesta = chat_completion.choices[0].message.content
+                st.write(respuesta)
+                
+            except Exception as e:
+                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
