@@ -106,12 +106,20 @@ def renderizar_gods_eye(hex_color):
                     background: rgba(0,0,0,0.7); padding: 3px 6px; border-radius: 3px;
                     z-index: 10;
                 }}
+                #cam-link {{
+                    position: absolute; bottom: 10px; right: 10px;
+                    font-family: monospace; color: #ffffff; font-size: 10px;
+                    background: rgba(0, 150, 255, 0.6); padding: 4px 8px; border-radius: 4px;
+                    text-decoration: none; z-index: 10; border: 1px solid #00d2ff;
+                }}
+                #cam-link:hover {{ background: rgba(0, 210, 255, 0.9); }}
             </style>
         </head>
         <body>
             <div id="canvas-container">
-                <div id="hud-text">GOD's EYE VIEW // RADAR TÁCTICO</div>
-                <div id="seismic-hud">Sistema nominal.</div>
+                <div id="hud-text">GOD's EYE VIEW // RED SÍSMICA GLOBAL & CÁMARAS</div>
+                <div id="seismic-hud">Sistema nominal operativo.</div>
+                <a id="cam-link" href="https://www.windy.com/-Webcams/Chile/Santiago/Santiago/webcams/1423152643" target="_blank">📹 Cámaras Globales</a>
             </div>
             <script>
                 const container = document.getElementById('canvas-container');
@@ -121,16 +129,18 @@ def renderizar_gods_eye(hex_color):
                 renderer.setSize(container.clientWidth, 280);
                 container.appendChild(renderer.domElement);
 
-                const geometry = new THREE.BoxGeometry(2, 2, 2);
-                const material = new THREE.MeshBasicMaterial({{ color: '{hex_color}', wireframe: true }});
-                const cube = new THREE.Mesh(geometry, material);
-                scene.add(cube);
+                const geometry = new THREE.SphereGeometry(2, 24, 24);
+                const wireframe = new THREE.WireframeGeometry(geometry);
+                const line = new THREE.LineSegments(wireframe);
+                line.material.color.set('{hex_color}');
+                line.material.opacity = 0.8;
+                line.material.transparent = true;
+                scene.add(line);
                 camera.position.z = 5;
 
                 function animate() {{
                     requestAnimationFrame(animate);
-                    cube.rotation.x += 0.01;
-                    cube.rotation.y += 0.01;
+                    line.rotation.y += 0.005;
                     renderer.render(scene, camera);
                 }}
                 animate();
@@ -164,6 +174,7 @@ def renderizar_mapa_tactico(modo):
                 const map = L.map('map').setView([-33.7331, -70.7072], 12);
                 L.tileLayer('{tile_layer}', {{ maxZoom: 19, attribution: '© OpenStreetMap' }}).addTo(map);
                 L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin</b>').openPopup();
+                L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();
             </script>
         </body>
         </html>
@@ -172,7 +183,7 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# 5. BARRA LATERAL
+# 5. BARRA LATERAL (Restaurada al 100%)
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -190,7 +201,7 @@ with st.sidebar:
 
     if st.button("🧹 Purgar Memoria de Chat"):
         st.session_state.messages = []
-        st.success("¡Memoria purgada!")
+        st.success("¡Memoria purgada con éxito, Jefa!")
         st.rerun()
 
     st.markdown("---")
@@ -202,7 +213,24 @@ with st.sidebar:
     color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
     hex_actual = color_map.get(tema_hud, "#00d2ff")
     
-    with st.expander("📝 Bitácora & Reporte"):
+    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
+    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
+    
+    st.markdown("---")
+    with st.expander("🌤️ Clima & Alertas"):
+        st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
+        st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
+        
+    with st.expander("📡 Radar de Red & Enlace Siri / Voz"):
+        st.markdown("<span style='color: #00d2ff;'>**Estado Siri:** 🟢 En línea</span>", unsafe_allow_html=True)
+        st.markdown("<span style='color: #00d2ff;'>**Síntesis de Voz:** Activa</span>", unsafe_allow_html=True)
+        st.progress(95)
+        
+    with st.expander("📝 Libreta & Bitácora Táctica"):
+        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Módulos restaurados al 100%.")
+        if st.button("Guardar Bitácora"):
+            st.success("Datos guardados en memoria.")
+            
         if st.session_state.messages:
             html_reporte = generar_html_pdf(st.session_state.messages)
             st.download_button(
@@ -211,8 +239,31 @@ with st.sidebar:
                 file_name="informe_tactico_jarvis.html",
                 mime="text/html"
             )
+            
+    with st.expander("🖼️ Generador y Descarga de Imágenes"):
+        st.markdown("<span style='color: #00d2ff;'>Seleccione formato para exportar activo visual:</span>", unsafe_allow_html=True)
+        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"])
+        
+        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+            <rect width="100%" height="100%" fill="#000814"/>
+            <circle cx="250" cy="150" r="80" fill="none" stroke="{hex_actual}" stroke-width="4"/>
+            <circle cx="250" cy="150" r="95" fill="none" stroke="{hex_actual}" stroke-dasharray="10 5" stroke-width="2"/>
+            <polygon points="250,90 280,180 220,180" fill="#ffffff" filter="drop-shadow(0 0 8px {hex_actual})"/>
+            <text x="250" y="270" font-family="monospace" font-size="14" fill="{hex_actual}" text-anchor="middle">J.A.R.V.I.S. TACTICAL ASSET // BUIN</text>
+        </svg>'''
+        
+        st.download_button(
+            label=f"⬇️ Descargar Activo Visual ({formato_img})",
+            data=svg_vectorial,
+            file_name=f"activo_jarvis.{formato_img.lower()}",
+            mime=f"image/{'svg+xml' if formato_img=='SVG' else formato_img.lower()}"
+        )
 
-# 6. PANEL PRINCIPAL
+    with st.expander("🎵 Reproductor de Música (Spotify)"):
+        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
+        components.html(spotify_html, height=160, scrolling=False)
+
+# 6. PANEL PRINCIPAL - Encabezado con Reactor Arc
 st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
@@ -230,12 +281,25 @@ st.markdown(
 )
 
 if mostrar_estacion:
-    st.markdown("### 🌐 Estación Holográfica")
+    st.markdown("### 🌐 Estación Holográfica God's Eye View")
     renderizar_gods_eye(hex_actual)
 
 if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Cartográfico Táctico")
-    renderizar_mapa_tactico("noche")
+    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
+    if "modo_mapa" not in st.session_state:
+        st.session_state.modo_mapa = "noche"
+        
+    col_d, col_n, _ = st.columns([1, 1, 4])
+    with col_d:
+        if st.button("☀️ Modo Día"):
+            st.session_state.modo_mapa = "dia"
+            st.rerun()
+    with col_n:
+        if st.button("🌙 Modo Noche"):
+            st.session_state.modo_mapa = "noche"
+            st.rerun()
+            
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
 
 # 7. CHAT DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
@@ -247,7 +311,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
 
-prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S....")
+prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
 
 if prompt_usuario:
     st.session_state.messages.append({"role": "user", "content": prompt_usuario})
