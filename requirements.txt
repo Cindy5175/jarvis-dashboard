@@ -1,5 +1,9 @@
 streamlit
 groq
 gtts
+sqlite3
 yfinance
+requests
 audio-recorder-streamlit
+pytz
+psutil
