@@ -87,13 +87,14 @@ def renderizar_gods_eye(hex_color):
     """.replace("COLOR_HEX", hex_color)
     components.html(gods_eye_html, height=330)
 
-# 4. Función del Mapa Cartográfico con Leaflet (Calles, Edificios y Modo Día/Noche real)
+# 4. Función del Mapa Cartográfico con Leaflet (Modo Día y Modo Noche libre de APIs)
 def renderizar_mapa_tactico(modo):
-    tile_layer = (
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-        if modo == "dia" 
-        else "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    )
+    # Usamos capas públicas y libres de restricciones para Día y Noche
+    if modo == "dia":
+        tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    else:
+        # Capa nocturna oscura de Stamen / OpenStreetMap gratuita
+        tile_layer = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" if False else "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
     
     mapa_html = f"""
     <!DOCTYPE html>
@@ -114,7 +115,7 @@ def renderizar_mapa_tactico(modo):
             
             L.tileLayer('{tile_layer}', {{
                 maxZoom: 19,
-                attribution: '© OpenStreetMap'
+                attribution: '© OpenStreetMap & Stadia Maps'
             }}).addTo(map);
 
             L.marker([-33.7331, -70.7072]).addTo(map)
