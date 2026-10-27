@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 from groq import Groq
-import google.generativeai as genai
 import streamlit.components.v1 as components
 from gtts import gTTS
 import os
@@ -14,28 +13,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Inicialización segura de Clientes (Groq + Gemini)
+# 2. Inicialización de cliente Groq seguro
 @st.cache_resource
-def obtener_clientes():
-    clientes = {"groq": None, "gemini": None}
+def obtener_cliente_groq():
     try:
-        groq_key = st.secrets.get("GROQ_API_KEY", "")
-        if groq_key:
-            clientes["groq"] = Groq(api_key=groq_key, timeout=10.0)
+        api_key = st.secrets.get("GROQ_API_KEY", "")
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
     except Exception:
-        pass
+        return None
 
-    try:
-        gemini_key = st.secrets.get("GEMINI_API_KEY", "")
-        if gemini_key:
-            genai.configure(api_key=gemini_key)
-            clientes["gemini"] = genai.GenerativeModel("gemini-1.5-pro")
-    except Exception:
-        pass
-        
-    return clientes
-
-clients = obtener_clientes()
+client = obtener_cliente_groq()
 
 # Función para reproducir voz sintetizada automáticamente
 def hablar_jarvis(texto):
@@ -204,7 +193,6 @@ with st.sidebar:
     color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
     hex_actual = color_map.get(tema_hud, "#00d2ff")
     
-    motor_ia = st.selectbox("Motor IA Principal:", ["Groq (Llama 3)", "Google Gemini Pro"])
     protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
     grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
     
@@ -291,12 +279,8 @@ if prompt_usuario:
     respuesta = ""
     with st.spinner("Procesando comando táctico..."):
         try:
-            if motor_ia == "Google Gemini Pro" and clients["gemini"]:
-                chat = clients["gemini"].start_chat(history=[])
-                response = chat.send_message(f"{prompt_sistema_jarvis}\n\nComando de la Jefa: {prompt_usuario}")
-                respuesta = response.text
-            elif clients["groq"]:
-                chat_completion = clients["groq"].chat.completions.create(
+            if client:
+                chat_completion = client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": prompt_sistema_jarvis},
                         {"role": "user", "content": prompt_usuario}
@@ -305,7 +289,7 @@ if prompt_usuario:
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
-                respuesta = "Jefa, no hay ninguna llave de API configurada en los secrets para procesar su orden. ¿Desea que fabrique una con un destornillador sónico?"
+                respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
             
             st.write(respuesta)
             hablar_jarvis(respuesta)
