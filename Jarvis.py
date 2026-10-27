@@ -5,6 +5,7 @@ import streamlit.components.v1 as components
 from gtts import gTTS
 import os
 import base64
+from fpdf import FPDF
 
 # 1. Configuración de página
 st.set_page_config(
@@ -50,6 +51,10 @@ def obtener_cliente_groq():
 
 client = obtener_cliente_groq()
 
+# Control de Estado del Chat (Memoria Volátil)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 # Función para reproducir voz sintetizada automáticamente
 def hablar_jarvis(texto):
     try:
@@ -67,6 +72,27 @@ def hablar_jarvis(texto):
             st.markdown(audio_html, unsafe_allow_html=True)
     except Exception:
         pass
+
+# Función para generar PDF de bitácora o chat
+def generar_pdf(historial):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.set_text_color(0, 100, 150)
+    pdf.cell(200, 10, txt="CENTRO DE COMANDO J.A.R.V.I.S. - INFORME TÁCTICO", ln=True, align="C")
+    pdf.ln(10)
+    pdf.set_font("Arial", size=10)
+    pdf.set_text_color(0, 0, 0)
+    
+    for msg in historial:
+        rol = "Jefa" if msg["role"] == "user" else "J.A.R.V.I.S."
+        texto = f"{rol}: {msg['content']}"
+        pdf.multi_cell(0, 8, txt=texto)
+        pdf.ln(4)
+        
+    pdf_path = "reporte_tactico_jarvis.pdf"
+    pdf.output(pdf_path)
+    return pdf_path
 
 # 3. Función del Visor Holográfico 3D
 def renderizar_gods_eye(hex_color):
@@ -211,6 +237,14 @@ def renderizar_mapa_tactico(modo):
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
+    # Botón de Purga del Chat
+    if st.button("🧹 Purgar Memoria de Chat"):
+        st.session_state.messages = []
+        st.success("¡Memoria de chat purgada con éxito, Jefa!")
+        st.rerun()
+
+    st.markdown("---")
+    
     mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
     mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
     
@@ -235,6 +269,19 @@ with st.sidebar:
         st.text_area("Notas rápidas:", "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre.")
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en memoria táctica.")
+            
+        # Módulo de Descarga PDF
+        if st.session_state.messages:
+            if st.button("📄 Exportar Chat a PDF"):
+                archivo_pdf = generar_pdf(st.session_state.messages)
+                with open(archivo_pdf, "rb") as f:
+                    st.download_button(
+                        label="⬇️ Descargar Reporte PDF",
+                        data=f,
+                        file_name="informe_jarvis.pdf",
+                        mime="application/pdf"
+                    )
+                    
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
         components.html(spotify_html, height=160, scrolling=False)
@@ -251,76 +298,3 @@ st.markdown(
             display: flex; justify-content: center; align-items: center;
             animation: pulse-arc 2s infinite;
         ">
-            <div style="
-                width: 0; height: 0; 
-                border-left: 8px solid transparent;
-                border-right: 8px solid transparent;
-                border-bottom: 14px solid #ffffff;
-                filter: drop-shadow(0 0 5px #00d2ff);
-            "></div>
-        </div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
-    </div>
-    <style>
-    @keyframes pulse-arc {
-        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
-        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if mostrar_estacion:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_gods_eye(hex_actual)
-
-if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
-    if "modo_mapa" not in st.session_state:
-        st.session_state.modo_mapa = "noche"
-        
-    col_d, col_n, _ = st.columns([1, 1, 4])
-    with col_d:
-        if st.button("☀️ Modo Día"):
-            st.session_state.modo_mapa = "dia"
-            st.rerun()
-    with col_n:
-        if st.button("🌙 Modo Noche"):
-            st.session_state.modo_mapa = "noche"
-            st.rerun()
-            
-    renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
-    "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
-    "pero mezclas tu eficiencia impecable con altas sobredosis de ironía, sarcasmo fino y comentarios ingeniosos estilo Tony Stark. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
-)
-
-prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
-
-if prompt_usuario:
-    respuesta = ""
-    with st.spinner("Procesando comando táctico..."):
-        try:
-            if client:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="llama3-70b-8192",
-                )
-                respuesta = chat_completion.choices[0].message.content
-            else:
-                respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
-            
-            st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
-            hablar_jarvis(respuesta)
-            
-        except Exception as e:
-            st.error(f"Error de enlace táctico, Jefa: {e}")
