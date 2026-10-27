@@ -227,14 +227,14 @@ def renderizar_globo_terraqueo(hex_color):
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
-# Mapa Cartográfico y GPS con Botón Integrado de Día/Noche
+# Mapa Cartográfico y GPS con Contraste Real Día / Noche Oscuro (Dark Matter)
 def renderizar_mapa_tactico(modo):
     try:
         url_dia = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        url_noche = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+        # CartoDB Dark Matter (Estilo negro/neón ultra oscuro perfecto para Jarvis)
+        url_noche = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        
         tile_layer = url_noche if modo == "noche" else url_dia
-        siguiente_modo = "dia" if modo == "noche" else "noche"
-        texto_boton = "☀️ Modo Día" if modo == "noche" else "🌙 Modo Noche"
 
         mapa_html = (
             "<!DOCTYPE html>"
@@ -245,46 +245,16 @@ def renderizar_mapa_tactico(modo):
             '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
             "<style>"
             "body { margin: 0; padding: 0; }"
-            "#map { width: 100%; height: 350px; border-radius: 8px; position: relative; }"
-            ".leaflet-bottom.leaflet-left { z-index: 1000; }"
-            ".map-toggle-btn {"
-            "   background: rgba(0, 10, 30, 0.9);"
-            "   color: #00d2ff;"
-            "   border: 1px solid #00d2ff;"
-            "   padding: 8px 12px;"
-            "   font-family: monospace;"
-            "   font-weight: bold;"
-            "   font-size: 12px;"
-            "   border-radius: 6px;"
-            "   cursor: pointer;"
-            "   box-shadow: 0 0 10px rgba(0,210,255,0.4);"
-            "   margin: 10px;"
-            "}"
-            ".map-toggle-btn:hover { background: #00d2ff; color: #000; }"
+            "#map { width: 100%; height: 350px; border-radius: 8px; }"
             "</style>"
             "</head>"
             "<body>"
             '<div id="map"></div>'
             "<script>"
             "const map = L.map('map').setView([-33.7331, -70.7072], 12);"
-            f"const tileLayer = L.tileLayer('{tile_layer}', {{ maxZoom: 19, attribution: '© OpenStreetMap' }}).addTo(map);"
+            f"L.tileLayer('{tile_layer}', {{ maxZoom: 19, attribution: '© OpenStreetMap & CARTO' }}).addTo(map);"
             "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin (GPS Activo)</b>').openPopup();"
             "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
-            
-            # Creación del botón flotante dentro del mapa exactamente en la esquina inferior izquierda que señalaste
-            "const toggleControl = L.Control.extend({"
-            "   options: { position: 'bottomleft' },"
-            "   onAdd: function(map) {"
-            f"      const btn = L.DomUtil.create('button', 'map-toggle-btn');"
-            f"      btn.innerHTML = '{texto_boton}';"
-            "      btn.onclick = function() {"
-            # Recarga la página y cambia el estado por query parameter o simulación
-            f"          window.parent.postMessage({{'type': 'streamlit:set_component_value', 'value': '{siguiente_modo}'}}, '*');"
-            "      };"
-            "      return btn;"
-            "   }"
-            "});"
-            "map.addControl(new toggleControl());"
             "</script>"
             "</body>"
             "</html>"
@@ -493,7 +463,7 @@ if st.session_state.mostrar_centro_mando:
         st.markdown("#### 📍 Telemetría GPS & Mapa Táctico")
         st.info("🛰️ **GPS ID:** BUIN-BASE-01\n📍 **Coordenadas:** -33.7331, -70.7072\n🚀 **Estado:** Enlace Satelital Estable")
         
-        # Botones Streamlit rápidos para alternar día/noche en el centro de mando
+        # Botones rápidos para alternar día/noche en el centro de mando
         c_dia, c_noche = st.columns(2)
         with c_dia:
             if st.button("☀️ Modo Día Mapa"):
@@ -524,7 +494,7 @@ if mostrar_mapa and not st.session_state.mostrar_centro_mando:
             st.rerun()
             
     st.info("📍 **Posición GPS Actual:** Lat: -33.7331, Lon: -70.7072 (Comuna de Buin)")
-    renderizar_mapa_terraqueo_o_mapa = renderizar_mapa_tactico(st.session_state.modo_mapa)
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
 
 # CHAT DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
