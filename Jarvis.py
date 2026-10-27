@@ -227,15 +227,11 @@ def renderizar_globo_terraqueo(hex_color):
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
-# Mapa Cartográfico y GPS con Contraste Real Día / Noche Oscuro (Dark Matter)
+# Mapa Cartográfico y GPS con Modo Noche por Filtro CSS (Sin errores de API Key)
 def renderizar_mapa_tactico(modo):
     try:
-        url_dia = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        # CartoDB Dark Matter (Estilo negro/neón ultra oscuro perfecto para Jarvis)
-        url_noche = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
         
-        tile_layer = url_noche if modo == "noche" else url_dia
-
         mapa_html = (
             "<!DOCTYPE html>"
             "<html>"
@@ -245,14 +241,14 @@ def renderizar_mapa_tactico(modo):
             '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
             "<style>"
             "body { margin: 0; padding: 0; }"
-            "#map { width: 100%; height: 350px; border-radius: 8px; }"
+            f"#map {{ width: 100%; height: 350px; border-radius: 8px; {filtro_css} }}"
             "</style>"
             "</head>"
             "<body>"
             '<div id="map"></div>'
             "<script>"
             "const map = L.map('map').setView([-33.7331, -70.7072], 12);"
-            f"L.tileLayer('{tile_layer}', {{ maxZoom: 19, attribution: '© OpenStreetMap & CARTO' }}).addTo(map);"
+            "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);"
             "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin (GPS Activo)</b>').openPopup();"
             "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
             "</script>"
@@ -463,7 +459,6 @@ if st.session_state.mostrar_centro_mando:
         st.markdown("#### 📍 Telemetría GPS & Mapa Táctico")
         st.info("🛰️ **GPS ID:** BUIN-BASE-01\n📍 **Coordenadas:** -33.7331, -70.7072\n🚀 **Estado:** Enlace Satelital Estable")
         
-        # Botones rápidos para alternar día/noche en el centro de mando
         c_dia, c_noche = st.columns(2)
         with c_dia:
             if st.button("☀️ Modo Día Mapa"):
