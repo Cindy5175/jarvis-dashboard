@@ -1,7 +1,11 @@
 import streamlit as st
 import time
 from groq import Groq
+import google.generativeai as genai
 import streamlit.components.v1 as components
+from gtts import gTTS
+import os
+import base64
 
 # 1. Configuración de página
 st.set_page_config(
@@ -10,20 +14,48 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Inicialización de cliente Groq seguro
+# 2. Inicialización segura de Clientes (Groq + Gemini)
 @st.cache_resource
-def obtener_cliente_groq():
+def obtener_clientes():
+    clientes = {"groq": None, "gemini": None}
     try:
-        api_key = st.secrets.get("GROQ_API_KEY", "")
-        if not api_key:
-            return None
-        return Groq(api_key=api_key, timeout=10.0)
+        groq_key = st.secrets.get("GROQ_API_KEY", "")
+        if groq_key:
+            clientes["groq"] = Groq(api_key=groq_key, timeout=10.0)
     except Exception:
-        return None
+        pass
 
-client = obtener_cliente_groq()
+    try:
+        gemini_key = st.secrets.get("GEMINI_API_KEY", "")
+        if gemini_key:
+            genai.configure(api_key=gemini_key)
+            clientes["gemini"] = genai.GenerativeModel("gemini-1.5-pro")
+    except Exception:
+        pass
+        
+    return clientes
 
-# 3. Función del Visor Holográfico 3D con Telemetría Sísmica y Enlace de Cámaras Globales
+clients = obtener_clientes()
+
+# Función para reproducir voz sintetizada automáticamente
+def hablar_jarvis(texto):
+    try:
+        tts = gTTS(text=texto, lang='es', slow=False)
+        audio_path = "jarvis_voice.mp3"
+        tts.save(audio_path)
+        with open(audio_path, "rb") as f:
+            data = f.read()
+            b64 = base64.b64encode(data).decode()
+            audio_html = f"""
+                <audio autoplay style="display:none;">
+                    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+                </audio>
+            """
+            st.markdown(audio_html, unsafe_allow_html=True)
+    except Exception:
+        pass
+
+# 3. Función del Visor Holográfico 3D con Conexión Sísmica Mundial y Cámaras
 def renderizar_gods_eye(hex_color):
     gods_eye_html = """
     <!DOCTYPE html>
@@ -56,7 +88,7 @@ def renderizar_gods_eye(hex_color):
         </style>
     </head>
     <body>
-        <div id="canvas-container" title="Haga clic para alternar protocolo de escaneo táctico">
+        <div id="canvas-container" title="Haga clic para acelerar escaneo sísmico">
             <div id="hud-text">GOD's EYE VIEW // RED SÍSMICA GLOBAL & CÁMARAS EN VIVO</div>
             <div id="seismic-hud">Sincronizando telemetría mundial...</div>
             <a id="cam-link" href="https://www.windy.com/-Webcams/Chile/Santiago/Santiago/webcams/1423152643" target="_blank">📹 Ver Cámaras Globales</a>
@@ -90,13 +122,12 @@ def renderizar_gods_eye(hex_color):
                 let velocidadRotacion = 0.004;
                 let modoAlerta = false;
 
-                // Consulta de sismos en tiempo real (USGS)
                 fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.geojson')
                     .then(response => response.json())
                     .then(data => {
                         const sismos = data.features;
                         if (sismos.length > 0) {
-                            const ultimo = sismos[0].properties;
+                            const ultimo = sismos.features[0].properties;
                             seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${ultimo.mag} - ${ultimo.place}`;
                             velocidadRotacion = 0.02;
                             line.material.color.set('#ff3333');
@@ -109,7 +140,6 @@ def renderizar_gods_eye(hex_color):
                     });
 
                 container.addEventListener('click', (e) => {
-                    // Evitar que el clic abra el link si solo quieren rotar la esfera
                     if (e.target.id === 'cam-link') return;
                     modoAlerta = !modoAlerta;
                     velocidadRotacion = modoAlerta ? 0.035 : 0.004;
@@ -134,11 +164,8 @@ def renderizar_gods_eye(hex_color):
 
 # 4. Función del Mapa Cartográfico con Leaflet (Libre de llaves y 100% funcional)
 def renderizar_mapa_tactico(modo):
-    if modo == "dia":
-        tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    else:
-        tile_layer = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
-
+    tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" if modo == "dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+    
     mapa_html = f"""
     <!DOCTYPE html>
     <html>
@@ -155,18 +182,9 @@ def renderizar_mapa_tactico(modo):
         <div id="map"></div>
         <script>
             const map = L.map('map').setView([-33.7331, -70.7072], 12);
-            
-            L.tileLayer('{tile_layer}', {{
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }}).addTo(map);
-
-            L.marker([-33.7331, -70.7072]).addTo(map)
-                .bindPopup('<b>Base Operativa Buin</b><br>Telemetría activa.')
-                .openPopup();
-
-            L.marker([-33.4489, -70.6693]).addTo(map)
-                .bindPopup('<b>Santiago Centro</b><br>Grid Táctico.');
+            L.tileLayer('{tile_layer}', {{ maxZoom: 19, attribution: '© OpenStreetMap' }}).addTo(map);
+            L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Operativa Buin</b><br>Telemetría activa.').openPopup();
+            L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b><br>Grid Táctico.');
         </script>
     </body>
     </html>
@@ -182,47 +200,26 @@ with st.sidebar:
     
     st.markdown("---")
     
-    tema_hud = st.selectbox(
-        "Tema HUD:",
-        ["Rojo Cobre/Terracota", "Azul Arc", "Grafito Oscuro"]
-    )
-    
-    color_map = {
-        "Rojo Cobre/Terracota": "#d9534f",
-        "Azul Arc": "#00d2ff",
-        "Grafito Oscuro": "#888888"
-    }
+    tema_hud = st.selectbox("Tema HUD:", ["Rojo Cobre/Terracota", "Azul Arc", "Grafito Oscuro"])
+    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
     hex_actual = color_map.get(tema_hud, "#00d2ff")
     
-    protocolo_ia = st.selectbox(
-        "Protocolo IA:",
-        ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"]
-    )
-    
-    grid_tactico = st.selectbox(
-        "Grid Táctico:",
-        ["Santiago Centro", "Buin", "Global"]
-    )
+    motor_ia = st.selectbox("Motor IA Principal:", ["Groq (Llama 3)", "Google Gemini Pro"])
+    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
+    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
     
     st.markdown("---")
-    
     with st.expander("🌤️ Clima & Alertas"):
         st.write("**Ubicación:** Buin / Santiago, Chile")
         st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
-    
     with st.expander("📡 Radar de Red & Enlace Siri / Voz"):
         st.write("**Estado Siri (`jarvis.py`):** 🟢 En línea (ws://localhost:8765)")
         st.write("**Síntesis de Voz Automática:** Activa")
         st.progress(95)
-        
     with st.expander("📝 Libreta & Bitácora Táctica"):
-        st.text_area(
-            "Notas rápidas y registros:", 
-            "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre."
-        )
+        st.text_area("Notas rápidas:", "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre.")
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en memoria táctica.")
-        
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
@@ -230,62 +227,6 @@ with st.sidebar:
 st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
-        <!-- Reactor Arc Triangular Estilo Tony Stark -->
         <div style="
             min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
             background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
-            border: 2px solid #00d2ff;
-            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
-            display: flex; justify-content: center; align-items: center;
-            animation: pulse-arc 2s infinite;
-        ">
-            <div style="
-                width: 0; height: 0; 
-                border-left: 8px solid transparent;
-                border-right: 8px solid transparent;
-                border-bottom: 14px solid #ffffff;
-                filter: drop-shadow(0 0 5px #00d2ff);
-            "></div>
-        </div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">Jarvis IA Autónomo</h1>
-    </div>
-    <style>
-    @keyframes pulse-arc {
-        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
-        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if mostrar_estacion:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_gods_eye(hex_actual)
-
-# 7. MÓDULO DE MAPA CARTOGRÁFICO CON BOTONES DE DÍA Y NOCHE OPERATIVOS
-if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
-    
-    if "modo_mapa" not in st.session_state:
-        st.session_state.modo_mapa = "noche"
-        
-    col_d, col_n, _ = st.columns([1, 1, 4])
-    with col_d:
-        if st.button("☀️ Modo Día"):
-            st.session_state.modo_mapa = "dia"
-            st.rerun()
-    with col_n:
-        if st.button("🌙 Modo Noche"):
-            st.session_state.modo_mapa = "noche"
-            st.rerun()
-            
-    renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-# 8. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando. "
-    "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
-    "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%
