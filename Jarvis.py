@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos globales para forzar el azul neón en textos, expansores, menús y módulos
+# Estilos globales para forzar el azul neón
 st.markdown("""
     <style>
     h1, h2, h3, h4, h5, h6, span.neon-title {
@@ -37,20 +37,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Inicialización de cliente Groq seguro
-@st.cache_resource
-def obtener_cliente_groq():
-    try:
-        api_key = st.secrets.get("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")
-        if not api_key:
-            return None
-        return Groq(api_key=api_key, timeout=10.0)
-    except Exception:
-        return None
-
-client = obtener_cliente_groq()
-
-# Control de Estado del Chat (Memoria Volátil)
+# Control de Estado del Chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -72,7 +59,7 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# Función para generar reporte HTML descargable como PDF nativo
+# Función para generar reporte HTML descargable
 def generar_html_pdf(historial):
     html_content = """
     <html>
@@ -206,7 +193,7 @@ def renderizar_gods_eye(hex_color):
     """
     components.html(gods_eye_html, height=330, scrolling=False)
 
-# 4. Función del Mapa Cartográfico con Leaflet blindado
+# 4. Función del Mapa Cartográfico con Leaflet
 def renderizar_mapa_tactico(modo):
     tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" if modo == "dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
     
@@ -239,7 +226,19 @@ def renderizar_mapa_tactico(modo):
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
-    # Botón de Purga del Chat
+    # Inicialización de cliente Groq con clave fija incorporada para evitar fallos en la nube
+    @st.cache_resource
+    def obtener_cliente_groq():
+        try:
+            api_key = "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"
+            if not api_key:
+                return None
+            return Groq(api_key=api_key, timeout=10.0)
+        except Exception:
+            return None
+
+    client = obtener_cliente_groq()
+
     if st.button("🧹 Purgar Memoria de Chat"):
         st.session_state.messages = []
         st.success("¡Memoria de chat purgada con éxito, Jefa!")
@@ -272,7 +271,6 @@ with st.sidebar:
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en memoria táctica.")
             
-        # Módulo de Descarga PDF / Informe Táctico
         if st.session_state.messages:
             html_reporte = generar_html_pdf(st.session_state.messages)
             st.download_button(
@@ -305,7 +303,7 @@ with st.sidebar:
         spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
         components.html(spotify_html, height=160, scrolling=False)
 
-# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc y J.A.R.V.I.S. IA Autónomo
+# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc
 st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
@@ -359,7 +357,7 @@ if mostrar_mapa:
             
     renderizar_mapa_tactico(st.session_state.modo_mapa)
 
-# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S. (Historial de Conversación)
+# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
     "Eres J.A.R.V.I.S., la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
     "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
@@ -367,7 +365,6 @@ prompt_sistema_jarvis = (
     "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
 )
 
-# Mostrar historial de mensajes anteriores
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
@@ -392,7 +389,7 @@ if prompt_usuario:
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
-                respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
+                respuesta = "Jefa, el cliente de Groq no se inicializó correctamente."
             
             with st.chat_message("assistant"):
                 st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
