@@ -327,7 +327,7 @@ if prompt_usuario:
                         {"role": "system", "content": prompt_sistema_jarvis},
                         {"role": "user", "content": prompt_usuario}
                     ],
-                    model="llama-3.1-8b-instant",
+                    model="openai/gpt-oss-20b",
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
@@ -341,4 +341,3 @@ if prompt_usuario:
             
         except Exception as e:
             st.error(f"Error de enlace táctico, Jefa: {e}")
-
