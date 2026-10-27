@@ -5,7 +5,6 @@ import streamlit.components.v1 as components
 from gtts import gTTS
 import os
 import base64
-from fpdf import FPDF
 
 # 1. Configuración de página
 st.set_page_config(
@@ -73,26 +72,29 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# Función para generar PDF de bitácora o chat
-def generar_pdf(historial):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.set_text_color(0, 100, 150)
-    pdf.cell(200, 10, txt="CENTRO DE COMANDO J.A.R.V.I.S. - INFORME TÁCTICO", ln=True, align="C")
-    pdf.ln(10)
-    pdf.set_font("Arial", size=10)
-    pdf.set_text_color(0, 0, 0)
-    
+# Función para generar reporte HTML descargable como PDF nativo
+def generar_html_pdf(historial):
+    html_content = """
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: monospace; color: #002244; padding: 20px; }
+            h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }
+            .msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+            .user { font-weight: bold; color: #004488; }
+            .jarvis { font-weight: bold; color: #0088cc; }
+        </style>
+    </head>
+    <body>
+        <h1>CENTRO DE COMANDO J.A.R.V.I.S. - INFORME TÁCTICO</h1>
+    """
     for msg in historial:
-        rol = "Jefa" if msg["role"] == "user" else "J.A.R.V.I.S."
-        texto = f"{rol}: {msg['content']}"
-        pdf.multi_cell(0, 8, txt=texto)
-        pdf.ln(4)
-        
-    pdf_path = "reporte_tactico_jarvis.pdf"
-    pdf.output(pdf_path)
-    return pdf_path
+        rol_class = "user" if msg["role"] == "user" else "jarvis"
+        rol_nombre = "Jefa" if msg["role"] == "user" else "J.A.R.V.I.S."
+        html_content += f'<div class="msg"><span class="{rol_class}">{rol_nombre}:</span><p>{msg["content"]}</p></div>'
+    html_content += "</body></html>"
+    return html_content
 
 # 3. Función del Visor Holográfico 3D
 def renderizar_gods_eye(hex_color):
@@ -270,18 +272,36 @@ with st.sidebar:
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en memoria táctica.")
             
-        # Módulo de Descarga PDF
+        # Módulo de Descarga PDF / HTML
         if st.session_state.messages:
-            if st.button("📄 Exportar Chat a PDF"):
-                archivo_pdf = generar_pdf(st.session_state.messages)
-                with open(archivo_pdf, "rb") as f:
-                    st.download_button(
-                        label="⬇️ Descargar Reporte PDF",
-                        data=f,
-                        file_name="informe_jarvis.pdf",
-                        mime="application/pdf"
-                    )
-                    
+            html_reporte = generar_html_pdf(st.session_state.messages)
+            st.download_button(
+                label="📄 Descargar Informe Táctico (PDF/HTML)",
+                data=html_reporte,
+                file_name="informe_tactico_jarvis.html",
+                mime="text/html"
+            )
+            
+    with st.expander("🖼️ Generador y Descarga de Imágenes"):
+        st.markdown("<span style='color: #00d2ff;'>Seleccione formato para exportar activo visual:</span>", unsafe_allow_html=True)
+        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"])
+        
+        # Generador de SVG vectorial corporativo azul neón dinámico
+        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+            <rect width="100%" height="100%" fill="#000814"/>
+            <circle cx="250" cy="150" r="80" fill="none" stroke="{hex_actual}" stroke-width="4"/>
+            <circle cx="250" cy="150" r="95" fill="none" stroke="{hex_actual}" stroke-dasharray="10 5" stroke-width="2"/>
+            <polygon points="250,90 280,180 220,180" fill="#ffffff" filter="drop-shadow(0 0 8px {hex_actual})"/>
+            <text x="250" y="270" font-family="monospace" font-size="14" fill="{hex_actual}" text-anchor="middle">J.A.R.V.I.S. TACTICAL ASSET // BUIN</text>
+        </svg>'''
+        
+        st.download_button(
+            label=f"⬇️ Descargar Activo Visual ({formato_img})",
+            data=svg_vectorial,
+            file_name=f"activo_jarvis.{formato_img.lower()}",
+            mime=f"image/{'svg+xml' if formato_img=='SVG' else formato_img.lower()}"
+        )
+
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
         components.html(spotify_html, height=160, scrolling=False)
@@ -377,7 +397,7 @@ if prompt_usuario:
                 respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
             
             with st.chat_message("assistant"):
-                st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=Thread if 'Thread' in globals() else True)
             
             # Guardar respuesta y hablar
             st.session_state.messages.append({"role": "assistant", "content": respuesta})
