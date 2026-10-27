@@ -149,7 +149,7 @@ def generar_html_pdf(historial):
     return html_content
 
 # Visor Holográfico 3D: Globo Terráqueo en Rotación
-def renderizar_globo_terraqueo(hex_color, key_suffix=""):
+def renderizar_globo_terraqueo(hex_color):
     try:
         globo_html = f"""
         <!DOCTYPE html>
@@ -232,12 +232,12 @@ def renderizar_globo_terraqueo(hex_color, key_suffix=""):
         </body>
         </html>
         """
-        components.html(globo_html, height=330, scrolling=False, key=f"globo_{key_suffix}")
+        components.html(globo_html, height=330, scrolling=False)
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
 # Mapa Cartográfico y GPS con Filtro CSS Modo Noche
-def renderizar_mapa_tactico(modo, key_suffix=""):
+def renderizar_mapa_tactico(modo):
     try:
         filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
         mapa_html = (
@@ -263,11 +263,58 @@ def renderizar_mapa_tactico(modo, key_suffix=""):
             "</body>"
             "</html>"
         )
-        components.html(mapa_html, height=360, scrolling=False, key=f"mapa_{key_suffix}")
+        components.html(mapa_html, height=360, scrolling=False)
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# BARRA LATERAL (IZQUIERDA) - Limpia y sin iframes conflictivos para evitar errores de DOM
+# Módulo 1: Simulador de Radar Táctico Animado
+def renderizar_radar_tactico(hex_color):
+    radar_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ margin: 0; background: #000814; display: flex; justify-content: center; align-items: center; height: 180px; }}
+            canvas {{ width: 160px; height: 160px; }}
+        </style>
+    </head>
+    <body>
+        <canvas id="radarCanvas" width="160" height="160"></canvas>
+        <script>
+            const canvas = document.getElementById('radarCanvas');
+            const ctx = canvas.getContext('2d');
+            let angle = 0;
+            function drawRadar() {{
+                ctx.clearRect(0, 0, 160, 160);
+                ctx.strokeStyle = '{hex_color}';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(80, 80, 70, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(80, 80, 40, 0, Math.PI * 2); ctx.stroke();
+                
+                ctx.beginPath(); ctx.moveTo(10, 80); ctx.lineTo(150, 80); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(80, 10); ctx.lineTo(80, 150); ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(80, 80);
+                ctx.rotate(angle);
+                ctx.strokeStyle = '#00ffcc';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70, -70); ctx.stroke();
+                ctx.restore();
+                
+                ctx.fillStyle = '#ff3333';
+                ctx.beginPath(); ctx.arc(110, 50, 3, 0, Math.PI * 2); ctx.fill();
+
+                angle += 0.04;
+                requestAnimationFrame(drawRadar);
+            }}
+            drawRadar();
+        </script>
+    </body>
+    </html>
+    """
+    components.html(radar_html, height=190, scrolling=False)
+
+# BARRA LATERAL (IZQUIERDA) CON ACCESOS RÁPIDOS Y LAS 4 MEJORAS
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -304,10 +351,11 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🚀 DESPLIEGUE RÁPIDO: MÓDULOS STARK")
 
-    # --- MEJORA 1: Radar Táctico (Versión nativa estable sin iframes en sidebar) ---
+    # --- MEJORA 1: Radar Táctico Animado ---
     with st.expander("📡 Mejora 1: Radar de Intrusos (Buin)"):
         st.markdown("<span style='color: #00d2ff;'>Barrido de perímetro activo:</span>", unsafe_allow_html=True)
-        st.info("🛰️ Estado del radar: 100% Nominal (Perímetro Buin seguro)")
+        renderizar_radar_tactico(hex_actual)
+        st.success("Perímetro nominal seguro.")
 
     # --- MEJORA 2: Configuración Avanzada de Voz ---
     with st.expander("🎛️ Mejora 2: Selector de Voz y Tono"):
@@ -462,7 +510,7 @@ with st.sidebar:
 
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
-        components.html(spotify_html, height=160, scrolling=False, key="spotify_widget")
+        components.html(spotify_html, height=160, scrolling=False)
 
 # PANEL PRINCIPAL - Encabezado con Reactor Arc
 st.markdown(
@@ -511,7 +559,7 @@ if st.session_state.mostrar_centro_mando:
     col_hud1, col_hud2 = st.columns(2)
     with col_hud1:
         st.markdown("#### 🛰️ Globo Terráqueo Orbital en Rotación")
-        renderizar_globo_terraqueo(hex_actual, key_suffix="main_desplegado")
+        renderizar_globo_terraqueo(hex_actual)
         
     with col_hud2:
         st.markdown("#### 📍 Telemetría GPS & Mapa Táctico")
@@ -527,11 +575,11 @@ if st.session_state.mostrar_centro_mando:
                 st.session_state.modo_mapa = "noche"
                 st.rerun()
                 
-        renderizar_mapa_tactico(st.session_state.modo_mapa, key_suffix="main_desplegado")
+        renderizar_mapa_tactico(st.session_state.modo_mapa)
 
 if mostrar_estacion and not st.session_state.mostrar_centro_mando:
     st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_globo_terraqueo(hex_actual, key_suffix="estacion_principal")
+    renderizar_globo_terraqueo(hex_actual)
 
 if mostrar_mapa and not st.session_state.mostrar_centro_mando:
     st.markdown("### 🗺️ Mapa Cartográfico & Coordenadas GPS (Buin - Santiago)")
@@ -547,7 +595,7 @@ if mostrar_mapa and not st.session_state.mostrar_centro_mando:
             st.rerun()
             
     st.info("📍 **Posición GPS Actual:** Lat: -33.7331, Lon: -70.7072 (Comuna de Buin)")
-    renderizar_mapa_tactico(st.session_state.modo_mapa, key_suffix="mapa_principal")
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
 
 # CHAT DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
