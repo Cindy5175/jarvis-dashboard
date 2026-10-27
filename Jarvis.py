@@ -7,6 +7,7 @@ import os
 import base64
 import sqlite3
 import yfinance as yf
+import requests
 from audio_recorder_streamlit import audio_recorder
 from datetime import datetime
 import pytz
@@ -42,7 +43,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Base de datos persistente (SQLite)
+# Base de datos persistente (SQLite)
 def inicializar_db():
     conn = sqlite3.connect("jarvis_tactical.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -238,7 +239,7 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# BARRA LATERAL
+# BARRA LATERAL (IZQUIERDA)
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -273,19 +274,55 @@ with st.sidebar:
     grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
     
     st.markdown("---")
-    with st.expander("🌤️ Clima & Alertas"):
-        st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
-        st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
-        
-    # --- BLOQUE UNIFICADO DE LAS 3 MEJORAS (Micrófono, Bolsa y Base de Datos) ---
-    with st.expander("🎙️ Módulo 1: Dictado de Voz"):
+    
+    # --- BLOQUE UNIFICADO CON LOS 3 NUEVOS JUGUETES TÁCTICOS ---
+    with st.expander("🌤️ Juguete 1: Radar Clima en Vivo"):
+        st.markdown("<span style='color: #00d2ff;'>**Estación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
+        try:
+            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
+            res_clima = requests.get(url_clima, timeout=3).json()
+            temp = res_clima["current_weather"]["temperature"]
+            wind = res_clima["current_weather"]["windspeed"]
+            st.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
+        except Exception:
+            st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo (Modo offline)")
+
+    with st.expander("🪙 Juguete 2: Terminal Cripto & Stablecoins"):
+        crypto_sel = st.selectbox("Seleccionar Activo Cripto:", ["bitcoin", "ethereum", "tether"])
+        try:
+            url_crypto = f"https://api.coingecko.com/api/v2/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
+            res_crypto = requests.get(url_crypto, timeout=3).json()
+            precio_c = res_crypto[crypto_sel]["usd"]
+            cambio_c = res_crypto[crypto_sel]["usd_24h_change"]
+            st.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
+        except Exception:
+            st.warning("Mercado cripto en actualización.")
+
+    with st.expander("⚡ Juguete 3: Protocolo Stark (IA Code Gen)"):
+        lenguaje_code = st.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"])
+        prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón")
+        if st.button("Generar Snippet Táctico"):
+            if prompt_code and client:
+                with st.spinner("Procesando código en laboratorio..."):
+                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
+                    comp_code = client.chat.completions.create(
+                        messages=[{"role": "user", "content": p_code}],
+                        model="openai/gpt-oss-20b"
+                    )
+                    snippet = comp_code.choices[0].message.content
+                    st.code(snippet, language=lenguaje_code.lower())
+            else:
+                st.info("Escriba un requerimiento para generar el código.")
+
+    st.markdown("---")
+    with st.expander("🎙️ Dictado de Voz por Micrófono"):
         st.markdown("<span style='color: #00d2ff;'>Grabe su orden de voz:</span>", unsafe_allow_html=True)
         audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x")
         if audio_bytes:
             st.audio(audio_bytes, format="audio/wav")
             st.info("Audio capturado en buffer táctico.")
 
-    with st.expander("📈 Módulo 2: Bolsa en Tiempo Real"):
+    with st.expander("📈 Mercado Bursátil Tradicional"):
         ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"])
         try:
             stock = yf.Ticker(ticker_symbol)
@@ -301,7 +338,7 @@ with st.sidebar:
         except Exception:
             st.error("Error al conectar con la Bolsa.")
 
-    with st.expander("📝 Módulo 3: Libreta & Bitácora DB"):
+    with st.expander("📝 Libreta & Bitácora DB"):
         st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.")
         if st.button("Guardar Bitácora"):
             st.success("Datos asegurados en base de datos.")
