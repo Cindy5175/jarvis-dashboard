@@ -87,7 +87,7 @@ def renderizar_gods_eye(hex_color):
     """.replace("COLOR_HEX", hex_color)
     components.html(gods_eye_html, height=330)
 
-# 4. BARRA LATERAL - Todos los Módulos del Centro de Comando Stark
+# 4. BARRA LATERAL - Todos los Módulos
 with st.sidebar:
     st.subheader("⚙️ Panel Control Jarvis")
     
@@ -132,4 +132,78 @@ with st.sidebar:
     with st.expander("📝 Libreta & Bitácora Táctica"):
         st.text_area(
             "Notas rápidas y registros:", 
-            "1.
+            "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre."
+        )
+        if st.button("Guardar Bitácora"):
+            st.success("Datos guardados en memoria táctica.")
+        
+    with st.expander("🎵 Reproductor de Música (Spotify)"):
+        st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
+
+# 5. PANEL PRINCIPAL - Encabezado Centrado con Reactor y Jarvis IA Autónomo
+st.markdown(
+    """
+    <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px;">
+        <div style="
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: radial-gradient(circle, #00d2ff 0%, #0044ff 70%, #000 100%);
+            box-shadow: 0 0 14px #00d2ff, inset 0 0 6px #fff;
+            animation: pulse 2s infinite;
+        "></div>
+        <h1 style="margin: 0; font-size: 2.3rem; font-family: sans-serif; text-align: center;">Jarvis IA Autónomo</h1>
+    </div>
+    <style>
+    @keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
+        50% { transform: scale(1.08); box-shadow: 0 0 20px #00d2ff; }
+        100% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+if mostrar_estacion:
+    st.markdown("### 🌐 Estación Holográfica God's Eye View")
+    renderizar_gods_eye(hex_actual)
+
+# 6. MÓDULO DE MAPA TÁCTICO REGIONAL
+if mostrar_mapa:
+    st.markdown("### 🗺️ Mapa Táctico Regional (Buin - Santiago)")
+    
+    df_mapa = pd.DataFrame({
+        'lat': [-33.7331, -33.4489],
+        'lon': [-70.7072, -70.6693],
+        'label': ['Buin (Base Operativa)', 'Santiago Centro']
+    })
+    
+    st.map(df_mapa, latitude='lat', longitude='lon', zoom=9)
+
+# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
+prompt_sistema_jarvis = (
+    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando. "
+    "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
+    "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
+    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%."
+)
+
+prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
+
+if prompt_usuario:
+    if not client:
+        st.error("⚠️ Jefa, la clave de API de Groq no está configurada correctamente en los secrets de Streamlit.")
+    else:
+        with st.spinner("Procesando comando táctico..."):
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": prompt_sistema_jarvis},
+                        {"role": "user", "content": prompt_usuario}
+                    ],
+                    model="llama3-70b-8192",
+                )
+                respuesta = chat_completion.choices[0].message.content
+                st.write(respuesta)
+                
+            except Exception as e:
+                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
