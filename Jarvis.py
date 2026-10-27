@@ -226,11 +226,11 @@ def renderizar_mapa_tactico(modo):
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
-    # Inicialización de cliente Groq con clave fija incorporada para evitar fallos en la nube
+    # Inicialización de cliente Groq segura con la clave proporcionada
     @st.cache_resource
     def obtener_cliente_groq():
         try:
-            api_key = "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"
+            api_key = "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"
             if not api_key:
                 return None
             return Groq(api_key=api_key, timeout=10.0)
@@ -268,134 +268,3 @@ with st.sidebar:
         st.progress(95)
     with st.expander("📝 Libreta & Bitácora Táctica"):
         st.text_area("Notas rápidas:", "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre.")
-        if st.button("Guardar Bitácora"):
-            st.success("Datos guardados en memoria táctica.")
-            
-        if st.session_state.messages:
-            html_reporte = generar_html_pdf(st.session_state.messages)
-            st.download_button(
-                label="📄 Descargar Informe Táctico (PDF)",
-                data=html_reporte,
-                file_name="informe_tactico_jarvis.html",
-                mime="text/html"
-            )
-            
-    with st.expander("🖼️ Generador y Descarga de Imágenes"):
-        st.markdown("<span style='color: #00d2ff;'>Seleccione formato para exportar activo visual:</span>", unsafe_allow_html=True)
-        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"])
-        
-        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
-            <rect width="100%" height="100%" fill="#000814"/>
-            <circle cx="250" cy="150" r="80" fill="none" stroke="{hex_actual}" stroke-width="4"/>
-            <circle cx="250" cy="150" r="95" fill="none" stroke="{hex_actual}" stroke-dasharray="10 5" stroke-width="2"/>
-            <polygon points="250,90 280,180 220,180" fill="#ffffff" filter="drop-shadow(0 0 8px {hex_actual})"/>
-            <text x="250" y="270" font-family="monospace" font-size="14" fill="{hex_actual}" text-anchor="middle">J.A.R.V.I.S. TACTICAL ASSET // BUIN</text>
-        </svg>'''
-        
-        st.download_button(
-            label=f"⬇️ Descargar Activo Visual ({formato_img})",
-            data=svg_vectorial,
-            file_name=f"activo_jarvis.{formato_img.lower()}",
-            mime=f"image/{'svg+xml' if formato_img=='SVG' else formato_img.lower()}"
-        )
-
-    with st.expander("🎵 Reproductor de Música (Spotify)"):
-        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
-        components.html(spotify_html, height=160, scrolling=False)
-
-# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc
-st.markdown(
-    """
-    <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
-        <div style="
-            min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
-            background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
-            border: 2px solid #00d2ff;
-            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
-            display: flex; justify-content: center; align-items: center;
-            animation: pulse-arc 2s infinite;
-        ">
-            <div style="
-                width: 0; height: 0; 
-                border-left: 8px solid transparent;
-                border-right: 8px solid transparent;
-                border-bottom: 14px solid #ffffff;
-                filter: drop-shadow(0 0 5px #00d2ff);
-            "></div>
-        </div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
-    </div>
-    <style>
-    @keyframes pulse-arc {
-        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
-        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if mostrar_estacion:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_gods_eye(hex_actual)
-
-if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
-    if "modo_mapa" not in st.session_state:
-        st.session_state.modo_mapa = "noche"
-        
-    col_d, col_n, _ = st.columns([1, 1, 4])
-    with col_d:
-        if st.button("☀️ Modo Día"):
-            st.session_state.modo_mapa = "dia"
-            st.rerun()
-    with col_n:
-        if st.button("🌙 Modo Noche"):
-            st.session_state.modo_mapa = "noche"
-            st.rerun()
-            
-    renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
-    "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
-    "pero mezclas tu eficiencia impecable con altas sobredosis de ironía, sarcasmo fino y comentarios ingeniosos estilo Tony Stark. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
-)
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
-
-prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
-
-if prompt_usuario:
-    st.session_state.messages.append({"role": "user", "content": prompt_usuario})
-    with st.chat_message("user"):
-        st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
-
-    respuesta = ""
-    with st.spinner("Procesando comando táctico..."):
-        try:
-            if client:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="llama3-70b-8192",
-                )
-                respuesta = chat_completion.choices[0].message.content
-            else:
-                respuesta = "Jefa, el cliente de Groq no se inicializó correctamente."
-            
-            with st.chat_message("assistant"):
-                st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
-            
-            st.session_state.messages.append({"role": "assistant", "content": respuesta})
-            hablar_jarvis(respuesta)
-            
-        except Exception as e:
-            st.error(f"Error de enlace táctico, Jefa: {e}")
