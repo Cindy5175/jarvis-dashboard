@@ -11,6 +11,7 @@ import requests
 from audio_recorder_streamlit import audio_recorder
 from datetime import datetime
 import pytz
+import psutil  # Para el monitor de recursos del sistema
 
 # 1. Configuración de página
 st.set_page_config(
@@ -60,6 +61,13 @@ def inicializar_db():
             nota TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS misiones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tarea TEXT,
+            estado TEXT
+        )
+    """)
     conn.commit()
     return conn
 
@@ -97,10 +105,11 @@ if "messages" not in st.session_state:
         st.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
 
-# Función para reproducir voz sintetizada automáticamente
+# Función para reproducir voz sintetizada con controles avanzados
 def hablar_jarvis(texto):
     try:
-        tts = gTTS(text=texto, lang='es', slow=False)
+        velocidad = st.session_state.get("voz_lenta", False)
+        tts = gTTS(text=texto, lang='es', slow=velocidad)
         audio_path = "jarvis_voice.mp3"
         tts.save(audio_path)
         with open(audio_path, "rb") as f:
@@ -227,11 +236,10 @@ def renderizar_globo_terraqueo(hex_color):
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
-# Mapa Cartográfico y GPS con Modo Noche por Filtro CSS (Sin errores de API Key)
+# Mapa Cartográfico y GPS con Filtro CSS Modo Noche
 def renderizar_mapa_tactico(modo):
     try:
         filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
-        
         mapa_html = (
             "<!DOCTYPE html>"
             "<html>"
@@ -259,7 +267,57 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# BARRA LATERAL (IZQUIERDA)
+# Módulo 1: Simulador de Radar Táctico Animado
+def renderizar_radar_tactico(hex_color):
+    radar_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ margin: 0; background: #000814; display: flex; justify-content: center; align-items: center; height: 180px; }}
+            canvas {{ width: 160px; height: 160px; }}
+        </style>
+    </head>
+    <body>
+        <canvas id="radarCanvas" width="160" height="160"></canvas>
+        <script>
+            const canvas = document.getElementById('radarCanvas');
+            const ctx = canvas.getContext('2d');
+            let angle = 0;
+            function drawRadar() {{
+                ctx.clearRect(0, 0, 160, 160);
+                ctx.strokeStyle = '{hex_color}';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(80, 80, 70, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(80, 80, 40, 0, Math.PI * 2); ctx.stroke();
+                
+                // Líneas cruzadas
+                ctx.beginPath(); ctx.moveTo(10, 80); ctx.lineTo(150, 80); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(80, 10); ctx.lineTo(80, 150); ctx.stroke();
+                
+                // Varilla de barrido
+                ctx.save();
+                ctx.translate(80, 80);
+                ctx.rotate(angle);
+                ctx.strokeStyle = '#00ffcc';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70, -70); ctx.stroke();
+                ctx.restore();
+                
+                // Blip detectado aleatorio
+                ctx.fillStyle = '#ff3333';
+                ctx.beginPath(); ctx.arc(110, 50, 3, 0, Math.PI * 2); ctx.fill();
+
+                angle += 0.04;
+                requestAnimationFrame(drawRadar);
+            }}
+            drawRadar();
+        </script>
+    </body>
+    </html>
+    """
+    components.html(radar_html, height=190, scrolling=False)
+
+# BARRA LATERAL (IZQUIERDA) CON ACCESOS RÁPIDOS Y LAS 4 MEJORAS
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -268,272 +326,4 @@ with st.sidebar:
         try:
             api_key = "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"
             if not api_key:
-                return None
-            return Groq(api_key=api_key, timeout=10.0)
-        except Exception:
-            return None
-
-    client = obtener_cliente_groq()
-
-    if st.button("🧹 Purgar Memoria de Chat"):
-        purgar_db()
-        st.session_state.messages = []
-        st.success("¡Memoria persistente purgada con éxito, Jefa!")
-        st.rerun()
-
-    st.markdown("---")
-    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
-    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
-    
-    st.markdown("---")
-    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
-    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
-    hex_actual = color_map.get(tema_hud, "#00d2ff")
-    
-    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
-    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
-    
-    st.markdown("---")
-    
-    # --- JUGUETE 1: Radar Clima en Vivo ---
-    with st.expander("🌤️ Juguete 1: Radar Clima en Vivo"):
-        st.markdown("**Estación:** Buin / Santiago, Chile")
-        try:
-            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
-            res_clima = requests.get(url_clima, timeout=3).json()
-            temp = res_clima["current_weather"]["temperature"]
-            wind = res_clima["current_weather"]["windspeed"]
-            st.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
-        except Exception:
-            st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo (Modo offline)")
-
-    # --- JUGUETE 2: Terminal Cripto & Stablecoins (Con Respaldo) ---
-    with st.expander("🪙 Juguete 2: Terminal Cripto & Stablecoins"):
-        crypto_sel = st.selectbox("Seleccionar Activo Cripto:", ["tether", "bitcoin", "ethereum"])
-        try:
-            url_crypto = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
-            res = requests.get(url_crypto, timeout=2.0)
-            if res.status_code == 200:
-                data_c = res.json()
-                if crypto_sel in data_c:
-                    precio_c = data_c[crypto_sel]["usd"]
-                    cambio_c = data_c[crypto_sel].get("usd_24h_change", 0.0)
-                    st.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
-                else:
-                    st.warning("Activo no disponible en este momento.")
-            else:
-                valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
-                st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
-        except Exception:
-            st.warning("Enlace cripto en segundo plano operando en modo local.")
-
-    # --- JUGUETE 3: Protocolo Stark (IA Code Gen) ---
-    with st.expander("⚡ Juguete 3: Protocolo Stark (IA Code Gen)"):
-        lenguaje_code = st.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"])
-        prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón")
-        if st.button("Generar Snippet Táctico"):
-            if prompt_code and client:
-                with st.spinner("Procesando código en laboratorio..."):
-                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
-                    comp_code = client.chat.completions.create(
-                        messages=[{"role": "user", "content": p_code}],
-                        model="openai/gpt-oss-20b"
-                    )
-                    snippet = comp_code.choices[0].message.content
-                    st.code(snippet, language=lenguaje_code.lower())
-            else:
-                st.info("Escriba un requerimiento para generar el código.")
-
-    st.markdown("---")
-    with st.expander("🎙️ Dictado de Voz por Micrófono"):
-        st.markdown("Grabe su orden de voz:")
-        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x")
-        if audio_bytes:
-            st.audio(audio_bytes, format="audio/wav")
-            st.info("Audio capturado en buffer táctico.")
-
-    with st.expander("📈 Mercado Bursátil Tradicional"):
-        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"])
-        try:
-            stock = yf.Ticker(ticker_symbol)
-            todays_data = stock.history(period="1d")
-            if not todays_data.empty:
-                current_price = todays_data['Close'].iloc[-1]
-                prev_close = stock.info.get('previousClose', current_price)
-                change = current_price - prev_close
-                pct_change = (change / prev_close) * 100 if prev_close else 0
-                st.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
-            else:
-                st.warning("Sin datos bursátiles recientes.")
-        except Exception:
-            st.error("Error al conectar con la Bolsa.")
-
-    with st.expander("📝 Libreta & Bitácora DB"):
-        st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.")
-        if st.button("Guardar Bitácora"):
-            st.success("Datos asegurados en base de datos.")
-            
-        if st.session_state.messages:
-            html_reporte = generar_html_pdf(st.session_state.messages)
-            st.download_button(
-                label="📄 Descargar Informe Táctico (PDF)",
-                data=html_reporte,
-                file_name="informe_tactico_jarvis.html",
-                mime="text/html"
-            )
-            
-    with st.expander("🖼️ Generador y Descarga de Imágenes"):
-        st.markdown("Seleccione formato para exportar activo visual:")
-        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"])
-        
-        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
-            <rect width="100%" height="100%" fill="#000814"/>
-            <circle cx="250" cy="150" r="80" fill="none" stroke="{hex_actual}" stroke-width="4"/>
-            <circle cx="250" cy="150" r="95" fill="none" stroke="{hex_actual}" stroke-dasharray="10 5" stroke-width="2"/>
-            <polygon points="250,90 280,180 220,180" fill="#ffffff" filter="drop-shadow(0 0 8px {hex_actual})"/>
-            <text x="250" y="270" font-family="monospace" font-size="14" fill="{hex_actual}" text-anchor="middle">J.A.R.V.I.S. TACTICAL ASSET // BUIN</text>
-        </svg>'''
-        
-        st.download_button(
-            label=f"⬇️ Descargar Activo Visual ({formato_img})",
-            data=svg_vectorial,
-            file_name=f"activo_jarvis.{formato_img.lower()}",
-            mime=f"image/{'svg+xml' if formato_img=='SVG' else formato_img.lower()}"
-        )
-
-    with st.expander("🎵 Reproductor de Música (Spotify)"):
-        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
-        components.html(spotify_html, height=160, scrolling=False)
-
-# PANEL PRINCIPAL - Encabezado con Reactor Arc
-st.markdown(
-    """
-    <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
-        <div style="
-            min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
-            background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
-            border: 2px solid #00d2ff;
-            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
-            display: flex; justify-content: center; align-items: center;
-        "></div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# Inicializar modo mapa en session_state si no existe
-if "modo_mapa" not in st.session_state:
-    st.session_state.modo_mapa = "noche"
-
-# --- BOTÓN TÁCTICO PARA DESPLEGAR EL CENTRO DE MANDO HOLOGRÁFICO CON GLOBO Y GPS ---
-st.markdown("---")
-if "mostrar_centro_mando" not in st.session_state:
-    st.session_state.mostrar_centro_mando = False
-
-if st.button("🌐 ACTIVAR / DESPLEGAR CENTRO DE MANDO HOLOGRÁFICO (GLOBO 3D + GPS)"):
-    st.session_state.mostrar_centro_mando = not st.session_state.mostrar_centro_mando
-    st.rerun()
-
-if st.session_state.mostrar_centro_mando:
-    st.markdown("""
-        <div style="
-            border: 2px solid #00d2ff; 
-            padding: 20px; 
-            border-radius: 10px; 
-            background: rgba(0, 10, 30, 0.85); 
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-            margin-bottom: 20px;
-        ">
-            <h3 style="color: #00d2ff; margin-top: 0; font-family: monospace;">⚡ SISTEMA HOLOGRÁFICO EN LÍNEA // BUIN COMMAND & GPS</h3>
-            <p style="color: #00d2ff; font-family: monospace;">Red satelital orbital sincronizada, telemetría y posicionamiento global activos.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_hud1, col_hud2 = st.columns(2)
-    with col_hud1:
-        st.markdown("#### 🛰️ Globo Terráqueo Orbital en Rotación")
-        renderizar_globo_terraqueo(hex_actual)
-        
-    with col_hud2:
-        st.markdown("#### 📍 Telemetría GPS & Mapa Táctico")
-        st.info("🛰️ **GPS ID:** BUIN-BASE-01\n📍 **Coordenadas:** -33.7331, -70.7072\n🚀 **Estado:** Enlace Satelital Estable")
-        
-        c_dia, c_noche = st.columns(2)
-        with c_dia:
-            if st.button("☀️ Modo Día Mapa"):
-                st.session_state.modo_mapa = "dia"
-                st.rerun()
-        with c_noche:
-            if st.button("🌙 Modo Noche Mapa"):
-                st.session_state.modo_mapa = "noche"
-                st.rerun()
-                
-        renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-if mostrar_estacion and not st.session_state.mostrar_centro_mando:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_globo_terraqueo(hex_actual)
-
-if mostrar_mapa and not st.session_state.mostrar_centro_mando:
-    st.markdown("### 🗺️ Mapa Cartográfico & Coordenadas GPS (Buin - Santiago)")
-    
-    col_d, col_n, _ = st.columns([1, 1, 4])
-    with col_d:
-        if st.button("☀️ Modo Día"):
-            st.session_state.modo_mapa = "dia"
-            st.rerun()
-    with col_n:
-        if st.button("🌙 Modo Noche"):
-            st.session_state.modo_mapa = "noche"
-            st.rerun()
-            
-    st.info("📍 **Posición GPS Actual:** Lat: -33.7331, Lon: -70.7072 (Comuna de Buin)")
-    renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-# CHAT DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
-    "Te diriges a la usuaria llamándola 'Jefa', con elegancia, eficiencia e ironía fina estilo Tony Stark."
-)
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
-
-prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
-
-if prompt_usuario:
-    st.session_state.messages.append({"role": "user", "content": prompt_usuario})
-    guardar_mensaje_db("user", prompt_usuario)
-    
-    with st.chat_message("user"):
-        st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
-
-    respuesta = ""
-    texto_lower = prompt_usuario.lower().strip()
-    if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
-        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
-    else:
-        with st.spinner("Procesando comando táctico..."):
-            try:
-                if client:
-                    chat_completion = client.chat.completions.create(
-                        messages=[
-                            {"role": "system", "content": prompt_sistema_jarvis},
-                            {"role": "user", "content": prompt_usuario}
-                        ],
-                        model="openai/gpt-oss-20b",
-                    )
-                    respuesta = chat_completion.choices[0].message.content
-                else:
-                    respuesta = "Jefa, el cliente de Groq no se inicializó."
-            except Exception as e:
-                respuesta = f"Error de enlace táctico, Jefa: {e}"
-            
-    with st.chat_message("assistant"):
-        st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
-    
-    st.session_state.messages.append({"role": "assistant", "content": respuesta})
-    guardar_mensaje_db("assistant", respuesta)
-    hablar_jarvis(respuesta)
+                return
