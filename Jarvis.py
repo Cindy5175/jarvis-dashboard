@@ -263,7 +263,7 @@ if prompt_usuario:
                         {"role": "system", "content": prompt_sistema_jarvis},
                         {"role": "user", "content": prompt_usuario}
                     ],
-                    model="llama3-70b-8192",
+                    model="llama-3.3-70b-versatile",
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
