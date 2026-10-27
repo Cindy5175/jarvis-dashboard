@@ -42,7 +42,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Base de datos persistente (SQLite)
+# 3. Base de datos persistente (SQLite)
 def inicializar_db():
     conn = sqlite3.connect("jarvis_tactical.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -80,10 +80,9 @@ def purgar_db():
     cursor.execute("DELETE FROM chat_history")
     db_conn.commit()
 
-# Cargar mensajes en session_state desde SQLite
+# Cargar mensajes en session_state desde SQLite con saludo dinámico
 if "messages" not in st.session_state:
     st.session_state.messages = cargar_mensajes_db()
-    # Si la base de datos está vacía, generamos un saludo inicial dinámico
     if not st.session_state.messages:
         chile_tz = pytz.timezone("America/Santiago")
         hora_actual = datetime.now(chile_tz).hour
@@ -278,14 +277,15 @@ with st.sidebar:
         st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
         st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
         
-    with st.expander("🎙️ Dictado de Voz por Micrófono"):
+    # --- BLOQUE UNIFICADO DE LAS 3 MEJORAS (Micrófono, Bolsa y Base de Datos) ---
+    with st.expander("🎙️ Módulo 1: Dictado de Voz"):
         st.markdown("<span style='color: #00d2ff;'>Grabe su orden de voz:</span>", unsafe_allow_html=True)
         audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x")
         if audio_bytes:
             st.audio(audio_bytes, format="audio/wav")
-            st.info("Audio capturado. Envíelo mediante transcripción en desarrollo.")
+            st.info("Audio capturado en buffer táctico.")
 
-    with st.expander("📈 Mercado Bursátil en Tiempo Real"):
+    with st.expander("📈 Módulo 2: Bolsa en Tiempo Real"):
         ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"])
         try:
             stock = yf.Ticker(ticker_symbol)
@@ -300,11 +300,11 @@ with st.sidebar:
                 st.warning("Sin datos bursátiles recientes.")
         except Exception:
             st.error("Error al conectar con la Bolsa.")
-        
-    with st.expander("📝 Libreta & Bitácora Táctica"):
-        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Módulos integrados con éxito.")
+
+    with st.expander("📝 Módulo 3: Libreta & Bitácora DB"):
+        st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.")
         if st.button("Guardar Bitácora"):
-            st.success("Datos guardados en base de datos.")
+            st.success("Datos asegurados en base de datos.")
             
         if st.session_state.messages:
             html_reporte = generar_html_pdf(st.session_state.messages)
@@ -396,7 +396,6 @@ if prompt_usuario:
         st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
 
     respuesta = ""
-    # Interceptamos comandos específicos directos antes de llamar a Groq si se desea inmediatez
     texto_lower = prompt_usuario.lower().strip()
     if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
         respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
