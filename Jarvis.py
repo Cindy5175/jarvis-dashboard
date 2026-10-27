@@ -22,7 +22,7 @@ def obtener_cliente_groq():
 
 client = obtener_cliente_groq()
 
-# 3. BARRA LATERAL - Módulos del Centro de Comando Stark
+# 3. BARRA LATERAL - Todos los Módulos del Centro de Comando Stark
 with st.sidebar:
     st.subheader("⚙️ Centro de Comando Stark")
     
