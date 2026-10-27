@@ -20,27 +20,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos globales para forzar el azul neón
-st.markdown("""
+# Control de Estado para Código Rojo (Emergencia)
+if "codigo_rojo" not in st.session_state:
+    st.session_state.codigo_rojo = False
+
+# Definición de colores dinámicos según el estado de alerta
+color_neon_principal = "#ff3333" if st.session_state.codigo_rojo else "#00d2ff"
+color_sombra_neon = "rgba(255, 51, 51, 0.8)" if st.session_state.codigo_rojo else "rgba(0, 210, 255, 0.6)"
+
+# Estilos globales dinámicos (cambian a rojo carmesí si hay Código Rojo)
+st.markdown(f"""
     <style>
-    h1, h2, h3, h4, h5, h6, span.neon-title {
-        color: #00d2ff !important;
-        text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
-    }
-    .stMarkdown p, label, .streamlit-expanderHeader span, div[data-testid="stExpander"] summary span {
-        color: #00d2ff !important;
-        text-shadow: 0 0 6px rgba(0, 210, 255, 0.4);
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #00d2ff !important;
-    }
-    div[data-testid="stMetricValue"] {
+    h1, h2, h3, h4, h5, h6, span.neon-title {{
+        color: {color_neon_principal} !important;
+        text-shadow: 0 0 10px {color_sombra_neon};
+    }}
+    .stMarkdown p, label, .streamlit-expanderHeader span, div[data-testid="stExpander"] summary span {{
+        color: {color_neon_principal} !important;
+        text-shadow: 0 0 6px {color_sombra_neon};
+    }}
+    div[data-testid="stMetricLabel"] {{
+        color: {color_neon_principal} !important;
+    }}
+    div[data-testid="stMetricValue"] {{
         color: #ffffff !important;
-        text-shadow: 0 0 10px #00d2ff;
-    }
-    .stSelectbox label, .stCheckbox span {
-        color: #00d2ff !important;
-    }
+        text-shadow: 0 0 10px {color_neon_principal};
+    }}
+    .stSelectbox label, .stCheckbox span {{
+        color: {color_neon_principal} !important;
+    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -164,11 +172,11 @@ def renderizar_globo_terraqueo(hex_color):
                     font-family: monospace; color: {hex_color}; font-size: 11px;
                     background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;
                     border: 1px solid {hex_color}; z-index: 10;
-                    box-shadow: 0 0 10px rgba(0,210,255,0.4);
+                    box-shadow: 0 0 10px {hex_color};
                 }}
                 #orbit-hud {{
                     position: absolute; bottom: 10px; left: 10px; 
-                    font-family: monospace; color: #00ffcc; font-size: 10px;
+                    font-family: monospace; color: {hex_color}; font-size: 10px;
                     background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;
                     z-index: 10;
                 }}
@@ -189,7 +197,7 @@ def renderizar_globo_terraqueo(hex_color):
 
                 const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
                 scene.add(ambientLight);
-                const pointLight = new THREE.PointLight(0x00d2ff, 2, 50);
+                const pointLight = new THREE.PointLight('{hex_color}', 2, 50);
                 pointLight.position.set(5, 3, 5);
                 scene.add(pointLight);
 
@@ -235,6 +243,45 @@ def renderizar_globo_terraqueo(hex_color):
         components.html(globo_html, height=330, scrolling=False)
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
+
+# Módulo de Cámara de Seguridad Web en Vivo (CCTV Buin)
+def renderizar_camara_seguridad(hex_color):
+    cctv_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }}
+            #cctv-container {{ width: 100%; height: 260px; position: relative; border: 2px solid {hex_color}; border-radius: 8px; box-shadow: 0 0 12px {hex_color}; }}
+            video {{ width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }}
+            #overlay-hud {{
+                position: absolute; top: 10px; left: 10px;
+                font-family: monospace; color: {hex_color}; font-size: 11px;
+                background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
+                z-index: 10;
+            }}
+            #rec-dot {{
+                height: 8px; width: 8px; background-color: #ff3333; border-radius: 50%;
+                display: inline-block; margin-right: 5px; animation: blink 1s infinite;
+            }}
+            @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.2; }} 100% {{ opacity: 1; }} }}
+        </style>
+    </head>
+    <body>
+        <div id="cctv-container">
+            <div id="overlay-hud"><span id="rec-dot"></span>CCTV // CAM-01 BUIN BASE // REC</div>
+            <video id="webcam" autoplay playsinline muted></video>
+        </div>
+        <script>
+            const video = document.getElementById('webcam');
+            navigator.mediaDevices.getUserMedia({{ video: true }})
+                .then(stream => {{ video.srcObject = stream; }})
+                .catch(err => {{ console.log("Cámara no disponible: ", err); }});
+        </script>
+    </body>
+    </html>
+    """
+    components.html(cctv_html, height=275, scrolling=False)
 
 # Mapa Cartográfico y GPS con Filtro CSS Modo Noche
 def renderizar_mapa_tactico(modo):
@@ -297,7 +344,7 @@ def renderizar_radar_tactico(hex_color):
                 ctx.save();
                 ctx.translate(80, 80);
                 ctx.rotate(angle);
-                ctx.strokeStyle = '#00ffcc';
+                ctx.strokeStyle = '{hex_color}';
                 ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70, -70); ctx.stroke();
                 ctx.restore();
                 
@@ -312,334 +359,4 @@ def renderizar_radar_tactico(hex_color):
     </body>
     </html>
     """
-    components.html(radar_html, height=190, scrolling=False)
-
-# BARRA LATERAL (IZQUIERDA) CON ACCESOS RÁPIDOS Y LAS 4 MEJORAS
-with st.sidebar:
-    st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
-    
-    @st.cache_resource
-    def obtener_cliente_groq():
-        try:
-            api_key = "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"
-            if not api_key:
-                return None
-            return Groq(api_key=api_key, timeout=10.0)
-        except Exception:
-            return None
-
-    client = obtener_cliente_groq()
-
-    if st.button("🧹 Purgar Memoria de Chat"):
-        purgar_db()
-        st.session_state.messages = []
-        st.success("¡Memoria persistente purgada con éxito, Jefa!")
-        st.rerun()
-
-    st.markdown("---")
-    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
-    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
-    
-    st.markdown("---")
-    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
-    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
-    hex_actual = color_map.get(tema_hud, "#00d2ff")
-    
-    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
-    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
-    
-    st.markdown("---")
-    st.markdown("### 🚀 DESPLIEGUE RÁPIDO: MÓDULOS STARK")
-
-    # --- MEJORA 1: Radar Táctico Animado ---
-    with st.expander("📡 Mejora 1: Radar de Intrusos (Buin)"):
-        st.markdown("<span style='color: #00d2ff;'>Barrido de perímetro activo:</span>", unsafe_allow_html=True)
-        renderizar_radar_tactico(hex_actual)
-        st.success("Perímetro nominal seguro.")
-
-    # --- MEJORA 2: Configuración Avanzada de Voz ---
-    with st.expander("🎛️ Mejora 2: Selector de Voz y Tono"):
-        st.markdown("<span style='color: #00d2ff;'>Parámetros de síntesis vocal:</span>", unsafe_allow_html=True)
-        st.session_state.voz_lenta = st.checkbox("Modo de locución pausada (Lento)", value=False)
-        st.info("Configuración de audio aplicada correctamente.")
-
-    # --- MEJORA 3: Monitor de Recursos del Sistema ---
-    with st.expander("🛡️ Mejora 3: Monitor de Sistema (CPU/RAM)"):
-        st.markdown("<span style='color: #00d2ff;'>Telemetría de servidor local:</span>", unsafe_allow_html=True)
-        cpu_uso = psutil.cpu_percent(interval=0.1)
-        ram_uso = psutil.virtual_memory().percent
-        st.metric(label="Carga de CPU", value=f"{cpu_uso}%")
-        st.metric(label="Memoria RAM Ocupada", value=f"{ram_uso}%")
-
-    # --- MEJORA 4: To-Do Táctico / Registro de Misiones (SQLite) ---
-    with st.expander("🗂️ Mejora 4: To-Do Táctico & Misiones"):
-        st.markdown("<span style='color: #00d2ff;'>Registro de Objetivos:</span>", unsafe_allow_html=True)
-        nueva_mision = st.text_input("Nueva misión o tarea:", placeholder="Ej: Optimizar script 3D", key="input_mision_sidebar")
-        if st.button("Añadir Misión", key="btn_add_mision"):
-            if nueva_mision:
-                c_db = db_conn.cursor()
-                c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
-                db_conn.commit()
-                st.success("¡Misión registrada en bitácora!")
-                st.rerun()
-        
-        c_db = db_conn.cursor()
-        c_db.execute("SELECT id, tarea, estado FROM misiones")
-        misiones_list = c_db.fetchall()
-        if misiones_list:
-            for m in misiones_list:
-                col_m1, col_m2 = st.columns([3, 1])
-                with col_m1:
-                    st.text(f"• {m[1]}")
-                with col_m2:
-                    if st.button("✔️", key=f"completar_{m[0]}"):
-                        c_db.execute("DELETE FROM misiones WHERE id = ?", (m[0],))
-                        db_conn.commit()
-                        st.rerun()
-        else:
-            st.caption("No hay misiones pendientes en este momento.")
-
-    st.markdown("---")
-    
-    # --- JUGUETE 1: Radar Clima en Vivo ---
-    with st.expander("🌤️ Juguete 1: Radar Clima en Vivo"):
-        st.markdown("**Estación:** Buin / Santiago, Chile")
-        try:
-            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
-            res_clima = requests.get(url_clima, timeout=3).json()
-            temp = res_clima["current_weather"]["temperature"]
-            wind = res_clima["current_weather"]["windspeed"]
-            st.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
-        except Exception:
-            st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo (Modo offline)")
-
-    # --- JUGUETE 2: Terminal Cripto & Stablecoins ---
-    with st.expander("🪙 Juguete 2: Terminal Cripto & Stablecoins"):
-        crypto_sel = st.selectbox("Seleccionar Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
-        try:
-            url_crypto = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
-            res = requests.get(url_crypto, timeout=2.0)
-            if res.status_code == 200:
-                data_c = res.json()
-                if crypto_sel in data_c:
-                    precio_c = data_c[crypto_sel]["usd"]
-                    cambio_c = data_c[crypto_sel].get("usd_24h_change", 0.0)
-                    st.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
-                else:
-                    st.warning("Activo no disponible.")
-            else:
-                valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
-                st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
-        except Exception:
-            st.warning("Enlace cripto operando en modo local.")
-
-    # --- JUGUETE 3: Protocolo Stark (IA Code Gen) ---
-    with st.expander("⚡ Juguete 3: Protocolo Stark (IA Code Gen)"):
-        lenguaje_code = st.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"], key="lang_sb")
-        prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón", key="prompt_sb")
-        if st.button("Generar Snippet Táctico", key="btn_gen_snippet"):
-            if prompt_code and client:
-                with st.spinner("Procesando código en laboratorio..."):
-                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
-                    comp_code = client.chat.completions.create(
-                        messages=[{"role": "user", "content": p_code}],
-                        model="openai/gpt-oss-20b"
-                    )
-                    snippet = comp_code.choices[0].message.content
-                    st.code(snippet, language=lenguaje_code.lower())
-            else:
-                st.info("Escriba un requerimiento para generar el código.")
-
-    with st.expander("🎙️ Dictado de Voz por Micrófono"):
-        st.markdown("Grabe su orden de voz:")
-        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
-        if audio_bytes:
-            st.audio(audio_bytes, format="audio/wav")
-            st.info("Audio capturado en buffer táctico.")
-
-    with st.expander("📈 Mercado Bursátil Tradicional"):
-        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
-        try:
-            stock = yf.Ticker(ticker_symbol)
-            todays_data = stock.history(period="1d")
-            if not todays_data.empty:
-                current_price = todays_data['Close'].iloc[-1]
-                prev_close = stock.info.get('previousClose', current_price)
-                change = current_price - prev_close
-                pct_change = (change / prev_close) * 100 if prev_close else 0
-                st.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
-            else:
-                st.warning("Sin datos bursátiles recientes.")
-        except Exception:
-            st.error("Error al conectar con la Bolsa.")
-
-    with st.expander("📝 Libreta & Bitácora DB"):
-        st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.", key="nota_sb")
-        if st.button("Guardar Bitácora", key="btn_bitacora"):
-            st.success("Datos asegurados en base de datos.")
-            
-        if st.session_state.messages:
-            html_reporte = generar_html_pdf(st.session_state.messages)
-            st.download_button(
-                label="📄 Descargar Informe Táctico (PDF)",
-                data=html_reporte,
-                file_name="informe_tactico_jarvis.html",
-                mime="text/html",
-                key="dl_pdf_sb"
-            )
-            
-    with st.expander("🖼️ Generador y Descarga de Imágenes"):
-        st.markdown("Seleccione formato para exportar activo visual:")
-        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"], key="img_fmt_sb")
-        
-        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
-            <rect width="100%" height="100%" fill="#000814"/>
-            <circle cx="250" cy="150" r="80" fill="none" stroke="{hex_actual}" stroke-width="4"/>
-            <circle cx="250" cy="150" r="95" fill="none" stroke="{hex_actual}" stroke-dasharray="10 5" stroke-width="2"/>
-            <polygon points="250,90 280,180 220,180" fill="#ffffff" filter="drop-shadow(0 0 8px {hex_actual})"/>
-            <text x="250" y="270" font-family="monospace" font-size="14" fill="{hex_actual}" text-anchor="middle">J.A.R.V.I.S. TACTICAL ASSET // BUIN</text>
-        </svg>'''
-        
-        st.download_button(
-            label=f"⬇️ Descargar Activo Visual ({formato_img})",
-            data=svg_vectorial,
-            file_name=f"activo_jarvis.{formato_img.lower()}",
-            mime=f"image/{'svg+xml' if formato_img=='SVG' else formato_img.lower()}",
-            key="dl_img_sb"
-        )
-
-    with st.expander("🎵 Reproductor de Música (Spotify)"):
-        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
-        components.html(spotify_html, height=160, scrolling=False)
-
-# PANEL PRINCIPAL - Encabezado con Reactor Arc
-st.markdown(
-    """
-    <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
-        <div style="
-            min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
-            background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
-            border: 2px solid #00d2ff;
-            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
-            display: flex; justify-content: center; align-items: center;
-        "></div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-if "modo_mapa" not in st.session_state:
-    st.session_state.modo_mapa = "noche"
-
-# --- BOTÓN TÁCTICO PARA DESPLEGAR EL CENTRO DE MANDO HOLOGRÁFICO CON GLOBO Y GPS ---
-st.markdown("---")
-if "mostrar_centro_mando" not in st.session_state:
-    st.session_state.mostrar_centro_mando = False
-
-if st.button("🌐 ACTIVAR / DESPLEGAR CENTRO DE MANDO HOLOGRÁFICO (GLOBO 3D + GPS)", key="btn_toggle_hologram"):
-    st.session_state.mostrar_centro_mando = not st.session_state.mostrar_centro_mando
-    st.rerun()
-
-if st.session_state.mostrar_centro_mando:
-    st.markdown("""
-        <div style="
-            border: 2px solid #00d2ff; 
-            padding: 20px; 
-            border-radius: 10px; 
-            background: rgba(0, 10, 30, 0.85); 
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-            margin-bottom: 20px;
-        ">
-            <h3 style="color: #00d2ff; margin-top: 0; font-family: monospace;">⚡ SISTEMA HOLOGRÁFICO EN LÍNEA // BUIN COMMAND & GPS</h3>
-            <p style="color: #00d2ff; font-family: monospace;">Red satelital orbital sincronizada, telemetría y posicionamiento global activos.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_hud1, col_hud2 = st.columns(2)
-    with col_hud1:
-        st.markdown("#### 🛰️ Globo Terráqueo Orbital en Rotación")
-        renderizar_globo_terraqueo(hex_actual)
-        
-    with col_hud2:
-        st.markdown("#### 📍 Telemetría GPS & Mapa Táctico")
-        st.info("🛰️ **GPS ID:** BUIN-BASE-01\n📍 **Coordenadas:** -33.7331, -70.7072\n🚀 **Estado:** Enlace Satelital Estable")
-        
-        c_dia, c_noche = st.columns(2)
-        with c_dia:
-            if st.button("☀️ Modo Día Mapa", key="btn_dia_desplegado"):
-                st.session_state.modo_mapa = "dia"
-                st.rerun()
-        with c_noche:
-            if st.button("🌙 Modo Noche Mapa", key="btn_noche_desplegado"):
-                st.session_state.modo_mapa = "noche"
-                st.rerun()
-                
-        renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-if mostrar_estacion and not st.session_state.mostrar_centro_mando:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_globo_terraqueo(hex_actual)
-
-if mostrar_mapa and not st.session_state.mostrar_centro_mando:
-    st.markdown("### 🗺️ Mapa Cartográfico & Coordenadas GPS (Buin - Santiago)")
-    
-    col_d, col_n, _ = st.columns([1, 1, 4])
-    with col_d:
-        if st.button("☀️ Modo Día", key="btn_dia_principal"):
-            st.session_state.modo_mapa = "dia"
-            st.rerun()
-    with col_n:
-        if st.button("🌙 Modo Noche", key="btn_noche_principal"):
-            st.session_state.modo_mapa = "noche"
-            st.rerun()
-            
-    st.info("📍 **Posición GPS Actual:** Lat: -33.7331, Lon: -70.7072 (Comuna de Buin)")
-    renderizar_mapa_tactico(st.session_state.modo_mapa)
-
-# CHAT DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
-    "Te diriges a la usuaria llamándola 'Jefa', con elegancia, eficiencia e ironía fina estilo Tony Stark."
-)
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
-
-prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
-
-if prompt_usuario:
-    st.session_state.messages.append({"role": "user", "content": prompt_usuario})
-    guardar_mensaje_db("user", prompt_usuario)
-    
-    with st.chat_message("user"):
-        st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
-
-    respuesta = ""
-    texto_lower = prompt_usuario.lower().strip()
-    if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
-        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
-    else:
-        with st.spinner("Procesando comando táctico..."):
-            try:
-                if client:
-                    chat_completion = client.chat.completions.create(
-                        messages=[
-                            {"role": "system", "content": prompt_sistema_jarvis},
-                            {"role": "user", "content": prompt_usuario}
-                        ],
-                        model="openai/gpt-oss-20b",
-                    )
-                    respuesta = chat_completion.choices[0].message.content
-                else:
-                    respuesta = "Jefa, el cliente de Groq no se inicializó."
-            except Exception as e:
-                respuesta = f"Error de enlace táctico, Jefa: {e}"
-            
-    with st.chat_message("assistant"):
-        st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
-    
-    st.session_state.messages.append({"role": "assistant", "content": respuesta})
-    guardar_mensaje_db("assistant", respuesta)
-    hablar_jarvis(respuesta)
+    components.html
