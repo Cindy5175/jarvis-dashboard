@@ -8,6 +8,8 @@ import base64
 import sqlite3
 import yfinance as yf
 from audio_recorder_streamlit import audio_recorder
+from datetime import datetime
+import pytz
 
 # 1. Configuración de página
 st.set_page_config(
@@ -40,7 +42,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- MEJORA 3: BASE DE DATOS PERSISTENTE (SQLite) ---
+# Base de datos persistente (SQLite)
 def inicializar_db():
     conn = sqlite3.connect("jarvis_tactical.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -81,6 +83,19 @@ def purgar_db():
 # Cargar mensajes en session_state desde SQLite
 if "messages" not in st.session_state:
     st.session_state.messages = cargar_mensajes_db()
+    # Si la base de datos está vacía, generamos un saludo inicial dinámico
+    if not st.session_state.messages:
+        chile_tz = pytz.timezone("America/Santiago")
+        hora_actual = datetime.now(chile_tz).hour
+        if 5 <= hora_actual < 12:
+            saludo_inicial = "Buenos días, Jefa. Sistemas tácticos en línea y operando al 100%. ¿Qué protocolos ejecutamos hoy?"
+        elif 12 <= hora_actual < 20:
+            saludo_inicial = "Buenas tardes, Jefa. La base de Buin está estable y los sistemas rinden al máximo. ¿En qué le sirvo?"
+        else:
+            saludo_inicial = "Buenas noches, Jefa. Trabajando en horario extendido, como corresponde a este taller. ¿Cuál es la orden?"
+        
+        st.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
+        guardar_mensaje_db("assistant", saludo_inicial)
 
 # Función para reproducir voz sintetizada automáticamente
 def hablar_jarvis(texto):
@@ -124,7 +139,7 @@ def generar_html_pdf(historial):
     html_content += "</body></html>"
     return html_content
 
-# Función del Visor Holográfico 3D blindado
+# Visor Holográfico 3D
 def renderizar_gods_eye(hex_color):
     try:
         gods_eye_html = f"""
@@ -193,7 +208,7 @@ def renderizar_gods_eye(hex_color):
     except Exception as e:
         st.error(f"Error en Estación Holográfica: {e}")
 
-# Función del Mapa Cartográfico
+# Mapa Cartográfico
 def renderizar_mapa_tactico(modo):
     try:
         tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" if modo == "dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
@@ -263,7 +278,6 @@ with st.sidebar:
         st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
         st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
         
-    # --- MEJORA 1: MICRÓFONO Y DICTADO NATIVO ---
     with st.expander("🎙️ Dictado de Voz por Micrófono"):
         st.markdown("<span style='color: #00d2ff;'>Grabe su orden de voz:</span>", unsafe_allow_html=True)
         audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x")
@@ -271,7 +285,6 @@ with st.sidebar:
             st.audio(audio_bytes, format="audio/wav")
             st.info("Audio capturado. Envíelo mediante transcripción en desarrollo.")
 
-    # --- MEJORA 2: PANEL DE ACCIONES BURSÁTILES EN TIEMPO REAL ---
     with st.expander("📈 Mercado Bursátil en Tiempo Real"):
         ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"])
         try:
@@ -289,7 +302,7 @@ with st.sidebar:
             st.error("Error al conectar con la Bolsa.")
         
     with st.expander("📝 Libreta & Bitácora Táctica"):
-        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Mejoras integradas con éxito.")
+        st.text_area("Notas rápidas:", "1. Sistema nominal.\n2. Módulos integrados con éxito.")
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en base de datos.")
             
@@ -383,27 +396,30 @@ if prompt_usuario:
         st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
 
     respuesta = ""
-    with st.spinner("Procesando comando táctico..."):
-        try:
-            if client:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="openai/gpt-oss-20b",
-                )
-                respuesta = chat_completion.choices[0].message.content
-            else:
-                respuesta = "Jefa, el cliente de Groq no se inicializó."
+    # Interceptamos comandos específicos directos antes de llamar a Groq si se desea inmediatez
+    texto_lower = prompt_usuario.lower().strip()
+    if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
+        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
+    else:
+        with st.spinner("Procesando comando táctico..."):
+            try:
+                if client:
+                    chat_completion = client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": prompt_sistema_jarvis},
+                            {"role": "user", "content": prompt_usuario}
+                        ],
+                        model="openai/gpt-oss-20b",
+                    )
+                    respuesta = chat_completion.choices[0].message.content
+                else:
+                    respuesta = "Jefa, el cliente de Groq no se inicializó."
+            except Exception as e:
+                respuesta = f"Error de enlace táctico, Jefa: {e}"
             
-            with st.chat_message("assistant"):
-                st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
-            
-            st.session_state.messages.append({"role": "assistant", "content": respuesta})
-            guardar_mensaje_db("assistant", respuesta)
-            
-            hablar_jarvis(respuesta)
-            
-        except Exception as e:
-            st.error(f"Error de enlace táctico, Jefa: {e}")
+    with st.chat_message("assistant"):
+        st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
+    
+    st.session_state.messages.append({"role": "assistant", "content": respuesta})
+    guardar_mensaje_db("assistant", respuesta)
+    hablar_jarvis(respuesta)
