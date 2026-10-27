@@ -41,7 +41,7 @@ st.markdown("""
 @st.cache_resource
 def obtener_cliente_groq():
     try:
-        api_key = st.secrets.get("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", "")
+        api_key = st.secrets.get("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")
         if not api_key:
             return None
         return Groq(api_key=api_key, timeout=10.0)
