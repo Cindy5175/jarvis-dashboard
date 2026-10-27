@@ -44,36 +44,36 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# 3. Función del Visor Holográfico 3D con Conexión Sísmica Mundial y Cámaras
+# 3. Función del Visor Holográfico 3D blindado contra errores de DOM
 def renderizar_gods_eye(hex_color):
-    gods_eye_html = """
+    gods_eye_html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <style>
-            body { margin: 0; overflow: hidden; background: transparent; }
-            #canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }
-            #hud-text {
+            body {{ margin: 0; overflow: hidden; background: transparent; }}
+            #canvas-container {{ width: 100%; height: 320px; position: relative; cursor: pointer; }}
+            #hud-text {{
                 position: absolute; top: 10px; left: 10px; 
-                font-family: monospace; color: COLOR_HEX; font-size: 11px;
+                font-family: monospace; color: {hex_color}; font-size: 11px;
                 background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
-                border: 1px solid COLOR_HEX;
+                border: 1px solid {hex_color};
                 z-index: 10;
-            }
-            #seismic-hud {
+            }}
+            #seismic-hud {{
                 position: absolute; bottom: 10px; left: 10px; 
                 font-family: monospace; color: #00ffcc; font-size: 10px;
                 background: rgba(0,0,0,0.7); padding: 3px 6px; border-radius: 3px;
                 z-index: 10;
-            }
-            #cam-link {
+            }}
+            #cam-link {{
                 position: absolute; top: 10px; right: 10px;
                 font-family: monospace; color: #ffffff; font-size: 10px;
                 background: rgba(0, 150, 255, 0.6); padding: 4px 8px; border-radius: 4px;
                 text-decoration: none; z-index: 10; border: 1px solid #00d2ff;
-            }
-            #cam-link:hover { background: rgba(0, 210, 255, 0.9); }
+            }}
+            #cam-link:hover {{ background: rgba(0, 210, 255, 0.9); }}
         </style>
     </head>
     <body>
@@ -83,25 +83,25 @@ def renderizar_gods_eye(hex_color):
             <a id="cam-link" href="https://www.windy.com/-Webcams/Chile/Santiago/Santiago/webcams/1423152643" target="_blank">📹 Ver Cámaras Globales</a>
         </div>
         <script>
-            try {
+            try {{
                 const container = document.getElementById('canvas-container');
                 const seismicHud = document.getElementById('seismic-hud');
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
-                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                const renderer = new THREE.WebGLRenderer({{ alpha: true, antialias: true }});
                 renderer.setSize(container.clientWidth, 320);
                 container.appendChild(renderer.domElement);
 
                 const geometry = new THREE.SphereGeometry(2, 24, 24);
                 const wireframe = new THREE.WireframeGeometry(geometry);
                 const line = new THREE.LineSegments(wireframe);
-                line.material.color.set('COLOR_HEX');
+                line.material.color.set('{hex_color}');
                 line.material.opacity = 0.8;
                 line.material.transparent = true;
                 scene.add(line);
 
                 const ringGeo = new THREE.RingGeometry(2.4, 2.45, 64);
-                const ringMat = new THREE.MeshBasicMaterial({ color: 'COLOR_HEX', side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+                const ringMat = new THREE.MeshBasicMaterial({{ color: '{hex_color}', side: THREE.DoubleSide, transparent: true, opacity: 0.9 }});
                 const ring = new THREE.Mesh(ringGeo, ringMat);
                 ring.rotation.x = Math.PI / 3;
                 scene.add(ring);
@@ -113,45 +113,45 @@ def renderizar_gods_eye(hex_color):
 
                 fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.geojson')
                     .then(response => response.json())
-                    .then(data => {
+                    .then(data => {{
                         const sismos = data.features;
-                        if (sismos.length > 0) {
+                        if (sismos.length > 0) {{
                             const ultimo = sismos[0].properties;
-                            seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${ultimo.mag} - ${ultimo.place}`;
+                            seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${{ultimo.mag}} - ${{ultimo.place}}`;
                             velocidadRotacion = 0.02;
                             line.material.color.set('#ff3333');
-                        } else {
+                        }} else {{
                             seismicHud.innerText = `🟢 RED GLOBAL ESTABLE - BUIN / SANTIAGO OPERATIVO`;
-                        }
-                    })
-                    .catch(err => {
+                        }}
+                    }})
+                    .catch(err => {{
                         seismicHud.innerText = `📡 TELEMETRÍA TÁCTICA ACTIVA // BUIN`;
-                    });
+                    }});
 
-                container.addEventListener('click', (e) => {
+                container.addEventListener('click', (e) => {{
                     if (e.target.id === 'cam-link') return;
                     modoAlerta = !modoAlerta;
                     velocidadRotacion = modoAlerta ? 0.035 : 0.004;
                     seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO SÍSMICO PROFUNDO ACTIVADO" : "🟢 ESTACIÓN EN ESPERA";
-                });
+                }});
 
-                function animate() {
+                function animate() {{
                     requestAnimationFrame(animate);
                     line.rotation.y += velocidadRotacion;
                     ring.rotation.z += velocidadRotacion * 0.7;
                     renderer.render(scene, camera);
-                }
+                }}
                 animate();
-            } catch (err) {
+            }} catch (err) {{
                 console.error("Error al renderizar el visor 3D:", err);
-            }
+            }}
         </script>
     </body>
     </html>
-    """.replace("COLOR_HEX", hex_color)
-    components.html(gods_eye_html, height=330)
+    """
+    components.html(gods_eye_html, height=330, scrolling=False)
 
-# 4. Función del Mapa Cartográfico con Leaflet (Libre de llaves y 100% funcional)
+# 4. Función del Mapa Cartográfico con Leaflet blindado
 def renderizar_mapa_tactico(modo):
     tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" if modo == "dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
     
@@ -178,7 +178,7 @@ def renderizar_mapa_tactico(modo):
     </body>
     </html>
     """
-    components.html(mapa_html, height=410)
+    components.html(mapa_html, height=410, scrolling=False)
 
 # 5. BARRA LATERAL
 with st.sidebar:
