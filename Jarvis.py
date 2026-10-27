@@ -215,33 +215,33 @@ with st.sidebar:
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
-# 6. PANEL PRINCIPAL - Encabezado Centrado con el REACTOR ARC Triangular y Jarvis IA Autónomo
+# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc y Jarvis IA Autónomo
 st.markdown(
     """
-    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 10px; margin-bottom: 25px;">
+    <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
         <!-- Reactor Arc Triangular Estilo Tony Stark -->
         <div style="
-            width: 44px; height: 44px; border-radius: 50%; 
+            min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
             background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
             border: 2px solid #00d2ff;
-            box-shadow: 0 0 18px #00d2ff, inset 0 0 10px #ffffff;
+            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
             display: flex; justify-content: center; align-items: center;
             animation: pulse-arc 2s infinite;
         ">
             <div style="
                 width: 0; height: 0; 
-                border-left: 9px solid transparent;
-                border-right: 9px solid transparent;
-                border-bottom: 16px solid #ffffff;
-                filter: drop-shadow(0 0 6px #00d2ff);
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-bottom: 14px solid #ffffff;
+                filter: drop-shadow(0 0 5px #00d2ff);
             "></div>
         </div>
-        <h1 style="margin: 0; font-size: 2.3rem; font-family: sans-serif; text-align: center;">Jarvis IA Autónomo</h1>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">Jarvis IA Autónomo</h1>
     </div>
     <style>
     @keyframes pulse-arc {
         0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
-        50% { transform: scale(1.06); box-shadow: 0 0 24px #00d2ff, inset 0 0 14px #fff; }
+        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
         100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
     }
     </style>
