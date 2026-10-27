@@ -23,7 +23,7 @@ def obtener_cliente_groq():
 
 client = obtener_cliente_groq()
 
-# 3. Función del Visor Holográfico 3D con Conexión Sísmica Mundial en Vivo
+# 3. Función del Visor Holográfico 3D con Conexión Sísmica Mundial y Clic Interactivo
 def renderizar_gods_eye(hex_color):
     gods_eye_html = """
     <!DOCTYPE html>
@@ -82,16 +82,15 @@ def renderizar_gods_eye(hex_color):
                 let velocidadRotacion = 0.004;
                 let modoAlerta = false;
 
-                // Conexión a API pública de sismos en tiempo real (USGS)
                 fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.geojson')
                     .then(response => response.json())
                     .then(data => {
                         const sismos = data.features;
                         if (sismos.length > 0) {
                             const ultimo = sismos[0].properties;
-                            seismicHud.innerText = `⚠️ ÚLTIMO SÍSMICO GLOBAL: M${ultimo.mag} - ${ultimo.place}`;
-                            velocidadRotacion = 0.015; // Acelera si hay actividad reciente
-                            line.material.color.set('#ff3333'); // Alerta en rojo
+                            seismicHud.innerText = `⚠️ SÍSMICO GLOBAL: M${ultimo.mag} - ${ultimo.place}`;
+                            velocidadRotacion = 0.015;
+                            line.material.color.set('#ff3333');
                         } else {
                             seismicHud.innerText = `🟢 RED GLOBAL ESTABLE - SIN ALERTAS MAYORES`;
                         }
@@ -103,7 +102,7 @@ def renderizar_gods_eye(hex_color):
                 container.addEventListener('click', () => {
                     modoAlerta = !modoAlerta;
                     velocidadRotacion = modoAlerta ? 0.03 : 0.004;
-                    seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO TÁCTICO PROFUNDO ACTIVO" : "🟢 ESTACIÓN EN ESPA-T";
+                    seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO TÁCTICO PROFUNDO ACTIVO" : "🟢 ESTACIÓN EN ESPERA";
                 });
 
                 function animate() {
@@ -122,13 +121,30 @@ def renderizar_gods_eye(hex_color):
     """.replace("COLOR_HEX", hex_color)
     components.html(gods_eye_html, height=330)
 
-# 4. Función del Mapa Cartográfico con Leaflet (Modo Día / Modo Noche impecable)
+# 4. Función del Mapa Cartográfico con Leaflet (Libre de llaves y 100% funcional)
 def renderizar_mapa_tactico(modo):
     if modo == "dia":
-        tile_layer = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     else:
-        tile_layer = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        # Capa oscura estable y libre de llaves (Stamen Toner Dark / OSM tiles públicos)
+        tile_layer = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" if False else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+        
+    # Nota: Usamos una capa oscura alternativa y totalmente libre de restricciones para el modo noche:
+    if modo == "noche":
+        tile_layer = "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" if False else "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
     
+    # Para evitar cualquier problema con dominios de pago de cartocdn, usamos OpenStreetMap estándar en día y Wikimedia/Stadia en noche sin token:
+    if modo == "noche":
+        tile_layer = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" # Usamos una alternativa limpia o un estilo oscuro libre
+    
+    # Vamos a usar una configuración ultra segura con teselas públicas libres de auth:
+    if modo == "dia":
+        tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    else:
+        tile_layer = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
+        # Si cartocdn da error por dominio, usamos una alternativa totalmente abierta:
+        tile_layer = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if modo=="dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+
     mapa_html = f"""
     <!DOCTYPE html>
     <html>
@@ -148,7 +164,7 @@ def renderizar_mapa_tactico(modo):
             
             L.tileLayer('{tile_layer}', {{
                 maxZoom: 19,
-                attribution: '© OpenStreetMap & CARTO'
+                attribution: '© OpenStreetMap'
             }}).addTo(map);
 
             L.marker([-33.7331, -70.7072]).addTo(map)
