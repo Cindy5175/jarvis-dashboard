@@ -26,13 +26,13 @@ client = obtener_cliente_groq()
 with st.sidebar:
     st.subheader("⚙️ Centro de Comando Stark")
     
-    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
+    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica (God's Eye View)", value=True)
     
     st.markdown("---")
     
     tema_hud = st.selectbox(
         "Tema HUD:",
-        ["Azul Arc", "Rojo Cobre", "Grafito Oscuro"]
+        ["Rojo Cobre/Terracota", "Azul Arc", "Grafito Oscuro"]
     )
     
     protocolo_ia = st.selectbox(
@@ -61,7 +61,7 @@ with st.sidebar:
     with st.expander("📝 Libreta & Bitácora Táctica"):
         st.text_area(
             "Notas rápidas y registros:", 
-            "1. Planificación de agosto: God's Eye View y Siri.\n2. Noviembre: Catálogo 'Sabor y Receta 24/7' ($5 USD)."
+            "1. Agosto: God's Eye View y conexión Siri (jarvis.py).\n2. Noviembre: Catálogo 'Sabor y Receta 24/7' (4 e-books a $5 USD, pauta SII y boletas automáticas)."
         )
         if st.button("Guardar Bitácora"):
             st.success("Datos guardados en memoria táctica.")
@@ -72,6 +72,9 @@ with st.sidebar:
 
 # 4. Panel Principal - Interfaz de J.A.R.V.I.S.
 st.title("⚡ Centro de Comando Stark - J.A.R.V.I.S.")
+
+if mostrar_estacion:
+    st.info("🗺️ **Módulo God's Eye View activo:** Estación holográfica y grid táctico listos para operar.")
 
 # Personalidad clásica de J.A.R.V.I.S.
 prompt_sistema_jarvis = (
