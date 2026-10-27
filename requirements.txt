@@ -1,5 +1,5 @@
 streamlit
 groq
+google-generativeai
+streamlit-components-v1
 gtts
-pandas
-numpy
