@@ -126,24 +126,7 @@ def renderizar_mapa_tactico(modo):
     if modo == "dia":
         tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     else:
-        # Capa oscura estable y libre de llaves (Stamen Toner Dark / OSM tiles públicos)
-        tile_layer = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" if False else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
-        
-    # Nota: Usamos una capa oscura alternativa y totalmente libre de restricciones para el modo noche:
-    if modo == "noche":
-        tile_layer = "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" if False else "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
-    
-    # Para evitar cualquier problema con dominios de pago de cartocdn, usamos OpenStreetMap estándar en día y Wikimedia/Stadia en noche sin token:
-    if modo == "noche":
-        tile_layer = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png" # Usamos una alternativa limpia o un estilo oscuro libre
-    
-    # Vamos a usar una configuración ultra segura con teselas públicas libres de auth:
-    if modo == "dia":
-        tile_layer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    else:
-        tile_layer = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
-        # Si cartocdn da error por dominio, usamos una alternativa totalmente abierta:
-        tile_layer = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" if modo=="dia" else "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+        tile_layer = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
 
     mapa_html = f"""
     <!DOCTYPE html>
@@ -232,23 +215,34 @@ with st.sidebar:
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
-# 6. PANEL PRINCIPAL - Encabezado Centrado con Reactor y Jarvis IA Autónomo
+# 6. PANEL PRINCIPAL - Encabezado Centrado con el REACTOR ARC Triangular y Jarvis IA Autónomo
 st.markdown(
     """
-    <div style="display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px;">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 10px; margin-bottom: 25px;">
+        <!-- Reactor Arc Triangular Estilo Tony Stark -->
         <div style="
-            width: 32px; height: 32px; border-radius: 50%; 
-            background: radial-gradient(circle, #00d2ff 0%, #0044ff 70%, #000 100%);
-            box-shadow: 0 0 14px #00d2ff, inset 0 0 6px #fff;
-            animation: pulse 2s infinite;
-        "></div>
+            width: 44px; height: 44px; border-radius: 50%; 
+            background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
+            border: 2px solid #00d2ff;
+            box-shadow: 0 0 18px #00d2ff, inset 0 0 10px #ffffff;
+            display: flex; justify-content: center; align-items: center;
+            animation: pulse-arc 2s infinite;
+        ">
+            <div style="
+                width: 0; height: 0; 
+                border-left: 9px solid transparent;
+                border-right: 9px solid transparent;
+                border-bottom: 16px solid #ffffff;
+                filter: drop-shadow(0 0 6px #00d2ff);
+            "></div>
+        </div>
         <h1 style="margin: 0; font-size: 2.3rem; font-family: sans-serif; text-align: center;">Jarvis IA Autónomo</h1>
     </div>
     <style>
-    @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
-        50% { transform: scale(1.08); box-shadow: 0 0 20px #00d2ff; }
-        100% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
+    @keyframes pulse-arc {
+        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
+        50% { transform: scale(1.06); box-shadow: 0 0 24px #00d2ff, inset 0 0 14px #fff; }
+        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
     }
     </style>
     """,
