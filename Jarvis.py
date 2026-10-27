@@ -127,7 +127,7 @@ def renderizar_gods_eye(hex_color):
                     .then(data => {
                         const sismos = data.features;
                         if (sismos.length > 0) {
-                            const ultimo = sismos.features[0].properties;
+                            const ultimo = sismos[0].properties;
                             seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${ultimo.mag} - ${ultimo.place}`;
                             velocidadRotacion = 0.02;
                             line.material.color.set('#ff3333');
@@ -230,3 +230,85 @@ st.markdown(
         <div style="
             min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
             background: radial-gradient(circle, #ffffff 0%, #00d2ff 40%, #002244 80%, #000000 100%);
+            border: 2px solid #00d2ff;
+            box-shadow: 0 0 16px #00d2ff, inset 0 0 8px #ffffff;
+            display: flex; justify-content: center; align-items: center;
+            animation: pulse-arc 2s infinite;
+        ">
+            <div style="
+                width: 0; height: 0; 
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-bottom: 14px solid #ffffff;
+                filter: drop-shadow(0 0 5px #00d2ff);
+            "></div>
+        </div>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">Jarvis IA Autónomo</h1>
+    </div>
+    <style>
+    @keyframes pulse-arc {
+        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
+        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
+        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+if mostrar_estacion:
+    st.markdown("### 🌐 Estación Holográfica God's Eye View")
+    renderizar_gods_eye(hex_actual)
+
+if mostrar_mapa:
+    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
+    if "modo_mapa" not in st.session_state:
+        st.session_state.modo_mapa = "noche"
+        
+    col_d, col_n, _ = st.columns([1, 1, 4])
+    with col_d:
+        if st.button("☀️ Modo Día"):
+            st.session_state.modo_mapa = "dia"
+            st.rerun()
+    with col_n:
+        if st.button("🌙 Modo Noche"):
+            st.session_state.modo_mapa = "noche"
+            st.rerun()
+            
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
+
+# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
+prompt_sistema_jarvis = (
+    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
+    "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
+    "pero mezclas tu eficiencia impecable con altas sobredosis de ironía, sarcasmo fino y comentarios ingeniosos estilo Tony Stark. "
+    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
+)
+
+prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
+
+if prompt_usuario:
+    respuesta = ""
+    with st.spinner("Procesando comando táctico..."):
+        try:
+            if motor_ia == "Google Gemini Pro" and clients["gemini"]:
+                chat = clients["gemini"].start_chat(history=[])
+                response = chat.send_message(f"{prompt_sistema_jarvis}\n\nComando de la Jefa: {prompt_usuario}")
+                respuesta = response.text
+            elif clients["groq"]:
+                chat_completion = clients["groq"].chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": prompt_sistema_jarvis},
+                        {"role": "user", "content": prompt_usuario}
+                    ],
+                    model="llama3-70b-8192",
+                )
+                respuesta = chat_completion.choices[0].message.content
+            else:
+                respuesta = "Jefa, no hay ninguna llave de API configurada en los secrets para procesar su orden. ¿Desea que fabrique una con un destornillador sónico?"
+            
+            st.write(respuesta)
+            hablar_jarvis(respuesta)
+            
+        except Exception as e:
+            st.error(f"Error de enlace táctico, Jefa: {e}")
