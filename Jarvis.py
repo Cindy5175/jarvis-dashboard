@@ -68,7 +68,7 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# 3. Función del Visor Holográfico 3D blindado contra errores de DOM
+# 3. Función del Visor Holográfico 3D (Globo más abajo y enlace de cámaras alineado abajo)
 def renderizar_gods_eye(hex_color):
     gods_eye_html = f"""
     <!DOCTYPE html>
@@ -92,7 +92,7 @@ def renderizar_gods_eye(hex_color):
                 z-index: 10;
             }}
             #cam-link {{
-                position: absolute; top: 10px; right: 10px;
+                position: absolute; bottom: 10px; right: 10px;
                 font-family: monospace; color: #ffffff; font-size: 10px;
                 background: rgba(0, 150, 255, 0.6); padding: 4px 8px; border-radius: 4px;
                 text-decoration: none; z-index: 10; border: 1px solid #00d2ff;
@@ -122,12 +122,16 @@ def renderizar_gods_eye(hex_color):
                 line.material.color.set('{hex_color}');
                 line.material.opacity = 0.8;
                 line.material.transparent = true;
+                
+                // Bajamos ligeramente la posición vertical del globo
+                line.position.y = -0.35;
                 scene.add(line);
 
                 const ringGeo = new THREE.RingGeometry(2.4, 2.45, 64);
                 const ringMat = new THREE.MeshBasicMaterial({{ color: '{hex_color}', side: THREE.DoubleSide, transparent: true, opacity: 0.9 }});
                 const ring = new THREE.Mesh(ringGeo, ringMat);
                 ring.rotation.x = Math.PI / 3;
+                ring.position.y = -0.35;
                 scene.add(ring);
 
                 camera.position.z = 5.5;
