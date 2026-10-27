@@ -57,7 +57,7 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# 3. Función del Visor Holográfico 3D blindado contra errores de DOM
+# 3. Función del Visor Holográfico 3D blindado contra errores de DOM y f-strings
 def renderizar_gods_eye(hex_color):
     gods_eye_html = f"""
     <!DOCTYPE html>
@@ -130,23 +130,23 @@ def renderizar_gods_eye(hex_color):
                         const sismos = data.features;
                         if (sismos.length > 0) {{
                             const ultimo = sismos[0].properties;
-                            seismicHud.innerText = `⚠️ ALERTA SÍSMICA: M${{ultimo.mag}} - ${{ultimo.place}}`;
+                            seismicHud.innerText = '⚠️ ALERTA SÍSMICA: M' + ultimo.mag + ' - ' + ultimo.place;
                             velocidadRotacion = 0.02;
                             line.material.color.set('#ff3333');
                         }} else {{
-                            seismicHud.innerText = `🟢 RED GLOBAL ESTABLE - BUIN / SANTIAGO OPERATIVO`;
+                            seismicHud.innerText = '🟢 RED GLOBAL ESTABLE - BUIN / SANTIAGO OPERATIVO';
                         }}
                     }})
                     .catch(err => {{
-                        seismicHud.innerText = `📡 TELEMETRÍA TÁCTICA ACTIVA // BUIN`;
+                        seismicHud.innerText = '📡 TELEMETRÍA TÁCTICA ACTIVA // BUIN';
                     }});
 
                 container.addEventListener('click', (e) => {{
                     if (e.target.id === 'cam-link') return;
                     modoAlerta = !modoAlerta;
                     velocidadRotacion = modoAlerta ? 0.035 : 0.004;
-                    seismicHud.innerText = modoAlerta ? "⚡ MODO ESCANEO SÍSMICO PROFUNDO ACTIVADO" : "🟢 ESTACIÓN EN ESPERA";
-                });
+                    seismicHud.innerText = modoAlerta ? '⚡ MODO ESCANEO SÍSMICO PROFUNDO ACTIVADO' : '🟢 ESTACIÓN EN ESPERA';
+                }});
 
                 function animate() {{
                     requestAnimationFrame(animate);
