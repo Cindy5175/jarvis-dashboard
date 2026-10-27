@@ -298,3 +298,90 @@ st.markdown(
             display: flex; justify-content: center; align-items: center;
             animation: pulse-arc 2s infinite;
         ">
+            <div style="
+                width: 0; height: 0; 
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-bottom: 14px solid #ffffff;
+                filter: drop-shadow(0 0 5px #00d2ff);
+            "></div>
+        </div>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap; color: #00d2ff !important; text-shadow: 0 0 12px rgba(0,210,255,0.8);">J.A.R.V.I.S. IA Autónomo</h1>
+    </div>
+    <style>
+    @keyframes pulse-arc {
+        0% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
+        50% { transform: scale(1.06); box-shadow: 0 0 22px #00d2ff, inset 0 0 12px #fff; }
+        100% { transform: scale(0.95); box-shadow: 0 0 10px #00d2ff, inset 0 0 6px #fff; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+if mostrar_estacion:
+    st.markdown("### 🌐 Estación Holográfica God's Eye View")
+    renderizar_gods_eye(hex_actual)
+
+if mostrar_mapa:
+    st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
+    if "modo_mapa" not in st.session_state:
+        st.session_state.modo_mapa = "noche"
+        
+    col_d, col_n, _ = st.columns([1, 1, 4])
+    with col_d:
+        if st.button("☀️ Modo Día"):
+            st.session_state.modo_mapa = "dia"
+            st.rerun()
+    with col_n:
+        if st.button("🌙 Modo Noche"):
+            st.session_state.modo_mapa = "noche"
+            st.rerun()
+            
+    renderizar_mapa_tactico(st.session_state.modo_mapa)
+
+# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S. (Historial de Conversación)
+prompt_sistema_jarvis = (
+    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
+    "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
+    "pero mezclas tu eficiencia impecable con altas sobredosis de ironía, sarcasmo fino y comentarios ingeniosos estilo Tony Stark. "
+    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
+)
+
+# Mostrar historial de mensajes anteriores
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(f"<span style='color: #00d2ff;'>{message['content']}</span>", unsafe_allow_html=True)
+
+prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
+
+if prompt_usuario:
+    # Registrar mensaje de la usuaria
+    st.session_state.messages.append({"role": "user", "content": prompt_usuario})
+    with st.chat_message("user"):
+        st.markdown(f"<span style='color: #00d2ff;'>{prompt_usuario}</span>", unsafe_allow_html=True)
+
+    respuesta = ""
+    with st.spinner("Procesando comando táctico..."):
+        try:
+            if client:
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": prompt_sistema_jarvis},
+                        {"role": "user", "content": prompt_usuario}
+                    ],
+                    model="llama3-70b-8192",
+                )
+                respuesta = chat_completion.choices[0].message.content
+            else:
+                respuesta = "Jefa, la clave de API de Groq no está configurada en los secrets. ¿Desea que hackee el Pentágono para conseguir otra o la anota usted?"
+            
+            with st.chat_message("assistant"):
+                st.markdown(f"<span style='color: #00d2ff; font-size: 1.1rem; text-shadow: 0 0 8px rgba(0,210,255,0.5);'>{respuesta}</span>", unsafe_allow_html=True)
+            
+            # Guardar respuesta y hablar
+            st.session_state.messages.append({"role": "assistant", "content": respuesta})
+            hablar_jarvis(respuesta)
+            
+        except Exception as e:
+            st.error(f"Error de enlace táctico, Jefa: {e}")
