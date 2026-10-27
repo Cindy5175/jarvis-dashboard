@@ -183,7 +183,7 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-# 5. BARRA LATERAL (Restaurada al 100%)
+# 5. BARRA LATERAL
 with st.sidebar:
     st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
     
@@ -327,7 +327,7 @@ if prompt_usuario:
                         {"role": "system", "content": prompt_sistema_jarvis},
                         {"role": "user", "content": prompt_usuario}
                     ],
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
