@@ -1,38 +1,39 @@
+import streamlit as st
 import time
 from groq import Groq
-import streamlit as st
 
-# Inicializar cliente de Groq con un timeout de seguridad (10 segundos)
-# Esto evita que la app se quede bloqueada indefinidamente esperando una respuesta de red.
-try:
-    api_key = st.secrets.get("GROQ_API_KEY", "tu_api_key")
-    client = Groq(api_key=api_key, timeout=10.0)
-except Exception as e:
-    client = None
+# 1. Configuración visual inicial (esto debe ser lo primero para que pinte la pantalla)
+st.set_page_config(page_title="Centro de Comando Stark", layout="wide")
 
-def consultar_groq_seguro(prompt_usuario, modelo="llama3-70b-8192"):
-    """
-    Envía una consulta a Groq con control de errores y timeout para proteger 
-    el Centro de Comando Stark de pantallas en blanco.
-    """
-    if not client:
-        st.error("⚠️ La clave de API de Groq no está configurada correctamente en los secrets.")
-        return "Error de configuración."
+st.title("⚡ Centro de Comando Stark - N.O.V.A.")
 
+# 2. Inicialización segura del cliente (usando st.cache_resource para que no bloquee)
+@st.cache_resource
+def obtener_cliente_groq():
     try:
-        # Llamada protegida a la API de Groq
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt_usuario,
-                }
-            ],
-            model=modelo,
-        )
-        return chat_completion.choices[0].message.content
-        
-    except Exception as e:
-        # Capturamos cualquier error de red, timeout o fallo del servidor y lo mostramos limpiamente
-        st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
+        api_key = st.secrets.get("GROQ_API_KEY", "")
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
         return None
+
+client = obtener_cliente_groq()
+
+# 3. Entrada de usuario controlada por interfaz (evita bloqueos automáticos)
+prompt_usuario = st.chat_input("Escriba su comando para N.O.V.A. o Siri...")
+
+if prompt_usuario:
+    if not client:
+        st.error("⚠️ Falta configurar la API Key de Groq en los secrets.")
+    else:
+        with st.spinner("Procesando comando táctico..."):
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt_usuario}],
+                    model="llama3-70b-8192",
+                )
+                respuesta = chat_completion.choices[0].message.content
+                st.write(respuesta)
+            except Exception as e:
+                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
