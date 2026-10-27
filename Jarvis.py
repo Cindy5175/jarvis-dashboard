@@ -1,41 +1,89 @@
-# 4. Función del Mapa Cartográfico con Leaflet (Libre y 100% Funcional sin errores)
-def renderizar_mapa_tactico(modo):
-    # Capas públicas estables y gratuitas (CartoDB Positron para Día, CartoDB Dark Matter para Noche)
-    if modo == "dia":
-        tile_layer = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-    else:
-        tile_layer = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    
-    mapa_html = f"""
+import streamlit as st
+import time
+from groq import Groq
+import streamlit.components.v1 as components
+
+# 1. Configuración de página
+st.set_page_config(
+    page_title="Jarvis IA Autónomo",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# 2. Inicialización de cliente Groq seguro
+@st.cache_resource
+def obtener_cliente_groq():
+    try:
+        api_key = st.secrets.get("GROQ_API_KEY", "")
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
+        return None
+
+client = obtener_cliente_groq()
+
+# 3. Función del Visor Holográfico 3D (God's Eye View)
+def renderizar_gods_eye(hex_color):
+    gods_eye_html = """
     <!DOCTYPE html>
     <html>
     <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <style>
-            body {{ margin: 0; padding: 0; }}
-            #map {{ width: 100%; height: 400px; border-radius: 8px; }}
+            body { margin: 0; overflow: hidden; background: transparent; }
+            #canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }
+            #hud-text {
+                position: absolute; top: 10px; left: 10px; 
+                font-family: monospace; color: COLOR_HEX; font-size: 11px;
+                background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
+                border: 1px solid COLOR_HEX;
+                z-index: 10;
+            }
         </style>
     </head>
     <body>
-        <div id="map"></div>
+        <div id="canvas-container" title="Haga clic para acelerar rotación táctica">
+            <div id="hud-text">GOD's EYE VIEW // ESTACIÓN ACTIVA: BUIN - SANTIAGO</div>
+        </div>
         <script>
-            const map = L.map('map').setView([-33.7331, -70.7072], 12);
-            
-            L.tileLayer('{tile_layer}', {{
-                maxZoom: 19,
-                attribution: '© OpenStreetMap & CARTO'
-            }}).addTo(map);
+            try {
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(container.clientWidth, 320);
+                container.appendChild(renderer.domElement);
 
-            L.marker([-33.7331, -70.7072]).addTo(map)
-                .bindPopup('<b>Base Operativa Buin</b><br>Telemetría activa.')
-                .openPopup();
+                const geometry = new THREE.SphereGeometry(2, 24, 24);
+                const wireframe = new THREE.WireframeGeometry(geometry);
+                const line = new THREE.LineSegments(wireframe);
+                line.material.color.set('COLOR_HEX');
+                line.material.opacity = 0.8;
+                line.material.transparent = true;
+                scene.add(line);
 
-            L.marker([-33.4489, -70.6693]).addTo(map)
-                .bindPopup('<b>Santiago Centro</b><br>Grid Táctico.');
-        </script>
-    </body>
-    </html>
-    """
-    components.html(mapa_html, height=410)
+                const ringGeo = new THREE.RingGeometry(2.4, 2.45, 64);
+                const ringMat = new THREE.MeshBasicMaterial({ color: 'COLOR_HEX', side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 3;
+                scene.add(ring);
+
+                camera.position.z = 5.5;
+
+                let velocidadRotacion = 0.004;
+                container.addEventListener('click', () => {
+                    velocidadRotacion = velocidadRotacion === 0.004 ? 0.025 : 0.004;
+                });
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    line.rotation.y += velocidadRotacion;
+                    ring.rotation.z += velocidadRotacion * 0.7;
+                    renderer.render(scene, camera);
+                }
+                animate();
+            } catch (err) {
+                console.error("Error al renderizar el visor 3D:", err);
+            }
+        </script
