@@ -327,7 +327,7 @@ if prompt_usuario:
                         {"role": "system", "content": prompt_sistema_jarvis},
                         {"role": "user", "content": prompt_usuario}
                     ],
-                    model="llama3-8b",
+                    model="llama-3.1-8b-instant",
                 )
                 respuesta = chat_completion.choices[0].message.content
             else:
