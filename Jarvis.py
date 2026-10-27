@@ -139,7 +139,7 @@ def generar_html_pdf(historial):
     html_content += "</body></html>"
     return html_content
 
-# Visor Holográfico 3D (Corregido para evitar conflictos de f-string)
+# Visor Holográfico 3D
 def renderizar_gods_eye(hex_color):
     try:
         gods_eye_html = f"""
@@ -402,11 +402,45 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-if mostrar_estacion:
+# --- BOTÓN TÁCTICO PARA DESPLEGAR EL CENTRO DE MANDO HOLOGRÁFICO ---
+st.markdown("---")
+if "mostrar_centro_mando" not in st.session_state:
+    st.session_state.mostrar_centro_mando = False
+
+if st.button("🌐 ACTIVAR / DESPLEGAR CENTRO DE MANDO HOLOGRÁFICO"):
+    st.session_state.mostrar_centro_mando = not st.session_state.mostrar_centro_mando
+    st.rerun()
+
+if st.session_state.mostrar_centro_mando:
+    st.markdown("""
+        <div style="
+            border: 2px solid #00d2ff; 
+            padding: 20px; 
+            border-radius: 10px; 
+            background: rgba(0, 10, 30, 0.85); 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+            margin-bottom: 20px;
+        ">
+            <h3 style="color: #00d2ff; margin-top: 0; font-family: monospace;">⚡ SISTEMA HOLOGRÁFICO EN LÍNEA // BUIN COMMAND</h3>
+            <p style="color: #00d2ff; font-family: monospace;">Red satelital orbital sincronizada y flujos de datos tácticos activos.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_hud1, col_hud2 = st.columns(2)
+    with col_hud1:
+        st.markdown("#### 🛰️ Estado de Flota Orbital")
+        st.info("SAT-A24: NOMINAL\nVelocidad: 27,000 km/h\nÁrea de Cobertura: CHILE")
+        renderizar_gods_eye(hex_actual)
+        
+    with col_hud2:
+        st.markdown("#### 🗺️ Telemetría y Mapa Táctico")
+        renderizar_mapa_tactico(st.session_state.get("modo_mapa", "noche"))
+
+if mostrar_estacion and not st.session_state.mostrar_centro_mando:
     st.markdown("### 🌐 Estación Holográfica God's Eye View")
     renderizar_gods_eye(hex_actual)
 
-if mostrar_mapa:
+if mostrar_mapa and not st.session_state.mostrar_centro_mando:
     st.markdown("### 🗺️ Mapa Cartográfico Táctico (Buin - Santiago)")
     if "modo_mapa" not in st.session_state:
         st.session_state.modo_mapa = "noche"
