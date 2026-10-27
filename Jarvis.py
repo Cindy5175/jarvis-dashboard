@@ -13,15 +13,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos globales para forzar el azul neón en textos clave
+# Estilos globales para forzar el azul neón en textos, expansores, menús y módulos
 st.markdown("""
     <style>
     h1, h2, h3, h4, h5, h6, span.neon-title {
         color: #00d2ff !important;
         text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
     }
-    .stMarkdown p, label {
-        color: #e0f7ff !important;
+    .stMarkdown p, label, .streamlit-expanderHeader span, div[data-testid="stExpander"] summary span {
+        color: #00d2ff !important;
+        text-shadow: 0 0 6px rgba(0, 210, 255, 0.4);
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #00d2ff !important;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        text-shadow: 0 0 10px #00d2ff;
+    }
+    .stSelectbox label, .stCheckbox span {
+        color: #00d2ff !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -57,7 +68,7 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# 3. Función del Visor Holográfico 3D blindado contra errores de DOM y f-strings
+# 3. Función del Visor Holográfico 3D blindado contra errores de DOM
 def renderizar_gods_eye(hex_color):
     gods_eye_html = f"""
     <!DOCTYPE html>
@@ -211,11 +222,11 @@ with st.sidebar:
     
     st.markdown("---")
     with st.expander("🌤️ Clima & Alertas"):
-        st.write("**Ubicación:** Buin / Santiago, Chile")
+        st.markdown("<span style='color: #00d2ff;'>**Ubicación:** Buin / Santiago, Chile</span>", unsafe_allow_html=True)
         st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
     with st.expander("📡 Radar de Red & Enlace Siri / Voz"):
-        st.write("**Estado Siri (`jarvis.py`):** 🟢 En línea (ws://localhost:8765)")
-        st.write("**Síntesis de Voz Automática:** Activa")
+        st.markdown("<span style='color: #00d2ff;'>**Estado Siri (`jarvis.py`):** 🟢 En línea (ws://localhost:8765)</span>", unsafe_allow_html=True)
+        st.markdown("<span style='color: #00d2ff;'>**Síntesis de Voz Automática:** Activa</span>", unsafe_allow_html=True)
         st.progress(95)
     with st.expander("📝 Libreta & Bitácora Táctica"):
         st.text_area("Notas rápidas:", "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre.")
