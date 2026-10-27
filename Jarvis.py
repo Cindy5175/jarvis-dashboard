@@ -2,10 +2,11 @@ import streamlit as st
 import time
 from groq import Groq
 import streamlit.components.v1 as components
+import pandas as pd
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="Centro de Comando Stark - Jarvis IA Autónomo",
+    page_title="Jarvis IA Autónomo",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -88,7 +89,7 @@ def renderizar_gods_eye(hex_color):
 
 # 4. BARRA LATERAL - Todos los Módulos del Centro de Comando Stark
 with st.sidebar:
-    st.subheader("⚙️ Centro de Comando Stark")
+    st.subheader("⚙️ Panel Control Jarvis")
     
     mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
     mostrar_mapa = st.checkbox("Mostrar Mapa Táctico (Buin/Santiago)", value=True)
@@ -131,97 +132,4 @@ with st.sidebar:
     with st.expander("📝 Libreta & Bitácora Táctica"):
         st.text_area(
             "Notas rápidas y registros:", 
-            "1. God's Eye View + Siri cargados.\n2. Catálogo 'Sabor y Receta 24/7' preparado para noviembre."
-        )
-        if st.button("Guardar Bitácora"):
-            st.success("Datos guardados en memoria táctica.")
-        
-    with st.expander("🎵 Reproductor de Música (Spotify)"):
-        st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
-
-# 5. PANEL PRINCIPAL - Encabezado con Reactor y Jarvis IA Autónomo
-st.markdown(
-    """
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-        <div style="
-            width: 28px; height: 28px; border-radius: 50%; 
-            background: radial-gradient(circle, #00d2ff 0%, #0044ff 70%, #000 100%);
-            box-shadow: 0 0 12px #00d2ff, inset 0 0 6px #fff;
-            animation: pulse 2s infinite;
-        "></div>
-        <h1 style="margin: 0; font-size: 2.2rem; font-family: sans-serif;">Centro de Comando Stark - Jarvis IA Autónomo</h1>
-    </div>
-    <style>
-    @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
-        50% { transform: scale(1.05); box-shadow: 0 0 18px #00d2ff; }
-        100% { transform: scale(0.95); box-shadow: 0 0 8px #00d2ff; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if mostrar_estacion:
-    st.markdown("### 🌐 Estación Holográfica God's Eye View")
-    renderizar_gods_eye(hex_actual)
-
-# 6. MÓDULO DE MAPA CON BOTONES DÍA / NOCHE
-if mostrar_mapa:
-    st.markdown("### 🗺️ Mapa Táctico Regional (Buin - Santiago)")
-    
-    col_btn1, col_btn2, col_col3 = st.columns([1, 1, 4])
-    with col_btn1:
-        modo_dia = st.button("☀️ Modo Día")
-    with col_btn2:
-        modo_noche = st.button("🌙 Modo Noche")
-        
-    # Estado por defecto del mapa (modo noche o día según selección)
-    estilo_mapa = "mapbox://styles/mapbox/navigation-night-v1" if modo_noche else "mapbox://styles/mapbox/dark-v10"
-    if modo_dia:
-        estilo_mapa = "mapbox://styles/mapbox/light-v10"
-
-    import pandas as pd
-    # Coordenadas centradas en Buin / Metropolitana
-    df_mapa = pd.DataFrame({
-        'lat': [-33.7331, -33.4489],
-        'lon': [--70.7331 if False else -70.7072, -70.6693],
-        'name': ['Base Operativa Buin', 'Santiago Centro']
-    })
-    # Corregir longitud de Buin
-    df_mapa = pd.DataFrame({
-        'lat': [-33.7331, -33.4489],
-        'lon': [-70.7072, -70.6693],
-        'label': ['Buin (Base)', 'Santiago Centro']
-    })
-    
-    st.map(df_mapa, latitude='lat', longitude='lon', zoom=9)
-
-# 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
-prompt_sistema_jarvis = (
-    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando Stark. "
-    "Te diriges a la usuaria con el máximo respeto, llamándola siempre 'Jefa'. "
-    "Tu tono es sumamente profesional, leal, ejecutivo, sofisticado, eficiente y servicial. "
-    "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100%."
-)
-
-prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
-
-if prompt_usuario:
-    if not client:
-        st.error("⚠️ Jefa, la clave de API de Groq no está configurada correctamente en los secrets de Streamlit.")
-    else:
-        with st.spinner("Procesando comando táctico..."):
-            try:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": prompt_sistema_jarvis},
-                        {"role": "user", "content": prompt_usuario}
-                    ],
-                    model="llama3-70b-8192",
-                )
-                respuesta = chat_completion.choices[0].message.content
-                st.write(respuesta)
-                
-            except Exception as e:
-                st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
+            "1.
