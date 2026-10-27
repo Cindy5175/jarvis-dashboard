@@ -2,33 +2,37 @@ import time
 from groq import Groq
 import streamlit as st
 
-# Inicializar cliente de Groq (asegúrese de tener su API key configurada)
-client = Groq(api_key=st.secrets.get("GROQ_API_KEY", "tu_api_key"))
+# Inicializar cliente de Groq con un timeout de seguridad (10 segundos)
+# Esto evita que la app se quede bloqueada indefinidamente esperando una respuesta de red.
+try:
+    api_key = st.secrets.get("GROQ_API_KEY", "tu_api_key")
+    client = Groq(api_key=api_key, timeout=10.0)
+except Exception as e:
+    client = None
 
-def consultar_groq_con_respaldo(prompt_usuario, modelo="llama3-70b-8192", reintentos=3):
+def consultar_groq_seguro(prompt_usuario, modelo="llama3-70b-8192"):
     """
-    Envía una consulta a Groq con reintentos automáticos y manejo de errores
-    para evitar caídas en el Centro de Comando Stark.
+    Envía una consulta a Groq con control de errores y timeout para proteger 
+    el Centro de Comando Stark de pantallas en blanco.
     """
-    intento = 0
-    while intento < reintentos:
-        try:
-            # Llamada a la API de Groq
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt_usuario,
-                    }
-                ],
-                model=modelo,
-            )
-            return chat_completion.choices[0].message.content
-            
-        except Exception as e:
-            intento += 1
-            time.sleep(1) # Espera un segundo antes de reintentar
-            if intento == reintentos:
-                # Si falla tras los reintentos, lanzamos una alerta amigable
-                st.warning(f"⚠️ Servidores de Groq ocupados temporalmente. Reintentando enlace...")
-                return None
+    if not client:
+        st.error("⚠️ La clave de API de Groq no está configurada correctamente en los secrets.")
+        return "Error de configuración."
+
+    try:
+        # Llamada protegida a la API de Groq
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt_usuario,
+                }
+            ],
+            model=modelo,
+        )
+        return chat_completion.choices[0].message.content
+        
+    except Exception as e:
+        # Capturamos cualquier error de red, timeout o fallo del servidor y lo mostramos limpiamente
+        st.error(f"Error de enlace con los servidores de Groq, Jefa: {e}")
+        return None
