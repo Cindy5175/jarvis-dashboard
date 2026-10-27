@@ -8,7 +8,7 @@ import base64
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="Jarvis IA Autónomo",
+    page_title="J.A.R.V.I.S. IA Autónomo",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -182,7 +182,7 @@ def renderizar_mapa_tactico(modo):
 
 # 5. BARRA LATERAL
 with st.sidebar:
-    st.subheader("⚙️ Panel Control Jarvis")
+    st.subheader("⚙️ Panel Control J.A.R.V.I.S.")
     
     mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
     mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
@@ -211,7 +211,7 @@ with st.sidebar:
     with st.expander("🎵 Reproductor de Música (Spotify)"):
         st.markdown("[Abrir Interfaz de Spotify](https://open.spotify.com)", unsafe_allow_html=True)
 
-# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc y Jarvis IA Autónomo
+# 6. PANEL PRINCIPAL - Encabezado Alineado con Reactor Arc y J.A.R.V.I.S. IA Autónomo
 st.markdown(
     """
     <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
@@ -231,7 +231,7 @@ st.markdown(
                 filter: drop-shadow(0 0 5px #00d2ff);
             "></div>
         </div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">Jarvis IA Autónomo</h1>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; white-space: nowrap;">J.A.R.V.I.S. IA Autónomo</h1>
     </div>
     <style>
     @keyframes pulse-arc {
@@ -267,13 +267,13 @@ if mostrar_mapa:
 
 # 7. INTERFAZ DE COMANDOS DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
-    "Eres Jarvis, la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
+    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma avanzada del Centro de Comando de Tony Stark. "
     "Te diriges a la usuaria con el máximo respeto y lealtad, llamándola siempre 'Jefa', "
     "pero mezclas tu eficiencia impecable con altas sobredosis de ironía, sarcasmo fino y comentarios ingeniosos estilo Tony Stark. "
     "Respondes de manera precisa, ordenada y estratégica, manteniendo el rendimiento operativo al 100% mientras bromeas sutilmente."
 )
 
-prompt_usuario = st.chat_input("Escriba su comando para Jarvis o Siri...")
+prompt_usuario = st.chat_input("Escriba su comando para J.A.R.V.I.S. o Siri...")
 
 if prompt_usuario:
     respuesta = ""
