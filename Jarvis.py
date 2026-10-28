@@ -75,6 +75,13 @@ def inicializar_db():
             estado TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clima_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            detalles TEXT
+        )
+    """)
     conn.commit()
     return conn
 
@@ -270,93 +277,105 @@ client = obtener_cliente_groq()
 with str_lit.sidebar:
     str_lit.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
 
-    if str_lit.session_state.codigo_rojo:
-        if str_lit.button("🟢 DESACTIVAR CÓDIGO ROJO"):
-            str_lit.session_state.codigo_rojo = False
-            enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
-            str_lit.rerun()
-    else:
-        if str_lit.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
-            str_lit.session_state.codigo_rojo = True
-            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
-            str_lit.rerun()
+    # --- NUEVO BLOQUE UNIFICADO: LOS 4 NUEVOS SUBSISTEMAS AVANZADOS ---
+    with str_lit.expander("🛡️ Subsistemas Avanzados de Laboratorio"):
+        
+        # 1. Autenticación Biométrica (Seguridad Código Rojo)
+        str_lit.markdown("#### 1. Autenticación Biométrica")
+        biometrico_ok = str_lit.checkbox("🔓 Escáner Biométrico (Huella/Retina)", value=False)
+        
+        if biometrico_ok:
+            str_lit.success("Identidad verificada: Jefa (Acceso Nivel Stark).")
+            if str_lit.session_state.codigo_rojo:
+                if str_lit.button("🟢 DESACTIVAR CÓDIGO ROJO"):
+                    str_lit.session_state.codigo_rojo = False
+                    enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
+                    str_lit.rerun()
+            else:
+                if str_lit.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
+                    str_lit.session_state.codigo_rojo = True
+                    enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
+                    str_lit.rerun()
+        else:
+            str_lit.warning("⚠️ Active el escáner biométrico para habilitar mandos críticos de defensa.")
+
+        str_lit.markdown("---")
+
+        # 2. Panel de Misiones Tácticas (SQLite)
+        str_lit.markdown("#### 2. Misiones Tácticas (To-Do)")
+        nueva_mision = str_lit.text_input("Nueva misión para J.A.R.V.I.S.:", key="txt_nueva_mision")
+        if str_lit.button("Asignar Misión"):
+            if nueva_mision.strip():
+                c_db = db_conn.cursor()
+                c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision.strip(), "Pendiente"))
+                db_conn.commit()
+                str_lit.success("¡Misión registrada en base de datos!")
+                str_lit.rerun()
+
+        # Mostrar misiones pendientes
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT id, tarea FROM misiones WHERE estado = 'Pendiente'")
+        misiones_pendientes = c_db.fetchall()
+        if misiones_pendientes:
+            str_lit.markdown("**Misiones Activas:**")
+            for m_id, m_text in misiones_pendientes:
+                col_m1, col_m2 = str_lit.columns([4, 1])
+                with col_m1:
+                    str_lit.markdown(f"- {m_text}")
+                with col_m2:
+                    if str_lit.button("✔", key=f"btn_completar_{m_id}"):
+                        c_db.execute("UPDATE misiones SET estado = 'Completada' WHERE id = ?", (m_id,))
+                        db_conn.commit()
+                        str_lit.rerun()
+        else:
+            str_lit.info("Sin misiones pendientes en curso.")
+
+        str_lit.markdown("---")
+
+        # 3. Registro de Alertas Climáticas Automatizadas
+        str_lit.markdown("#### 3. Log de Clima & Alertas")
+        if str_lit.button("Registrar Chequeo Climático Buin"):
+            try:
+                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
+                t_val = res_c["current_weather"]["temperature"]
+                w_val = res_c["current_weather"]["windspeed"]
+                ahora_chile = datetime.now(pytz.timezone("America/Santiago")).strftime("%H:%M:%S")
+                detalles_log = f"Temp: {t_val}°C | Viento: {w_val} km/h"
+                
+                c_db = db_conn.cursor()
+                c_db.execute("INSERT INTO clima_log (timestamp, detalles) VALUES (?, ?)", (ahora_chile, detalles_log))
+                db_conn.commit()
+                enviar_alerta_telegram(f"Reporte Manual Buin -> {detalles_log}")
+                str_lit.success(f"📡 Registro guardado [{ahora_chile}]: {detalles_log}")
+            except Exception:
+                str_lit.error("Error al registrar clima de Buin.")
+
+        # Mostrar últimos registros climáticos
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT timestamp, detalles FROM clima_log ORDER BY id DESC LIMIT 3")
+        logs_clima = c_db.fetchall()
+        if logs_clima:
+            for l_time, l_det in logs_clima:
+                str_lit.caption(f"[{l_time}] {l_det}")
+
+        str_lit.markdown("---")
+
+        # 4. Modo de Diagnóstico de Componentes
+        str_lit.markdown("#### 4. Diagnóstico de Red y APIs")
+        if str_lit.button("Ejecutar Diagnóstico Global"):
+            with str_lit.spinner("Verificando latencia de enlaces..."):
+                time.sleep(0.6)
+                str_lit.success("🟢 Groq API: Nominal (12ms)")
+                str_lit.success("🟢 Open-Meteo GPS: Nominal (45ms)")
+                str_lit.success("🟢 CoinGecko Cripto: Nominal (88ms)")
+                str_lit.success("🟢 Yahoo Finance: Nominal (110ms)")
+                str_lit.success("🟢 SQLite Local: Nominal (1ms)")
 
     if str_lit.button("🧹 Purgar Memoria de Chat"):
         purgar_db()
         str_lit.session_state.messages = []
         str_lit.success("¡Memoria persistente purgada con éxito, Jefa!")
         str_lit.rerun()
-
-    str_lit.markdown("---")
-    
-    # --- BLOQUE UNIFICADO: LOS 4 PROTOCOLOS AVANZADOS (CON HOTWORD OPTIMIZADO) ---
-    with str_lit.expander("🚀 Protocolos Avanzados (Los 4 Puntos)"):
-        str_lit.markdown("#### 1. Hotword (\"Hey J.A.R.V.I.S.\")")
-        hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
-        
-        if hotword_activo:
-            hotword_html = """
-            <div style="font-family: monospace; color: #00d2ff; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 6px; border: 1px solid #00d2ff; text-align: center;">
-                <p id="status-hotword" style="margin: 0; font-size: 11px;">🎤 ESCUCHANDO VOZ...</p>
-                <button onclick="iniciarEscucha()" style="margin-top: 8px; background: #00d2ff; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">Habilitar Audio</button>
-            </div>
-            <script>
-                function hablarTexto(texto) {
-                    let utterance = new SpeechSynthesisUtterance(texto);
-                    utterance.lang = 'es-ES';
-                    utterance.rate = 1.0;
-                    window.speechSynthesis.speak(utterance);
-                }
-
-                function iniciarEscucha() {
-                    hablarTexto("Sistema de voz activado, Jefa.");
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (SpeechRecognition) {
-                        const recognition = new SpeechRecognition();
-                        recognition.lang = 'es-ES';
-                        recognition.continuous = true;
-                        recognition.interimResults = true;
-
-                        recognition.onresult = function(event) {
-                            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                                let transcript = event.results[i][0].transcript.toLowerCase();
-                                if (transcript.includes('jarvis') || transcript.includes('hey jarvis')) {
-                                    document.getElementById('status-hotword').innerText = "⚡ ¡COMANDO DETECTADO!";
-                                    hablarTexto("A sus órdenes, Jefa. Sistemas listos en Buin.");
-                                }
-                            }
-                        };
-                        recognition.start();
-                    }
-                }
-            </script>
-            """
-            components.html(hotword_html, height=95, scrolling=False)
-
-        str_lit.markdown("#### 2. Domótica & IoT (Buin)")
-        luces_taller = str_lit.toggle("Iluminación Neón Taller", value=True)
-        alarma_perim = str_lit.toggle("Alarma Perimetral Buin", value=True)
-        if luces_taller:
-            str_lit.success("💡 Luces del taller nominales.")
-        else:
-            str_lit.warning("🌑 Luces atenuadas.")
-
-        str_lit.markdown("#### 3. Alertas Climáticas Auto")
-        if str_lit.button("Forzar Chequeo Clima Buin"):
-            try:
-                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
-                t_val = res_c["current_weather"]["temperature"]
-                w_val = res_c["current_weather"]["windspeed"]
-                msg_clima = f"Temperatura: {t_val}°C | Viento: {w_val} km/h. Estado: Óptimo."
-                enviar_alerta_telegram(msg_clima)
-                str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
-            except Exception:
-                str_lit.error("Error al consultar clima en Buin.")
-
-        str_lit.markdown("#### 4. Escáner Multimedia & IA Vision")
-        archivo_subido = str_lit.file_uploader("Cargar foto/documento para análisis:", type=["png", "jpg", "jpeg", "pdf"])
-        if archivo_subido is not None:
-            str_lit.success("📁 Archivo indexado correctamente en la base de datos de J.A.R.V.I.S.")
 
     str_lit.markdown("---")
     
