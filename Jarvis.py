@@ -183,12 +183,41 @@ def enviar_alerta_telegram(mensaje_alerta):
         pass
 
 def generar_html_pdf(historial):
-    html_content = "<html><head><meta charset='utf-8'>"
-    html_content += "<style>"
-    html_content += "body { font-family: monospace; color: #002244; padding: 20px; }"
-    html_content += "h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }"
-    html_content += ".msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }"
-    html_content += ".user { font-weight: bold; color: #004488; }"
-    html_content += ".jarvis { font-weight: bold; color: #0088cc; }"
-    html_content += "</style></head><body>"
-    html_content += "<h1>CENTRO DE COM
+    html_content = (
+        "<html><head><meta charset='utf-8'>"
+        "<style>"
+        "body { font-family: monospace; color: #002244; padding: 20px; }"
+        "h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }"
+        ".msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }"
+        ".user { font-weight: bold; color: #004488; }"
+        ".jarvis { font-weight: bold; color: #0088cc; }"
+        "</style></head><body>"
+        "<h1>CENTRO DE COMANDO J.A.R.V.I.S. - INFORME TÁCTICO</h1>"
+    )
+    for msg in historial:
+        rol_class = "user" if msg["role"] == "user" else "jarvis"
+        rol_nombre = "Jefa" if msg["role"] == "user" else "J.A.R.V.I.S."
+        html_content += f'<div class="msg"><span class="{rol_class}">{rol_nombre}:</span><p>{msg["content"]}</p></div>'
+    html_content += "</body></html>"
+    return html_content
+
+def renderizar_globo_terraqueo(hex_color):
+    try:
+        glogo_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            <style>
+                body {{ margin: 0; overflow: hidden; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; }}
+                #canvas-container {{ width: 100%; height: 230px; display: flex; justify-content: center; align-items: center; position: relative; }}
+                #orbit-hud {{ font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 4px 12px; border-radius: 4px; border: 1px solid {hex_color}; box-shadow: 0 0 10px {hex_color}; text-align: center; margin-top: 6px; letter-spacing: 1px; }}
+            </style>
+        </head>
+        <body>
+            <div id="canvas-container"></div>
+            <div id="orbit-hud">OJO DE DIOS // PROTOCOLO F&F 8 ACTIVO</div>
+            <script>
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 230, 0.1,
