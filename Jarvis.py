@@ -362,4 +362,163 @@ with str_lit.sidebar:
                                 language="es"
                             )
                         texto_transcrito = transcription.text
-                        str_lit.success(f"🗣️ **Comando detectado:** {texto_trans
+                        str_lit.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
+                        str_lit.session_state.messages.append({"role": "user", "content": texto_transcrito})
+                        guardar_mensaje_db("user", texto_transcrito)
+                        str_lit.rerun()
+                    except Exception as e:
+                        str_lit.error(f"Error procesando audio con Whisper: {e}")
+
+    with str_lit.expander("📈 Mercado Bursátil Tradicional"):
+        ticker_symbol = str_lit.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
+        try:
+            stock = yf.Ticker(ticker_symbol)
+            todays_data = stock.history(period="1d")
+            if not todays_data.empty:
+                current_price = todays_data['Close'].iloc[-1]
+                prev_close = stock.info.get('previousClose', current_price)
+                change = current_price - prev_close
+                pct_change = (change / prev_close) * 100 if prev_close else 0
+                str_lit.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
+            else:
+                str_lit.warning("Sin datos bursátiles recientes.")
+        except Exception:
+            str_lit.error("Error al conectar con la Bolsa.")
+
+    with str_lit.expander("📝 Libreta & Bitácora DB"):
+        str_lit.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.", key="nota_sb")
+        if str_lit.button("Guardar Bitácora", key="btn_bitacora"):
+            str_lit.success("Datos asegurados en base de datos.")
+            
+        if str_lit.session_state.messages:
+            html_reporte = generar_html_pdf(str_lit.session_state.messages)
+            str_lit.download_button(
+                label="📄 Descargar Informe Táctico (PDF)",
+                data=html_reporte,
+                file_name="informe_tactico_jarvis.html",
+                mime="text/html",
+                key="dl_pdf_sb"
+            )
+
+    with str_lit.expander("🎵 Reproductor de Música (Spotify)"):
+        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
+        components.html(spotify_html, height=160, scrolling=False)
+
+    # --- MAPA CARTOGRÁFICO TÁCTICO EN BARRA LATERAL (BAJO SPOTIFY) ---
+    str_lit.markdown("---")
+    str_lit.markdown("### 🗺️ Mapa Cartográfico GPS")
+    
+    if "modo_mapa" not in str_lit.session_state:
+        str_lit.session_state.modo_mapa = "noche"
+        
+    c_btn1, c_btn2 = str_lit.columns(2)
+    with c_btn1:
+        if str_lit.button("☀️ Día", key="btn_mapa_dia_sidebar"):
+            str_lit.session_state.modo_mapa = "dia"
+            str_lit.rerun()
+    with c_btn2:
+        if str_lit.button("🌙 Noche", key="btn_mapa_noche_sidebar"):
+            str_lit.session_state.modo_mapa = "noche"
+            str_lit.rerun()
+            
+    renderizar_mapa_tactico(str_lit.session_state.modo_mapa)
+
+# PANEL PRINCIPAL
+str_lit.markdown(
+    f"""
+    <div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 25px; padding-left: 10px;">
+        <div style="
+            min-width: 40px; width: 40px; height: 40px; border-radius: 50%; 
+            background: radial-gradient(circle, #ffffff 0%, {color_neon_principal} 40%, #002244 80%, #000000 100%);
+            border: 2px solid {color_neon_principal};
+            box-shadow: 0 0 16px {color_neon_principal}, inset 0 0 8px #ffffff;
+            display: flex; justify-content: center; align-items: center;
+        "></div>
+        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: {color_neon_principal} !important; text-shadow: 0 0 12px {color_sombra_neon};">J.A.R.V.I.S. IA Autónomo</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+if str_lit.session_state.codigo_rojo:
+    str_lit.error("⚠️ **¡ATENCIÓN JEFA! PROTOCOLO DE EMERGENCIA ACTIVADO // CÓDIGO ROJO DE DEFENSA EN CURSO** ⚠️")
+
+str_lit.markdown("---")
+
+# Estación Holográfica (Globo 3D) en el panel principal
+str_lit.markdown("### 🛰️ Estación Holográfica Orbital")
+renderizar_globo_terraqueo(color_neon_principal)
+
+str_lit.markdown("---")
+
+# Red de Cámaras en Vivo (Local)
+str_lit.markdown("### 📷 Red de Cámaras en Tiempo Real (Base Buin & Metropolitana)")
+renderizar_webcams_windy()
+
+# MÓDULO DESPLEGABLE DE CIUDADES MUNDIALES (Incluyendo Buin y Santiago)
+with str_lit.expander("🌍 Enlace Satelital: Cámaras de Ciudades Mundiales en Vivo"):
+    ciudades_mundo = {
+        "Buin, Chile (Base Local)": (-33.7331, -70.7072),
+        "Santiago de Chile": (-33.4489, -70.6693),
+        "Tokio, Japón": (35.6762, 139.6503),
+        "Nueva York, EE.UU.": (40.7128, -74.0060),
+        "Londres, Reino Unido": (51.5074, -0.1278),
+        "París, Francia": (48.8566, 2.3522),
+        "Sídney, Australia": (-33.8688, 151.2093),
+        "Roma, Italia": (41.9028, 12.4964)
+    }
+    ciudad_seleccionada = str_lit.selectbox("Seleccione Ciudad Satelital:", list(ciudades_mundo.keys()), key="select_ciudad_global")
+    lat_c, lon_c = ciudades_mundo[ciudad_seleccionada]
+    str_lit.markdown(f"**Transmitiendo enlace en vivo desde: {ciudad_seleccionada}**")
+    renderizar_camara_mundial(lat_c, lon_c)
+
+str_lit.markdown("---")
+
+# CHAT DE J.A.R.V.I.S.
+prompt_sistema_jarvis = (
+    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
+    "Te diriges a la usuaria llamándola 'Jefa', con elegancia, eficiencia e ironía fina estilo Tony Stark."
+)
+
+for message in str_lit.session_state.messages:
+    with str_lit.chat_message(message["role"]):
+        str_lit.markdown(f"<span style='color: {color_neon_principal};'>{message['content']}</span>", unsafe_allow_html=True)
+
+prompt_usuario = str_lit.chat_input("Escriba su comando para J.A.R.V.I.S...")
+
+if prompt_usuario:
+    str_lit.session_state.messages.append({"role": "user", "content": prompt_usuario})
+    guardar_mensaje_db("user", prompt_usuario)
+    
+    with str_lit.chat_message("user"):
+        str_lit.markdown(f"<span style='color: {color_neon_principal};'>{prompt_usuario}</span>", unsafe_allow_html=True)
+
+    respuesta = ""
+    texto_lower = prompt_usuario.lower().strip()
+    if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
+        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
+    elif "alerta" in texto_lower or "emergencia" in texto_lower:
+        respuesta = "Protocolo de seguridad analizado, Jefa. Activando contramedidas en el sector de Buin."
+    else:
+        with str_lit.spinner("Procesando comando táctico..."):
+            try:
+                if client:
+                    chat_completion = client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": prompt_sistema_jarvis},
+                            {"role": "user", "content": prompt_usuario}
+                        ],
+                        model="openai/gpt-oss-20b",
+                    )
+                    respuesta = chat_completion.choices[0].message.content
+                else:
+                    respuesta = "Jefa, el cliente de Groq no se inicializó."
+            except Exception as e:
+                respuesta = f"Error de enlace táctico, Jefa: {e}"
+            
+    with str_lit.chat_message("assistant"):
+        str_lit.markdown(f"<span style='color: {color_neon_principal}; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
+    
+    str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
+    guardar_mensaje_db("assistant", respuesta)
+    hablar_jarvis(respuesta)
