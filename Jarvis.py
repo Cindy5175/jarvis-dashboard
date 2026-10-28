@@ -216,7 +216,7 @@ def renderizar_globo_terraqueo(hex_color):
         </head>
         <body>
             <div id="canvas-container"></div>
-            <div id="orbit-hud">OJO DE DIOS // MAPA MUNDIAL SATELITAL</div>
+            <div id="orbit-hud">OJO DE DIOS // MAPA CONTINENTAL HOLOGRÁFICO</div>
             <script>
                 const container = document.getElementById('canvas-container');
                 const scene = new THREE.Scene();
@@ -231,18 +231,58 @@ def renderizar_globo_terraqueo(hex_color):
                 const earthGroup = new THREE.Group();
                 scene.add(earthGroup);
 
-                // Esfera principal con alta densidad de malla (simula continentes y meridianos interactivos)
+                // Generar textura de continentes con Canvas 2D
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.clearRect(0, 0, 1024, 512);
+                ctx.fillStyle = 'HEX_COLOR_REPLACE';
+                
+                // Simulación geométrica de continentes en la proyección equirectangular
+                // América
+                ctx.beginPath();
+                ctx.ellipse(280, 150, 70, 110, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(320, 330, 55, 85, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Europa y África
+                ctx.beginPath();
+                ctx.ellipse(540, 140, 45, 35, 0, 0, Math.PI * 2);
+                ctx.ellipse(565, 265, 65, 105, 0.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Asia y Oceanía
+                ctx.beginPath();
+                ctx.ellipse(730, 150, 130, 65, 0, 0, Math.PI * 2);
+                ctx.ellipse(830, 360, 45, 35, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                const texture = new THREE.CanvasTexture(canvas);
+
+                // Esfera con textura de continentes
                 const geometry = new THREE.SphereGeometry(1.6, 36, 36);
                 const material = new THREE.MeshBasicMaterial({ 
-                    color: 'HEX_COLOR_REPLACE', 
-                    wireframe: true, 
+                    map: texture,
                     transparent: true, 
-                    opacity: 0.7 
+                    opacity: 0.95
                 });
                 const earth = new THREE.Mesh(geometry, material);
                 earthGroup.add(earth);
 
-                // Anillo orbital satelital dinámico
+                // Malla alámbrica tecnológica exterior (Estilo Stark)
+                const wireGeometry = new THREE.SphereGeometry(1.63, 24, 24);
+                const wireMaterial = new THREE.MeshBasicMaterial({
+                    color: 'HEX_COLOR_REPLACE',
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.2
+                });
+                const wireGlobe = new THREE.Mesh(wireGeometry, wireMaterial);
+                earthGroup.add(wireGlobe);
+
+                // Anillo orbital satelital
                 const ringGeometry = new THREE.RingGeometry(2.05, 2.1, 64);
                 const ringMaterial = new THREE.MeshBasicMaterial({ color: 'HEX_COLOR_REPLACE', side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
                 const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
