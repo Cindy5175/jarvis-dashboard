@@ -12,6 +12,7 @@ from audio_recorder_streamlit import audio_recorder
 from datetime import datetime
 import pytz
 import psutil
+import plotly.graph_objects as go
 
 # 1. Configuración de página
 st.set_page_config(
@@ -75,6 +76,14 @@ def inicializar_db():
             estado TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS telemetria_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tiempo TEXT,
+            cpu REAL,
+            ram REAL
+        )
+    """)
     conn.commit()
     return conn
 
@@ -129,6 +138,19 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
+# Protocolo 1: Alerta Externa (Telegram Webhook simulado / activo)
+def enviar_alerta_telegram(mensaje_alerta):
+    try:
+        # Puedes configurar tu token y chat_id en st.secrets si lo deseas
+        token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
+        chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
+        if token and chat_id:
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            payload = {"chat_id": chat_id, "text": f"🚨 [JARVIS BUIN ALERTA]: {mensaje_alerta}"}
+            requests.post(url, json=payload, timeout=3)
+    except Exception:
+        pass
+
 def generar_html_pdf(historial):
     html_content = """
     <html>
@@ -152,7 +174,6 @@ def generar_html_pdf(historial):
     html_content += "</body></html>"
     return html_content
 
-# Visor Holográfico 3D blindado contra errores de llaves
 def renderizar_globo_terraqueo(hex_color):
     try:
         globo_html = """
@@ -241,7 +262,6 @@ def renderizar_globo_terraqueo(hex_color):
     except Exception as e:
         st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
-# Módulo de Cámara de Seguridad Web en Vivo (CCTV Buin)
 def renderizar_camara_seguridad(hex_color):
     cctv_html = """
     <!DOCTYPE html>
@@ -374,13 +394,16 @@ with st.sidebar:
 
     client = obtener_cliente_groq()
 
+    # INTERRUPTOR MAESTRO: CÓDIGO ROJO CON ALERTA TELEGRAM
     if st.session_state.codigo_rojo:
         if st.button("🟢 DESACTIVAR CÓDIGO ROJO"):
             st.session_state.codigo_rojo = False
+            enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
             st.rerun()
     else:
         if st.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
             st.session_state.codigo_rojo = True
+            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
             st.rerun()
 
     if st.button("🧹 Purgar Memoria de Chat"):
@@ -416,13 +439,56 @@ with st.sidebar:
         st.session_state.voz_lenta = st.checkbox("Modo de locución pausada (Lento)", value=False)
         st.info("Configuración de audio aplicada correctamente.")
 
-    with st.expander("🛡️ Mejora 3: Monitor de Sistema (CPU/RAM)"):
-        cpu_uso = psutil.cpu_percent(interval=0.1)
-        ram_uso = psutil.virtual_memory().percent
-        st.metric(label="Carga de CPU", value=f"{cpu_uso}%")
-        st.metric(label="Memoria RAM Ocupada", value=f"{ram_uso}%")
+    # --- PROTOCOLO 3: Telemetría Histórica Avanzada con Plotly ---
+    with st.expander("🛡️ Mejora 3: Telemetría Histórica (Plotly)"):
+        cpu_actual = psutil.cpu_percent(interval=0.1)
+        ram_actual = psutil.virtual_memory().percent
+        
+        # Guardar en base de datos temporal
+        c_tel = db_conn.cursor()
+        tiempo_actual = datetime.now().strftime("%H:%M:%S")
+        c_tel.execute("INSERT INTO telemetria_log (tiempo, cpu, ram) VALUES (?, ?, ?)", (tiempo_actual, cpu_actual, ram_actual))
+        db_conn.commit()
+        
+        c_tel.execute("SELECT tiempo, cpu, ram FROM telemetria_log ORDER BY id DESC LIMIT 10")
+        registros = c_tel.fetchall()[::-1]
+        
+        if registros:
+            tiempos = [r[0] for r in registros]
+            cpus = [r[1] for r in registros]
+            rams = [r[2] for r in registros]
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=tiempos, y=cpus, mode='lines+markers', name='CPU %', line=dict(color=color_neon_principal, width=2)))
+            fig.add_trace(go.Scatter(x=tiempos, y=rams, mode='lines+markers', name='RAM %', line=dict(color='#00ffcc', width=2)))
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.5)',
+                margin=dict(l=10, r=10, t=10, b=10),
+                height=180,
+                font=dict(color=color_neon_principal, family="monospace")
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-    with st.expander("🗂️ Mejora 4: To-Do Táctico & Misiones"):
+    # --- PROTOCOLO 4: Domótica con Sandbox Protegido por PIN ---
+    with st.expander("🏠 Protocolo 4: Domótica Segura (IoT Sandbox)"):
+        st.markdown("<span style='font-size: 0.9rem;'>Acceso restringido a dispositivos de prueba:</span>", unsafe_allow_html=True)
+        pin_ingresado = st.text_input("Clave de Autorización Stark:", type="password", key="pin_iot_input")
+        
+        # PIN secreto definido para ti (ejemplo: 1975)
+        if pin_ingresado == "1975":
+            st.success("✔️ Clave aceptada. Sandbox IoT desbloqueado.")
+            estado_luz_sandbox = st.checkbox("LED de Prueba Taller (Aislado)", value=False)
+            if estado_luz_sandbox:
+                st.info("💡 Luz de prueba LED encendida de forma segura.")
+            else:
+                st.caption("Luz de prueba apagada.")
+        elif pin_ingresado:
+            st.error("❌ Clave incorrecta. Acceso denegado a domótica.")
+        else:
+            st.info("🔒 Ingrese la clave secreta para operar el sandbox.")
+
+    with st.expander("🗂️ Mejora: To-Do Táctico & Misiones"):
         nueva_mision = st.text_input("Nueva misión o tarea:", placeholder="Ej: Optimizar script 3D", key="input_mision_sidebar")
         if st.button("Añadir Misión", key="btn_add_mision"):
             if nueva_mision:
@@ -495,11 +561,32 @@ with st.sidebar:
             else:
                 st.info("Escriba un requerimiento para generar el código.")
 
-    with st.expander("🎙️ Dictado de Voz por Micrófono"):
+    # --- PROTOCOLO 2: Dictado de Voz con Transcripción Groq Whisper ---
+    with st.expander("🎙️ Protocolo 2: Transcripción de Voz (Whisper)"):
+        st.markdown("Grabe su orden de voz para traducción IA:")
         audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
         if audio_bytes:
             st.audio(audio_bytes, format="audio/wav")
-            st.info("Audio capturado en buffer táctico.")
+            if client:
+                with st.spinner("Traduciendo ondas de voz con Whisper..."):
+                    try:
+                        # Guardar temporalmente el audio
+                        with open("temp_audio.wav", "wb") as f_audio:
+                            f_audio.write(audio_bytes)
+                        with open("temp_audio.wav", "rb") as f_audio:
+                            transcription = client.audio.transcriptions.create(
+                                model="whisper-large-v3",
+                                file=("temp_audio.wav", f_audio.read()),
+                                language="es"
+                            )
+                        texto_transcrito = transcription.text
+                        st.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
+                        # Inyectar automáticamente al chat
+                        st.session_state.messages.append({"role": "user", "content": texto_transcrito})
+                        guardar_mensaje_db("user", texto_transcrito)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error procesando audio con Whisper: {e}")
 
     with st.expander("📈 Mercado Bursátil Tradicional"):
         ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
