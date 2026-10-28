@@ -346,7 +346,7 @@ with str_lit.sidebar:
             except Exception:
                 str_lit.error("Error al consultar clima en Buin.")
 
-    # --- 2. BLOQUE CONSOLIDADO: OJO DE DIOS (4 FUNCIONALIDADES EN UN SOLO LUGAR) ---
+    # --- 2. BLOQUE CONSOLIDADO: OJO DE DIOS (3 PUNTOS CLAVE EN UN SOLO LUGAR) ---
     with str_lit.expander("👁️ OJO DE DIOS - VIGILANCIA GLOBAL STARK"):
         str_lit.markdown("#### 1. Rastreo Orbital de Satélites & Drones")
         if str_lit.button("🛰️ Escanear Espacio Aéreo Buin"):
@@ -379,20 +379,17 @@ with str_lit.sidebar:
 
         str_lit.markdown("---")
 
-        str_lit.markdown("#### 3. Red de Cámaras de Tráfico & Costa")
+        str_lit.markdown("#### 3. Red de Cámaras & Intercomunicador de Voz")
         cam_sel = str_lit.selectbox("Seleccionar Feed de Vigilancia:", ["Ruta 5 Sur (Acceso Buin)", "Costanera Valparaíso", "Autopista Central Santiago"], key="cam_select")
         if str_lit.button("🎥 Conectar Feed en Vivo"):
             str_lit.markdown(
                 f"""<div style="background: rgba(0, 210, 255, 0.1); border: 1px solid {color_neon_principal}; padding: 8px; border-radius: 5px; color: {color_neon_principal}; font-family: monospace; font-size: 0.8rem;">
                     🎥 Feed Activo: {cam_sel}<br>
-                    📶 Señal Encritada Ku-Band // Latencia: 12ms // Estado: Nominal
+                    📶 Señal Encriptada Ku-Band // Latencia: 12ms // Estado: Nominal
                 </div>""",
                 unsafe_allow_html=True
             )
 
-        str_lit.markdown("---")
-
-        str_lit.markdown("#### 4. Intercomunicador por Voz Directo")
         str_lit.markdown("Hable directamente con J.A.R.V.I.S.:")
         audio_directo = audio_recorder(text="🎙️ Transmitir Mensaje", icon_size="2x", key="intercom_voice")
         if audio_directo and client:
@@ -803,4 +800,3 @@ if prompt_usuario:
     str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
     guardar_mensaje_db("assistant", respuesta)
     hablar_jarvis(respuesta)
-
