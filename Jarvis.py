@@ -469,22 +469,28 @@ with st.sidebar:
                 font=dict(color=color_neon_principal, family="monospace")
             )
             st.plotly_chart(fig, use_container_width=True)
-
-    # --- PROTOCOLO 4: Domótica con Sandbox Protegido por PIN ---
+        # --- PROTOCOLO 4: Domótica con Sandbox Protegido por PIN y Enter ---
     with st.expander("🏠 Protocolo 4: Domótica Segura (IoT Sandbox)"):
         st.markdown("<span style='font-size: 0.9rem;'>Acceso restringido a dispositivos de prueba:</span>", unsafe_allow_html=True)
-        pin_ingresado = st.text_input("Clave de Autorización Stark:", type="password", key="pin_iot_input")
         
-        # PIN secreto definido para ti (ejemplo: 1975)
-        if pin_ingresado == "1975":
-            st.success("✔️ Clave aceptada. Sandbox IoT desbloqueado.")
-            estado_luz_sandbox = st.checkbox("LED de Prueba Taller (Aislado)", value=False)
-            if estado_luz_sandbox:
-                st.info("💡 Luz de prueba LED encendida de forma segura.")
-            else:
-                st.caption("Luz de prueba apagada.")
-        elif pin_ingresado:
-            st.error("❌ Clave incorrecta. Acceso denegado a domótica.")
+        # Usamos un formulario para que la tecla Enter active la validación automáticamente
+        with st.form(key="form_pin_iot"):
+            pin_ingresado = st.text_input("Clave de Autorización Stark (Presione Enter):", type="password", key="pin_iot_input")
+            submit_pin = st.form_submit_button("Autorizar Acceso")
+            
+        # Verificamos si se presionó Enter dentro del input o el botón del formulario
+        # PIN secreto definido (ejemplo: 1975)
+        if submit_pin or pin_ingresado:
+            if pin_ingresado == "1975":
+                st.success("✔️ Clave aceptada. Sandbox IoT desbloqueado.")
+                estado_luz_sandbox = st.checkbox("LED de Prueba Taller (Aislado)", value=False)
+                if estado_luz_sandbox:
+                    st.info("💡 Luz de prueba LED encendida de forma segura.")
+                else:
+                    st.caption("Luz de prueba apagada.")
+            elif pin_ingresado:
+                st.error("❌ Clave incorrecta. Acceso denegado a domótica.")
+ 
         else:
             st.info("🔒 Ingrese la clave secreta para operar el sandbox.")
 
