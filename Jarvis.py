@@ -130,12 +130,23 @@ if "messages" not in str_lit.session_state:
     if not str_lit.session_state.messages:
         chile_tz = pytz.timezone("America/Santiago")
         hora_actual = datetime.now(chile_tz).hour
+        
+        # Obtener clima real de Buin para el informe automático
+        clima_info = ""
+        try:
+            res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=2).json()
+            t_val = res_c["current_weather"]["temperature"]
+            w_val = res_c["current_weather"]["windspeed"]
+            clima_info = f" [Reporte Buin: {t_val}°C, Viento {w_val} km/h]."
+        except Exception:
+            clima_info = " [Reporte Buin: Estable]."
+
         if 5 <= hora_actual < 12:
-            saludo_inicial = "Buenos días, Jefa. Sistemas tácticos en línea y operando al 100%. ¿Qué protocolos ejecutamos hoy?"
+            saludo_inicial = f"Buenos días, Jefa.{clima_info} Sistemas tácticos en línea y operando al 100%. ¿Qué protocolos ejecutamos hoy?"
         elif 12 <= hora_actual < 20:
-            saludo_inicial = "Buenas tardes, Jefa. La base de Buin está estable y los sistemas rinden al máximo. ¿En qué le sirvo?"
+            saludo_inicial = f"Buenas tardes, Jefa.{clima_info} La base de Buin está estable y los sistemas rinden al máximo. ¿En qué le sirvo?"
         else:
-            saludo_inicial = "Buenas noches, Jefa. Trabajando en horario extendido, como corresponde a este taller. ¿Cuál es la orden?"
+            saludo_inicial = f"Buenas noches, Jefa.{clima_info} Trabajando en horario extendido, como corresponde a este taller. ¿Cuál es la orden?"
         
         str_lit.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
@@ -478,7 +489,6 @@ with str_lit.sidebar:
         except Exception:
             str_lit.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
 
-    # Módulos secundarios optimizados sin llamadas bloqueantes automáticas
     with str_lit.expander("🪙 Terminal Cripto & Stablecoins"):
         crypto_sel = str_lit.selectbox("Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
         if str_lit.button("Consultar Precio Cripto"):
