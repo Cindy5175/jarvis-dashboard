@@ -252,6 +252,13 @@ def renderizar_visor_windy():
     """
     components.html(windy_html, height=410, scrolling=False)
 
+def renderizar_webcams_windy():
+    # Visor enfocado en cámaras web de la región metropolitana en tiempo real
+    webcams_html = """
+    <iframe width="100%" height="400" src="https://embed.windy.com/embed2.html?lat=-33.4489&lon=-70.6693&zoom=11&level=surface&overlay=wind&menu=&message=&marker=&calendar=&pressure=&type=webcams&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" frameborder="0"></iframe>
+    """
+    components.html(webcams_html, height=410, scrolling=False)
+
 def renderizar_mapa_tactico(modo):
     try:
         filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
@@ -467,7 +474,7 @@ if str_lit.session_state.codigo_rojo:
 
 str_lit.markdown("---")
 
-# Estación Holográfica (Globo 3D) y Visor Windy en el Panel Principal
+# Fila 1: Estación Holográfica (Globo 3D) y Radar Meteorológico Global (Windy)
 col_p1, col_p2 = str_lit.columns(2)
 with col_p1:
     str_lit.markdown("### 🛰️ Estación Holográfica Orbital")
@@ -476,6 +483,12 @@ with col_p1:
 with col_p2:
     str_lit.markdown("### 🌀 Radar Meteorológico Global (Windy)")
     renderizar_visor_windy()
+
+str_lit.markdown("---")
+
+# Fila 2: Cámaras Web en Vivo (Red Windy - Santiago y Alrededores)
+str_lit.markdown("### 📷 Red de Cámaras Web en Tiempo Real (Santiago / Metropolitana)")
+renderizar_webcams_windy()
 
 str_lit.markdown("---")
 
