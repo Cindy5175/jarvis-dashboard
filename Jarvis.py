@@ -198,16 +198,16 @@ def generar_html_pdf(historial):
 
 def renderizar_globo_terraqueo(hex_color):
     try:
-        glogo_html = f"""
+        glogo_html = """
         <!DOCTYPE html>
         <html>
         <head>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
             <style>
-                body {{ margin: 0; overflow: hidden; background: transparent; }}
-                #canvas-container {{ width: 100%; height: 320px; position: relative; }}
-                #hud-text {{ position: absolute; top: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid {hex_color}; z-index: 10; box-shadow: 0 0 10px {hex_color}; }}
-                #orbit-hud {{ position: absolute; bottom: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px; z-index: 10; }}
+                body { margin: 0; overflow: hidden; background: transparent; }
+                #canvas-container { width: 100%; height: 320px; position: relative; }
+                #hud-text { position: absolute; top: 10px; left: 10px; font-family: monospace; color: HEX_COLOR_REPLACE; font-size: 11px; background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid HEX_COLOR_REPLACE; z-index: 10; box-shadow: 0 0 10px HEX_COLOR_REPLACE; }
+                #orbit-hud { position: absolute; bottom: 10px; left: 10px; font-family: monospace; color: HEX_COLOR_REPLACE; font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px; z-index: 10; }
             </style>
         </head>
         <body>
@@ -216,4 +216,116 @@ def renderizar_globo_terraqueo(hex_color):
                 <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
             </div>
             <script>
-                const container = document.
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(container.clientWidth, 320);
+                container.appendChild(renderer.domElement);
+                
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+                scene.add(ambientLight);
+                
+                const geometry = new THREE.SphereGeometry(2, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 'HEX_COLOR_REPLACE', 
+                    wireframe: true, 
+                    transparent: true, 
+                    opacity: 0.7 
+                });
+                const earth = new THREE.Mesh(geometry, material);
+                scene.add(earth);
+                
+                const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({ color: 'HEX_COLOR_REPLACE', side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+                const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
+                orbitRing.rotation.x = Math.PI / 3;
+                scene.add(orbitRing);
+                
+                camera.position.z = 5.5;
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    earth.rotation.y += 0.004;
+                    orbitRing.rotation.z += 0.002;
+                    renderer.render(scene, camera);
+                }
+                animate();
+            </script>
+        </body>
+        </html>
+        """.replace("HEX_COLOR_REPLACE", hex_color)
+        
+        components.html(glogo_html, height=330, scrolling=False)
+    except Exception as e:
+        str_lit.error(f"Error en Globo Terráqueo: {e}")
+
+def renderizar_street_view(lat, lon):
+    street_html = f"""
+    <iframe width="100%" height="320" src="https://maps.google.com/maps?q={lat},{lon}&t=&z=17&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no"></iframe>
+    """
+    components.html(street_html, height=330, scrolling=False)
+
+def renderizar_mapa_tactico(modo):
+    try:
+        filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
+        mapa_html = (
+            "<!DOCTYPE html>"
+            "<html>"
+            "<head>"
+            '<meta charset="utf-8">'
+            '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
+            '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
+            "<style>"
+            "body { margin: 0; padding: 0; }"
+            f"#map {{ width: 100%; height: 280px; border-radius: 8px; {filtro_css} }}"
+            "</style>"
+            "</head>"
+            "<body>"
+            '<div id="map"></div>'
+            "<script>"
+            "const map = L.map('map').setView([-33.7331, -70.7072], 11);"
+            "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);"
+            "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin</b>').openPopup();"
+            "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
+            "</script>"
+            "</body>"
+            "</html>"
+        )
+        components.html(mapa_html, height=295, scrolling=False)
+    except Exception as e:
+        str_lit.error(f"Error en Mapa Táctico: {e}")
+
+@str_lit.cache_resource
+def obtener_cliente_groq():
+    try:
+        api_key = "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"
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
+        return None
+
+client = obtener_cliente_groq()
+
+# BARRA LATERAL (IZQUIERDA)
+with str_lit.sidebar:
+    str_lit.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
+
+    # --- 1. PROTOCOLOS AVANZADOS ---
+    with str_lit.expander("🚀 Protocolos Avanzados (Software)"):
+        str_lit.markdown("#### 1. Conmutador de Enlace (Dual)")
+        enlace_sat = str_lit.toggle("🛰️ Enlace Satelital Stark", value=str_lit.session_state.enlace_satelital)
+        if enlace_sat != str_lit.session_state.enlace_satelital:
+            str_lit.session_state.enlace_satelital = enlace_sat
+            str_lit.rerun()
+        
+        texto_enlace = "Enrutando vía Constelación Satelital Stark-1 (Banda Ku)." if str_lit.session_state.enlace_satelital else "Enrutando vía Red Terrestre de Fibra Óptica."
+        str_lit.markdown(
+            f"""<div style="background: rgba(0, 210, 255, 0.1); border: 1px solid {color_neon_principal}; padding: 10px; border-radius: 6px; color: {color_neon_principal}; font-family: monospace; font-size: 0.85rem; box-shadow: 0 0 8px {color_sombra_neon}; margin-top: 5px; margin-bottom: 10px;">
+                🛰️ {texto_enlace}
+            </div>""",
+            unsafe_allow_html=True
+        )
+
+        str_lit.markdown("#### 2. Hotword (\"Hey J
