@@ -216,7 +216,7 @@ def renderizar_globo_terraqueo(hex_color):
         </head>
         <body>
             <div id="canvas-container"></div>
-            <div id="orbit-hud">OJO DE DIOS // PROTOCOLO F&F 8 ACTIVO</div>
+            <div id="orbit-hud">OJO DE DIOS // MAPA MUNDIAL SATELITAL</div>
             <script>
                 const container = document.getElementById('canvas-container');
                 const scene = new THREE.Scene();
@@ -228,18 +228,40 @@ def renderizar_globo_terraqueo(hex_color):
                 const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
                 scene.add(ambientLight);
                 
-                const geometry = new THREE.SphereGeometry(1.7, 32, 32);
+                const earthGroup = new THREE.Group();
+                scene.add(earthGroup);
+
+                const geometry = new THREE.SphereGeometry(1.65, 32, 32);
                 const material = new THREE.MeshBasicMaterial({ 
                     color: 'HEX_COLOR_REPLACE', 
                     wireframe: true, 
                     transparent: true, 
-                    opacity: 0.8 
+                    opacity: 0.3 
                 });
                 const earth = new THREE.Mesh(geometry, material);
-                scene.add(earth);
+                earthGroup.add(earth);
+
+                const dotsGeometry = new THREE.BufferGeometry();
+                const count = 300;
+                const positions = [];
+                for (let i = 0; i < count; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / count);
+                    const theta = Math.sqrt(count * Math.PI) * phi;
+                    
+                    if (Math.sin(phi * 3) > 0.2 || Math.cos(theta * 2) > 0.3) {
+                        const x = 1.68 * Math.sin(phi) * Math.cos(theta);
+                        const y = 1.68 * Math.cos(phi);
+                        const z = 1.68 * Math.sin(phi) * Math.sin(theta);
+                        positions.push(x, y, z);
+                    }
+                }
+                dotsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                const dotsMaterial = new THREE.PointsMaterial({ color: 'HEX_COLOR_REPLACE', size: 0.06 });
+                const continents = new THREE.Points(dotsGeometry, dotsMaterial);
+                earthGroup.add(continents);
                 
-                const ringGeometry = new THREE.RingGeometry(2.1, 2.15, 64);
-                const ringMaterial = new THREE.MeshBasicMaterial({ color: 'HEX_COLOR_REPLACE', side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+                const ringGeometry = new THREE.RingGeometry(2.1, 2.13, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({ color: 'HEX_COLOR_REPLACE', side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
                 const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
                 orbitRing.rotation.x = Math.PI / 3;
                 scene.add(orbitRing);
@@ -248,7 +270,7 @@ def renderizar_globo_terraqueo(hex_color):
                 
                 function animate() {
                     requestAnimationFrame(animate);
-                    earth.rotation.y += 0.004;
+                    earthGroup.rotation.y += 0.003;
                     orbitRing.rotation.z += 0.002;
                     renderer.render(scene, camera);
                 }
