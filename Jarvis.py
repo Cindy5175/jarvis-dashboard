@@ -20,9 +20,12 @@ str_lit.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Control de Estado para Código Rojo (Emergencia)
+# Control de Estado para Código Rojo y Enlace Satelital
 if "codigo_rojo" not in str_lit.session_state:
     str_lit.session_state.codigo_rojo = False
+
+if "enlace_satelital" not in str_lit.session_state:
+    str_lit.session_state.enlace_satelital = True
 
 color_neon_principal = "#ff3333" if str_lit.session_state.codigo_rojo else "#00d2ff"
 color_sombra_neon = "rgba(255, 51, 51, 0.8)" if str_lit.session_state.codigo_rojo else "rgba(0, 210, 255, 0.6)"
@@ -131,7 +134,6 @@ if "messages" not in str_lit.session_state:
         chile_tz = pytz.timezone("America/Santiago")
         hora_actual = datetime.now(chile_tz).hour
         
-        # Obtener clima real de Buin para el informe automático
         clima_info = ""
         try:
             res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=2).json()
@@ -141,12 +143,13 @@ if "messages" not in str_lit.session_state:
         except Exception:
             clima_info = " [Reporte Buin: Estable]."
 
+        tipo_enlace = "enlace satelital Stark" if str_lit.session_state.enlace_satelital else "red terrestre de fibra"
         if 5 <= hora_actual < 12:
-            saludo_inicial = f"Buenos días, Jefa.{clima_info} Sistemas tácticos en línea y operando al 100%. ¿Qué protocolos ejecutamos hoy?"
+            saludo_inicial = f"Buenos días, Jefa.{clima_info} Enrutado mediante {tipo_enlace}. Sistemas tácticos al 100%. ¿Qué protocolos ejecutamos hoy?"
         elif 12 <= hora_actual < 20:
-            saludo_inicial = f"Buenas tardes, Jefa.{clima_info} La base de Buin está estable y los sistemas rinden al máximo. ¿En qué le sirvo?"
+            saludo_inicial = f"Buenas tardes, Jefa.{clima_info} Conexión vía {tipo_enlace} estable en Buin. ¿En qué le sirvo?"
         else:
-            saludo_inicial = f"Buenas noches, Jefa.{clima_info} Trabajando en horario extendido, como corresponde a este taller. ¿Cuál es la orden?"
+            saludo_inicial = f"Buenas noches, Jefa.{clima_info} Operando en horario extendido a través de {tipo_enlace}. ¿Cuál es la orden?"
         
         str_lit.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
@@ -312,12 +315,23 @@ with str_lit.sidebar:
 
     # --- 1. PROTOCOLOS AVANZADOS ---
     with str_lit.expander("🚀 Protocolos Avanzados (Software)"):
-        str_lit.markdown("#### 1. Hotword (\"Hey J.A.R.V.I.S.\")")
+        str_lit.markdown("#### 1. Conmutador de Enlace (Dual)")
+        enlace_sat = str_lit.toggle("🛰️ Enlace Satelital Stark", value=str_lit.session_state.enlace_satelital)
+        if enlace_sat != str_lit.session_state.enlace_satelital:
+            str_lit.session_state.enlace_satelital = enlace_sat
+            str_lit.rerun()
+        
+        if str_lit.session_state.enlace_satelital:
+            str_lit.success("📡 Enrutando vía Constelación Satelital Stark-1 (Banda Ku).")
+        else:
+            str_lit.info("🌐 Enrutando vía Fibra Óptica Terrestre local.")
+
+        str_lit.markdown("#### 2. Hotword (\"Hey J.A.R.V.I.S.\")")
         hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
         if hotword_activo:
             str_lit.info("🎙️ Escucha activa de voz habilitada en terminal local.")
 
-        str_lit.markdown("#### 2. Alertas Climáticas Auto")
+        str_lit.markdown("#### 3. Alertas Climáticas Auto")
         if str_lit.button("Forzar Chequeo Clima Buin"):
             try:
                 res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
@@ -329,15 +343,9 @@ with str_lit.sidebar:
             except Exception:
                 str_lit.error("Error al consultar clima en Buin.")
 
-        str_lit.markdown("#### 3. Escáner Multimedia & IA Vision")
-        archivo_subido = str_lit.file_uploader("Cargar foto/documento para análisis:", type=["png", "jpg", "jpeg", "pdf"], key="escanner_multimedia")
-        if archivo_subido is not None:
-            str_lit.success("📁 Archivo indexado correctamente en la base de datos de J.A.R.V.I.S.")
-
-    # --- 2. LOS 5 SUBSISTEMAS AVANZADOS DE LABORATORIO ---
+    # --- 2. SUBSISTEMAS AVANZADOS DE LABORATORIO ---
     with str_lit.expander("🛡️ Subsistemas Avanzados de Laboratorio"):
         
-        # 1. Autenticación Biométrica
         str_lit.markdown("#### 1. Autenticación Biométrica")
         biometrico_ok = str_lit.checkbox("🔓 Escáner Biométrico (Huella/Retina)", value=False)
         
@@ -358,7 +366,6 @@ with str_lit.sidebar:
 
         str_lit.markdown("---")
 
-        # 2. Panel de Misiones Tácticas (SQLite)
         str_lit.markdown("#### 2. Misiones Tácticas (To-Do)")
         nueva_mision = str_lit.text_input("Nueva misión para J.A.R.V.I.S.:", key="txt_nueva_mision")
         if str_lit.button("Asignar Misión"):
@@ -388,7 +395,6 @@ with str_lit.sidebar:
 
         str_lit.markdown("---")
 
-        # 3. Registro de Alertas Climáticas Automatizadas
         str_lit.markdown("#### 3. Log de Clima & Alertas")
         if str_lit.button("Registrar Chequeo Climático Buin"):
             try:
@@ -415,7 +421,6 @@ with str_lit.sidebar:
 
         str_lit.markdown("---")
 
-        # 4. Modo de Diagnóstico de Componentes (Ping Test)
         str_lit.markdown("#### 4. Diagnóstico de Red & Ping Test")
         if str_lit.button("Ejecutar Ping a Servidores"):
             with str_lit.spinner("Midiendo latencia de enlaces globales..."):
@@ -433,13 +438,13 @@ with str_lit.sidebar:
                 except Exception:
                     ms_meteo = "Timeout"
 
-                str_lit.success(f"🟢 Groq API Latencia: {ms_groq} ms")
-                str_lit.success(f"🟢 Open-Meteo GPS Latencia: {ms_meteo} ms")
+                tipo_ping = "🛰️ Satelital Stark" if str_lit.session_state.enlace_satelital else "🌐 Terrestre Fibra"
+                str_lit.success(f"🟢 Groq API ({tipo_ping}): {ms_groq} ms")
+                str_lit.success(f"🟢 Open-Meteo GPS: {ms_meteo} ms")
                 str_lit.success("🟢 SQLite Local: 1 ms")
 
         str_lit.markdown("---")
 
-        # 5. Memoria RAG Avanzada
         str_lit.markdown("#### 5. Indexador RAG (Documentos)")
         doc_subido = str_lit.file_uploader("Cargar manual o PDF para indexar:", type=["txt", "pdf", "md"], key="rag_uploader")
         if doc_subido is not None:
