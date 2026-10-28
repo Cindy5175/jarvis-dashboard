@@ -460,7 +460,33 @@ if str_lit.session_state.codigo_rojo:
 
 str_lit.markdown("---")
 
-# --- CHAT DE J.A.R.V.I.S. (UBICACIÓN SUPERIOR) ---
+# --- SECCIÓN VISUAL LADO A LADO (GLOBO ORBITAL & STREET VIEW URBANO) ---
+col_globo, col_street = str_lit.columns(2)
+
+with col_globo:
+    str_lit.markdown("### 🛰️ Estación Holográfica Orbital")
+    renderizar_globo_terraqueo(color_neon_principal)
+
+with col_street:
+    str_lit.markdown("### 🏙️ Explorador Urbano (Street View)")
+    ciudades_mundo = {
+        "Buin, Chile (Base Local)": (-33.7331, -70.7072),
+        "Santiago de Chile": (-33.4489, -70.6693),
+        "Tokio, Japón": (35.6762, 139.6503),
+        "Nueva York, EE.UU.": (40.7128, -74.0060),
+        "Londres, Reino Unido": (51.5074, -0.1278),
+        "París, Francia": (48.8566, 2.3522),
+        "Sídney, Australia": (-33.8688, 151.2093),
+        "Roma, Italia": (41.9028, 12.4964)
+    }
+    ciudad_seleccionada = str_lit.selectbox("Seleccione Sector Urbano:", list(ciudades_mundo.keys()), key="select_street_view")
+    lat_c, lon_c = ciudades_mundo[ciudad_seleccionada]
+    str_lit.markdown(f"**Navegando: {ciudad_seleccionada}**")
+    renderizar_street_view(lat_c, lon_c)
+
+str_lit.markdown("---")
+
+# --- CHAT DE J.A.R.V.I.S. (UBICACIÓN INFERIOR) ---
 str_lit.markdown("### 💬 Canal de Enlace Táctico (Chat)")
 prompt_sistema_jarvis = (
     "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
@@ -509,29 +535,3 @@ if prompt_usuario:
     str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
     guardar_mensaje_db("assistant", respuesta)
     hablar_jarvis(respuesta)
-
-str_lit.markdown("---")
-
-# --- SECCIÓN VISUAL LADO A LADO (GLOBO ORBITAL & STREET VIEW URBANO) ---
-col_globo, col_street = str_lit.columns(2)
-
-with col_globo:
-    str_lit.markdown("### 🛰️ Estación Holográfica Orbital")
-    renderizar_globo_terraqueo(color_neon_principal)
-
-with col_street:
-    str_lit.markdown("### 🏙️ Explorador Urbano (Street View)")
-    ciudades_mundo = {
-        "Buin, Chile (Base Local)": (-33.7331, -70.7072),
-        "Santiago de Chile": (-33.4489, -70.6693),
-        "Tokio, Japón": (35.6762, 139.6503),
-        "Nueva York, EE.UU.": (40.7128, -74.0060),
-        "Londres, Reino Unido": (51.5074, -0.1278),
-        "París, Francia": (48.8566, 2.3522),
-        "Sídney, Australia": (-33.8688, 151.2093),
-        "Roma, Italia": (41.9028, 12.4964)
-    }
-    ciudad_seleccionada = str_lit.selectbox("Seleccione Sector Urbano:", list(ciudades_mundo.keys()), key="select_street_view")
-    lat_c, lon_c = ciudades_mundo[ciudad_seleccionada]
-    str_lit.markdown(f"**Navegando: {ciudad_seleccionada}**")
-    renderizar_street_view(lat_c, lon_c)
