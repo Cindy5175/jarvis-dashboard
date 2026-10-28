@@ -558,14 +558,38 @@ with str_lit.sidebar:
             
     renderizar_mapa_tactico(str_lit.session_state.modo_mapa)
 
-# PANEL PRINCIPAL (SIN GATITO)
-str_lit.markdown(
-    f"""<div style="display: flex; align-items: center; gap: 16px; margin-top: 10px; margin-bottom: 20px; padding-left: 10px;">
-        <div style="min-width: 40px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, {color_neon_principal} 40%, #002244 80%, #000000 100%); border: 2px solid {color_neon_principal}; box-shadow: 0 0 16px {color_neon_principal}, inset 0 0 8px #ffffff; display: flex; justify-content: center; align-items: center;"></div>
-        <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: {color_neon_principal} !important; text-shadow: 0 0 12px {color_sombra_neon};">J.A.R.V.I.S. IA Autónomo</h1>
-    </div>""",
-    unsafe_allow_html=True
-)
+# PANEL PRINCIPAL (CON RELOJ Y FECHA EN VIVO)
+col_titulo, col_reloj = str_lit.columns([2, 1])
+
+with col_titulo:
+    str_lit.markdown(
+        f"""<div style="display: flex; align-items: center; gap: 16px; margin-top: 10px; margin-bottom: 20px; padding-left: 10px;">
+            <div style="min-width: 40px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, {color_neon_principal} 40%, #002244 80%, #000000 100%); border: 2px solid {color_neon_principal}; box-shadow: 0 0 16px {color_neon_principal}, inset 0 0 8px #ffffff; display: flex; justify-content: center; align-items: center;"></div>
+            <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: {color_neon_principal} !important; text-shadow: 0 0 12px {color_sombra_neon};">J.A.R.V.I.S. IA Autónomo</h1>
+        </div>""",
+        unsafe_allow_html=True
+    )
+
+with col_reloj:
+    reloj_html = f"""
+    <div style="font-family: monospace; color: {color_neon_principal}; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 6px; border: 1px solid {color_neon_principal}; text-align: right; box-shadow: 0 0 10px {color_sombra_neon};">
+        <div id="live-clock" style="font-size: 16px; font-weight: bold;">--:--:--</div>
+        <div id="live-date" style="font-size: 11px; opacity: 0.8;">---</div>
+    </div>
+    <script>
+        function actualizarReloj() {{
+            const now = new Date();
+            const opcionesFecha = {{ timeZone: 'America/Santiago', weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }};
+            const opcionesHora = {{ timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }};
+            
+            document.getElementById('live-date').innerText = now.toLocaleDateString('es-CL', opcionesFecha);
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('es-CL', opcionesHora);
+        }}
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+    </script>
+    """
+    components.html(reloj_html, height=65, scrolling=False)
 
 if str_lit.session_state.codigo_rojo:
     str_lit.error("⚠️ **¡ATENCIÓN JEFA! PROTOCOLO DE EMERGENCIA ACTIVADO // CÓDIGO ROJO DE DEFENSA EN CURSO** ⚠️")
