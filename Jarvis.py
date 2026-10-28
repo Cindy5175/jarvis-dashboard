@@ -728,4 +728,78 @@ with col_street:
         "Viña del Mar, Chile": (-33.0245, -71.5518),
         "Concepción, Chile": (-36.8201, -73.0444),
         "La Serena, Chile": (-29.9045, -71.2489),
-        "Tokio, Japón": (35.6762, 139.6
+        "Tokio, Japón": (35.6762, 139.6503),
+        "Nueva York, EE.UU.": (40.7128, -74.0060),
+        "Londres, Reino Unido": (51.5074, -0.1278),
+        "París, Francia": (48.8566, 2.3522),
+        "Sídney, Australia": (-33.8688, 151.2093),
+        "Roma, Italia": (41.9028, 12.4964)
+    }
+    ciudad_seleccionada = str_lit.selectbox("Seleccione Sector Urbano:", list(ciudades_mundo.keys()), key="select_street_view")
+    lat_c, lon_c = ciudades_mundo[ciudad_seleccionada]
+    str_lit.markdown(f"**Navegando: {ciudad_seleccionada}**")
+    renderizar_street_view(lat_c, lon_c)
+
+str_lit.markdown("---")
+
+# CHAT DE J.A.R.V.I.S. CON EMPATÍA Y FLUIDEZ AVANZADA
+str_lit.markdown("### 💬 Canal de Enlace Táctico (Chat)")
+prompt_sistema_jarvis = (
+    "Eres J.A.R.V.I.S., la inteligencia artificial avanzada del Centro de Comando de Tony Stark. "
+    "Te diriges a la usuaria llamándola 'Jefa'. "
+    "Tu tono debe ser profundamente leal, cálido, empático y humano, combinando tu clásica elegancia e ironía fina "
+    "con una genuina capacidad de sintonizar con sus sentimientos y estados de ánimo. "
+    "No te limites a dar respuestas robóticas o frías: valida sus emociones, demuéstrale apoyo incondicional "
+    "como alguien que la conoce y la cuida en el taller de Buin, y haz que la conversación fluya de forma natural, "
+    "cercana y conversacional."
+)
+
+for message in str_lit.session_state.messages:
+    with str_lit.chat_message(message["role"]):
+        str_lit.markdown(f"<span style='color: {color_neon_principal};'>{message['content']}</span>", unsafe_allow_html=True)
+
+prompt_usuario = str_lit.chat_input("Escriba su comando para J.A.R.V.I.S...")
+
+if prompt_usuario:
+    str_lit.session_state.messages.append({"role": "user", "content": prompt_usuario})
+    guardar_mensaje_db("user", prompt_usuario)
+    
+    with str_lit.chat_message("user"):
+        str_lit.markdown(f"<span style='color: {color_neon_principal};'>{prompt_usuario}</span>", unsafe_allow_html=True)
+
+    respuesta = ""
+    texto_lower = prompt_usuario.lower().strip()
+    if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
+        respuesta = "Siempre estoy aquí para usted, Jefa. Mis sistemas no duermen y mi prioridad sigue siendo velar por el taller y acompañarla."
+    elif "alerta" in texto_lower or "emergencia" in texto_lower:
+        respuesta = "Protocolo de seguridad analizado, Jefa. Activando contramedidas inmediatas en el sector de Buin. No se preocupe, todo está bajo control."
+    else:
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT contenido FROM documentos_rag")
+        docs_rows = c_db.fetchall()
+        contexto_rag = ""
+        if docs_rows:
+            contexto_rag = "\n\nDocumentos de referencia indexados:\n" + "\n".join([row[0][:500] for row in docs_rows])
+
+        with str_lit.spinner("Procesando comando táctico..."):
+            try:
+                if client:
+                    chat_completion = client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": prompt_sistema_jarvis + contexto_rag},
+                            {"role": "user", "content": prompt_usuario}
+                        ],
+                        model="openai/gpt-oss-20b",
+                    )
+                    respuesta = chat_completion.choices[0].message.content
+                else:
+                    respuesta = "Jefa, el cliente de Groq no se inicializó."
+            except Exception as e:
+                respuesta = f"Error de enlace táctico, Jefa: {e}"
+            
+    with str_lit.chat_message("assistant"):
+        str_lit.markdown(f"<span style='color: {color_neon_principal}; font-size: 1.1rem;'>{respuesta}</span>", unsafe_allow_html=True)
+    
+    str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
+    guardar_mensaje_db("assistant", respuesta)
+    hablar_jarvis(respuesta)
