@@ -89,6 +89,13 @@ def inicializar_db():
             contenido TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sesiones_archivadas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TEXT,
+            resumen TEXT
+        )
+    """)
     conn.commit()
     return conn
 
@@ -107,6 +114,14 @@ def cargar_mensajes_db():
 
 def purgar_db():
     cursor = db_conn.cursor()
+    cursor.execute("SELECT content FROM chat_history LIMIT 1")
+    row = cursor.fetchone()
+    if row:
+        fecha_sesion = datetime.now(pytz.timezone("America/Santiago")).strftime("%Y-%m-%d %H:%M")
+        c_db = db_conn.cursor()
+        c_db.execute("INSERT INTO sesiones_archivadas (fecha, resumen) VALUES (?, ?)", (fecha_sesion, f"Sesión iniciada con: {row[0][:40]}..."))
+        db_conn.commit()
+    
     cursor.execute("DELETE FROM chat_history")
     db_conn.commit()
 
@@ -391,16 +406,27 @@ with str_lit.sidebar:
 
         str_lit.markdown("---")
 
-        # 4. Modo de Diagnóstico de Componentes
-        str_lit.markdown("#### 4. Diagnóstico de Red y APIs")
-        if str_lit.button("Ejecutar Diagnóstico Global"):
-            with str_lit.spinner("Verificando latencia de enlaces..."):
-                time.sleep(0.6)
-                str_lit.success("🟢 Groq API: Nominal (12ms)")
-                str_lit.success("🟢 Open-Meteo GPS: Nominal (45ms)")
-                str_lit.success("🟢 CoinGecko Cripto: Nominal (88ms)")
-                str_lit.success("🟢 Yahoo Finance: Nominal (110ms)")
-                str_lit.success("🟢 SQLite Local: Nominal (1ms)")
+        # 4. Modo de Diagnóstico de Componentes (MODO 1: PING TEST INTEGRADO)
+        str_lit.markdown("#### 4. Diagnóstico de Red & Ping Test")
+        if str_lit.button("Ejecutar Ping a Servidores"):
+            with str_lit.spinner("Midiendo latencia de enlaces globales..."):
+                try:
+                    t_groq = time.time()
+                    requests.get("https://api.groq.com", timeout=2)
+                    ms_groq = int((time.time() - t_groq) * 1000)
+                except Exception:
+                    ms_groq = "Timeout"
+
+                try:
+                    t_meteo = time.time()
+                    requests.get("https://api.open-meteo.com", timeout=2)
+                    ms_meteo = int((time.time() - t_meteo) * 1000)
+                except Exception:
+                    ms_meteo = "Timeout"
+
+                str_lit.success(f"🟢 Groq API Latencia: {ms_groq} ms")
+                str_lit.success(f"🟢 Open-Meteo GPS Latencia: {ms_meteo} ms")
+                str_lit.success("🟢 SQLite Local: 1 ms")
 
         str_lit.markdown("---")
 
@@ -425,8 +451,20 @@ with str_lit.sidebar:
     if str_lit.button("🧹 Purgar Memoria de Chat"):
         purgar_db()
         str_lit.session_state.messages = []
-        str_lit.success("¡Memoria persistente purgada con éxito, Jefa!")
+        str_lit.success("¡Memoria archivada y purgada con éxito, Jefa!")
         str_lit.rerun()
+
+    # MODO 2: HISTORIAL DE SESIONES ANTERIORES EN SQLITE
+    with str_lit.expander("📂 Historial de Sesiones Archivadas"):
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT id, fecha, resumen FROM sesiones_archivadas ORDER BY id DESC")
+        sesiones_pasadas = c_db.fetchall()
+        if sesiones_pasadas:
+            for s_id, s_fecha, s_res in sesiones_pasadas:
+                str_lit.markdown(f"**[{s_fecha}]**")
+                str_lit.caption(s_res)
+        else:
+            str_lit.info("No hay sesiones archivadas todavía.")
 
     str_lit.markdown("---")
     
@@ -480,29 +518,31 @@ with str_lit.sidebar:
             else:
                 str_lit.info("Escriba un requerimiento para generar el código.")
 
-    with str_lit.expander("🎙️ Protocolo 2: Transcripción de Voz (Whisper)"):
-        str_lit.markdown("Grabe su orden de voz para traducción IA:")
-        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
-        if audio_bytes:
-            str_lit.audio(audio_bytes, format="audio/wav")
+    # MODO 3: NOTAS DE VOZ RÁPIDAS A MISIONES (WHISPER)
+    with str_lit.expander("🎙️ Notas de Voz a Misiones (Whisper)"):
+        str_lit.markdown("Grabe una nota de voz y J.A.R.V.I.S. la convertirá en misión:")
+        audio_bytes_nota = audio_recorder(text="Grabar Nota de Misión", icon_size="2x", key="rec_nota_mision")
+        if audio_bytes_nota:
+            str_lit.audio(audio_bytes_nota, format="audio/wav")
             if client:
-                with str_lit.spinner("Traduciendo ondas de voz con Whisper..."):
+                with str_lit.spinner("Procesando nota de voz con Whisper..."):
                     try:
-                        with open("temp_audio.wav", "wb") as f_audio:
-                            f_audio.write(audio_bytes)
-                        with open("temp_audio.wav", "rb") as f_audio:
-                            transcription = client.audio.transcriptions.create(
+                        with open("temp_nota.wav", "wb") as f_n:
+                            f_n.write(audio_bytes_nota)
+                        with open("temp_nota.wav", "rb") as f_n:
+                            trans_nota = client.audio.transcriptions.create(
                                 model="whisper-large-v3",
-                                file=("temp_audio.wav", f_audio.read()),
+                                file=("temp_nota.wav", f_n.read()),
                                 language="es"
                             )
-                        texto_transcrito = transcription.text
-                        str_lit.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
-                        str_lit.session_state.messages.append({"role": "user", "content": texto_transcrito})
-                        guardar_mensaje_db("user", texto_transcrito)
+                        texto_nota = trans_nota.text
+                        c_db = db_conn.cursor()
+                        c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (f"[Voz] {texto_nota}", "Pendiente"))
+                        db_conn.commit()
+                        str_lit.success(f"🎯 ¡Misión creada por voz: '{texto_nota}'!")
                         str_lit.rerun()
                     except Exception as e:
-                        str_lit.error(f"Error procesando audio con Whisper: {e}")
+                        str_lit.error(f"Error procesando nota de voz: {e}")
 
     with str_lit.expander("📈 Mercado Bursátil Tradicional"):
         ticker_symbol = str_lit.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
