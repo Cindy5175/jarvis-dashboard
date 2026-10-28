@@ -175,4 +175,22 @@ def enviar_alerta_telegram(mensaje_alerta):
         if token and chat_id:
             url = f"https://api.telegram.org/bot{token}/sendMessage"
             payload = {"chat_id": chat_id, "text": f"🚨 [JARVIS BUIN ALERTA]: {mensaje_alerta}"}
-            requests.post(
+            requests.post(url, json=payload, timeout=3)
+    except Exception:
+        pass
+
+def generar_html_pdf(historial):
+    html_content = """
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: monospace; color: #002244; padding: 20px; }
+            h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }
+            .msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }
+            .user { font-weight: bold; color: #004488; }
+            .jarvis { font-weight: bold; color: #0088cc; }
+        </style>
+    </head>
+    <body>
+        <h1>CENTRO DE COMANDO J.A.R.V.I.S
