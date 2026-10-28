@@ -318,14 +318,4 @@ with str_lit.sidebar:
         enlace_sat = str_lit.toggle("🛰️ Enlace Satelital Stark", value=str_lit.session_state.enlace_satelital)
         if enlace_sat != str_lit.session_state.enlace_satelital:
             str_lit.session_state.enlace_satelital = enlace_sat
-            str_lit.rerun()
-        
-        texto_enlace = "Enrutando vía Constelación Satelital Stark-1 (Banda Ku)." if str_lit.session_state.enlace_satelital else "Enrutando vía Red Terrestre de Fibra Óptica."
-        str_lit.markdown(
-            f"""<div style="background: rgba(0, 210, 255, 0.1); border: 1px solid {color_neon_principal}; padding: 10px; border-radius: 6px; color: {color_neon_principal}; font-family: monospace; font-size: 0.85rem; box-shadow: 0 0 8px {color_sombra_neon}; margin-top: 5px; margin-bottom: 10px;">
-                🛰️ {texto_enlace}
-            </div>""",
-            unsafe_allow_html=True
-        )
-
-        str_lit.markdown("#### 2. Hotword (\"Hey J
+            str_lit
