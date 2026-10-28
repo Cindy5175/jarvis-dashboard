@@ -180,17 +180,40 @@ def enviar_alerta_telegram(mensaje_alerta):
         pass
 
 def generar_html_pdf(historial):
-    html_content = """
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body { font-family: monospace; color: #002244; padding: 20px; }
-            h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }
-            .msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }
-            .user { font-weight: bold; color: #004488; }
-            .jarvis { font-weight: bold; color: #0088cc; }
-        </style>
-    </head>
-    <body>
-        <h1>CENTRO DE COMANDO J.A.R.V.I.S
+    html_content = "<html><head><meta charset='utf-8'>"
+    html_content += "<style>"
+    html_content += "body { font-family: monospace; color: #002244; padding: 20px; }"
+    html_content += "h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 5px; }"
+    html_content += ".msg { margin-bottom: 15px; padding: 10px; border-radius: 5px; background: #f0f8ff; }"
+    html_content += ".user { font-weight: bold; color: #004488; }"
+    html_content += ".jarvis { font-weight: bold; color: #0088cc; }"
+    html_content += "</style></head><body>"
+    html_content += "<h1>CENTRO DE COMANDO J.A.R.V.I.S. - INFORME TÁCTICO</h1>"
+    for msg in historial:
+        rol_class = "user" if msg["role"] == "user" else "jarvis"
+        rol_nombre = "Jefa" if msg["role"] == "user" else "J.A.R.V.I.S."
+        html_content += f'<div class="msg"><span class="{rol_class}">{rol_nombre}:</span><p>{msg["content"]}</p></div>'
+    html_content += "</body></html>"
+    return html_content
+
+def renderizar_globo_terraqueo(hex_color):
+    try:
+        glogo_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            <style>
+                body {{ margin: 0; overflow: hidden; background: transparent; }}
+                #canvas-container {{ width: 100%; height: 320px; position: relative; }}
+                #hud-text {{ position: absolute; top: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid {hex_color}; z-index: 10; box-shadow: 0 0 10px {hex_color}; }}
+                #orbit-hud {{ position: absolute; bottom: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px; z-index: 10; }}
+            </style>
+        </head>
+        <body>
+            <div id="canvas-container">
+                <div id="hud-text">BUIN COMMAND // GLOBO HOLOGRÁFICO F&F 8</div>
+                <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
+            </div>
+            <script>
+                const container = document.
