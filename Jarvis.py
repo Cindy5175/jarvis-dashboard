@@ -138,7 +138,7 @@ def hablar_jarvis(texto):
     except Exception:
         pass
 
-# Protocolo 1: Alerta Externa (Telegram Webhook simulado / activo)
+# Protocolo 1: Alerta Externa (Telegram Webhook)
 def enviar_alerta_telegram(mensaje_alerta):
     try:
         token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
@@ -317,4 +317,99 @@ def renderizar_mapa_tactico(modo):
     except Exception as e:
         st.error(f"Error en Mapa Táctico: {e}")
 
-def
+def renderizar_radar_tactico(hex_color):
+    radar_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { margin: 0; background: #000814; display: flex; justify-content: center; align-items: center; height: 180px; }
+            canvas { width: 160px; height: 160px; }
+        </style>
+    </head>
+    <body>
+        <canvas id="radarCanvas" width="160" height="160"></canvas>
+        <script>
+            const canvas = document.getElementById('radarCanvas');
+            const ctx = canvas.getContext('2d');
+            let angle = 0;
+            function drawRadar() {
+                ctx.clearRect(0, 0, 160, 160);
+                ctx.strokeStyle = 'COLOR_PLACEHOLDER';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(80, 80, 70, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(80, 80, 40, 0, Math.PI * 2); ctx.stroke();
+                
+                ctx.beginPath(); ctx.moveTo(10, 80); ctx.lineTo(150, 80); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(80, 10); ctx.lineTo(80, 150); ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(80, 80);
+                ctx.rotate(angle);
+                ctx.strokeStyle = 'COLOR_PLACEHOLDER';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70, -70); ctx.stroke();
+                ctx.restore();
+                
+                ctx.fillStyle = '#ff3333';
+                ctx.beginPath(); ctx.arc(110, 50, 3, 0, Math.PI * 2); ctx.fill();
+
+                angle += 0.04;
+                requestAnimationFrame(drawRadar);
+            }
+            drawRadar();
+        </script>
+    </body>
+    </html>
+    """.replace("COLOR_PLACEHOLDER", hex_color)
+    
+    components.html(radar_html, height=190, scrolling=False)
+
+@st.cache_resource
+def obtener_cliente_groq():
+    try:
+        api_key = "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"
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
+        return None
+
+client = obtener_cliente_groq()
+
+# BARRA LATERAL (IZQUIERDA)
+with st.sidebar:
+    st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
+
+    if st.session_state.codigo_rojo:
+        if st.button("🟢 DESACTIVAR CÓDIGO ROJO"):
+            st.session_state.codigo_rojo = False
+            enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
+            st.rerun()
+    else:
+        if st.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
+            st.session_state.codigo_rojo = True
+            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
+            st.rerun()
+
+    if st.button("🧹 Purgar Memoria de Chat"):
+        purgar_db()
+        st.session_state.messages = []
+        st.success("¡Memoria persistente purgada con éxito, Jefa!")
+        st.rerun()
+
+    st.markdown("---")
+    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
+    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
+    
+    st.markdown("---")
+    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
+    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
+    hex_actual = color_map.get(tema_hud, "#ff3333" if st.session_state.codigo_rojo else "#00d2ff")
+    
+    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
+    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
+    
+    st.markdown("---")
+    st.markdown("### 🚀 MÓDULOS STARK & SEGURIDAD")
+
+    with st.expander("👁️ Cámara de Seguridad (CCTV Bu
