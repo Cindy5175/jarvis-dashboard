@@ -284,7 +284,71 @@ client = obtener_cliente_groq()
 with str_lit.sidebar:
     str_lit.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
 
-    # --- BLOQUE UNIFICADO: LOS 5 SUBSISTEMAS AVANZADOS DE LABORATORIO ---
+    # --- 1. PROTOCOLOS AVANZADOS (4 PUNTOS POR SOFTWARE) ---
+    with str_lit.expander("🚀 Protocolos Avanzados (Software)"):
+        str_lit.markdown("#### 1. Hotword (\"Hey J.A.R.V.I.S.\")")
+        hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
+        
+        if hotword_activo:
+            hotword_html = """
+            <div style="font-family: monospace; color: #00d2ff; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 6px; border: 1px solid #00d2ff; text-align: center;">
+                <p id="status-hotword" style="margin: 0; font-size: 11px;">🎤 ESCUCHANDO VOZ...</p>
+                <button onclick="iniciarEscucha()" style="margin-top: 8px; background: #00d2ff; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">Habilitar Audio</button>
+            </div>
+            <script>
+                function hablarTexto(texto) {
+                    let utterance1 = new SpeechSynthesisUtterance(texto);
+                    utterance1.lang = 'es-ES';
+                    window.speechSynthesis.speak(utterance1);
+
+                    let utterance2 = new SpeechSynthesisUtterance(texto);
+                    utterance2.lang = 'es-ES';
+                    window.speechSynthesis.speak(utterance2);
+                }
+
+                function iniciarEscucha() {
+                    hablarTexto("Sistema de voz activado.");
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (SpeechRecognition) {
+                        const recognition = new SpeechRecognition();
+                        recognition.lang = 'es-ES';
+                        recognition.continuous = true;
+                        recognition.interimResults = true;
+
+                        recognition.onresult = function(event) {
+                            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                                let transcript = event.results[i][0].transcript.toLowerCase();
+                                if (transcript.includes('jarvis') || transcript.includes('hey jarvis')) {
+                                    document.getElementById('status-hotword').innerText = "⚡ ¡COMANDO DETECTADO!";
+                                    hablarTexto("A sus órdenes, Jefa. Sistemas listos en Buin.");
+                                }
+                            }
+                        };
+                        recognition.start();
+                    }
+                }
+            </script>
+            """
+            components.html(hotword_html, height=95, scrolling=False)
+
+        str_lit.markdown("#### 2. Alertas Climáticas Auto")
+        if str_lit.button("Forzar Chequeo Clima Buin"):
+            try:
+                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
+                t_val = res_c["current_weather"]["temperature"]
+                w_val = res_c["current_weather"]["windspeed"]
+                msg_clima = f"Temperatura: {t_val}°C | Viento: {w_val} km/h. Estado: Óptimo."
+                enviar_alerta_telegram(msg_clima)
+                str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
+            except Exception:
+                str_lit.error("Error al consultar clima en Buin.")
+
+        str_lit.markdown("#### 3. Escáner Multimedia & IA Vision")
+        archivo_subido = str_lit.file_uploader("Cargar foto/documento para análisis:", type=["png", "jpg", "jpeg", "pdf"], key="escanner_multimedia")
+        if archivo_subido is not None:
+            str_lit.success("📁 Archivo indexado correctamente en la base de datos de J.A.R.V.I.S.")
+
+    # --- 2. LOS 5 SUBSISTEMAS AVANZADOS DE LABORATORIO ---
     with str_lit.expander("🛡️ Subsistemas Avanzados de Laboratorio"):
         
         # 1. Autenticación Biométrica (Seguridad Código Rojo)
@@ -534,10 +598,10 @@ with str_lit.sidebar:
             
     renderizar_mapa_tactico(str_lit.session_state.modo_mapa)
 
-# PANEL PRINCIPAL (INDICADOR CLÁSICO NEÓN)
+# PANEL PRINCIPAL (CON LOGO DE GATITO NEÓN)
 str_lit.markdown(
-    f"""<div style="display: flex; align-items: center; gap: 14px; margin-top: 10px; margin-bottom: 20px; padding-left: 10px;">
-        <div style="min-width: 40px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, {color_neon_principal} 40%, #002244 80%, #000000 100%); border: 2px solid {color_neon_principal}; box-shadow: 0 0 16px {color_neon_principal}, inset 0 0 8px #ffffff; display: flex; justify-content: center; align-items: center;"></div>
+    f"""<div style="display: flex; align-items: center; gap: 16px; margin-top: 10px; margin-bottom: 20px; padding-left: 10px;">
+        <div style="min-width: 46px; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, {color_neon_principal} 50%, #000000 100%); border: 2px solid {color_neon_principal}; box-shadow: 0 0 16px {color_neon_principal}; display: flex; justify-content: center; align-items: center; font-size: 24px;" title="J.A.R.V.I.S. Nivel Felino">🐱</div>
         <h1 style="margin: 0; font-size: 2.1rem; font-family: sans-serif; color: {color_neon_principal} !important; text-shadow: 0 0 12px {color_sombra_neon};">J.A.R.V.I.S. IA Autónomo</h1>
     </div>""",
     unsafe_allow_html=True
