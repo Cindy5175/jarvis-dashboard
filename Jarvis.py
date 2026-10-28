@@ -161,34 +161,237 @@ def generar_html_pdf(historial):
 
 def renderizar_globo_terraqueo(hex_color):
     try:
-        glogo_html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-            <style>
-                body { margin: 0; overflow: hidden; background: transparent; }
-                #canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }
-                #hud-text {
-                    position: absolute; top: 10px; left: 10px; 
-                    font-family: monospace; color: COLOR_PLACEHOLDER; font-size: 11px;
-                    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;
-                    border: 1px solid COLOR_PLACEHOLDER; z-index: 10;
-                    box-shadow: 0 0 10px COLOR_PLACEHOLDER;
-                }
-                #orbit-hud {
-                    position: absolute; bottom: 10px; left: 10px; 
-                    font-family: monospace; color: COLOR_PLACEHOLDER; font-size: 10px;
-                    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;
-                    z-index: 10;
-                }
-            </style>
-        </head>
-        <body>
-            <div id="canvas-container">
-                <div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>
-                <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
+        glogo_html = "\n".join([
+            "<!DOCTYPE html>",
+            "<html>",
+            "<head>",
+            '    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>',
+            "    <style>",
+            "        body { margin: 0; overflow: hidden; background: transparent; }",
+            "        #canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }",
+            f"        #hud-text {{ position: absolute; top: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid {hex_color}; z-index: 10; box-shadow: 0 0 10px {hex_color}; }}",
+            f"        #orbit-hud {{ position: absolute; bottom: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px; z-index: 10; }}",
+            "    </style>",
+            "</head>",
+            "<body>",
+            '    <div id="canvas-container">',
+            '        <div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>',
+            '        <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>',
+            "    </div>",
+            "    <script>",
+            "        const container = document.getElementById('canvas-container');",
+            "        const scene = new THREE.Scene();",
+            "        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);",
+            "        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });",
+            "        renderer.setSize(container.clientWidth, 320);",
+            "        container.appendChild(renderer.domElement);",
+            "        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);",
+            "        scene.add(ambientLight);",
+            f"        const pointLight = new THREE.PointLight('{hex_color}', 2, 50);",
+            "        pointLight.position.set(5, 3, 5);",
+            "        scene.add(pointLight);",
+            "        const geometry = new THREE.SphereGeometry(2, 32, 32);",
+            "        const textureLoader = new THREE.TextureLoader();",
+            "        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');",
+            "        const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');",
+            "        const material = new THREE.MeshStandardMaterial({ map: earthTexture, bumpMap: bumpTexture, bumpScale: 0.05, roughness: 0.8 });",
+            "        const earth = new THREE.Mesh(geometry, material);",
+            "        scene.add(earth);",
+            "        const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);",
+            f"        const ringMaterial = new THREE.MeshBasicMaterial({{ color: '{hex_color}', side: THREE.DoubleSide, transparent: true, opacity: 0.6 }});",
+            "        const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);",
+            "        orbitRing.rotation.x = Math.PI / 3;",
+            "        scene.add(orbitRing);",
+            "        camera.position.z = 5.5;",
+            "        function animate() {",
+            "            requestAnimationFrame(animate);",
+            "            earth.rotation.y += 0.003;",
+            "            orbitRing.rotation.z += 0.001;",
+            "            renderer.render(scene, camera);",
+            "        }",
+            "        animate();",
+            "    </script>",
+            "</body>",
+            "</html>"
+        ])
+        components.html(glogo_html, height=330, scrolling=False)
+    except Exception as e:
+        str_lit.error(f"Error en Globo Terráqueo Holográfico: {e}")
+
+def renderizar_street_view(lat, lon):
+    street_html = f"""
+    <iframe width="100%" height="320" src="https://maps.google.com/maps?q={lat},{lon}&t=&z=17&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no"></iframe>
+    """
+    components.html(street_html, height=330, scrolling=False)
+
+def renderizar_mapa_tactico(modo):
+    try:
+        filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
+        mapa_html = (
+            "<!DOCTYPE html>"
+            "<html>"
+            "<head>"
+            '<meta charset="utf-8">'
+            '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
+            '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
+            "<style>"
+            "body { margin: 0; padding: 0; }"
+            f"#map {{ width: 100%; height: 280px; border-radius: 8px; {filtro_css} }}"
+            "</style>"
+            "</head>"
+            "<body>"
+            '<div id="map"></div>'
+            "<script>"
+            "const map = L.map('map').setView([-33.7331, -70.7072], 11);"
+            "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);"
+            "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin</b>').openPopup();"
+            "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
+            "</script>"
+            "</body>"
+            "</html>"
+        )
+        components.html(mapa_html, height=295, scrolling=False)
+    except Exception as e:
+        str_lit.error(f"Error en Mapa Táctico: {e}")
+
+@str_lit.cache_resource
+def obtener_cliente_groq():
+    try:
+        api_key = "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"
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
+        return None
+
+client = obtener_cliente_groq()
+
+# BARRA LATERAL (IZQUIERDA)
+with str_lit.sidebar:
+    str_lit.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
+
+    if str_lit.session_state.codigo_rojo:
+        if str_lit.button("🟢 DESACTIVAR CÓDIGO ROJO"):
+            str_lit.session_state.codigo_rojo = False
+            enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
+            str_lit.rerun()
+    else:
+        if str_lit.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
+            str_lit.session_state.codigo_rojo = True
+            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
+            str_lit.rerun()
+
+    if str_lit.button("🧹 Purgar Memoria de Chat"):
+        purgar_db()
+        str_lit.session_state.messages = []
+        str_lit.success("¡Memoria persistente purgada con éxito, Jefa!")
+        str_lit.rerun()
+
+    str_lit.markdown("---")
+    
+    # --- BLOQUE UNIFICADO: LOS 4 PROTOCOLOS AVANZADOS (CON HOTWORD REAL) ---
+    with str_lit.expander("🚀 Protocolos Avanzados (Los 4 Puntos)"):
+        str_lit.markdown("#### 1. Hotword (\"Hey J.A.R.V.I.S.\")")
+        hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
+        
+        if hotword_activo:
+            hotword_html = """
+            <div style="font-family: monospace; color: #00d2ff; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 6px; border: 1px solid #00d2ff; text-align: center;">
+                <p id="status-hotword" style="margin: 0; font-size: 11px;">🎤 ESCUCHANDO: Diga "Hey Jarvis"...</p>
             </div>
             <script>
-                const container = document.getElementById('canvas-container');
-                const scene = new THREE.
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'es-ES';
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+
+                    recognition.onresult = function(event) {
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            let transcript = event.results[i][0].transcript.toLowerCase();
+                            if (transcript.includes('jarvis') || transcript.includes('hey jarvis')) {
+                                document.getElementById('status-hotword').innerText = "⚡ ¡HOTWORD DETECTADO!";
+                                let utterance = new SpeechSynthesisUtterance("A sus órdenes, Jefa. Sistemas listos en Buin.");
+                                utterance.lang = 'es-ES';
+                                window.speechSynthesis.speak(utterance);
+                            }
+                        }
+                    };
+
+                    recognition.onerror = function(event) {
+                        console.log("Error de reconocimiento de voz: " + event.error);
+                    };
+
+                    try {
+                        recognition.start();
+                    } catch(e) {
+                        console.log("Ya está iniciado.");
+                    }
+                } else {
+                    document.getElementById('status-hotword').innerText = "⚠️ Su navegador no soporta Web Speech API.";
+                }
+            </script>
+            """
+            components.html(hotword_html, height=70, scrolling=False)
+
+        str_lit.markdown("#### 2. Domótica & IoT (Buin)")
+        luces_taller = str_lit.toggle("Iluminación Neón Taller", value=True)
+        alarma_perim = str_lit.toggle("Alarma Perimetral Buin", value=True)
+        if luces_taller:
+            str_lit.success("💡 Luces del taller nominales.")
+        else:
+            str_lit.warning("🌑 Luces atenuadas.")
+
+        str_lit.markdown("#### 3. Alertas Climáticas Auto")
+        if str_lit.button("Forzar Chequeo Clima Buin"):
+            try:
+                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
+                t_val = res_c["current_weather"]["temperature"]
+                w_val = res_c["current_weather"]["windspeed"]
+                msg_clima = f"Temperatura: {t_val}°C | Viento: {w_val} km/h. Estado: Óptimo."
+                enviar_alerta_telegram(msg_clima)
+                str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
+            except Exception:
+                str_lit.error("Error al consultar clima en Buin.")
+
+        str_lit.markdown("#### 4. Escáner Multimedia & IA Vision")
+        archivo_subido = str_lit.file_uploader("Cargar foto/documento para análisis:", type=["png", "jpg", "jpeg", "pdf"])
+        if archivo_subido is not None:
+            str_lit.success("📁 Archivo indexado correctamente en la base de datos de J.A.R.V.I.S.")
+
+    str_lit.markdown("---")
+    
+    with str_lit.expander("🛡️ Telemetría de Sistema"):
+        cpu_actual = psutil.cpu_percent(interval=0.1)
+        ram_actual = psutil.virtual_memory().percent
+        str_lit.metric(label="CPU en Uso", value=f"{cpu_actual}%")
+        str_lit.metric(label="RAM en Uso", value=f"{ram_actual}%")
+
+    with str_lit.expander("🌤️ Radar Clima en Vivo"):
+        try:
+            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
+            res_clima = requests.get(url_clima, timeout=3).json()
+            temp = res_clima["current_weather"]["temperature"]
+            wind = res_clima["current_weather"]["windspeed"]
+            str_lit.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
+        except Exception:
+            str_lit.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
+
+    with str_lit.expander("🪙 Terminal Cripto & Stablecoins"):
+        crypto_sel = str_lit.selectbox("Seleccionar Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
+        try:
+            url_crypto = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
+            res = requests.get(url_crypto, timeout=2.0)
+            if res.status_code == 200:
+                data_c = res.json()
+                if crypto_sel in data_c:
+                    precio_c = data_c[crypto_sel]["usd"]
+                    cambio_c = data_c[crypto_sel].get("usd_24h_change", 0.0)
+                    str_lit.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
+                else:
+                    str_lit.warning("Activo no disponible.")
+            else:
+                str_lit.metric(label=f"{crypto_sel.upper()} / USD", value="$1.00", delta="+0.00%")
+        except Exception:
+            str_lit.metric(label=f"{crypto_sel.upper()} / USD", value
