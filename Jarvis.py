@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as str_lit
 import time
 from groq import Groq
 import streamlit.components.v1 as components
@@ -15,21 +15,21 @@ import psutil
 import plotly.graph_objects as go
 
 # 1. Configuración de página
-st.set_page_config(
+str_lit.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónomo",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Control de Estado para Código Rojo (Emergencia)
-if "codigo_rojo" not in st.session_state:
-    st.session_state.codigo_rojo = False
+if "codigo_rojo" not in str_lit.session_state:
+    str_lit.session_state.codigo_rojo = False
 
-color_neon_principal = "#ff3333" if st.session_state.codigo_rojo else "#00d2ff"
-color_sombra_neon = "rgba(255, 51, 51, 0.8)" if st.session_state.codigo_rojo else "rgba(0, 210, 255, 0.6)"
+color_neon_principal = "#ff3333" if str_lit.session_state.codigo_rojo else "#00d2ff"
+color_sombra_neon = "rgba(255, 51, 51, 0.8)" if str_lit.session_state.codigo_rojo else "rgba(0, 210, 255, 0.6)"
 
 # Estilos globales dinámicos
-st.markdown(f"""
+str_lit.markdown(f"""
     <style>
     h1, h2, h3, h4, h5, h6, span.neon-title {{
         color: {color_neon_principal} !important;
@@ -105,9 +105,9 @@ def purgar_db():
     cursor.execute("DELETE FROM chat_history")
     db_conn.commit()
 
-if "messages" not in st.session_state:
-    st.session_state.messages = cargar_mensajes_db()
-    if not st.session_state.messages:
+if "messages" not in str_lit.session_state:
+    str_lit.session_state.messages = cargar_mensajes_db()
+    if not str_lit.session_state.messages:
         chile_tz = pytz.timezone("America/Santiago")
         hora_actual = datetime.now(chile_tz).hour
         if 5 <= hora_actual < 12:
@@ -117,12 +117,12 @@ if "messages" not in st.session_state:
         else:
             saludo_inicial = "Buenas noches, Jefa. Trabajando en horario extendido, como corresponde a este taller. ¿Cuál es la orden?"
         
-        st.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
+        str_lit.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
 
 def hablar_jarvis(texto):
     try:
-        velocidad = st.session_state.get("voz_lenta", False)
+        velocidad = str_lit.session_state.get("voz_lenta", False)
         tts = gTTS(text=texto, lang='es', slow=velocidad)
         audio_path = "jarvis_voice.mp3"
         tts.save(audio_path)
@@ -134,15 +134,15 @@ def hablar_jarvis(texto):
                     <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
                 </audio>
             """
-            st.markdown(audio_html, unsafe_allow_html=True)
+            str_lit.markdown(audio_html, unsafe_allow_html=True)
     except Exception:
         pass
 
 # Protocolo 1: Alerta Externa (Telegram Webhook)
 def enviar_alerta_telegram(mensaje_alerta):
     try:
-        token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
-        chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
+        token = str_lit.secrets.get("TELEGRAM_BOT_TOKEN", "")
+        chat_id = str_lit.secrets.get("TELEGRAM_CHAT_ID", "")
         if token and chat_id:
             url = f"https://api.telegram.org/bot{token}/sendMessage"
             payload = {"chat_id": chat_id, "text": f"🚨 [JARVIS BUIN ALERTA]: {mensaje_alerta}"}
@@ -258,7 +258,7 @@ def renderizar_globo_terraqueo(hex_color):
         """
         components.html(glogo_html, height=330, scrolling=False)
     except Exception as e:
-        st.error(f"Error en Globo Terráqueo Holográfico: {{e}}")
+        str_lit.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
 def renderizar_camara_seguridad(hex_color):
     cctv_html = (
@@ -326,7 +326,7 @@ def renderizar_mapa_tactico(modo):
         )
         components.html(mapa_html, height=360, scrolling=False)
     except Exception as e:
-        st.error(f"Error en Mapa Táctico: {e}")
+        str_lit.error(f"Error en Mapa Táctico: {e}")
 
 def renderizar_radar_tactico(hex_color):
     radar_html = (
@@ -370,7 +370,7 @@ def renderizar_radar_tactico(hex_color):
     )
     components.html(radar_html, height=190, scrolling=False)
 
-@st.cache_resource
+@str_lit.cache_resource
 def obtener_cliente_groq():
     try:
         api_key = "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"
@@ -383,234 +383,13 @@ def obtener_cliente_groq():
 client = obtener_cliente_groq()
 
 # BARRA LATERAL (IZQUIERDA)
-with st.sidebar:
-    st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
+with str_lit.sidebar:
+    str_lit.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
 
-    if st.session_state.codigo_rojo:
-        if st.button("🟢 DESACTIVAR CÓDIGO ROJO"):
-            st.session_state.codigo_rojo = False
+    if str_lit.session_state.codigo_rojo:
+        if str_lit.button("🟢 DESACTIVAR CÓDIGO ROJO"):
+            str_lit.session_state.codigo_rojo = False
             enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
-            st.rerun()
+            str_lit.rerun()
     else:
-        if st.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
-            st.session_state.codigo_rojo = True
-            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
-            st.rerun()
-
-    if st.button("🧹 Purgar Memoria de Chat"):
-        purgar_db()
-        st.session_state.messages = []
-        st.success("¡Memoria persistente purgada con éxito, Jefa!")
-        st.rerun()
-
-    st.markdown("---")
-    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
-    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
-    
-    st.markdown("---")
-    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
-    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
-    hex_actual = color_map.get(tema_hud, "#ff3333" if st.session_state.codigo_rojo else "#00d2ff")
-    
-    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
-    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
-    
-    st.markdown("---")
-    st.markdown("### 🚀 MÓDULOS STARK & SEGURIDAD")
-
-    with st.expander("👁️ Cámara de Seguridad (CCTV Buin)"):
-        renderizar_camara_seguridad(color_neon_principal)
-        st.success("Enlace de videovigilancia estable.")
-
-    with st.expander("📡 Mejora 1: Radar de Intrusos (Buin)"):
-        renderizar_radar_tactico(color_neon_principal)
-        st.success("Perímetro nominal seguro.")
-
-    with st.expander("🎛️ Mejora 2: Selector de Voz y Tono"):
-        st.session_state.voz_lenta = st.checkbox("Modo de locución pausada (Lento)", value=False)
-        st.info("Configuración de audio aplicada correctamente.")
-
-    with st.expander("🛡️ Mejora 3: Telemetría Histórica (Plotly)"):
-        cpu_actual = psutil.cpu_percent(interval=0.1)
-        ram_actual = psutil.virtual_memory().percent
-        
-        c_tel = db_conn.cursor()
-        tiempo_actual = datetime.now().strftime("%H:%M:%S")
-        c_tel.execute("INSERT INTO telemetria_log (tiempo, cpu, ram) VALUES (?, ?, ?)", (tiempo_actual, cpu_actual, ram_actual))
-        db_conn.commit()
-        
-        c_tel.execute("SELECT tiempo, cpu, ram FROM telemetria_log ORDER BY id DESC LIMIT 10")
-        registros = c_tel.fetchall()[::-1]
-        
-        if registros:
-            tiempos = [r[0] for r in registros]
-            cpus = [r[1] for r in registros]
-            rams = [r[2] for r in registros]
-            
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=tiempos, y=cpus, mode='lines+markers', name='CPU %', line=dict(color=color_neon_principal, width=2)))
-            fig.add_trace(go.Scatter(x=tiempos, y=rams, mode='lines+markers', name='RAM %', line=dict(color='#00ffcc', width=2)))
-            fig.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0.5)',
-                margin=dict(l=10, r=10, t=10, b=10),
-                height=180,
-                font=dict(color=color_neon_principal, family="monospace")
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-    # --- PROTOCOLO 4: Domótica con Sandbox Protegido por PIN y Tecla Enter ---
-    with st.expander("🏠 Protocolo 4: Domótica Segura (IoT Sandbox)"):
-        st.markdown("<span style='font-size: 0.9rem;'>Acceso restringido a dispositivos de prueba:</span>", unsafe_allow_html=True)
-        
-        with st.form(key="form_pin_iot"):
-            pin_ingresado = st.text_input("Clave Stark (Presione Enter):", type="password", key="pin_iot_input")
-            submit_pin = st.form_submit_button("Autorizar Acceso")
-            
-        if submit_pin or pin_ingresado:
-            if pin_ingresado == "1975":
-                st.success("✔️ Clave aceptada. Sandbox IoT desbloqueado.")
-                estado_luz_sandbox = st.checkbox("LED de Prueba Taller (Aislado)", value=False)
-                if estado_luz_sandbox:
-                    st.info("💡 Luz de prueba LED encendida de forma segura.")
-                else:
-                    st.caption("Luz de prueba apagada.")
-            elif pin_ingresado:
-                st.error("❌ Clave incorrecta. Acceso denegado a domótica.")
-
-    with st.expander("🗂️ Mejora: To-Do Táctico & Misiones"):
-        nueva_mision = st.text_input("Nueva misión o tarea:", placeholder="Ej: Optimizar script 3D", key="input_mision_sidebar")
-        if st.button("Añadir Misión", key="btn_add_mision"):
-            if nueva_mision:
-                c_db = db_conn.cursor()
-                c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
-                db_conn.commit()
-                st.success("¡Misión registrada en bitácora!")
-                st.rerun()
-        
-        c_db = db_conn.cursor()
-        c_db.execute("SELECT id, tarea, estado FROM misiones")
-        misiones_list = c_db.fetchall()
-        if misiones_list:
-            for m in misiones_list:
-                col_m1, col_m2 = st.columns([3, 1])
-                with col_m1:
-                    st.text(f"• {m[1]}")
-                with col_m2:
-                    if st.button("✔️", key=f"completar_{m[0]}"):
-                        c_db.execute("DELETE FROM misiones WHERE id = ?", (m[0],))
-                        db_conn.commit()
-                        st.rerun()
-        else:
-            st.caption("No hay misiones pendientes en este momento.")
-
-    st.markdown("---")
-    
-    with st.expander("🌤️ Juguete 1: Radar Clima en Vivo"):
-        try:
-            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
-            res_clima = requests.get(url_clima, timeout=3).json()
-            temp = res_clima["current_weather"]["temperature"]
-            wind = res_clima["current_weather"]["windspeed"]
-            st.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
-        except Exception:
-            st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo (Modo offline)")
-
-    with st.expander("🪙 Juguete 2: Terminal Cripto & Stablecoins"):
-        crypto_sel = st.selectbox("Seleccionar Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
-        try:
-            url_crypto = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
-            res = requests.get(url_crypto, timeout=2.0)
-            if res.status_code == 200:
-                data_c = res.json()
-                if crypto_sel in data_c:
-                    precio_c = data_c[crypto_sel]["usd"]
-                    cambio_c = data_c[crypto_sel].get("usd_24h_change", 0.0)
-                    st.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
-                else:
-                    st.warning("Activo no disponible.")
-            else:
-                valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
-                st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
-        except Exception:
-            valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
-            st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
-
-    with st.expander("⚡ Juguete 3: Protocolo Stark (IA Code Gen)"):
-        lenguaje_code = st.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"], key="lang_sb")
-        prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón", key="prompt_sb")
-        if st.button("Generar Snippet Táctico", key="btn_gen_snippet"):
-            if prompt_code and client:
-                with st.spinner("Procesando código en laboratorio..."):
-                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
-                    comp_code = client.chat.completions.create(
-                        messages=[{"role": "user", "content": p_code}],
-                        model="openai/gpt-oss-20b"
-                    )
-                    snippet = comp_code.choices[0].message.content
-                    st.code(snippet, language=lenguaje_code.lower())
-            else:
-                st.info("Escriba un requerimiento para generar el código.")
-
-    with st.expander("🎙️ Protocolo 2: Transcripción de Voz (Whisper)"):
-        st.markdown("Grabe su orden de voz para traducción IA:")
-        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
-        if audio_bytes:
-            st.audio(audio_bytes, format="audio/wav")
-            if client:
-                with st.spinner("Traduciendo ondas de voz con Whisper..."):
-                    try:
-                        with open("temp_audio.wav", "wb") as f_audio:
-                            f_audio.write(audio_bytes)
-                        with open("temp_audio.wav", "rb") as f_audio:
-                            transcription = client.audio.transcriptions.create(
-                                model="whisper-large-v3",
-                                file=("temp_audio.wav", f_audio.read()),
-                                language="es"
-                            )
-                        texto_transcrito = transcription.text
-                        st.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
-                        st.session_state.messages.append({"role": "user", "content": texto_transcrito})
-                        guardar_mensaje_db("user", texto_transcrito)
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error procesando audio con Whisper: {e}")
-
-    with st.expander("📈 Mercado Bursátil Tradicional"):
-        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
-        try:
-            stock = yf.Ticker(ticker_symbol)
-            todays_data = stock.history(period="1d")
-            if not todays_data.empty:
-                current_price = todays_data['Close'].iloc[-1]
-                prev_close = stock.info.get('previousClose', current_price)
-                change = current_price - prev_close
-                pct_change = (change / prev_close) * 100 if prev_close else 0
-                st.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
-            else:
-                st.warning("Sin datos bursátiles recientes.")
-        except Exception:
-            st.error("Error al conectar con la Bolsa.")
-
-    with st.expander("📝 Libreta & Bitácora DB"):
-        st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.", key="nota_sb")
-        if st.button("Guardar Bitácora", key="btn_bitacora"):
-            st.success("Datos asegurados en base de datos.")
-            
-        if st.session_state.messages:
-            html_reporte = generar_html_pdf(st.session_state.messages)
-            st.download_button(
-                label="📄 Descargar Informe Táctico (PDF)",
-                data=html_reporte,
-                file_name="informe_tactico_jarvis.html",
-                mime="text/html",
-                key="dl_pdf_sb"
-            )
-            
-    with st.expander("🖼️ Generador y Descarga de Imágenes"):
-        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"], key="img_fmt_sb")
-        
-        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
-            <rect width="100%" height="100%" fill="#000814"/>
-            <circle cx="250" cy="150" r="80" fill="none" stroke="{color_neon_principal}" stroke-width="4"/>
-            <circle cx="25
+        if str_lit.button("🚨 ACTIVAR CÓD
