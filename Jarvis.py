@@ -235,11 +235,13 @@ str_lit.markdown(
 if str_lit.session_state.codigo_rojo:
     str_lit.error("⚠️ **¡ATENCIÓN JEFA! PROTOCOLO DE EMERGENCIA ACTIVADO // CÓDIGO ROJO DE DEFENSA EN CURSO** ⚠️")
 
+str_lit.markdown("---")
+
 # Sección de Monitoreo Meteorológico Global en Vivo (Windy)
 str_lit.markdown("### 🌀 Radar Meteorológico Global & Viento en Vivo (Base Buin)")
 renderizar_visor_windy()
 
-st.markdown("---")
+str_lit.markdown("---")
 
 # CHAT DE J.A.R.V.I.S.
 prompt_sistema_jarvis = (
@@ -263,7 +265,7 @@ if prompt_usuario:
     respuesta = ""
     texto_lower = prompt_usuario.lower().strip()
     if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
-        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados ne necesitan dormir, a diferencia de algunos mortales en este taller."
+        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
     elif "alerta" in texto_lower or "emergencia" in texto_lower:
         respuesta = "Protocolo de seguridad analizado, Jefa. Activando contramedidas en el sector de Buin."
     else:
