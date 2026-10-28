@@ -161,32 +161,87 @@ def generar_html_pdf(historial):
 
 def renderizar_globo_terraqueo(hex_color):
     try:
-        glogo_html = (
-            "<!DOCTYPE html><html><head>"
-            '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
-            "<style>"
-            "body { margin: 0; overflow: hidden; background: transparent; }"
-            "#canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }"
-            f"#hud-text {{ position: absolute; top: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid {hex_color}; z-index: 10; box-shadow: 0 0 10px {hex_color}; }}"
-            f"#orbit-hud {{ position: absolute; bottom: 10px; left: 10px; font-family: monospace; color: {hex_color}; font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px; z-index: 10; }}"
-            "</style></head><body>"
-            '<div id="canvas-container">'
-            '<div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>'
-            '<div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>'
-            "</div>"
-            "<script>"
-            "const container = document.getElementById('canvas-container');"
-            "const scene = new THREE.Scene();"
-            "const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);"
-            "const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });"
-            "renderer.setSize(container.clientWidth, 320);"
-            "container.appendChild(renderer.domElement);"
-            "const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);"
-            "scene.add(ambientLight);"
-            f"const pointLight = new THREE.PointLight('{hex_color}', 2, 50);"
-            "pointLight.position.set(5, 3, 5);"
-            "scene.add(pointLight);"
-            "const geometry = new THREE.SphereGeometry(2, 32, 32);"
-            "const textureLoader = new THREE.TextureLoader();"
-            "const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');"
-            "const bumpTexture = textureLoader.load('
+        glogo_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            <style>
+                body {{ margin: 0; overflow: hidden; background: transparent; }}
+                #canvas-container {{ width: 100%; height: 320px; position: relative; cursor: pointer; }}
+                #hud-text {{
+                    position: absolute; top: 10px; left: 10px; 
+                    font-family: monospace; color: {hex_color}; font-size: 11px;
+                    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;
+                    border: 1px solid {hex_color}; z-index: 10;
+                    box-shadow: 0 0 10px {hex_color};
+                }}
+                #orbit-hud {{
+                    position: absolute; bottom: 10px; left: 10px; 
+                    font-family: monospace; color: {hex_color}; font-size: 10px;
+                    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;
+                    z-index: 10;
+                }}
+            </style>
+        </head>
+        <body>
+            <div id="canvas-container">
+                <div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>
+                <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
+            </div>
+            <script>
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({{ alpha: true, antialias: true }});
+                renderer.setSize(container.clientWidth, 320);
+                container.appendChild(renderer.domElement);
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+                scene.add(ambientLight);
+                const pointLight = new THREE.PointLight('{hex_color}', 2, 50);
+                pointLight.position.set(5, 3, 5);
+                scene.add(pointLight);
+
+                const geometry = new THREE.SphereGeometry(2, 32, 32);
+                const textureLoader = new THREE.TextureLoader();
+                const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+                const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+                
+                const material = new THREE.MeshStandardMaterial({{
+                    map: earthTexture,
+                    bumpMap: bumpTexture,
+                    bumpScale: 0.05,
+                    roughness: 0.8
+                }});
+                
+                const earth = new THREE.Mesh(geometry, material);
+                scene.add(earth);
+
+                const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({{
+                    color: '{hex_color}',
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.6
+                }});
+                const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
+                orbitRing.rotation.x = Math.PI / 3;
+                scene.add(orbitRing);
+
+                camera.position.z = 5.5;
+
+                function animate() {{
+                    requestAnimationFrame(animate);
+                    earth.rotation.y += 0.003;
+                    orbitRing.rotation.z += 0.001;
+                    renderer.render(scene, camera);
+                }}
+                animate();
+            </script>
+        </body>
+        </html>
+        """
+        components.html(glogo_html, height=330, scrolling=False)
+    except Exception as e:
+        str_lit.error(f"Error en Globo Terráqueo Holográfico: {
