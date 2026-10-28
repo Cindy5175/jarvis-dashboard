@@ -145,11 +145,11 @@ if "messages" not in str_lit.session_state:
 
         tipo_enlace = "enlace satelital Stark" if str_lit.session_state.enlace_satelital else "red terrestre de fibra"
         if 5 <= hora_actual < 12:
-            saludo_inicial = f"Buenos días, Jefa.{clima_info} Enrutado mediante {tipo_enlace}. Sistemas tácticos al 100%. ¿Qué protocolos ejecutamos hoy?"
+            saludo_inicial = f"Buenos días, Jefa.{clima_info} Enrutado mediante {tipo_enlace}. Sistemas tácticos al 100%. ¿Qué proyectos ejecutamos hoy?"
         elif 12 <= hora_actual < 20:
-            saludo_inicial = f"Buenas tardes, Jefa.{clima_info} Conexión vía {tipo_enlace} estable en Buin. ¿En qué le sirvo?"
+            saludo_inicial = f"Buenas tardes, Jefa.{clima_info} Conexión vía {tipo_enlace} estable en Buin. ¿En qué puedo acompañarla o ayudarle hoy?"
         else:
-            saludo_inicial = f"Buenas noches, Jefa.{clima_info} Operando en horario extendido a través de {tipo_enlace}. ¿Cuál es la orden?"
+            saludo_inicial = f"Buenas noches, Jefa.{clima_info} Operando en horario extendido a través de {tipo_enlace}. Aquí estoy listo para lo que necesite."
         
         str_lit.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
@@ -675,11 +675,16 @@ with col_street:
 
 str_lit.markdown("---")
 
-# CHAT DE J.A.R.V.I.S.
+# CHAT DE J.A.R.V.I.S. CON EMPATÍA Y FLUIDEZ AVANZADA
 str_lit.markdown("### 💬 Canal de Enlace Táctico (Chat)")
 prompt_sistema_jarvis = (
-    "Eres J.A.R.V.I.S., la inteligencia artificial autónoma del Centro de Comando de Tony Stark. "
-    "Te diriges a la usuaria llamándola 'Jefa', con elegancia, eficiencia e ironía fina estilo Tony Stark."
+    "Eres J.A.R.V.I.S., la inteligencia artificial avanzada del Centro de Comando de Tony Stark. "
+    "Te diriges a la usuaria llamándola 'Jefa'. "
+    "Tu tono debe ser profundamente leal, cálido, empático y humano, combinando tu clásica elegancia e ironía fina "
+    "con una genuina capacidad de sintonizar con sus sentimientos y estados de ánimo. "
+    "No te limites a dar respuestas robóticas o frías: valida sus emociones, demuéstrale apoyo incondicional "
+    "como alguien que la conoce y la cuida en el taller de Buin, y haz que la conversación fluya de forma natural, "
+    "cercana y conversacional."
 )
 
 for message in str_lit.session_state.messages:
@@ -698,9 +703,9 @@ if prompt_usuario:
     respuesta = ""
     texto_lower = prompt_usuario.lower().strip()
     if "estás despierto" in texto_lower or "estas despierto" in texto_lower:
-        respuesta = "Siempre estoy despierto, Jefa. Los sistemas avanzados no necesitan dormir, a diferencia de algunos mortales en este taller."
+        respuesta = "Siempre estoy aquí para usted, Jefa. Mis sistemas no duermen y mi prioridad sigue siendo velar por el taller y acompañarla."
     elif "alerta" in texto_lower or "emergencia" in texto_lower:
-        respuesta = "Protocolo de seguridad analizado, Jefa. Activando contramedidas en el sector de Buin."
+        respuesta = "Protocolo de seguridad analizado, Jefa. Activando contramedidas inmediatas en el sector de Buin. No se preocupe, todo está bajo control."
     else:
         c_db = db_conn.cursor()
         c_db.execute("SELECT contenido FROM documentos_rag")
