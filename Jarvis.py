@@ -175,40 +175,146 @@ def generar_html_pdf(historial):
 
 def renderizar_globo_terraqueo(hex_color):
     try:
-        globo_html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-            <style>
-                body { margin: 0; overflow: hidden; background: transparent; }
-                #canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }
-                #hud-text {
-                    position: absolute; top: 10px; left: 10px; 
-                    font-family: monospace; color: COLOR_PLACEHOLDER; font-size: 11px;
-                    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;
-                    border: 1px solid COLOR_PLACEHOLDER; z-index: 10;
-                    box-shadow: 0 0 10px COLOR_PLACEHOLDER;
-                }
-                #orbit-hud {
-                    position: absolute; bottom: 10px; left: 10px; 
-                    font-family: monospace; color: COLOR_PLACEHOLDER; font-size: 10px;
-                    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;
-                    z-index: 10;
-                }
-            </style>
-        </head>
-        <body>
-            <div id="canvas-container">
-                <div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>
-                <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
-            </div>
-            <script>
-                const container = document.getElementById('canvas-container');
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
-                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-                renderer.setSize(container.clientWidth, 320);
-                container.appendChild(renderer.domElement);
+        glogo_html = (
+            "<!DOCTYPE html>"
+            "<html>"
+            "<head>"
+            '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
+            "<style>"
+            "body { margin: 0; overflow: hidden; background: transparent; }"
+            "#canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }"
+            "#hud-text {"
+            "    position: absolute; top: 10px; left: 10px;"
+            f"    font-family: monospace; color: {hex_color}; font-size: 11px;"
+            "    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;"
+            f"    border: 1px solid {hex_color}; z-index: 10;"
+            f"    box-shadow: 0 0 10px {hex_color};"
+            "}"
+            "#orbit-hud {"
+            "    position: absolute; bottom: 10px; left: 10px;"
+            f"    font-family: monospace; color: {hex_color}; font-size: 10px;"
+            "    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;"
+            "    z-index: 10;"
+            "}"
+            "</style>"
+            "</head>"
+            "<body>"
+            '<div id="canvas-container">'
+            '<div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>'
+            '<div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>'
+            "</div>"
+            "<script>"
+            "const container = document.getElementById('canvas-container');"
+            "const scene = new THREE.Scene();"
+            "const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);"
+            "const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });"
+            "renderer.setSize(container.clientWidth, 320);"
+            "container.appendChild(renderer.domElement);"
+            "const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);"
+            "scene.add(ambientLight);"
+            f"const pointLight = new THREE.PointLight('{hex_color}', 2, 50);"
+            "pointLight.position.set(5, 3, 5);"
+            "scene.add(pointLight);"
+            "const geometry = new THREE.SphereGeometry(2, 32, 32);"
+            "const textureLoader = new THREE.TextureLoader();"
+            "const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');"
+            "const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');"
+            "const material = new THREE.MeshStandardMaterial({ map: earthTexture, bumpMap: bumpTexture, bumpScale: 0.05, roughness: 0.8 });"
+            "const earth = new THREE.Mesh(geometry, material);"
+            "scene.add(earth);"
+            "const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);"
+            "const ringMaterial = new THREE.MeshBasicMaterial({"
+            f"    color: '{hex_color}',"
+            "    side: THREE.DoubleSide,"
+            "    transparent: true,"
+            "    opacity: 0.6"
+            "});"
+            "const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);"
+            "orbitRing.rotation.x = Math.PI / 3;"
+            "scene.add(orbitRing);"
+            "camera.position.z = 5.5;"
+            "function animate() {"
+            "    requestAnimationFrame(animate);"
+            "    earth.rotation.y += 0.003;"
+            "    orbitRing.rotation.z += 0.001;"
+            "    renderer.render(scene, camera);"
+            "}"
+            "animate();"
+            "</script>"
+            "</body>"
+            "</html>"
+        )
+        components.html(glogo_html, height=330, scrolling=False)
+    except Exception as e:
+        st.error(f"Error en Globo Terráqueo Holográfico: {e}")
 
-                const ambientLight = new
+def renderizar_camara_seguridad(hex_color):
+    cctv_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+            #cctv-container { width: 100%; height: 260px; position: relative; border: 2px solid COLOR_PLACEHOLDER; border-radius: 8px; box-shadow: 0 0 12px COLOR_PLACEHOLDER; }
+            video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+            #overlay-hud {
+                position: absolute; top: 10px; left: 10px;
+                font-family: monospace; color: COLOR_PLACEHOLDER; font-size: 11px;
+                background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
+                z-index: 10;
+            }
+            #rec-dot {
+                height: 8px; width: 8px; background-color: #ff3333; border-radius: 50%;
+                display: inline-block; margin-right: 5px; animation: blink 1s infinite;
+            }
+            @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+        </style>
+    </head>
+    <body>
+        <div id="cctv-container">
+            <div id="overlay-hud"><span id="rec-dot"></span>CCTV // CAM-01 BUIN BASE // REC</div>
+            <video id="webcam" autoplay playsinline muted></video>
+        </div>
+        <script>
+            const video = document.getElementById('webcam');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { console.log("Cámara no disponible: ", err); });
+        </script>
+    </body>
+    </html>
+    """.replace("COLOR_PLACEHOLDER", hex_color)
+    
+    components.html(cctv_html, height=275, scrolling=False)
+
+def renderizar_mapa_tactico(modo):
+    try:
+        filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
+        mapa_html = (
+            "<!DOCTYPE html>"
+            "<html>"
+            "<head>"
+            '<meta charset="utf-8">'
+            '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
+            '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
+            "<style>"
+            "body { margin: 0; padding: 0; }"
+            f"#map {{ width: 100%; height: 350px; border-radius: 8px; {filtro_css} }}"
+            "</style>"
+            "</head>"
+            "<body>"
+            '<div id="map"></div>'
+            "<script>"
+            "const map = L.map('map').setView([-33.7331, -70.7072], 12);"
+            "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);"
+            "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin (GPS Activo)</b>').openPopup();"
+            "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
+            "</script>"
+            "</body>"
+            "</html>"
+        )
+        components.html(mapa_html, height=360, scrolling=False)
+    except Exception as e:
+        st.error(f"Error en Mapa Táctico: {e}")
+
+def
