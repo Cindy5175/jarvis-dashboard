@@ -202,64 +202,59 @@ def renderizar_globo_terraqueo(hex_color):
         <!DOCTYPE html>
         <html>
         <head>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
             <style>
-                body {{ margin: 0; background: transparent; display: flex; justify-content: center; align-items: center; height: 320px; overflow: hidden; }}
-                .radar-sphere {{
-                    width: 210px;
-                    height: 210px;
-                    border-radius: 50%;
-                    border: 2px dashed {hex_color};
-                    box-shadow: 0 0 25px {hex_color}, inset 0 0 25px {hex_color};
-                    position: relative;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    background: radial-gradient(circle, rgba(0,210,255,0.15) 0%, rgba(0,0,0,0.9) 80%);
-                    animation: spinRadar 12s linear infinite;
-                }}
-                .radar-core {{
-                    width: 45px;
-                    height: 45px;
-                    border-radius: 50%;
-                    background: {hex_color};
-                    box-shadow: 0 0 20px {hex_color};
-                    animation: pulseCore 2s ease-in-out infinite;
-                }}
-                @keyframes spinRadar {{
-                    0% {{ transform: rotate(0deg); }}
-                    100% {{ transform: rotate(360deg); }}
-                }}
-                @keyframes pulseCore {{
-                    0% {{ transform: scale(0.9); opacity: 0.7; }}
-                    50% {{ transform: scale(1.25); opacity: 1; }}
-                    100% {{ transform: scale(0.9); opacity: 0.7; }}
-                }}
-                .hud-badge {{
-                    position: absolute;
-                    top: 10px;
-                    left: 10px;
-                    font-family: monospace;
-                    color: {hex_color};
-                    font-size: 11px;
-                    background: rgba(0,0,0,0.85);
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    border: 1px solid {hex_color};
-                    box-shadow: 0 0 10px {hex_color};
-                }}
+                body {{ margin: 0; overflow: hidden; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; }}
+                #canvas-container {{ width: 100%; height: 230px; display: flex; justify-content: center; align-items: center; position: relative; }}
+                #orbit-hud {{ font-family: monospace; color: {hex_color}; font-size: 11px; background: rgba(0,0,0,0.85); padding: 4px 12px; border-radius: 4px; border: 1px solid {hex_color}; box-shadow: 0 0 10px {hex_color}; text-align: center; margin-top: 6px; letter-spacing: 1px; }}
             </style>
         </head>
         <body>
-            <div class="hud-badge">OJO DE DIOS // PROTOCOLO F&F 8 ACTIVO</div>
-            <div class="radar-sphere">
-                <div class="radar-core"></div>
-            </div>
+            <div id="canvas-container"></div>
+            <div id="orbit-hud">OJO DE DIOS // PROTOCOLO F&F 8 ACTIVO</div>
+            <script>
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 230, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({{ alpha: true, antialias: true }});
+                renderer.setSize(container.clientWidth, 230);
+                container.appendChild(renderer.domElement);
+                
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+                scene.add(ambientLight);
+                
+                const geometry = new THREE.SphereGeometry(1.7, 32, 32);
+                const material = new THREE.MeshBasicMaterial({{ 
+                    color: '{hex_color}', 
+                    wireframe: true, 
+                    transparent: true, 
+                    opacity: 0.8 
+                }});
+                const earth = new THREE.Mesh(geometry, material);
+                scene.add(earth);
+                
+                const ringGeometry = new THREE.RingGeometry(2.1, 2.15, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({{ color: '{hex_color}', side: THREE.DoubleSide, transparent: true, opacity: 0.5 }});
+                const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
+                orbitRing.rotation.x = Math.PI / 3;
+                scene.add(orbitRing);
+                
+                camera.position.z = 4.8;
+                
+                function animate() {{
+                    requestAnimationFrame(animate);
+                    earth.rotation.y += 0.004;
+                    orbitRing.rotation.z += 0.002;
+                    renderer.render(scene, camera);
+                }}
+                animate();
+            </script>
         </body>
         </html>
         """
-        components.html(glogo_html, height=330, scrolling=False)
+        components.html(glogo_html, height=280, scrolling=False)
     except Exception as e:
-        str_lit.error(f"Error en Radar Ojo de Dios: {e}")
+        str_lit.error(f"Error en Globo Terráqueo: {e}")
 
 def renderizar_street_view(lat, lon):
     street_html = f"""
@@ -713,7 +708,7 @@ str_lit.markdown("---")
 col_globo, col_street = str_lit.columns(2)
 
 with col_globo:
-    str_lit.markdown("### 👁️ Ojo de Dios (Protocolo F&F 8)")
+    str_lit.markdown("<h3 style='text-align: center;'>👁️ Ojo de Dios</h3>", unsafe_allow_html=True)
     renderizar_globo_terraqueo(color_neon_principal)
 
 with col_street:
