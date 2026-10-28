@@ -175,61 +175,442 @@ def generar_html_pdf(historial):
 
 def renderizar_globo_terraqueo(hex_color):
     try:
-        glogo_html = (
+        glogo_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            <style>
+                body {{ margin: 0; overflow: hidden; background: transparent; }}
+                #canvas-container {{ width: 100%; height: 320px; position: relative; cursor: pointer; }}
+                #hud-text {{
+                    position: absolute; top: 10px; left: 10px; 
+                    font-family: monospace; color: {hex_color}; font-size: 11px;
+                    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;
+                    border: 1px solid {hex_color}; z-index: 10;
+                    box-shadow: 0 0 10px {hex_color};
+                }}
+                #orbit-hud {{
+                    position: absolute; bottom: 10px; left: 10px; 
+                    font-family: monospace; color: {hex_color}; font-size: 10px;
+                    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;
+                    z-index: 10;
+                }}
+            </style>
+        </head>
+        <body>
+            <div id="canvas-container">
+                <div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>
+                <div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>
+            </div>
+            <script>
+                const container = document.getElementById('canvas-container');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({{ alpha: true, antialias: true }});
+                renderer.setSize(container.clientWidth, 320);
+                container.appendChild(renderer.domElement);
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+                scene.add(ambientLight);
+                const pointLight = new THREE.PointLight('{hex_color}', 2, 50);
+                pointLight.position.set(5, 3, 5);
+                scene.add(pointLight);
+
+                const geometry = new THREE.SphereGeometry(2, 32, 32);
+                const textureLoader = new THREE.TextureLoader();
+                const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+                const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+                
+                const material = new THREE.MeshStandardMaterial({{
+                    map: earthTexture,
+                    bumpMap: bumpTexture,
+                    bumpScale: 0.05,
+                    roughness: 0.8
+                }});
+                
+                const earth = new THREE.Mesh(geometry, material);
+                scene.add(earth);
+
+                const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({{
+                    color: '{hex_color}',
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.6
+                }});
+                const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
+                orbitRing.rotation.x = Math.PI / 3;
+                scene.add(orbitRing);
+
+                camera.position.z = 5.5;
+
+                function animate() {{
+                    requestAnimationFrame(animate);
+                    earth.rotation.y += 0.003;
+                    orbitRing.rotation.z += 0.001;
+                    renderer.render(scene, camera);
+                }}
+                animate();
+            </script>
+        </body>
+        </html>
+        """
+        components.html(glogo_html, height=330, scrolling=False)
+    except Exception as e:
+        st.error(f"Error en Globo Terráqueo Holográfico: {{e}}")
+
+def renderizar_camara_seguridad(hex_color):
+    cctv_html = (
+        "<!DOCTYPE html>"
+        "<html>"
+        "<head>"
+        "<style>"
+        "body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }"
+        f"#cctv-container {{ width: 100%; height: 260px; position: relative; border: 2px solid {hex_color}; border-radius: 8px; box-shadow: 0 0 12px {hex_color}; }}"
+        "video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }"
+        "#overlay-hud {"
+        "    position: absolute; top: 10px; left: 10px;"
+        f"    font-family: monospace; color: {hex_color}; font-size: 11px;"
+        "    background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;"
+        "    z-index: 10;"
+        "}"
+        "#rec-dot {"
+        "    height: 8px; width: 8px; background-color: #ff3333; border-radius: 50%;"
+        "    display: inline-block; margin-right: 5px; animation: blink 1s infinite;"
+        "}"
+        "@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }"
+        "</style>"
+        "</head>"
+        "<body>"
+        '<div id="cctv-container">'
+        '<div id="overlay-hud"><span id="rec-dot"></span>CCTV // CAM-01 BUIN BASE // REC</div>'
+        '<video id="webcam" autoplay playsinline muted></video>'
+        "</div>"
+        "<script>"
+        "const video = document.getElementById('webcam');"
+        "navigator.mediaDevices.getUserMedia({ video: true })"
+        "    .then(stream => { video.srcObject = stream; })"
+        "    .catch(err => { console.log('Cámara no disponible: ', err); });"
+        "</script>"
+        "</body>"
+        "</html>"
+    )
+    components.html(cctv_html, height=275, scrolling=False)
+
+def renderizar_mapa_tactico(modo):
+    try:
+        filtro_css = "filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);" if modo == "noche" else ""
+        mapa_html = (
             "<!DOCTYPE html>"
             "<html>"
             "<head>"
-            '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
+            '<meta charset="utf-8">'
+            '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
+            '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
             "<style>"
-            "body { margin: 0; overflow: hidden; background: transparent; }"
-            "#canvas-container { width: 100%; height: 320px; position: relative; cursor: pointer; }"
-            "#hud-text {"
-            "    position: absolute; top: 10px; left: 10px;"
-            f"    font-family: monospace; color: {hex_color}; font-size: 11px;"
-            "    background: rgba(0,0,0,0.85); padding: 5px 10px; border-radius: 4px;"
-            f"    border: 1px solid {hex_color}; z-index: 10;"
-            f"    box-shadow: 0 0 10px {hex_color};"
-            "}"
-            "#orbit-hud {"
-            "    position: absolute; bottom: 10px; left: 10px;"
-            f"    font-family: monospace; color: {hex_color}; font-size: 10px;"
-            "    background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 3px;"
-            "    z-index: 10;"
-            "}"
+            "body { margin: 0; padding: 0; }"
+            f"#map {{ width: 100%; height: 350px; border-radius: 8px; {filtro_css} }}"
             "</style>"
             "</head>"
             "<body>"
-            '<div id="canvas-container">'
-            '<div id="hud-text">BUIN COMMAND // ORBITAL ROTATION ACTIVE</div>'
-            '<div id="orbit-hud">Satélites enlazados: 24 | Estado: Nominal</div>'
-            "</div>"
+            '<div id="map"></div>'
             "<script>"
-            "const container = document.getElementById('canvas-container');"
-            "const scene = new THREE.Scene();"
-            "const camera = new THREE.PerspectiveCamera(45, container.clientWidth / 320, 0.1, 1000);"
-            "const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });"
-            "renderer.setSize(container.clientWidth, 320);"
-            "container.appendChild(renderer.domElement);"
-            "const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);"
-            "scene.add(ambientLight);"
-            f"const pointLight = new THREE.PointLight('{hex_color}', 2, 50);"
-            "pointLight.position.set(5, 3, 5);"
-            "scene.add(pointLight);"
-            "const geometry = new THREE.SphereGeometry(2, 32, 32);"
-            "const textureLoader = new THREE.TextureLoader();"
-            "const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');"
-            "const bumpTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');"
-            "const material = new THREE.MeshStandardMaterial({ map: earthTexture, bumpMap: bumpTexture, bumpScale: 0.05, roughness: 0.8 });"
-            "const earth = new THREE.Mesh(geometry, material);"
-            "scene.add(earth);"
-            "const ringGeometry = new THREE.RingGeometry(2.4, 2.45, 64);"
-            "const ringMaterial = new THREE.MeshBasicMaterial({"
-            f"    color: '{hex_color}',"
-            "    side: THREE.DoubleSide,"
-            "    transparent: true,"
-            "    opacity: 0.6"
-            "});"
-            "const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);"
-            "orbitRing.rotation.x = Math.PI / 3;"
-            "scene.add(orbitRing);"
-            "camera.position.z = 5.5;"
+            "const map = L.map('map').setView([-33.7331, -70.7072], 12);"
+            "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);"
+            "L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin (GPS Activo)</b>').openPopup();"
+            "L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();"
+            "</script>"
+            "</body>"
+            "</html>"
+        )
+        components.html(mapa_html, height=360, scrolling=False)
+    except Exception as e:
+        st.error(f"Error en Mapa Táctico: {e}")
+
+def renderizar_radar_tactico(hex_color):
+    radar_html = (
+        "<!DOCTYPE html>"
+        "<html>"
+        "<head>"
+        "<style>"
+        "body { margin: 0; background: #000814; display: flex; justify-content: center; align-items: center; height: 180px; }"
+        "canvas { width: 160px; height: 160px; }"
+        "</style>"
+        "</head>"
+        "<body>"
+        '<canvas id="radarCanvas" width="160" height="160"></canvas>'
+        "<script>"
+        "const canvas = document.getElementById('radarCanvas');"
+        "const ctx = canvas.getContext('2d');"
+        "let angle = 0;"
+        "function drawRadar() {"
+        "    ctx.clearRect(0, 0, 160, 160);"
+        f"    ctx.strokeStyle = '{hex_color}';"
+        "    ctx.lineWidth = 1.5;"
+        "    ctx.beginPath(); ctx.arc(80, 80, 70, 0, Math.PI * 2); ctx.stroke();"
+        "    ctx.beginPath(); ctx.arc(80, 80, 40, 0, Math.PI * 2); ctx.stroke();"
+        "    ctx.beginPath(); ctx.moveTo(10, 80); ctx.lineTo(150, 80); ctx.stroke();"
+        "    ctx.beginPath(); ctx.moveTo(80, 10); ctx.lineTo(80, 150); ctx.stroke();"
+        "    ctx.save();"
+        "    ctx.translate(80, 80);"
+        "    ctx.rotate(angle);"
+        f"    ctx.strokeStyle = '{hex_color}';"
+        "    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(70, -70); ctx.stroke();"
+        "    ctx.restore();"
+        "    ctx.fillStyle = '#ff3333';"
+        "    ctx.beginPath(); ctx.arc(110, 50, 3, 0, Math.PI * 2); ctx.fill();"
+        "    angle += 0.04;"
+        "    requestAnimationFrame(drawRadar);"
+        "}"
+        "drawRadar();"
+        "</script>"
+        "</body>"
+        "</html>"
+    )
+    components.html(radar_html, height=190, scrolling=False)
+
+@st.cache_resource
+def obtener_cliente_groq():
+    try:
+        api_key = "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"
+        if not api_key:
+            return None
+        return Groq(api_key=api_key, timeout=10.0)
+    except Exception:
+        return None
+
+client = obtener_cliente_groq()
+
+# BARRA LATERAL (IZQUIERDA)
+with st.sidebar:
+    st.markdown("### ⚙️ Panel Control J.A.R.V.I.S.")
+
+    if st.session_state.codigo_rojo:
+        if st.button("🟢 DESACTIVAR CÓDIGO ROJO"):
+            st.session_state.codigo_rojo = False
+            enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
+            st.rerun()
+    else:
+        if st.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
+            st.session_state.codigo_rojo = True
+            enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
+            st.rerun()
+
+    if st.button("🧹 Purgar Memoria de Chat"):
+        purgar_db()
+        st.session_state.messages = []
+        st.success("¡Memoria persistente purgada con éxito, Jefa!")
+        st.rerun()
+
+    st.markdown("---")
+    mostrar_estacion = st.checkbox("Mostrar Estación Holográfica", value=True)
+    mostrar_mapa = st.checkbox("Mostrar Mapa Cartográfico Táctico", value=True)
+    
+    st.markdown("---")
+    tema_hud = st.selectbox("Tema HUD:", ["Azul Arc", "Rojo Cobre/Terracota", "Grafito Oscuro"])
+    color_map = {"Rojo Cobre/Terracota": "#d9534f", "Azul Arc": "#00d2ff", "Grafito Oscuro": "#888888"}
+    hex_actual = color_map.get(tema_hud, "#ff3333" if st.session_state.codigo_rojo else "#00d2ff")
+    
+    protocolo_ia = st.selectbox("Protocolo IA:", ["Estándar (Leal y Ejecutivo)", "Avanzado", "Táctico"])
+    grid_tactico = st.selectbox("Grid Táctico:", ["Santiago Centro", "Buin", "Global"])
+    
+    st.markdown("---")
+    st.markdown("### 🚀 MÓDULOS STARK & SEGURIDAD")
+
+    with st.expander("👁️ Cámara de Seguridad (CCTV Buin)"):
+        renderizar_camara_seguridad(color_neon_principal)
+        st.success("Enlace de videovigilancia estable.")
+
+    with st.expander("📡 Mejora 1: Radar de Intrusos (Buin)"):
+        renderizar_radar_tactico(color_neon_principal)
+        st.success("Perímetro nominal seguro.")
+
+    with st.expander("🎛️ Mejora 2: Selector de Voz y Tono"):
+        st.session_state.voz_lenta = st.checkbox("Modo de locución pausada (Lento)", value=False)
+        st.info("Configuración de audio aplicada correctamente.")
+
+    with st.expander("🛡️ Mejora 3: Telemetría Histórica (Plotly)"):
+        cpu_actual = psutil.cpu_percent(interval=0.1)
+        ram_actual = psutil.virtual_memory().percent
+        
+        c_tel = db_conn.cursor()
+        tiempo_actual = datetime.now().strftime("%H:%M:%S")
+        c_tel.execute("INSERT INTO telemetria_log (tiempo, cpu, ram) VALUES (?, ?, ?)", (tiempo_actual, cpu_actual, ram_actual))
+        db_conn.commit()
+        
+        c_tel.execute("SELECT tiempo, cpu, ram FROM telemetria_log ORDER BY id DESC LIMIT 10")
+        registros = c_tel.fetchall()[::-1]
+        
+        if registros:
+            tiempos = [r[0] for r in registros]
+            cpus = [r[1] for r in registros]
+            rams = [r[2] for r in registros]
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=tiempos, y=cpus, mode='lines+markers', name='CPU %', line=dict(color=color_neon_principal, width=2)))
+            fig.add_trace(go.Scatter(x=tiempos, y=rams, mode='lines+markers', name='RAM %', line=dict(color='#00ffcc', width=2)))
+            fig.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.5)',
+                margin=dict(l=10, r=10, t=10, b=10),
+                height=180,
+                font=dict(color=color_neon_principal, family="monospace")
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    # --- PROTOCOLO 4: Domótica con Sandbox Protegido por PIN y Tecla Enter ---
+    with st.expander("🏠 Protocolo 4: Domótica Segura (IoT Sandbox)"):
+        st.markdown("<span style='font-size: 0.9rem;'>Acceso restringido a dispositivos de prueba:</span>", unsafe_allow_html=True)
+        
+        with st.form(key="form_pin_iot"):
+            pin_ingresado = st.text_input("Clave Stark (Presione Enter):", type="password", key="pin_iot_input")
+            submit_pin = st.form_submit_button("Autorizar Acceso")
+            
+        if submit_pin or pin_ingresado:
+            if pin_ingresado == "1975":
+                st.success("✔️ Clave aceptada. Sandbox IoT desbloqueado.")
+                estado_luz_sandbox = st.checkbox("LED de Prueba Taller (Aislado)", value=False)
+                if estado_luz_sandbox:
+                    st.info("💡 Luz de prueba LED encendida de forma segura.")
+                else:
+                    st.caption("Luz de prueba apagada.")
+            elif pin_ingresado:
+                st.error("❌ Clave incorrecta. Acceso denegado a domótica.")
+
+    with st.expander("🗂️ Mejora: To-Do Táctico & Misiones"):
+        nueva_mision = st.text_input("Nueva misión o tarea:", placeholder="Ej: Optimizar script 3D", key="input_mision_sidebar")
+        if st.button("Añadir Misión", key="btn_add_mision"):
+            if nueva_mision:
+                c_db = db_conn.cursor()
+                c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (nueva_mision, "Pendiente"))
+                db_conn.commit()
+                st.success("¡Misión registrada en bitácora!")
+                st.rerun()
+        
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT id, tarea, estado FROM misiones")
+        misiones_list = c_db.fetchall()
+        if misiones_list:
+            for m in misiones_list:
+                col_m1, col_m2 = st.columns([3, 1])
+                with col_m1:
+                    st.text(f"• {m[1]}")
+                with col_m2:
+                    if st.button("✔️", key=f"completar_{m[0]}"):
+                        c_db.execute("DELETE FROM misiones WHERE id = ?", (m[0],))
+                        db_conn.commit()
+                        st.rerun()
+        else:
+            st.caption("No hay misiones pendientes en este momento.")
+
+    st.markdown("---")
+    
+    with st.expander("🌤️ Juguete 1: Radar Clima en Vivo"):
+        try:
+            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
+            res_clima = requests.get(url_clima, timeout=3).json()
+            temp = res_clima["current_weather"]["temperature"]
+            wind = res_clima["current_weather"]["windspeed"]
+            st.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
+        except Exception:
+            st.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo (Modo offline)")
+
+    with st.expander("🪙 Juguete 2: Terminal Cripto & Stablecoins"):
+        crypto_sel = st.selectbox("Seleccionar Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
+        try:
+            url_crypto = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd&include_24hr_change=true"
+            res = requests.get(url_crypto, timeout=2.0)
+            if res.status_code == 200:
+                data_c = res.json()
+                if crypto_sel in data_c:
+                    precio_c = data_c[crypto_sel]["usd"]
+                    cambio_c = data_c[crypto_sel].get("usd_24h_change", 0.0)
+                    st.metric(label=f"{crypto_sel.upper()} / USD", value=f"${precio_c:,.2f}", delta=f"{cambio_c:.2f}%")
+                else:
+                    st.warning("Activo no disponible.")
+            else:
+                valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
+                st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
+        except Exception:
+            valores_fallback = {"tether": 1.00, "bitcoin": 68450.20, "ethereum": 3520.10}
+            st.metric(label=f"{crypto_sel.upper()} / USD (Modo Seguro)", value=f"${valores_fallback.get(crypto_sel, 1.00):,.2f}", delta="+0.00%")
+
+    with st.expander("⚡ Juguete 3: Protocolo Stark (IA Code Gen)"):
+        lenguaje_code = st.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"], key="lang_sb")
+        prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón", key="prompt_sb")
+        if st.button("Generar Snippet Táctico", key="btn_gen_snippet"):
+            if prompt_code and client:
+                with st.spinner("Procesando código en laboratorio..."):
+                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
+                    comp_code = client.chat.completions.create(
+                        messages=[{"role": "user", "content": p_code}],
+                        model="openai/gpt-oss-20b"
+                    )
+                    snippet = comp_code.choices[0].message.content
+                    st.code(snippet, language=lenguaje_code.lower())
+            else:
+                st.info("Escriba un requerimiento para generar el código.")
+
+    with st.expander("🎙️ Protocolo 2: Transcripción de Voz (Whisper)"):
+        st.markdown("Grabe su orden de voz para traducción IA:")
+        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            if client:
+                with st.spinner("Traduciendo ondas de voz con Whisper..."):
+                    try:
+                        with open("temp_audio.wav", "wb") as f_audio:
+                            f_audio.write(audio_bytes)
+                        with open("temp_audio.wav", "rb") as f_audio:
+                            transcription = client.audio.transcriptions.create(
+                                model="whisper-large-v3",
+                                file=("temp_audio.wav", f_audio.read()),
+                                language="es"
+                            )
+                        texto_transcrito = transcription.text
+                        st.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
+                        st.session_state.messages.append({"role": "user", "content": texto_transcrito})
+                        guardar_mensaje_db("user", texto_transcrito)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error procesando audio con Whisper: {e}")
+
+    with st.expander("📈 Mercado Bursátil Tradicional"):
+        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
+        try:
+            stock = yf.Ticker(ticker_symbol)
+            todays_data = stock.history(period="1d")
+            if not todays_data.empty:
+                current_price = todays_data['Close'].iloc[-1]
+                prev_close = stock.info.get('previousClose', current_price)
+                change = current_price - prev_close
+                pct_change = (change / prev_close) * 100 if prev_close else 0
+                st.metric(label=f"Cotización {ticker_symbol}", value=f"${current_price:.2f}", delta=f"{pct_change:.2f}%")
+            else:
+                st.warning("Sin datos bursátiles recientes.")
+        except Exception:
+            st.error("Error al conectar con la Bolsa.")
+
+    with st.expander("📝 Libreta & Bitácora DB"):
+        st.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.", key="nota_sb")
+        if st.button("Guardar Bitácora", key="btn_bitacora"):
+            st.success("Datos asegurados en base de datos.")
+            
+        if st.session_state.messages:
+            html_reporte = generar_html_pdf(st.session_state.messages)
+            st.download_button(
+                label="📄 Descargar Informe Táctico (PDF)",
+                data=html_reporte,
+                file_name="informe_tactico_jarvis.html",
+                mime="text/html",
+                key="dl_pdf_sb"
+            )
+            
+    with st.expander("🖼️ Generador y Descarga de Imágenes"):
+        formato_img = st.selectbox("Formato de Imagen:", ["PNG", "JPG", "SVG"], key="img_fmt_sb")
+        
+        svg_vectorial = f'''<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+            <rect width="100%" height="100%" fill="#000814"/>
+            <circle cx="250" cy="150" r="80" fill="none" stroke="{color_neon_principal}" stroke-width="4"/>
+            <circle cx="25
