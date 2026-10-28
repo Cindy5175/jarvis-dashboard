@@ -528,4 +528,49 @@ with st.sidebar:
         prompt_code = st.text_input("Solicitud de snippet:", "Crear un botón neón", key="prompt_sb")
         if st.button("Generar Snippet Táctico", key="btn_gen_snippet"):
             if prompt_code and client:
-                with st.spinner
+                with st.spinner("Procesando código en laboratorio..."):
+                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
+                    comp_code = client.chat.completions.create(
+                        messages=[{"role": "user", "content": p_code}],
+                        model="openai/gpt-oss-20b"
+                    )
+                    snippet = comp_code.choices[0].message.content
+                    st.code(snippet, language=lenguaje_code.lower())
+            else:
+                st.info("Escriba un requerimiento para generar el código.")
+
+    with st.expander("🎙️ Protocolo 2: Transcripción de Voz (Whisper)"):
+        st.markdown("Grabe su orden de voz para traducción IA:")
+        audio_bytes = audio_recorder(text="Presione para hablar", icon_size="2x", key="rec_sb")
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            if client:
+                with st.spinner("Traduciendo ondas de voz con Whisper..."):
+                    try:
+                        with open("temp_audio.wav", "wb") as f_audio:
+                            f_audio.write(audio_bytes)
+                        with open("temp_audio.wav", "rb") as f_audio:
+                            transcription = client.audio.transcriptions.create(
+                                model="whisper-large-v3",
+                                file=("temp_audio.wav", f_audio.read()),
+                                language="es"
+                            )
+                        texto_transcrito = transcription.text
+                        st.success(f"🗣️ **Comando detectado:** {texto_transcrito}")
+                        st.session_state.messages.append({"role": "user", "content": texto_transcrito})
+                        guardar_mensaje_db("user", texto_transcrito)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error procesando audio con Whisper: {e}")
+
+    with st.expander("📈 Mercado Bursátil Tradicional"):
+        ticker_symbol = st.selectbox("Seleccionar Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
+        try:
+            stock = yf.Ticker(ticker_symbol)
+            todays_data = stock.history(period="1d")
+            if not todays_data.empty:
+                current_price = todays_data['Close'].iloc[-1]
+                prev_close = stock.info.get('previousClose', current_price)
+                change = current_price - prev_close
+                pct_change = (change / prev_close) * 100 if prev_close else 0
+                st.metric
