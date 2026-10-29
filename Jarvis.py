@@ -170,29 +170,23 @@ st_folium(m, width="100%", height=480)
 st.markdown("---")
 st.markdown("### 💬 Interfaz de Conversación con J.A.R.V.I.S.")
 
-# Inicializar historial de chat en la sesión
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Mostrar mensajes anteriores
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Caja de chat flotante al fondo
 if user_prompt := st.chat_input("Escriba su mensaje o directiva para J.A.R.V.I.S..."):
-    # Agregar mensaje del usuario al historial
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    # Respuesta generada por J.A.R.V.I.S.
     response_msg = f"Directiva recibida: '{user_prompt}'. Todos los sistemas en la base de Buin operan con total normalidad, Jefa."
     
     with st.chat_message("assistant"):
         st.markdown(response_msg)
         
-        # Síntesis de voz con ElevenLabs si hay API Key
         if eleven_key:
             try:
                 voice_id = "21m00Tcm4TlvDq8ikWAM"
@@ -209,4 +203,19 @@ if user_prompt := st.chat_input("Escriba su mensaje o directiva para J.A.R.V.I.S
                 }
                 res = requests.post(url, json=data, headers=headers)
                 if res.status_code == 200:
-                    with open("jarvis_chat.mp3", "wb
+                    with open("jarvis_chat.mp3", "wb") as f:
+                        f.write(res.content)
+                    st.audio("jarvis_chat.mp3", format="audio/mp3", autoplay=True)
+                else:
+                    st.warning("⚠️ Error en ElevenLabs. Verifique su API Key.")
+            except Exception as e:
+                st.error(f"Error de audio: {e}")
+        else:
+            tts = gTTS(text=response_msg, lang='es')
+            tts.save("response.mp3")
+            st.audio("response.mp3", format="audio/mp3", autoplay=True)
+
+    st.session_state.messages.append({"role": "assistant", "content": response_msg})
+
+st.markdown("---")
+st.markdown("*J.A.R.V.I.S. Tactical Chat Edition — Taller de Inteligencia Autónoma | Buin, Chile.*")
