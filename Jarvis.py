@@ -97,26 +97,35 @@ st.markdown(
 
 st.markdown("---")
 
+# Inicializar historial de chat y estados del sistema de forma robusta
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": "Cerebro cuántico en línea, Cindy. Conexión satelital estable y módulos listos. Menos mal que me tienes a cargo de esto. ¿Qué orden ejecutamos hoy?",
+        }
+    ]
+
+if "modo_sensor" not in st.session_state:
+    st.session_state.modo_sensor = False
+if "modo_facial" not in st.session_state:
+    st.session_state.modo_facial = False
+if "modo_huella" not in st.session_state:
+    st.session_state.modo_huella = False
+if "modo_voz" not in st.session_state:
+    st.session_state.modo_voz = False
+if "modo_sat" not in st.session_state:
+    st.session_state.modo_sat = False
+if "modo_pdf" not in st.session_state:
+    st.session_state.modo_pdf = False
+if "modo_img" not in st.session_state:
+    st.session_state.modo_img = False
+
 # --- PLANO UNIFICADO: MÓDULOS IZQUIERDA, CHAT DERECHA ---
 col_left, col_right = st.columns([1, 1], gap="medium")
 
 with col_left:
     st.markdown("#### 🛡️ Subsistema Sigiloso y Módulos Avanzados")
-
-    if "modo_sensor" not in st.session_state:
-        st.session_state.modo_sensor = False
-    if "modo_facial" not in st.session_state:
-        st.session_state.modo_facial = False
-    if "modo_huella" not in st.session_state:
-        st.session_state.modo_huella = False
-    if "modo_voz" not in st.session_state:
-        st.session_state.modo_voz = False
-    if "modo_sat" not in st.session_state:
-        st.session_state.modo_sat = False
-    if "modo_pdf" not in st.session_state:
-        st.session_state.modo_pdf = False
-    if "modo_img" not in st.session_state:
-        st.session_state.modo_img = False
 
     b1, b2 = st.columns(2)
     with b1:
@@ -232,25 +241,47 @@ with col_left:
 with col_right:
     st.markdown("#### 💬 Núcleo Conversacional Autónomo")
 
-    # Contenedor de chat con altura compactada y optimizada para móviles
+    # Contenedor de chat persistente y robusto
     chat_container = st.container(height=300)
 
     with chat_container:
-        st.chat_message("assistant").write(
-            "Contenedor optimizado, Cindy. Menos espacio muerto y mejor visibilidad con el teclado. ¿Qué orden ejecutamos?"
-        )
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
 
     user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
 
     if user_input:
-        with chat_container:
-            st.chat_message("user").write(user_input)
-            st.chat_message("assistant").write(
-                f"Procesando '{user_input}' con los protocolos de seguridad de Jarvis 51..."
+        # Añadir mensaje de la usuaria al historial
+        st.session_state.messages.append({"role": "user", "content": user_input})
+
+        # Lógica del cerebro de Jarvis con respuestas sarcásticas y lógicas
+        if "clima" in user_input.lower():
+            respuesta_cerebro = "El clima en Buin está perfecto, 21.1 °C. Aunque podrías salir a comprobarlo tú misma en lugar de hacer que los satélites calculen la temperatura por ti."
+        elif "hola" in user_input.lower():
+            respuesta_cerebro = (
+                "Hola, Cindy. ¿Qué milagro te trae por mis servidores hoy?"
             )
+        elif "pdf" in user_input.lower():
+            respuesta_cerebro = (
+                "Activa el módulo de Descarga PDF en el panel izquierdo y sube el archivo. Yo me encargo del resto."
+            )
+        else:
+            respuesta_cerebro = f"Procesando '{user_input}' a través del enlace satelital 24/7 y los motores lógicos. Todo bajo control, Cindy."
+
+        st.session_state.messages.append(
+            {"role": "assistant", "content": respuesta_cerebro}
+        )
+        st.rerun()
 
     # Botón de purga colocado cómodamente debajo de la caja del chat
     c_purg1, c_purg2 = st.columns([3, 1])
     with c_purg2:
         if st.button("🗑️ Purgar Chat"):
-            st.toast("Historial purgado con éxito.", icon="🧹")
+            st.session_state.messages = [
+                {
+                    "role": "assistant",
+                    "content": "Historial purgado con éxito. ¡Tabula rasa, Cindy! Empezamos de cero.",
+                }
+            ]
+            st.rerun()
