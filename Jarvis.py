@@ -36,7 +36,7 @@ st.markdown(
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: 5px;
+        margin-bottom: 0px;
     }
     .triangle-reactor {
         width: 0;
@@ -46,7 +46,7 @@ st.markdown(
         border-bottom: 40px solid #00f0ff;
         position: relative;
         filter: drop-shadow(0 0 10px #00f0ff);
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .triangle-reactor::after {
         content: '';
@@ -146,7 +146,7 @@ if st.session_state.emergencia_activa:
         st.rerun()
     st.stop()
 
-# ENCABEZADO CENTRAL CON REACTOR Y SEGUNDERO EN VIVO (JS/HTML)
+# ENCABEZADO CENTRAL CON REACTOR Y SEGUNDERO EN VIVO (SIN ESPACIO EXTRA)
 st.markdown(
     """
     <div class="reactor-container">
@@ -158,16 +158,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Reloj digital en vivo con segundero integrado
 reloj_html = """
-<div style="display: flex; justify-content: center; align-items: center; font-family: monospace;">
+<div style="display: flex; justify-content: center; align-items: center; font-family: monospace; margin: 0px; padding: 0px;">
     <div style="
         background-color: #05080f;
         border: 1px solid #00f0ff;
-        padding: 6px 16px;
+        padding: 5px 14px;
         border-radius: 20px;
         color: #00f0ff;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: bold;
         letter-spacing: 1px;
         box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
@@ -192,7 +191,7 @@ setInterval(actualizarReloj, 1000);
 actualizarReloj();
 </script>
 """
-components.html(reloj_html, height=45)
+components.html(reloj_html, height=35)
 
 st.markdown("---")
 
@@ -255,138 +254,4 @@ with col_left:
             )
 
     with st.expander("⚡ 4. Atajos de Comandos Rápidos"):
-        c_at1, c_at2 = st.columns(2)
-        with c_at1:
-            if st.button("🕒 Hora y Fecha"):
-                st.session_state.messages.append(
-                    {"role": "user", "content": "¿Qué hora y fecha es?"}
-                )
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": (
-                            f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y la"
-                            f" hora en Buin es {hora_hoy}."
-                        ),
-                    }
-                )
-                st.rerun()
-        with c_at2:
-            if st.button("📡 Estado de Red"):
-                st.session_state.messages.append(
-                    {"role": "user", "content": "Estado de redes"}
-                )
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": (
-                            f"{obtener_saludo_jefa()} Enlace satelital 24/7"
-                            f" operativo al 100% [{hora_hoy}]."
-                        ),
-                    }
-                )
-                st.rerun()
-
-    with st.expander("📋 5. Registro de Auditoría (Caja Negra)"):
-        st.text("Historial técnico de comandos recientes:")
-        for log in reversed(st.session_state.logs_auditoria[-5:]):
-            st.code(log, language="text")
-
-    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
-        texto_voz = st.text_input(
-            "Texto para hablar:",
-            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
-            key="tts_box",
-        )
-        if st.button("🔊 Sintonizar Voz"):
-            tts = gTTS(text=texto_voz, lang="es")
-            fp = BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            st.audio(fp, format="audio/mp3")
-
-        st.markdown("---")
-        ingreso_clave = st.text_input(
-            "Clave de validación:", type="password", key="key_input_j51"
-        )
-        if ingreso_clave:
-            if ingreso_clave == "Jarvis 51":
-                st.success("Acceso total concedido, jefa.")
-            else:
-                st.error("Clave incorrecta.")
-
-        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
-            st.session_state.emergencia_activa = True
-            st.rerun()
-
-
-with col_right:
-    st.markdown("#### 💬 Núcleo Conversacional")
-
-    chat_container = st.container(height=380)
-
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
-
-    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
-
-    if user_input:
-        st.session_state.messages.append(
-            {"role": "user", "content": user_input}
-        )
-        st.session_state.logs_auditoria.append(
-            f"[{hora_hoy}] Comando de chat: '{user_input}'."
-        )
-
-        saludo_actual = obtener_saludo_jefa()
-        u_lower = user_input.lower()
-
-        if any(w in u_lower for w in ["hora", "fecha", "dia"]):
-            resp = (
-                f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en"
-                " Buin, Chile."
-            )
-        elif "despierto" in u_lower or "despiertas" in u_lower:
-            resp = "Para usted, jefa, siempre."
-        elif "clima" in u_lower:
-            resp = (
-                f"{saludo_actual} El módulo de clima en el panel izquierdo tiene"
-                " la telemetría exacta en tiempo real para Buin."
-            )
-        elif any(
-            w in u_lower
-            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
-        ):
-            resp = (
-                f"{saludo_actual} Es un honor estar a su servicio. Las"
-                f" conexiones están sincronizadas a las {hora_hoy}."
-            )
-        else:
-            resp = (
-                f"{saludo_actual} Procesando '{user_input}' con enlace"
-                f" satelital [{hora_hoy}]. Todo en orden, jefa."
-            )
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": resp}
-        )
-        st.rerun()
-
-    c_purg1, c_purg2 = st.columns([3, 1])
-    with c_purg2:
-        if st.button("🗑️ Purgar Chat"):
-            st.session_state.messages = [
-                {
-                    "role": "assistant",
-                    "content": (
-                        f"{obtener_saludo_jefa()} Historial purgado a las"
-                        f" {hora_hoy}. Borrón y cuenta nueva, jefa."
-                    ),
-                }
-            ]
-            st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Historial de chat purgado."
-            )
-            st.rerun()
+        c_at1, c_at2 =
