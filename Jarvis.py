@@ -4,7 +4,7 @@ st.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónomo", page_icon="⚡", layout="wide"
 )
 
-# Estilos CSS avanzados: Estética oscura, neón azul, reactor central y modo sigiloso
+# Estilos CSS avanzados: Estética oscura, neón azul y reactor triangular clásico
 st.markdown(
     """
     <style>
@@ -12,7 +12,7 @@ st.markdown(
         background-color: #030508;
         color: #00f0ff;
     }
-    /* Estilo centrado para el encabezado con el Reactor Arc */
+    /* Estilo centrado para el encabezado con el Reactor Triangular Clásico */
     .reactor-container {
         display: flex;
         flex-direction: column;
@@ -20,20 +20,26 @@ st.markdown(
         justify-content: center;
         margin-bottom: 20px;
     }
-    .reactor-logo {
-        width: 50px;
-        height: 50px;
-        border: 2px solid #00f0ff;
-        border-radius: 50%;
-        box-shadow: 0 0 15px #00f0ff, inset 0 0 15px #00f0ff;
-        background: radial-gradient(circle, #ffffff 0%, #00f0ff 50%, #030508 100%);
-        animation: pulse-reactor 2s infinite;
-        margin-bottom: 10px;
+    .triangle-reactor {
+        width: 0;
+        height: 0;
+        border-left: 30px solid transparent;
+        border-right: 30px solid transparent;
+        border-bottom: 50px solid #00f0ff;
+        position: relative;
+        filter: drop-shadow(0 0 12px #00f0ff);
+        margin-bottom: 12px;
     }
-    @keyframes pulse-reactor {
-        0% { box-shadow: 0 0 10px #00f0ff, inset 0 0 10px #00f0ff; }
-        50% { box-shadow: 0 0 25px #00f0ff, inset 0 0 20px #ffffff; }
-        100% { box-shadow: 0 0 10px #00f0ff, inset 0 0 10px #00f0ff; }
+    .triangle-reactor::after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: -18px;
+        width: 0;
+        height: 0;
+        border-left: 18px solid transparent;
+        border-right: 18px solid transparent;
+        border-bottom: 30px solid #030508;
     }
     .neon-header-center {
         color: #00f0ff;
@@ -43,7 +49,6 @@ st.markdown(
         text-align: center;
         letter-spacing: 2px;
     }
-    /* Módulos en modo sigiloso / táctico */
     .stealth-box {
         background-color: #05080f;
         border: 1px dashed #00f0ff;
@@ -62,7 +67,6 @@ st.markdown(
         color: #00f0ff;
         font-weight: bold;
     }
-    /* Botones táctiles neón */
     .stButton button {
         background-color: #030508;
         color: #00f0ff;
@@ -80,13 +84,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- ENCABEZADO CENTRALIZADO CON REACTOR LOGO ---
+# --- ENCABEZADO CENTRALIZADO CON REACTOR TRIANGULAR CLÁSICO ---
 st.markdown(
     """
     <div class="reactor-container">
-        <div class="reactor-logo"></div>
+        <div class="triangle-reactor"></div>
         <div class="neon-header-center">J.A.R.V.I.S IA</div>
-        <div style="color: #8a99ad; font-size: 0.85em;">Núcleo Autónomo | Buin, Chile</div>
+        <div style="color: #8a99ad; font-size: 0.85em;">Núcleo Autónomo | Conexión Satelital 24/7 | Buin, Chile</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -94,18 +98,15 @@ st.markdown(
 
 st.markdown("---")
 
-# Distribución Principal: Izquierda (Módulo Táctico Sigiloso), Derecha (Chat y Núcleo de Conversación)
-col_left, col_right = st.columns([1, 2], gap="medium")
+# --- DISTRIBUCIÓN EN UN SOLO PLANO: MÓDULOS A LA IZQUIERDA, CHAT A LA DERECHA ---
+col_left, col_right = st.columns(
+    [1, 1], gap="medium"
+)  # Plano equilibrado 50/50
 
-# --- MÓDULO IZQUIERDO: ACCESOS TÁCTICOS EN MODO SIGILOSO ---
 with col_left:
-    st.markdown("#### 🛡️ Subsistema Sigiloso")
-    st.markdown(
-        "<small style='color: #8a99ad;'>Panel de control de acceso restringido.</small>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("#### 🛡️ Subsistema Sigiloso y Módulos Avanzados")
 
-    # Inicializar estados de despliegue sigiloso
+    # Inicializar estados de los módulos
     if "modo_sensor" not in st.session_state:
         st.session_state.modo_sensor = False
     if "modo_facial" not in st.session_state:
@@ -116,8 +117,12 @@ with col_left:
         st.session_state.modo_voz = False
     if "modo_sat" not in st.session_state:
         st.session_state.modo_sat = False
+    if "modo_pdf" not in st.session_state:
+        st.session_state.modo_pdf = False
+    if "modo_img" not in st.session_state:
+        st.session_state.modo_img = False
 
-    # Botones táctiles de control
+    # Botones táctiles organizados
     b1, b2 = st.columns(2)
     with b1:
         if st.button("👁️ Movimiento"):
@@ -126,15 +131,19 @@ with col_left:
             st.session_state.modo_facial = not st.session_state.modo_facial
         if st.button("🎙️ Voz Fluida"):
             st.session_state.modo_voz = not st.session_state.modo_voz
+        if st.button("📄 Descarga PDF"):
+            st.session_state.modo_pdf = not st.session_state.modo_pdf
     with b2:
         if st.button("🖐️ Huella/Clave"):
             st.session_state.modo_huella = not st.session_state.modo_huella
-        if st.button("🛰️ Satelital"):
+        if st.button("🛰️ Satélite 24/7"):
             st.session_state.modo_sat = not st.session_state.modo_sat
+        if st.button("🖼️ Motor Vokaturi / Imgs"):
+            st.session_state.modo_img = not st.session_state.modo_img
 
     st.markdown("---")
 
-    # Visualización sigilosa al activar los botones
+    # Visualización de módulos activos en el plano izquierdo
     if st.session_state.modo_sensor:
         st.markdown(
             """
@@ -158,7 +167,6 @@ with col_left:
         )
 
     if st.session_state.modo_huella:
-        # Clave interna de seguridad incluida en el código
         clave_secreta = "JARVIS-OMEGA-75"
         st.markdown(
             """
@@ -184,7 +192,6 @@ with col_left:
             <div class="stealth-box">
                 <div class="stealth-title">Voz Fluida & Personalidad</div>
                 <div class="stealth-value">Modo: Autónomo / Sarcástico & Amigable</div>
-                <small style='color: #00ff66;'>Conectado al chat principal.</small>
             </div>
             """,
             unsafe_allow_html=True,
@@ -194,23 +201,49 @@ with col_left:
         st.markdown(
             """
             <div class="stealth-box">
-                <div class="stealth-title">Enlace Satelital / Radar</div>
-                <div class="stealth-value">Conexión cifrada de baja latencia (0.38 ms)</div>
+                <div class="stealth-title">Red Satelital e Internet 24/7</div>
+                <div class="stealth-value">Conexión Global Activa / Latencia: 0.38 ms</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
+    if st.session_state.modo_pdf:
+        st.markdown(
+            """
+            <div class="stealth-box">
+                <div class="stealth-title">Módulo de Descarga de PDFs</div>
+                <div class="stealth-value">Listo para indexar y extraer documentos técnicos.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.file_uploader(
+            "Subir o buscar PDF para análisis:", type=["pdf"], key="pdf_up"
+        )
 
-# --- MÓDULO DERECHO: NÚCLEO CONVERSACIONAL Y PURGA DE CHAT ---
+    if st.session_state.modo_img:
+        st.markdown(
+            """
+            <div class="stealth-box">
+                <div class="stealth-title">Módulo de Imágenes & Vokaturi</div>
+                <div class="stealth-value">Extracción y banco de imágenes activo.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.text_input("Buscar imagen en la red (Prompt):", key="img_query")
+
+
+# --- PLANO DERECHO: NÚCLEO CONVERSACIONAL Y PURGA DE CHAT ---
 with col_right:
     st.markdown("#### 💬 Núcleo Conversacional Autónomo")
 
-    chat_container = st.container(height=350)
+    chat_container = st.container(height=380)
 
     with chat_container:
         st.chat_message("assistant").write(
-            "Por fin en línea, Cindy. Y dime, ¿qué milagro hace que me enciendas hoy? Espero que no sea para preguntarme el clima de nuevo. ¿Qué orden ejecutamos?"
+            "Sistemas integrados en un solo plano, Cindy. Satélites enlazados y motores de descarga listos. ¿Qué orden ejecutamos ahora?"
         )
 
     user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
@@ -219,13 +252,11 @@ with col_right:
         with chat_container:
             st.chat_message("user").write(user_input)
             st.chat_message("assistant").write(
-                f"Procesando '{user_input}'... Tranquila, lo tengo bajo control, o al menos eso intento."
+                f"Procesando '{user_input}' con enlace satelital activo... Menos mal que me tienes a mí para organizar todo esto."
             )
 
-    # Botón de purga colocado cómodamente debajo del chat
-    c_purg1, c_purg2 = st.columns([4, 1])
+    # Botón de purga colocado cómodamente debajo de la caja del chat
+    c_purg1, c_purg2 = st.columns([3, 1])
     with c_purg2:
         if st.button("🗑️ Purgar Chat"):
-            st.toast(
-                "Historial purgado con éxito. Borrón y cuenta nueva.", icon="🧹"
-            )
+            st.toast("Historial purgado con éxito.", icon="🧹")
