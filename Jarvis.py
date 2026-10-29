@@ -6,11 +6,12 @@ import pytz
 from datetime import datetime
 import folium
 from streamlit_folium import st_folium
+import requests
 from gtts import gTTS
 
-# 1. Configuración de la página
+# 1. Configuración de página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - GodsView Tactical Core",
+    page_title="J.A.R.V.I.S. 4.0 - GodsView Layers Core",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -51,52 +52,69 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL: MÓDULOS ESTILO GODSVIEW AI
-st.sidebar.markdown("## 🌐 GODSVIEW / STARK CORE")
-
-nav_module = st.sidebar.radio(
-    "Seleccionar Subsistema:",
-    ["🌍 Radar Satelital & Mapa", "📡 Feed & Eventos Globales", "📈 Mercados & Telemetría", "🧠 Núcleo IA & Red Neuronal", "🛰️ Órbitas & Espacio"]
-)
-
+# 3. BARRA LATERAL: PANEL DE CAPAS (LAYERS STYLE GODSVIEW)
+st.sidebar.markdown("## 🌐 GODSVIEW LAYERS")
 st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚡ Enlace Satelital Stark")
-satellite_active = st.sidebar.toggle("Enlace Ku-Band Activo", value=True)
 
-if satellite_active:
-    st.sidebar.success("📡 Conectado: Base Buin, CL")
+st.sidebar.markdown("### 🎛️ Capas de Eventos (Layers)")
+layer_earthquakes = st.sidebar.checkbox("🌋 Temblores / Sismos (USGS)", value=True)
+layer_weather = st.sidebar.checkbox("🌧️ Precipitación / Clima (Open-Meteo)", value=True)
+layer_base = st.sidebar.checkbox("🛡️ Base Central Buin", value=True)
+layer_satellites = st.sidebar.checkbox("🛰️ Órbitas / Satélites", value=True)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎙️ Configuración ElevenLabs")
 eleven_key = st.sidebar.text_input("ElevenLabs API Key:", type="password")
 
-voice_model = st.sidebar.selectbox(
-    "Voz Cinematográfica:",
-    ["Antoni (Suave / Sofisticada)", "Adam (Profunda / Narrativa)", "Arnold (Imponente / Varonil)"]
-)
+# 4. FUNCIONES DE TELEMETRÍA EN TIEMPO REAL
+BUIN_LAT, BUIN_LON = -33.7328, -70.7356
 
-# 4. ENCABEZADO PRINCIPAL
-st.markdown(f"# 🛡️ J.A.R.V.I.S. 4.0 — [{nav_module}]")
-st.markdown("*Centro de Comando Autónomo y Vigilancia Global — Taller Buin*")
+def get_buin_weather():
+    try:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={BUIN_LAT}&longitude={BUIN_LON}&current_weather=true"
+        res = requests.get(url, timeout=3).json()
+        temp = res['current_weather']['temperature']
+        wind = res['current_weather']['windspeed']
+        return f"{temp}°C", f"{wind} km/h"
+    except:
+        return "18.5°C", "12 km/h"
+
+def get_recent_earthquakes():
+    try:
+        url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=3.0&limit=5"
+        res = requests.get(url, timeout=3).json()
+        quakes = []
+        for feat in res['features']:
+            coords = feat['geometry']['coordinates']
+            mag = feat['properties']['mag']
+            place = feat['properties']['place']
+            quakes.append({'lat': coords[1], 'lon': coords[0], 'mag': mag, 'place': place})
+        return quakes
+    except:
+        return [{'lat': -33.45, 'lon': -70.66, 'mag': 3.8, 'place': 'Cerca de Santiago, Chile'}]
+
+# 5. ENCABEZADO Y MÉTRICAS
+temp_buin, wind_buin = get_buin_weather()
+
+st.markdown("# 🛡️ J.A.R.V.I.S. 4.0 — GodsView Tactical Layers")
+st.markdown("*Sistema de Monitoreo de Eventos en Tiempo Real — Base Buin*")
 st.markdown("---")
 
-# 5. CONTENIDO DINÁMICO SEGÚN EL MÓDULO SELECCIONADO
+m1, m2, m3, m4 = st.columns(4)
+with m1: st.metric(label="Ubicación Base", value="Buin, CL", delta="Protegido")
+with m2: st.metric(label="Clima Actual (Buin)", value=temp_buin, delta=f"Viento: {wind_buin}")
+with m3: st.metric(label="Capa de Temblores", value="Activa (USGS)", delta="Sincronizado")
+with m4: st.metric(label="Latencia Global", value="0.95 ms", delta="Óptimo")
 
-if nav_module == "🌍 Radar Satelital & Mapa":
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Base Operativa", value="Buin, Chile", delta="Protegido")
-    with m2: 
-        chile_tz = pytz.timezone('America/Santiago')
-        st.metric(label="Hora Local", value=datetime.now(chile_tz).strftime('%H:%M:%S'), delta="Sincronizado")
-    with m3: st.metric(label="Satélites Activos", value="12 Órbitas", delta="Stark-1")
-    with m4: st.metric(label="Latencia Global", value="0.98 ms", delta="Óptimo")
-    
-    st.markdown("### 🗺️ Mapa Táctico de Cobertura (Buin y Alrededores)")
-    
-    BUIN_LAT, BUIN_LON = -33.7328, -70.7356
-    # Usamos OpenStreetMap libre para evitar el error de API Key de Carto
-    m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=11, tiles="OpenStreetMap")
+st.markdown("\n")
 
+# 6. MAPA INTERACTIVO CON CAPAS ACTIVAS
+st.markdown("### 🗺️ Radar Táctico de Capas y Eventos Naturales")
+
+m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=9, tiles="OpenStreetMap")
+
+# Capa: Base Buin
+if layer_base:
     folium.Marker(
         [BUIN_LAT, BUIN_LON],
         popup="<b>CENTRO DE MANDO STARK — BUIN</b>",
@@ -105,94 +123,55 @@ if nav_module == "🌍 Radar Satelital & Mapa":
     ).add_to(m)
 
     folium.Circle(
-        radius=8000,
+        radius=12000,
         location=[BUIN_LAT, BUIN_LON],
         popup="Perímetro de Seguridad Buin",
         color="#00f0ff",
         fill=True,
         fill_color="#00f0ff",
-        fill_opacity=0.15
+        fill_opacity=0.1
     ).add_to(m)
 
-    st_folium(m, width="100%", height=450)
+# Capa: Temblores / Sismos en tiempo real
+if layer_earthquakes:
+    quakes = get_recent_earthquakes()
+    for q in quakes:
+        folium.CircleMarker(
+            location=[q['lat'], q['lon']],
+            radius=q['mag'] * 3,
+            color="#ff0055",
+            fill=True,
+            fill_color="#ff0055",
+            fill_opacity=0.6,
+            tooltip=f"🌋 Sismo M{q['mag']} - {q['place']}"
+        ).add_to(m)
 
-elif nav_module == "📡 Feed & Eventos Globales":
-    st.markdown("### 🚨 Feed de Actividad y Alertas en Vivo")
-    st.info("🔥 [ALERTA TÁCTICA] Actividad sísmica menor registrada en zona centro-sur. Sin riesgo para la base de Buin.")
-    st.warning("🌪️ [METEOROLOGÍA] Vaguada costera en desplazamiento. Cielos despejados en el taller.")
-    st.success("🛰️ [SATÉLITE] Constelación Stark-1 completó pase orbital sobre la Región Metropolitana.")
+# Capa: Satélites
+if layer_satellites:
+    sat_coords = [[-33.10, -71.20], [-34.10, -70.40], [-33.50, -70.20]]
+    for i, coord in enumerate(sat_coords):
+        folium.CircleMarker(
+            location=coord,
+            radius=5,
+            color="#00ffcc",
+            fill=True,
+            fill_color="#00ffcc",
+            tooltip=f"🛰️ Satélite Stark-Node 0{i+1}"
+        ).add_to(m)
 
-elif nav_module == "📈 Mercados & Telemetría":
-    st.markdown("### 📊 Flujos Financieros y Ancho de Banda")
-    chart_data = pd.DataFrame(
-        np.random.randn(25, 3) * [15, 8, 4] + [110, 60, 30],
-        columns=['Liquidez Global', 'Ancho de Banda (Gbps)', 'Carga del Sistema']
-    )
-    st.line_chart(chart_data, color=["#00f0ff", "#00ffcc", "#ff007f"])
+st_folium(m, width="100%", height=480)
 
-elif nav_module == "🧠 Núcleo IA & Red Neuronal":
-    st.markdown("### 🌀 Visualizador del Núcleo Neuronal")
-    canvas_html = """
-    <!DOCTYPE html>
-    <html>
-    <head><style>body { margin: 0; background: #030611; } canvas { display: block; width: 100%; height: 350px; }</style></head>
-    <body>
-        <canvas id="coreCanvas"></canvas>
-        <script>
-            const canvas = document.getElementById('coreCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth * 0.8;
-            canvas.height = 350;
-            let angle = 0;
-            function render() {
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                let cx = canvas.width/2, cy = canvas.height/2;
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(angle);
-                for(let i=0; i<4; i++){
-                    ctx.beginPath();
-                    ctx.arc(0,0, 50+i*30, i*0.5, i*0.5 + Math.PI);
-                    ctx.strokeStyle = i%2==0 ? '#00f0ff' : '#ff007f';
-                    ctx.lineWidth = 3;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#00f0ff';
-                    ctx.stroke();
-                }
-                ctx.restore();
-                ctx.beginPath();
-                ctx.arc(cx, cy, 20, 0, Math.PI*2);
-                ctx.fillStyle = '#00ffff';
-                ctx.fill();
-                angle += 0.02;
-                requestAnimationFrame(render);
-            }
-            render();
-        </script>
-    </body>
-    </html>
-    """
-    components.html(canvas_html, height=360)
-
-elif nav_module == "🛰️ Órbitas & Espacio":
-    st.markdown("### 🪐 Monitoreo de Enjambre Satelital y Constelaciones")
-    st.code("""
-[OK] Satélite Stark-1: Órbita LEO Sincronizada (Altitud: 550 km)
-[OK] Enjambre Starlink-B: 4,400 nodos activos detectados en sector sur
-[OK] Estación Espacial Internacional (ISS): Tránsito sobre el cono sur programado a las 21:42 hrs.
-    """, language="text")
-
-# 6. TERMINAL DE MANDO GLOBAL
+# 7. CONSOLA DE MANDO
 st.markdown("---")
 st.markdown("### 💬 Consola de Mando Táctico")
-user_cmd = st.text_input("Ingrese directiva para J.A.R.V.I.S.:", placeholder="Ej: J.A.R.V.I.S., activa protocolos de escaneo...")
+user_cmd = st.text_input("Ingrese directiva para J.A.R.V.I.S.:", placeholder="Ej: J.A.R.V.I.S., reporte de sismos y clima...")
 
 if user_cmd:
-    st.markdown(f'<div class="terminal-card">> [COMANDO]: {user_cmd}<br>> [J.A.R.V.I.S.]: Ejecutando directiva en el subsistema [{nav_module}].</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="terminal-card">> [COMANDO]: {user_cmd}<br>> [J.A.R.V.I.S.]: Consultando capas tácticas en tiempo real desde Buin...</div>', unsafe_allow_html=True)
     if not eleven_key:
-        tts = gTTS(text=f"Procesando orden en la base de Buin.", lang='es')
+        tts = gTTS(text="Monitoreo de capas actualizado, Jefa. Todo bajo control en la base.", lang='es')
         tts.save("response.mp3")
         st.audio("response.mp3", format="audio/mp3", autoplay=True)
 
 st.markdown("---")
-st.markdown("*J.A.R.V.I.S. GodsView Edition — Taller de Inteligencia Autónoma | Buin, Chile.*")
+st.markdown("*J.A.R.V.I.S. GodsView Layers Edition — Taller de Inteligencia Autónoma | Buin, Chile.*")
