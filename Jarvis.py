@@ -289,7 +289,7 @@ def renderizar_mapa_tactico(modo):
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <style>
-                body {{ margin: 0; padding: 0; }}
+                body {{ margin: 0; padding: 0; touch-action: pan-x pan-y; }}
                 #map {{ width: 100%; height: 280px; border-radius: 8px; {filtro_css} }}
             </style>
         </head>
@@ -298,11 +298,15 @@ def renderizar_mapa_tactico(modo):
             <script>
                 const map = L.map('map', {{
                     dragging: true,
-                    tap: true
+                    tap: false,
+                    touchZoom: true
                 }}).setView([-33.7331, -70.7072], 11);
+                
                 L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 19, attribution: '© OpenStreetMap' }}).addTo(map);
                 L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin</b>').openPopup();
                 L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();
+                
+                if (map.tap) map.tap.disable();
             </script>
         </body>
         </html>
@@ -853,4 +857,3 @@ if prompt_usuario:
     str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
     guardar_mensaje_db("assistant", respuesta)
     hablar_jarvis(respuesta)
-
