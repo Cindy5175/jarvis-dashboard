@@ -11,13 +11,13 @@ from gtts import gTTS
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - Quantum Cyber Core",
-    page_icon="⚡",
+    page_title="J.A.R.V.I.S. 4.0 - Stark Tactical Command",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. CSS Estilo Neón Holográfico Stark / Trading AI
+# 2. CSS Estilo Neón Holográfico Stark
 st.markdown("""
     <style>
     .stApp {
@@ -41,12 +41,27 @@ st.markdown("""
         padding: 10px;
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
     }
+    .biometric-box {
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid #00f0ff;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL: NAVEGACIÓN, SPOTIFY Y CAPAS
-st.sidebar.markdown("## ⚡ J.A.R.V.I.S. SUBSYSTEMS")
+# 3. BARRA LATERAL: SEGURIDAD BIOMÉTRICA, NAVEGACIÓN, SPOTIFY Y CAPAS
+st.sidebar.markdown("## 🛡️ STARK SECURITY & CORE")
 
+# Módulo de Biometría Simulada
+st.sidebar.markdown('<div class="biometric-box"><b>STATUS BIOMÉTRICO</b><br>🟢 Acceso Autorizado: Jefa Cindy</div>', unsafe_allow_html=True)
+bio_scan = st.sidebar.button("🔒 Escanear Biometría / Reautenticar")
+if bio_scan:
+    st.sidebar.success("Identidad verificada. Protocolo Stark activo.")
+
+st.sidebar.markdown("---")
 nav_module = st.sidebar.radio(
     "Módulos del Sistema:",
     [
@@ -60,14 +75,13 @@ nav_module = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Spotify Tactical Audio")
-spotify_uri = st.sidebar.text_input("Spotify URI:", value="37i9dQZF1DXdLENR312A25")
+# Reproductor de Spotify con URL limpia corregida para evitar errores 404
+spotify_id = st.sidebar.text_input("Spotify Track/Playlist ID:", value="37i9dQZF1DXdLENR312A25")
 components.html(
     f'''
-    <div style="background:#010206; border-radius:12px; padding:4px; box-shadow: 0 0 10px rgba(0,240,255,0.2);">
-        <iframe src="https://open.spotify.com/embed/playlist/{spotify_uri}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-    </div>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/{spotify_id}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     ''',
-    height=165
+    height=160
 )
 
 st.sidebar.markdown("---")
@@ -81,7 +95,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎙️ Configuración ElevenLabs")
 eleven_key = st.sidebar.text_input("ElevenLabs API Key:", type="password")
 
-# 4. FUNCIONES DE DATOS EN TIEMPO REAL
+# 4. FUNCIONES DE TELEMETRÍA EN TIEMPO REAL
 BUIN_LAT, BUIN_LON = -33.7328, -70.7356
 
 def get_buin_weather():
@@ -126,18 +140,18 @@ def get_realtime_fires():
 temp_buin, wind_buin = get_buin_weather()
 
 st.markdown(f"# 🛡️ J.A.R.V.I.S. 4.0 — [{nav_module}]")
-st.markdown("*Centro Táctico Cuántico y Control Geoespacial — Base Buin, Chile*")
+st.markdown("*Centro Táctico Cuántico y Control Biométrico — Base Buin, Chile*")
 st.markdown("---")
 
 m1, m2, m3, m4 = st.columns(4)
-with m1: st.metric(label="Ubicación Base", value="Buin, CL", delta="Seguro")
+with m1: st.metric(label="Ubicación Base", value="Buin, CL", delta="Seguro / Biometría OK")
 with m2: st.metric(label="Clima Real (Buin)", value=temp_buin, delta=f"Viento: {wind_buin}")
 with m3: st.metric(label="Estado del Sistema", value="99.8% Neural Sync", delta="Quantum Core")
 with m4: st.metric(label="Latencia de Red", value="0.38 ms", delta="Óptimo")
 
 st.markdown("\n")
 
-# 6. MÓDULOS DINÁMICOS
+# 6. MÓDULOS DINÁMICOS PRINCIPALES
 if nav_module == "🌍 Radar Satelital Real-Time":
     st.markdown("### 🗺️ Telemetría Satelital Geoespacial en Vivo")
     m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=8, tiles="OpenStreetMap")
@@ -299,9 +313,15 @@ elif nav_module == "📡 Feed Alertas Globales":
     st.info("🌋 [USGS REAL-TIME] Monitoreo de sismos activo. Sincronizado con la placa de Nazca.")
     st.warning("🔥 [NASA FIRMS] Escaneo térmico satelital procesando datos en tiempo real.")
 
-# 7. HISTORIAL DE CHAT Y CAJA DE ENTRADA INTERACTIVA
+# 7. HISTORIAL DE CHAT, BOTÓN DE PURGA Y CAJA DE ENTRADA INTERACTIVA
 st.markdown("---")
-st.markdown("### 💬 Interfaz de Conversación Autónoma")
+col_chat_title, col_chat_btn = st.columns([0.85, 0.15])
+with col_chat_title:
+    st.markdown("### 💬 Interfaz de Conversación Autónoma")
+with col_chat_btn:
+    if st.button("🗑️ Purgar Chat"):
+        st.session_state.messages = []
+        st.rerun()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -315,19 +335,20 @@ if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    response_msg = f"Directiva procesada en el subsistema '{nav_module}'. Todos los sensores en la base de Buin y el audio de Spotify están operativos, Jefa."
+    response_msg = f"Directiva procesada en el subsistema '{nav_module}'. Biometría verificada en Buin, Jefa."
     
     with st.chat_message("assistant"):
         st.markdown(response_msg)
         
-        if eleven_key:
+        # Conexión directa con ElevenLabs utilizando la API Key ingresada en el sidebar
+        if eleven_key and len(eleven_key) > 5:
             try:
                 voice_id = "21m00Tcm4TlvDq8ikWAM"
                 url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
                 headers = {
                     "Accept": "audio/mpeg",
                     "Content-Type": "application/json",
-                    "xi-api-key": eleven_key
+                    "xi-api-key": eleven_key.strip()
                 }
                 data = {
                     "text": response_msg,
@@ -339,8 +360,9 @@ if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
                     with open("jarvis_chat.mp3", "wb") as f:
                         f.write(res.content)
                     st.audio("jarvis_chat.mp3", format="audio/mp3", autoplay=True)
+                    st.success("🎙️ [ElevenLabs Active] Voz sintetizada con éxito.")
                 else:
-                    st.warning("⚠️ Verifique su API Key de ElevenLabs.")
+                    st.warning(f"⚠️ Error ElevenLabs (Código {res.status_code}): Verifique su API Key.")
             except Exception as e:
                 st.error(f"Error de audio: {e}")
         else:
