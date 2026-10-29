@@ -296,7 +296,10 @@ def renderizar_mapa_tactico(modo):
         <body>
             <div id="map"></div>
             <script>
-                const map = L.map('map').setView([-33.7331, -70.7072], 11);
+                const map = L.map('map', {{
+                    dragging: true,
+                    tap: true
+                }}).setView([-33.7331, -70.7072], 11);
                 L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 19, attribution: '© OpenStreetMap' }}).addTo(map);
                 L.marker([-33.7331, -70.7072]).addTo(map).bindPopup('<b>Base Buin</b>').openPopup();
                 L.marker([-33.4489, -70.6693]).addTo(map).bindPopup('<b>Santiago Centro</b>').openPopup();
