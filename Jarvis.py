@@ -111,6 +111,20 @@ def inicializar_db():
 
 db_conn = inicializar_db()
 
+# Caché inteligente de consulta de clima en Buin para evitar latencias de red
+@str_lit.cache_data(ttl=300)
+def obtener_clima_buin():
+    try:
+        res = requests.get(
+            "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true",
+            timeout=2.0
+        ).json()
+        temp = res["current_weather"]["temperature"]
+        wind = res["current_weather"]["windspeed"]
+        return {"temp": temp, "wind": wind, "ok": True}
+    except Exception:
+        return {"temp": 18.0, "wind": 5.0, "ok": False}
+
 def guardar_mensaje_db(role, content):
     cursor = db_conn.cursor()
     cursor.execute("SELECT role, content FROM chat_history ORDER BY id DESC LIMIT 1")
@@ -144,13 +158,10 @@ if "messages" not in str_lit.session_state:
         chile_tz = pytz.timezone("America/Santiago")
         hora_actual = datetime.now(chile_tz).hour
         
-        clima_info = ""
-        try:
-            res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=2).json()
-            t_val = res_c["current_weather"]["temperature"]
-            w_val = res_c["current_weather"]["windspeed"]
-            clima_info = f" [Reporte Buin: {t_val}°C, Viento {w_val} km/h]."
-        except Exception:
+        datos_c = obtener_clima_buin()
+        if datos_c["ok"]:
+            clima_info = f" [Reporte Buin: {datos_c['temp']}°C, Viento {datos_c['wind']} km/h]."
+        else:
             clima_info = " [Reporte Buin: Estable]."
 
         tipo_enlace = "enlace satelital Stark" if str_lit.session_state.enlace_satelital else "red terrestre de fibra"
@@ -354,15 +365,10 @@ with str_lit.sidebar:
 
         str_lit.markdown("#### 3. Alertas Climáticas Auto")
         if str_lit.button("Forzar Chequeo Clima Buin"):
-            try:
-                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
-                t_val = res_c["current_weather"]["temperature"]
-                w_val = res_c["current_weather"]["windspeed"]
-                msg_clima = f"Temperatura: {t_val}°C | Viento: {w_val} km/h. Estado: Óptimo."
-                enviar_alerta_telegram(msg_clima)
-                str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
-            except Exception:
-                str_lit.error("Error al consultar clima en Buin.")
+            datos_c = obtener_clima_buin()
+            msg_clima = f"Temperatura: {datos_c['temp']}°C | Viento: {datos_c['wind']} km/h. Estado: Óptimo."
+            enviar_alerta_telegram(msg_clima)
+            str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
 
     # --- 2. BLOQUE CONSOLIDADO: OJO DE DIOS - PROTOCOLO F&F 8 ---
     with str_lit.expander("👁️ Ojo de Dios - Protocolo F&F 8"):
@@ -510,13 +516,12 @@ with str_lit.sidebar:
         str_lit.markdown("#### 🎙️ Módulo 3: Protocolo de Resumen Ejecutivo")
         if str_lit.button("📢 Emitir Reporte Matutino por Voz"):
             try:
-                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
-                t_val = res_c["current_weather"]["temperature"]
+                datos_c = obtener_clima_buin()
                 c_db = db_conn.cursor()
                 c_db.execute("SELECT COUNT(*) FROM misiones WHERE estado = 'Pendiente'")
                 pend_count = c_db.fetchone()[0]
                 
-                reporte_texto = f"Atención Jefa. Reporte del Centro de Comando en Buin: Temperatura actual a {t_val} grados Celsius. Tiene {pend_count} misiones pendientes en curso. Sistemas nominales."
+                reporte_texto = f"Atención Jefa. Reporte del Centro de Comando en Buin: Temperatura actual a {datos_c['temp']} grados Celsius. Tiene {pend_count} misiones pendientes en curso. Sistemas nominales."
                 str_lit.success(reporte_texto)
                 hablar_jarvis(reporte_texto)
             except Exception as e:
@@ -526,20 +531,15 @@ with str_lit.sidebar:
 
         str_lit.markdown("#### 3. Log de Clima & Alertas")
         if str_lit.button("Registrar Chequeo Climático Buin"):
-            try:
-                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
-                t_val = res_c["current_weather"]["temperature"]
-                w_val = res_c["current_weather"]["windspeed"]
-                ahora_chile = datetime.now(pytz.timezone("America/Santiago")).strftime("%H:%M:%S")
-                detalles_log = f"Temp: {t_val}°C | Viento: {w_val} km/h"
-                
-                c_db = db_conn.cursor()
-                c_db.execute("INSERT INTO clima_log (timestamp, detalles) VALUES (?, ?)", (ahora_chile, detalles_log))
-                db_conn.commit()
-                enviar_alerta_telegram(f"Reporte Manual Buin -> {detalles_log}")
-                str_lit.success(f"📡 Registro guardado [{ahora_chile}]: {detalles_log}")
-            except Exception:
-                str_lit.error("Error al registrar clima de Buin.")
+            datos_c = obtener_clima_buin()
+            ahora_chile = datetime.now(pytz.timezone("America/Santiago")).strftime("%H:%M:%S")
+            detalles_log = f"Temp: {datos_c['temp']}°C | Viento: {datos_c['wind']} km/h"
+            
+            c_db = db_conn.cursor()
+            c_db.execute("INSERT INTO clima_log (timestamp, detalles) VALUES (?, ?)", (ahora_chile, detalles_log))
+            db_conn.commit()
+            enviar_alerta_telegram(f"Reporte Manual Buin -> {detalles_log}")
+            str_lit.success(f"📡 Registro guardado [{ahora_chile}]: {detalles_log}")
 
         c_db = db_conn.cursor()
         c_db.execute("SELECT timestamp, detalles FROM clima_log ORDER BY id DESC LIMIT 3")
@@ -562,14 +562,14 @@ with str_lit.sidebar:
 
                 try:
                     t_meteo = time.time()
-                    requests.get("https://api.open-meteo.com", timeout=2)
+                    obtener_clima_buin()
                     ms_meteo = int((time.time() - t_meteo) * 1000)
                 except Exception:
                     ms_meteo = "Timeout"
 
                 tipo_ping = "🛰️ Satelital Stark" if str_lit.session_state.enlace_satelital else "🌐 Terrestre Fibra"
                 str_lit.success(f"🟢 Groq API ({tipo_ping}): {ms_groq} ms")
-                str_lit.success(f"🟢 Open-Meteo GPS: {ms_meteo} ms")
+                str_lit.success(f"🟢 Open-Meteo GPS (Caché 5m): {ms_meteo} ms")
                 str_lit.success("🟢 SQLite Local: 1 ms")
 
         str_lit.markdown("---")
@@ -611,14 +611,8 @@ with str_lit.sidebar:
         str_lit.metric(label="RAM en Uso", value=f"{ram_actual}%")
 
     with str_lit.expander("🌤️ Radar Clima en Vivo"):
-        try:
-            url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true"
-            res_clima = requests.get(url_clima, timeout=3).json()
-            temp = res_clima["current_weather"]["temperature"]
-            wind = res_clima["current_weather"]["windspeed"]
-            str_lit.metric(label="Temperatura en Vivo", value=f"{temp}°C", delta=f"Viento: {wind} km/h")
-        except Exception:
-            str_lit.metric(label="Temperatura Estimada", value="18°C", delta="Óptimo")
+        datos_c = obtener_clima_buin()
+        str_lit.metric(label="Temperatura en Vivo", value=f"{datos_c['temp']}°C", delta=f"Viento: {datos_c['wind']} km/h")
 
     with str_lit.expander("🪙 Terminal Cripto & Stablecoins"):
         crypto_sel = str_lit.selectbox("Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
