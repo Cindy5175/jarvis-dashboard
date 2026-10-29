@@ -1,9 +1,7 @@
 streamlit
-groq
-gtts
-yfinance
-requests
-audio-recorder-streamlit
+folium
+streamlit-folium
+pandas
+numpy
 pytz
-psutil
-plotly
+gTTS
