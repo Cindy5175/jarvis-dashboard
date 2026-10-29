@@ -11,7 +11,7 @@ from gtts import gTTS
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - GodsView Advanced Layers",
+    page_title="J.A.R.V.I.S. 4.0 - Tactical Command Center",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -97,8 +97,8 @@ def get_recent_earthquakes():
 # 5. ENCABEZADO Y MÉTRICAS
 temp_buin, wind_buin = get_buin_weather()
 
-st.markdown("# 🛡️ J.A.R.V.I.S. 4.0 — Advanced Tactical Core")
-st.markdown("*Sistema de Monitoreo Global y Capas Tácticas — Base Buin*")
+st.markdown("# 🛡️ J.A.R.V.I.S. 4.0 — Tactical Command Center")
+st.markdown("*Sistema de Monitoreo Global y Chat Autónomo — Base Buin*")
 st.markdown("---")
 
 m1, m2, m3, m4 = st.columns(4)
@@ -114,7 +114,6 @@ st.markdown("### 🗺️ Radar Geoespacial en Vivo")
 
 m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=8, tiles="OpenStreetMap")
 
-# Base Buin
 if layer_base:
     folium.Marker(
         [BUIN_LAT, BUIN_LON],
@@ -132,7 +131,6 @@ if layer_base:
         fill_opacity=0.1
     ).add_to(m)
 
-# Temblores (USGS)
 if layer_earthquakes:
     for q in get_recent_earthquakes():
         folium.CircleMarker(
@@ -145,49 +143,70 @@ if layer_earthquakes:
             tooltip=f"🌋 Sismo M{q['mag']} - {q['place']}"
         ).add_to(m)
 
-# Incendios Activos (Simulación satelital en la zona centro-sur)
 if layer_fires:
     fires = [[-34.1, -71.0], [-33.2, -70.9], [-35.4, -72.0]]
     for i, f in enumerate(fires):
-        folium.Marker(
-            f,
-            tooltip=f"🔥 Incendio Activo Detectado 0{i+1}",
-            icon=folium.Icon(color="orange", icon="fire", prefix="fa")
-        ).add_to(m)
+        folium.Marker(f, tooltip=f"🔥 Incendio Activo 0{i+1}", icon=folium.Icon(color="orange", icon="fire", prefix="fa")).add_to(m)
 
-# Volcanes (Zona volcánica de Chile)
 if layer_volcanoes:
     volcanoes = [[-33.83, -70.00, "Volcán Maipo"], [-33.33, -70.13, "Volcán San José"]]
     for v in volcanoes:
-        folium.CircleMarker(
-            location=[v[0], v[1]],
-            radius=6,
-            color="#ff4500",
-            fill=True,
-            fill_color="#ff4500",
-            tooltip=f"🌋 {v[2]}"
-        ).add_to(m)
+        folium.CircleMarker([v[0], v[1]], radius=6, color="#ff4500", fill=True, fill_color="#ff4500", tooltip=f"🌋 {v[2]}").add_to(m)
 
-# Alertas de Desastre y Tsunamis
 if layer_disasters:
     folium.Marker([-33.0, -71.5], tooltip="⚡ Alerta Meteorológica Preventiva", icon=folium.Icon(color="purple", icon="bolt", prefix="fa")).add_to(m)
 
 if layer_tsunamis:
-    folium.CircleMarker([-32.9, -71.6], radius=8, color="#00ffff", fill=True, fill_color="#00ffff", tooltip="🌊 Boya DART / Alerta Tsunami: Estable").add_to(m)
+    folium.CircleMarker([-32.9, -71.6], radius=8, color="#00ffff", fill=True, fill_color="#00ffff", tooltip="🌊 Boya DART / Alerta Tsunami").add_to(m)
 
-# Satélites y Starlink Swarm
 if layer_satellites:
     sats = [[-33.0, -70.0], [-34.5, -71.0], [-33.8, -70.5]]
     for i, s in enumerate(sats):
-        folium.CircleMarker(
-            location=s,
-            radius=5,
-            color="#00ffcc",
-            fill=True,
-            fill_color="#00ffcc",
-            tooltip=f"🛰️ Satélite / Starlink Node 0{i+1}"
-        ).add_to(m)
+        folium.CircleMarker(s, radius=5, color="#00ffcc", fill=True, fill_color="#00ffcc", tooltip=f"🛰️ Satélite Node 0{i+1}").add_to(m)
 
-st_folium(m, width="100%", height=500)
+st_folium(m, width="100%", height=480)
 
-# 7. CONSOLA DE MANDO Y
+# 7. HISTORIAL DE CHAT Y CAJA DE ENTRADA INTERACTIVA
+st.markdown("---")
+st.markdown("### 💬 Interfaz de Conversación con J.A.R.V.I.S.")
+
+# Inicializar historial de chat en la sesión
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Mostrar mensajes anteriores
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Caja de chat flotante al fondo
+if user_prompt := st.chat_input("Escriba su mensaje o directiva para J.A.R.V.I.S..."):
+    # Agregar mensaje del usuario al historial
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    # Respuesta generada por J.A.R.V.I.S.
+    response_msg = f"Directiva recibida: '{user_prompt}'. Todos los sistemas en la base de Buin operan con total normalidad, Jefa."
+    
+    with st.chat_message("assistant"):
+        st.markdown(response_msg)
+        
+        # Síntesis de voz con ElevenLabs si hay API Key
+        if eleven_key:
+            try:
+                voice_id = "21m00Tcm4TlvDq8ikWAM"
+                url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+                headers = {
+                    "Accept": "audio/mpeg",
+                    "Content-Type": "application/json",
+                    "xi-api-key": eleven_key
+                }
+                data = {
+                    "text": response_msg,
+                    "model_id": "eleven_multilingual_v2",
+                    "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
+                }
+                res = requests.post(url, json=data, headers=headers)
+                if res.status_code == 200:
+                    with open("jarvis_chat.mp3", "wb
