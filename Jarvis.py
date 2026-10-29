@@ -12,7 +12,7 @@ from gtts import gTTS
 # 1. Configuración de página
 st.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónomo - Stark Command",
-    page_icon="🛡️",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -163,7 +163,6 @@ st.markdown("\n")
 if nav_module == "🌍 Radar Satelital Real-Time":
     st.markdown("### 🗺️ Telemetría Satelital y Globo Cuántico en Vivo")
     
-    # Diseño en dos columnas: Mapa a la izquierda, Globo Terráqueo Holográfico 3D a la derecha
     col_map, col_globe = st.columns([1.3, 0.9])
     
     with col_map:
@@ -215,7 +214,6 @@ if nav_module == "🌍 Radar Satelital Real-Time":
 
     with col_globe:
         st.markdown("<b>Globo Terráqueo Cuántico 3D</b>", unsafe_allow_html=True)
-        # Visualizador interactivo 3D tipo globo terráqueo cian holográfico
         components.html("""
         <!DOCTYPE html>
         <html>
@@ -230,7 +228,6 @@ if nav_module == "🌍 Radar Satelital Real-Time":
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     let cx = canvas.width / 2, cy = canvas.height / 2, radius = 130;
                     
-                    // Esfera Base con brillo cian
                     ctx.beginPath();
                     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
                     ctx.fillStyle = 'rgba(0, 20, 40, 0.8)';
@@ -241,7 +238,6 @@ if nav_module == "🌍 Radar Satelital Real-Time":
                     ctx.lineWidth = 2;
                     ctx.stroke();
 
-                    // Meridianos y Paralelos Rotatorios (Efecto Globo 3D)
                     ctx.save();
                     ctx.beginPath();
                     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -257,7 +253,6 @@ if nav_module == "🌍 Radar Satelital Real-Time":
                         ctx.stroke();
                     }
 
-                    // Líneas de latitud horizontales
                     for (let lat = -2; lat <= 2; lat++) {
                         let yPos = cy + lat * 35;
                         ctx.beginPath();
@@ -267,7 +262,6 @@ if nav_module == "🌍 Radar Satelital Real-Time":
                     }
                     ctx.restore();
 
-                    // Puntos de enlace satelital en la superficie
                     let pAngle = angle * 2;
                     let px = cx + (radius * 0.7) * Math.cos(pAngle * Math.PI / 180);
                     let py = cy + (radius * 0.4) * Math.sin(pAngle * Math.PI / 180);
@@ -423,7 +417,6 @@ if user_prompt := st.chat_input("Escriba su comando o diga 'Hey Jarvis'..."):
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    # Lógica de respuesta inteligente con detección de "Hey Jarvis"
     prompt_lower = user_prompt.lower()
     if "hey jarvis" in prompt_lower or "hola jarvis" in prompt_lower:
         response_msg = "A sus órdenes, Jefa Cindy. Los sistemas autónomos de la base en Buin y el globo terráqueo cuántico operan al máximo rendimiento."
@@ -464,15 +457,16 @@ if user_prompt := st.chat_input("Escriba su comando o diga 'Hey Jarvis'..."):
 
     st.session_state.messages.append({"role": "assistant", "content": response_msg})
 
-# 8. PIE DE PÁGINA CON MINI REPRODUCTOR DE SPOTIFY ABAJO A LA IZQUIERDA
+# 8. PIE DE PÁGINA CON MINI REPRODUCTOR DE SPOTIFY CORREGIDO ABAJO A LA IZQUIERDA
 st.markdown("---")
 col_spot, col_foot = st.columns([1, 1])
 
 with col_spot:
     st.markdown("### 🎵 Spotify Tactical Audio")
+    # Enlace de embed directo corregido para que no arroje error 404 de página no encontrada
     components.html(
         '''
-        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A25?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A25?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         ''',
         height=90
     )
