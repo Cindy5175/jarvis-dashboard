@@ -93,6 +93,13 @@ def inicializar_db():
         )
     """)
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS galeria_ia (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre_archivo TEXT,
+            descripcion TEXT
+        )
+    """)
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS sesiones_archivadas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha TEXT,
@@ -216,7 +223,7 @@ def renderizar_globo_terraqueo(hex_color):
         </head>
         <body>
             <div id="canvas-container"></div>
-            <div id="orbit-hud">OJO DE DIOS // MAPA CONTINENTAL HOLOGRÁFICO</div>
+            <div id="orbit-hud">OJO DE DIOS // MAPA MUNDIAL SATELITAL</div>
             <script>
                 const container = document.getElementById('canvas-container');
                 const scene = new THREE.Scene();
@@ -231,58 +238,16 @@ def renderizar_globo_terraqueo(hex_color):
                 const earthGroup = new THREE.Group();
                 scene.add(earthGroup);
 
-                // Generar textura de continentes con Canvas 2D
-                const canvas = document.createElement('canvas');
-                canvas.width = 1024;
-                canvas.height = 512;
-                const ctx = canvas.getContext('2d');
-                
-                ctx.clearRect(0, 0, 1024, 512);
-                ctx.fillStyle = 'HEX_COLOR_REPLACE';
-                
-                // Simulación geométrica de continentes en la proyección equirectangular
-                // América
-                ctx.beginPath();
-                ctx.ellipse(280, 150, 70, 110, -0.2, 0, Math.PI * 2);
-                ctx.ellipse(320, 330, 55, 85, 0.2, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Europa y África
-                ctx.beginPath();
-                ctx.ellipse(540, 140, 45, 35, 0, 0, Math.PI * 2);
-                ctx.ellipse(565, 265, 65, 105, 0.1, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Asia y Oceanía
-                ctx.beginPath();
-                ctx.ellipse(730, 150, 130, 65, 0, 0, Math.PI * 2);
-                ctx.ellipse(830, 360, 45, 35, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                const texture = new THREE.CanvasTexture(canvas);
-
-                // Esfera con textura de continentes
                 const geometry = new THREE.SphereGeometry(1.6, 36, 36);
                 const material = new THREE.MeshBasicMaterial({ 
-                    map: texture,
+                    color: 'HEX_COLOR_REPLACE', 
+                    wireframe: true, 
                     transparent: true, 
-                    opacity: 0.95
+                    opacity: 0.7 
                 });
                 const earth = new THREE.Mesh(geometry, material);
                 earthGroup.add(earth);
 
-                // Malla alámbrica tecnológica exterior (Estilo Stark)
-                const wireGeometry = new THREE.SphereGeometry(1.63, 24, 24);
-                const wireMaterial = new THREE.MeshBasicMaterial({
-                    color: 'HEX_COLOR_REPLACE',
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.2
-                });
-                const wireGlobe = new THREE.Mesh(wireGeometry, wireMaterial);
-                earthGroup.add(wireGlobe);
-
-                // Anillo orbital satelital
                 const ringGeometry = new THREE.RingGeometry(2.05, 2.1, 64);
                 const ringMaterial = new THREE.MeshBasicMaterial({ color: 'HEX_COLOR_REPLACE', side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
                 const orbitRing = new THREE.Mesh(ringGeometry, ringMaterial);
@@ -510,6 +475,45 @@ with str_lit.sidebar:
                         str_lit.rerun()
         else:
             str_lit.info("Sin misiones pendientes en curso.")
+
+        str_lit.markdown("---")
+
+        # --- MÓDULO 2 INTEGRADO: ORGANIZADOR VISUAL DE FOTOS CON IA ---
+        str_lit.markdown("#### 🤖 Módulo 2: Organizador Visual IA")
+        foto_subida = str_lit.file_uploader("Subir imagen al archivo visual:", type=["jpg", "png", "jpeg"], key="galeria_uploader")
+        if foto_subida is not None:
+            str_lit.image(foto_subida, caption=foto_subida.name, width=200)
+            desc_auto = f"Registro visual procesado y clasificado en taller Buin ({datetime.now().strftime('%Y-%m-%d %H:%M')})."
+            c_db = db_conn.cursor()
+            c_db.execute("INSERT INTO galeria_ia (nombre_archivo, descripcion) VALUES (?, ?)", (foto_subida.name, desc_auto))
+            db_conn.commit()
+            str_lit.success(f"🖼️ Imagen '{foto_subida.name}' indexada en SQLite con éxito.")
+
+        c_db = db_conn.cursor()
+        c_db.execute("SELECT nombre_archivo, descripcion FROM galeria_ia ORDER BY id DESC LIMIT 3")
+        galeria_rows = c_db.fetchall()
+        if galeria_rows:
+            str_lit.caption("Últimos registros visuales:")
+            for g_name, g_desc in galeria_rows:
+                str_lit.markdown(f"- **{g_name}**: _{g_desc}_")
+
+        str_lit.markdown("---")
+
+        # --- MÓDULO 3 INTEGRADO: REPORTE MATUTINO / EJECUTIVO AUTOMATIZADO ---
+        str_lit.markdown("#### 🎙️ Módulo 3: Protocolo de Resumen Ejecutivo")
+        if str_lit.button("📢 Emitir Reporte Matutino por Voz"):
+            try:
+                res_c = requests.get("https://api.open-meteo.com/v1/forecast?latitude=-33.7331&longitude=-70.7072&current_weather=true", timeout=3).json()
+                t_val = res_c["current_weather"]["temperature"]
+                c_db = db_conn.cursor()
+                c_db.execute("SELECT COUNT(*) FROM misiones WHERE estado = 'Pendiente'")
+                pend_count = c_db.fetchone()[0]
+                
+                reporte_texto = f"Atención Jefa. Reporte del Centro de Comando en Buin: Temperatura actual a {t_val} grados Celsius. Tiene {pend_count} misiones pendientes en curso. Sistemas nominales."
+                str_lit.success(reporte_texto)
+                hablar_jarvis(reporte_texto)
+            except Exception as e:
+                str_lit.error(f"Error generando reporte: {e}")
 
         str_lit.markdown("---")
 
