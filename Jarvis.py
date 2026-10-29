@@ -52,10 +52,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL: SEGURIDAD BIOMÉTRICA, NAVEGACIÓN, SPOTIFY Y CAPAS
+# 3. BARRA LATERAL: SEGURIDAD BIOMÉTRICA, NAVEGACIÓN, SPOTIFY COMPACTO Y CAPAS
 st.sidebar.markdown("## 🛡️ STARK SECURITY & CORE")
 
-# Módulo de Biometría Simulada
 st.sidebar.markdown('<div class="biometric-box"><b>STATUS BIOMÉTRICO</b><br>🟢 Acceso Autorizado: Jefa Cindy</div>', unsafe_allow_html=True)
 bio_scan = st.sidebar.button("🔒 Escanear Biometría / Reautenticar")
 if bio_scan:
@@ -75,13 +74,15 @@ nav_module = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Spotify Tactical Audio")
-# Reproductor de Spotify con URL limpia corregida para evitar errores 404
-spotify_id = st.sidebar.text_input("Spotify Track/Playlist ID:", value="37i9dQZF1DXdLENR312A25")
+# Selector de tipo y URI para asegurar compatibilidad total sin errores 404
+spotify_tipo = st.sidebar.selectbox("Tipo:", ["playlist", "track"])
+spotify_id = st.sidebar.text_input("Spotify ID:", value="37i9dQZF1DXdLENR312A25")
+
 components.html(
     f'''
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/{spotify_id}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/{spotify_tipo}/{spotify_id}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     ''',
-    height=160
+    height=90
 )
 
 st.sidebar.markdown("---")
