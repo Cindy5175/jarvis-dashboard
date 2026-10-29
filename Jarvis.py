@@ -260,12 +260,10 @@ with col_left:
                 use_container_width=True,
             )
 
-    # NUEVO COMPONENTE 1: MONITOR FINANCIERO FIDUCIARIO (Sin Cripto)
     with st.expander("📊 4. Monitor Fiduciario & Divisas"):
         st.write("Indicadores financieros globales en tiempo real:")
         if st.button("📈 Consultar Divisas (USD/CLP)"):
             try:
-                # Consulta simulada o API de tipo de cambio
                 res_div = requests.get(
                     "https://mindicador.cl/api/dolar", timeout=5
                 ).json()
@@ -280,7 +278,6 @@ with col_left:
                     " ~940 CLP."
                 )
 
-    # NUEVO COMPONENTE 2: RECONOCIMIENTO DE VOZ INTERACTIVO (Audio Input)
     with st.expander("🎙️ 5. Módulo de Audio & Micrófono"):
         st.caption(
             "Simulación de entrada de voz por audio o dictado de comandos."
@@ -296,7 +293,6 @@ with col_left:
                 " acústico."
             )
 
-    # NUEVO COMPONENTE 3: ALERTAS DE ENTORNO Y SENSORES
     with st.expander("🚨 6. Sensores de Perímetro y Entorno"):
         st.write("Estado de seguridad física:")
         st.markdown(
@@ -354,4 +350,91 @@ with col_left:
             tts = gTTS(text=texto_voz, lang="es")
             fp = BytesIO()
             tts.write_to_fp(fp)
-            fp.seek(
+            fp.seek(0)
+            st.audio(fp, format="audio/mp3")
+
+        st.markdown("---")
+        ingreso_clave = st.text_input(
+            "Clave de validación:", type="password", key="key_input_j51"
+        )
+        if ingreso_clave:
+            if ingreso_clave == "Jarvis 51":
+                st.success("Acceso total concedido, jefa.")
+            else:
+                st.error("Clave incorrecta.")
+
+        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
+            st.session_state.emergencia_activa = True
+            st.rerun()
+
+
+with col_right:
+    st.markdown("#### 💬 Núcleo Conversacional")
+
+    chat_container = st.container(height=380)
+
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
+
+    if user_input:
+        st.session_state.messages.append(
+            {"role": "user", "content": user_input}
+        )
+        st.session_state.logs_auditoria.append(
+            f"[{hora_hoy}] Comando de chat: '{user_input}'."
+        )
+
+        saludo_actual = obtener_saludo_jefa()
+        u_lower = user_input.lower()
+
+        if "despierto" in u_lower or "despiertas" in u_lower:
+            resp = "Para usted, jefa, siempre."
+        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
+            resp = (
+                f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en"
+                " Buin, Chile."
+            )
+        elif "clima" in u_lower:
+            resp = (
+                f"{saludo_actual} El módulo de clima en el panel izquierdo tiene"
+                " la telemetría exacta en tiempo real para Buin."
+            )
+        elif any(
+            w in u_lower
+            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
+        ):
+            resp = (
+                f"{saludo_actual} Es un honor estar a su servicio. Las"
+                f" conexiones están sincronizadas a las {hora_hoy}."
+            )
+        else:
+            resp = (
+                f"{saludo_actual} Procesando '{user_input}' con enlace"
+                f" satelital [{hora_hoy}]. Todo en orden, jefa."
+            )
+
+        st.session_state.messages.append(
+            {"role": "assistant", "content": resp}
+        )
+        st.rerun()
+
+    c_purg1, c_purg2 = st.columns([3, 1])
+    with c_purg2:
+        if st.button("🗑️ Purgar Chat"):
+            st.session_state.messages = [
+                {
+                    "role": "assistant",
+                    "content": (
+                        f"{obtener_saludo_jefa()} Historial purgado a las"
+                        f" {hora_hoy}. Borrón y cuenta nueva, jefa."
+                    ),
+                }
+            ]
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Historial de chat purgado."
+            )
+            st.rerun()
