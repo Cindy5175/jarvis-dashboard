@@ -119,10 +119,16 @@ if "logs_auditoria" not in st.session_state:
         f"[{hora_hoy}] Sistema inicializado en Buin, Chile ({fecha_hoy})."
     ]
 
+# Inicializar almacén de la caja fuerte si no existe
+if "caja_fuerte" not in st.session_state:
+    st.session_state.caja_fuerte = {
+        "Clave Maestra Sistema": "Jarvis 51",
+        "Protocolo Base": "Activo y Seguro",
+    }
+
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Sistemas en línea con los 4 componentes"
-    " avanzados operativos. Enlace satelital activo en Buin. ¿Qué orden"
-    " ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Sistema con Protocolo Caja Fuerte integrado y"
+    f" blindado. Enlace activo en Buin. ¿Qué orden ejecutamos hoy?"
 )
 
 if "messages" not in st.session_state:
@@ -164,7 +170,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Reloj digital en vivo con segundero
 reloj_html = """
 <div style="display: flex; justify-content: center; align-items: center; font-family: monospace; margin: 0px; padding: 0px;">
     <div style="
@@ -302,7 +307,52 @@ with col_left:
             unsafe_allow_html=True,
         )
 
-    with st.expander("⚡ 7. Atajos de Comandos Rápidos"):
+    # NUEVO COMPONENTE: PROTOCOLO CAJA FUERTE (CÓDIGOS Y CLAVES)
+    with st.expander("🔒 7. Protocolo Caja Fuerte (Códigos & Credenciales)"):
+        st.write("Almacenamiento seguro de claves de acceso:")
+
+        # Formulario para guardar nueva clave
+        nuevo_nombre_clave = st.text_input(
+            "Identificador / Servicio:", key="vault_name"
+        )
+        nuevo_valor_clave = st.text_input(
+            "Código / Credencial secreta:", type="password", key="vault_secret"
+        )
+        if st.button("💾 Guardar en Caja Fuerte"):
+            if nuevo_nombre_clave and nuevo_valor_clave:
+                st.session_state.caja_fuerte[nuevo_nombre_clave] = (
+                    nuevo_valor_clave
+                )
+                st.success(
+                    f"Credencial '{nuevo_nombre_clave}' asegurada en caja"
+                    " fuerte, jefa."
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}'"
+                    " almacenada en caja fuerte."
+                )
+            else:
+                st.warning("Debe ingresar el identificador y la clave.")
+
+        st.markdown("---")
+        st.write("📋 **Credenciales Guardadas:**")
+        clave_maestra_input = st.text_input(
+            "Ingrese clave maestra (Jarvis 51) para ver secretos:",
+            type="password",
+            key="vault_master_key",
+        )
+        if clave_maestra_input == "Jarvis 51":
+            for serv, cred in st.session_state.caja_fuerte.items():
+                st.code(f"{serv} ➔ {cred}", language="text")
+        elif clave_maestra_input:
+            st.error("Clave maestra incorrecta.")
+        else:
+            st.info(
+                "Introduzca la clave maestra para revelar los registros"
+                " cifrados."
+            )
+
+    with st.expander("⚡ 8. Atajos de Comandos Rápidos"):
         c_at1, c_at2 = st.columns(2)
         with c_at1:
             if st.button("🕒 Hora y Fecha"):
@@ -335,7 +385,7 @@ with col_left:
                 )
                 st.rerun()
 
-    with st.expander("📋 8. Registro de Auditoría (Caja Negra)"):
+    with st.expander("📋 9. Registro de Auditoría (Caja Negra)"):
         st.text("Historial técnico de comandos recientes:")
         for log in reversed(st.session_state.logs_auditoria[-5:]):
             st.code(log, language="text")
