@@ -5,12 +5,12 @@ from gtts import gTTS
 import pytz
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónomo", page_icon="⚡", layout="wide"
 )
 
-# Configuración de zona horaria local (Chile)
 TZ_LOCAL = pytz.timezone("America/Santiago")
 
 
@@ -36,7 +36,7 @@ st.markdown(
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     .triangle-reactor {
         width: 0;
@@ -67,17 +67,6 @@ st.markdown(
         text-align: center;
         letter-spacing: 2px;
     }
-    .time-badge {
-        background-color: #05080f;
-        border: 1px solid #00f0ff;
-        padding: 4px 12px;
-        border-radius: 15px;
-        color: #00f0ff;
-        font-size: 0.85em;
-        font-weight: bold;
-        margin-top: 6px;
-        letter-spacing: 1px;
-    }
     .stButton button {
         background-color: #030508;
         color: #00f0ff;
@@ -107,7 +96,6 @@ st.markdown(
 )
 
 
-# --- FUNCIÓN DE SALUDO DINÁMICO POR HORA DEL DÍA ---
 def obtener_saludo_jefa():
     hora = ahora_dt.hour
     if 5 <= hora < 12:
@@ -118,7 +106,6 @@ def obtener_saludo_jefa():
         return "¡Buenas noches, jefa!"
 
 
-# Inicializar estados del sistema
 if "emergencia_activa" not in st.session_state:
     st.session_state.emergencia_activa = False
 
@@ -128,9 +115,8 @@ if "logs_auditoria" not in st.session_state:
     ]
 
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Sistemas en línea. Hora local: {hora_hoy} |"
-    f" Fecha: {fecha_hoy}. Enlace satelital activo en Buin. ¿Qué orden"
-    " ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Sistemas en línea. Reloj y segundero en vivo"
+    " activos. Enlace satelital operativo en Buin. ¿Qué orden ejecutamos hoy?"
 )
 
 if "messages" not in st.session_state:
@@ -138,13 +124,13 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": saludo_inicial}
     ]
 
-# --- PROTOCOLO DE EMERGENCIA / BLOQUEO TOTAL (CLEAN-SLATE) ---
+# PROTOCOLO DE EMERGENCIA
 if st.session_state.emergencia_activa:
     st.markdown(
         """
         <div class="emergency-alert">
             ⚠️ PROTOCOLO DE EMERGENCIA ACTIVO (CLEAN-SLATE) ⚠️<br>
-            Pantalla bloqueada por seguridad. Ingrese la clave maestra en el panel lateral para restablecer el sistema.
+            Pantalla bloqueada por seguridad. Ingrese la clave maestra para restablecer el sistema.
         </div>
         """,
         unsafe_allow_html=True,
@@ -160,28 +146,62 @@ if st.session_state.emergencia_activa:
         st.rerun()
     st.stop()
 
-# --- ENCABEZADO CENTRALIZADO CON FECHA Y HERA EN TIEMPO REAL ---
+# ENCABEZADO CENTRAL CON REACTOR Y SEGUNDERO EN VIVO (JS/HTML)
 st.markdown(
-    f"""
+    """
     <div class="reactor-container">
         <div class="triangle-reactor"></div>
         <div class="neon-header-center">J.A.R.V.I.S IA</div>
         <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Táctico & Seguro | Buin, Chile</div>
-        <div class="time-badge">📅 {fecha_hoy} &nbsp;|&nbsp; 🕒 {hora_hoy}</div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
+# Reloj digital en vivo con segundero integrado
+reloj_html = """
+<div style="display: flex; justify-content: center; align-items: center; font-family: monospace;">
+    <div style="
+        background-color: #05080f;
+        border: 1px solid #00f0ff;
+        padding: 6px 16px;
+        border-radius: 20px;
+        color: #00f0ff;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    ">
+        📅 <span id="fecha-live">--/--/----</span> &nbsp;|&nbsp; 🕒 <span id="reloj-live">00:00:00</span>
+    </div>
+</div>
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const anio = ahora.getFullYear();
+    const horas = String(ahora.getHours()).padStart(2, '0');
+    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+    const segundos = String(ahora.getSeconds()).padStart(2, '0');
+    
+    document.getElementById('fecha-live').textContent = `${dia}/${mes}/${anio}`;
+    document.getElementById('reloj-live').textContent = `${horas}:${minutos}:${segundos}`;
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+"""
+components.html(reloj_html, height=45)
+
 st.markdown("---")
 
-# --- PLANO 50/50: CONEXIONES Y MÓDULOS A LA IZQUIERDA, CHAT A LA DERECHA ---
+# PLANO 50/50
 col_left, col_right = st.columns(2, gap="medium")
 
 with col_left:
     st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
 
-    # 1. CLIMA REAL EN BUIN CON TELEMETRÍA DE HORA
     with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
@@ -202,7 +222,6 @@ with col_left:
                     "No se pudo conectar a la estación meteorológica, jefa."
                 )
 
-    # 2. BUSCADOR WEB 24/7
     with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
         query_web = st.text_input(
             "Ingrese búsqueda en tiempo real:", key="search_web_input"
@@ -215,17 +234,13 @@ with col_left:
                 if abstract:
                     st.info(f"Resultado en red: {abstract}")
                 else:
-                    st.info(
-                        f"Enlace activo enviado para '{query_web}'. Sin"
-                        " resumen directo."
-                    )
+                    st.info(f"Enlace activo enviado para '{query_web}'.")
                 st.session_state.logs_auditoria.append(
                     f"[{hora_hoy}] Búsqueda web realizada: '{query_web}'."
                 )
             except Exception:
                 st.error("Error al establecer conexión con el buscador, jefa.")
 
-    # 3. BANCO DE IMÁGENES & VOKATURI
     with st.expander("🖼️ 3. Banco de Imágenes & Vokaturi"):
         prompt_img = st.text_input(
             "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
@@ -239,7 +254,6 @@ with col_left:
                 use_container_width=True,
             )
 
-    # 4. ATAJOS DE COMANDOS RÁPIDOS
     with st.expander("⚡ 4. Atajos de Comandos Rápidos"):
         c_at1, c_at2 = st.columns(2)
         with c_at1:
@@ -252,7 +266,7 @@ with col_left:
                         "role": "assistant",
                         "content": (
                             f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y la"
-                            f" hora exacta en Buin es {hora_hoy}."
+                            f" hora en Buin es {hora_hoy}."
                         ),
                     }
                 )
@@ -273,13 +287,11 @@ with col_left:
                 )
                 st.rerun()
 
-    # 5. REGISTRO DE LOGS / CAJA NEGRA
     with st.expander("📋 5. Registro de Auditoría (Caja Negra)"):
         st.text("Historial técnico de comandos recientes:")
         for log in reversed(st.session_state.logs_auditoria[-5:]):
             st.code(log, language="text")
 
-    # 6. VOZ Y SEGURIDAD
     with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
         texto_voz = st.text_input(
             "Texto para hablar:",
@@ -331,7 +343,6 @@ with col_right:
         saludo_actual = obtener_saludo_jefa()
         u_lower = user_input.lower()
 
-        # Lógica del cerebro inteligente incluyendo hora y fecha
         if any(w in u_lower for w in ["hora", "fecha", "dia"]):
             resp = (
                 f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en"
@@ -363,7 +374,6 @@ with col_right:
         )
         st.rerun()
 
-    # Botón de purga debajo del chat
     c_purg1, c_purg2 = st.columns([3, 1])
     with c_purg2:
         if st.button("🗑️ Purgar Chat"):
