@@ -12,7 +12,7 @@ from gtts import gTTS
 # 1. Configuración de página
 st.set_page_config(
     page_title="J.A.R.V.I.S. IA Autónomo - Stark Command",
-    page_icon="⚡",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -161,51 +161,131 @@ st.markdown("\n")
 
 # 6. MÓDULOS DINÁMICOS PRINCIPALES
 if nav_module == "🌍 Radar Satelital Real-Time":
-    st.markdown("### 🗺️ Telemetría Satelital Geoespacial en Vivo")
-    m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=8, tiles="OpenStreetMap")
+    st.markdown("### 🗺️ Telemetría Satelital y Globo Cuántico en Vivo")
+    
+    # Diseño en dos columnas: Mapa a la izquierda, Globo Terráqueo Holográfico 3D a la derecha
+    col_map, col_globe = st.columns([1.3, 0.9])
+    
+    with col_map:
+        st.markdown("<b>Radar Táctico (USGS & NASA)</b>", unsafe_allow_html=True)
+        m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=7, tiles="OpenStreetMap")
 
-    if layer_base:
-        folium.Marker(
-            [BUIN_LAT, BUIN_LON],
-            popup="<b>CENTRO DE MANDO STARK — BUIN</b>",
-            tooltip="Base Principal Buin",
-            icon=folium.Icon(color="red", icon="shield", prefix="fa")
-        ).add_to(m)
-        folium.Circle(
-            radius=15000,
-            location=[BUIN_LAT, BUIN_LON],
-            color="#00f0ff",
-            fill=True,
-            fill_color="#00f0ff",
-            fill_opacity=0.1
-        ).add_to(m)
-
-    if layer_earthquakes:
-        for q in get_realtime_earthquakes():
-            folium.CircleMarker(
-                location=[q['lat'], q['lon']],
-                radius=q['mag'] * 3,
-                color="#ff0055",
-                fill=True,
-                fill_color="#ff0055",
-                fill_opacity=0.7,
-                tooltip=f"🌋 Sismo USGS M{q['mag']} - {q['place']}"
-            ).add_to(m)
-
-    if layer_fires:
-        for f in get_realtime_fires():
+        if layer_base:
             folium.Marker(
-                [f['lat'], f['lon']],
-                tooltip="🔥 Foco Térmico Detectado por NASA VIIRS Sat",
-                icon=folium.Icon(color="orange", icon="fire", prefix="fa")
+                [BUIN_LAT, BUIN_LON],
+                popup="<b>CENTRO DE MANDO STARK — BUIN</b>",
+                tooltip="Base Principal Buin",
+                icon=folium.Icon(color="red", icon="shield", prefix="fa")
+            ).add_to(m)
+            folium.Circle(
+                radius=15000,
+                location=[BUIN_LAT, BUIN_LON],
+                color="#00f0ff",
+                fill=True,
+                fill_color="#00f0ff",
+                fill_opacity=0.1
             ).add_to(m)
 
-    if layer_satellites:
-        sats = [[-33.0, -70.0], [-34.5, -71.0], [-33.8, -70.5]]
-        for i, s in enumerate(sats):
-            folium.CircleMarker(s, radius=5, color="#00ffcc", fill=True, fill_color="#00ffcc", tooltip=f"🛰️ Satélite Node 0{i+1}").add_to(m)
+        if layer_earthquakes:
+            for q in get_realtime_earthquakes():
+                folium.CircleMarker(
+                    location=[q['lat'], q['lon']],
+                    radius=q['mag'] * 3,
+                    color="#ff0055",
+                    fill=True,
+                    fill_color="#ff0055",
+                    fill_opacity=0.7,
+                    tooltip=f"🌋 Sismo USGS M{q['mag']} - {q['place']}"
+                ).add_to(m)
 
-    st_folium(m, width="100%", height=480)
+        if layer_fires:
+            for f in get_realtime_fires():
+                folium.Marker(
+                    [f['lat'], f['lon']],
+                    tooltip="🔥 Foco Térmico Detectado por NASA VIIRS Sat",
+                    icon=folium.Icon(color="orange", icon="fire", prefix="fa")
+                ).add_to(m)
+
+        if layer_satellites:
+            sats = [[-33.0, -70.0], [-34.5, -71.0], [-33.8, -70.5]]
+            for i, s in enumerate(sats):
+                folium.CircleMarker(s, radius=5, color="#00ffcc", fill=True, fill_color="#00ffcc", tooltip=f"🛰️ Satélite Node 0{i+1}").add_to(m)
+
+        st_folium(m, width="100%", height=420)
+
+    with col_globe:
+        st.markdown("<b>Globo Terráqueo Cuántico 3D</b>", unsafe_allow_html=True)
+        # Visualizador interactivo 3D tipo globo terráqueo cian holográfico
+        components.html("""
+        <!DOCTYPE html>
+        <html>
+        <head><style>body { margin: 0; background: #02040a; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 420px; }</style></head>
+        <body>
+            <canvas id="globeCanvas" width="360" height="400"></canvas>
+            <script>
+                const canvas = document.getElementById('globeCanvas');
+                const ctx = canvas.getContext('2d');
+                let angle = 0;
+                function drawGlobe() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    let cx = canvas.width / 2, cy = canvas.height / 2, radius = 130;
+                    
+                    // Esfera Base con brillo cian
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 20, 40, 0.8)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Meridianos y Paralelos Rotatorios (Efecto Globo 3D)
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.clip();
+
+                    for (let i = -4; i <= 4; i++) {
+                        let offset = (i * 30 + angle) % 360;
+                        let rad = offset * Math.PI / 180;
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy, Math.abs(radius * Math.sin(rad)), radius, 0, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+
+                    // Líneas de latitud horizontales
+                    for (let lat = -2; lat <= 2; lat++) {
+                        let yPos = cy + lat * 35;
+                        ctx.beginPath();
+                        ctx.arc(cx, yPos, Math.sqrt(Math.max(0, radius*radius - (yPos-cy)*(yPos-cy))), 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(0, 255, 200, 0.25)';
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                    // Puntos de enlace satelital en la superficie
+                    let pAngle = angle * 2;
+                    let px = cx + (radius * 0.7) * Math.cos(pAngle * Math.PI / 180);
+                    let py = cy + (radius * 0.4) * Math.sin(pAngle * Math.PI / 180);
+                    ctx.beginPath();
+                    ctx.arc(px, py, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.fill();
+
+                    angle += 0.8;
+                    requestAnimationFrame(drawGlobe);
+                }
+                drawGlobe();
+            </script>
+        </body>
+        </html>
+        """, height=420)
 
 elif nav_module == "🌀 Quantum Orbital Core":
     st.markdown("### 🌀 Visualizador Holográfico de Núcleo Cuántico Orbital")
@@ -321,11 +401,11 @@ elif nav_module == "📡 Feed Alertas Globales":
     st.info("🌋 [USGS REAL-TIME] Monitoreo de sismos activo. Sincronizado con la placa de Nazca.")
     st.warning("🔥 [NASA FIRMS] Escaneo térmico satelital procesando datos en tiempo real.")
 
-# 7. HISTORIAL DE CHAT, BOTÓN DE PURGA Y MINI REPRODUCTOR DE SPOTIFY ABAJO A LA IZQUIERDA
+# 7. HISTORIAL DE CHAT, BOTÓN DE PURGA Y RECONOCIMIENTO DE "HEY JARVIS"
 st.markdown("---")
 col_chat_title, col_chat_btn = st.columns([0.85, 0.15])
 with col_chat_title:
-    st.markdown("### 💬 Interfaz de Conversación Autónoma")
+    st.markdown("### 💬 Interfaz de Conversación Autónoma (Comando de Voz: 'Hey Jarvis')")
 with col_chat_btn:
     if st.button("🗑️ Purgar Chat"):
         st.session_state.messages = []
@@ -338,12 +418,17 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+if user_prompt := st.chat_input("Escriba su comando o diga 'Hey Jarvis'..."):
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    response_msg = f"Directiva procesada en el subsistema '{nav_module}'. Biometría verificada en Buin, Jefa."
+    # Lógica de respuesta inteligente con detección de "Hey Jarvis"
+    prompt_lower = user_prompt.lower()
+    if "hey jarvis" in prompt_lower or "hola jarvis" in prompt_lower:
+        response_msg = "A sus órdenes, Jefa Cindy. Los sistemas autónomos de la base en Buin y el globo terráqueo cuántico operan al máximo rendimiento."
+    else:
+        response_msg = f"Directiva procesada en el subsistema '{nav_module}'. Biometría verificada en Buin, Jefa."
     
     with st.chat_message("assistant"):
         st.markdown(response_msg)
@@ -379,7 +464,7 @@ if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
 
     st.session_state.messages.append({"role": "assistant", "content": response_msg})
 
-# 8. PIE DE PÁGINA CON MINI REPRODUCTOR DE SPOTIFY ENLAZADO A LA IZQUIERDA
+# 8. PIE DE PÁGINA CON MINI REPRODUCTOR DE SPOTIFY ABAJO A LA IZQUIERDA
 st.markdown("---")
 col_spot, col_foot = st.columns([1, 1])
 
