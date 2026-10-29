@@ -187,7 +187,7 @@ if nav_module == "🌍 Radar Satelital (NASA/USGS Real-Time)":
 
 elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
     st.markdown("### 🌀 Visualizador Holográfico de Núcleo Cuántico Orbital")
-    quantum_canvas = """
+    components.html("""
     <!DOCTYPE html>
     <html>
     <head><style>body { margin: 0; background: #02040a; overflow: hidden; } canvas { display: block; width: 100%; height: 420px; }</style></head>
@@ -202,7 +202,6 @@ elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
             function draw() {
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 let cx = canvas.width/2, cy = canvas.height/2;
-                
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(angle);
@@ -216,7 +215,6 @@ elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
                     ctx.stroke();
                 }
                 ctx.restore();
-
                 for(let p=0; p<20; p++){
                     let r = 40 + p * 8;
                     let a = angle * (p % 2 === 0 ? 1 : -1) + p;
@@ -229,7 +227,6 @@ elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
                     ctx.shadowColor = '#00f0ff';
                     ctx.fill();
                 }
-
                 angle += 0.015;
                 requestAnimationFrame(draw);
             }
@@ -237,12 +234,121 @@ elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
         </script>
     </body>
     </html>
-    """
-    components.html(quantum_canvas, height=430)
+    """, height=430)
 
 elif nav_module == "🧠 Neural Network Matrix (Policy Network)":
     st.markdown("### 🧠 Red Neuronal de Inferencia Vertical")
-    neural_canvas = """
+    components.html("""
     <!DOCTYPE html>
     <html>
-    <head><style>body { margin: 0; background: #02040a; overflow: hidden; } canvas { display: block; width: 100%; height: 420px;
+    <head><style>body { margin: 0; background: #02040a; overflow: hidden; } canvas { display: block; width: 100%; height: 420px; }</style></head>
+    <body>
+        <canvas id="neuralCanvas"></canvas>
+        <script>
+            const canvas = document.getElementById('neuralCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = 420;
+            function drawNeural() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                let layers = [6, 10, 10, 6];
+                let layerX = [canvas.width*0.2, canvas.width*0.4, canvas.width*0.6, canvas.width*0.8];
+                for(let l=0; l<layers.length-1; l++){
+                    for(let i=0; i<layers[l]; i++){
+                        for(let j=0; j<layers[l+1]; j++){
+                            let y1 = 50 + i * 35;
+                            let y2 = 50 + j * 35;
+                            ctx.beginPath();
+                            ctx.moveTo(layerX[l], y1);
+                            ctx.lineTo(layerX[l+1], y2);
+                            ctx.strokeStyle = 'rgba(218, 0, 254, 0.15)';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                for(let l=0; l<layers.length; l++){
+                    for(let i=0; i<layers[l]; i++){
+                        let y = 50 + i * 35;
+                        ctx.beginPath();
+                        ctx.arc(layerX[l], y, 6, 0, Math.PI*2);
+                        ctx.fillStyle = '#e000ff';
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#e000ff';
+                        ctx.fill();
+                    }
+                }
+                requestAnimationFrame(drawNeural);
+            }
+            drawNeural();
+        </script>
+    </body>
+    </html>
+    """, height=430)
+
+elif nav_module == "📈 Trading & Market Liquidity":
+    st.markdown("### 📊 Algoritmos de Liquidez Financiera e Indicadores")
+    chart_data = pd.DataFrame(
+        np.random.randn(30, 3) * [12, 6, 3] + [120, 85, 45],
+        columns=['Liquidez S&P 500', 'Volumen Crypto High-Freq', 'Algoritmo Alpha-1']
+    )
+    st.line_chart(chart_data, color=["#00f0ff", "#e000ff", "#00ffcc"])
+
+elif nav_module == "📡 Feed de Alertas Globales":
+    st.markdown("### 🚨 Monitor de Alertas Sísmicas y Térmicas")
+    st.info("🌋 [USGS REAL-TIME] Monitoreo de sismos activo. Sincronizado con la placa de Nazca.")
+    st.warning("🔥 [NASA FIRMS] Escaneo térmico satelital procesando datos en tiempo real.")
+
+# 7. HISTORIAL DE CHAT Y CAJA DE ENTRADA INTERACTIVA
+st.markdown("---")
+st.markdown("### 💬 Interfaz de Conversación Autónoma")
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    response_msg = f"Directiva procesada en el subsistema '{nav_module}'. Todos los sensores en la base de Buin y el audio de Spotify están operativos, Jefa."
+    
+    with st.chat_message("assistant"):
+        st.markdown(response_msg)
+        
+        if eleven_key:
+            try:
+                voice_id = "21m00Tcm4TlvDq8ikWAM"
+                url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+                headers = {
+                    "Accept": "audio/mpeg",
+                    "Content-Type": "application/json",
+                    "xi-api-key": eleven_key
+                }
+                data = {
+                    "text": response_msg,
+                    "model_id": "eleven_multilingual_v2",
+                    "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
+                }
+                res = requests.post(url, json=data, headers=headers)
+                if res.status_code == 200:
+                    with open("jarvis_chat.mp3", "wb") as f:
+                        f.write(res.content)
+                    st.audio("jarvis_chat.mp3", format="audio/mp3", autoplay=True)
+                else:
+                    st.warning("⚠️ Verifique su API Key de ElevenLabs.")
+            except Exception as e:
+                st.error(f"Error de audio: {e}")
+        else:
+            tts = gTTS(text=response_msg, lang='es')
+            tts.save("response.mp3")
+            st.audio("response.mp3", format="audio/mp3", autoplay=True)
+
+    st.session_state.messages.append({"role": "assistant", "content": response_msg})
+
+st.markdown("---")
+st.markdown("*J.A.R.V.I.S. Quantum AI Core — Taller de Inteligencia Autónoma | Buin, Chile.*")
