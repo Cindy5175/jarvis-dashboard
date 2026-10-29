@@ -11,13 +11,13 @@ from gtts import gTTS
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - Stark Tactical Command",
-    page_icon="🛡️",
+    page_title="J.A.R.V.I.S. IA Autónomo - Stark Command",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. CSS Estilo Neón Holográfico Stark
+# 2. CSS Estilo Neón Holográfico Stark y Reactor ARC
 st.markdown("""
     <style>
     .stApp {
@@ -49,10 +49,25 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
     }
+    .arc-reactor {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #00ffff 0%, #0066ff 60%, #02040a 100%);
+        box-shadow: 0 0 20px #00ffff, inset 0 0 15px #ffffff;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 15px;
+        animation: pulse-arc 2s infinite alternate;
+    }
+    @keyframes pulse-arc {
+        0% { box-shadow: 0 0 10px #00ffff, inset 0 0 10px #ffffff; }
+        100% { box-shadow: 0 0 25px #00ffff, inset 0 0 20px #00ffff; }
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL: SEGURIDAD BIOMÉTRICA, NAVEGACIÓN, SPOTIFY COMPACTO Y CAPAS
+# 3. BARRA LATERAL: SEGURIDAD BIOMÉTRICA, NAVEGACIÓN Y CAPAS
 st.sidebar.markdown("## 🛡️ STARK SECURITY & CORE")
 
 st.sidebar.markdown('<div class="biometric-box"><b>STATUS BIOMÉTRICO</b><br>🟢 Acceso Autorizado: Jefa Cindy</div>', unsafe_allow_html=True)
@@ -70,19 +85,6 @@ nav_module = st.sidebar.radio(
         "📈 Trading & Liquidity",
         "📡 Feed Alertas Globales"
     ]
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🎵 Spotify Tactical Audio")
-# Selector de tipo y URI para asegurar compatibilidad total sin errores 404
-spotify_tipo = st.sidebar.selectbox("Tipo:", ["playlist", "track"])
-spotify_id = st.sidebar.text_input("Spotify ID:", value="37i9dQZF1DXdLENR312A25")
-
-components.html(
-    f'''
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/{spotify_tipo}/{spotify_id}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-    ''',
-    height=90
 )
 
 st.sidebar.markdown("---")
@@ -137,11 +139,16 @@ def get_realtime_fires():
     except:
         return [{'lat': -34.1, 'lon': -71.0}, {'lat': -33.2, 'lon': -70.9}]
 
-# 5. ENCABEZADO Y MÉTRICAS
+# 5. ENCABEZADO CON REACTOR ARC Y MÉTRICAS
 temp_buin, wind_buin = get_buin_weather()
 
-st.markdown(f"# 🛡️ J.A.R.V.I.S. 4.0 — [{nav_module}]")
-st.markdown("*Centro Táctico Cuántico y Control Biométrico — Base Buin, Chile*")
+st.markdown("""
+    <div>
+        <div class="arc-reactor"></div>
+        <span style="font-size: 2.2rem; font-weight: bold; color: #00f0ff; vertical-align: middle; text-shadow: 0 0 15px rgba(0,240,255,0.8);">J.A.R.V.I.S. IA Autónomo</span>
+    </div>
+""", unsafe_allow_html=True)
+st.markdown(f"*Centro Táctico Cuántico y Control Biométrico — Módulo: [{nav_module}] | Base Buin, Chile*")
 st.markdown("---")
 
 m1, m2, m3, m4 = st.columns(4)
@@ -314,7 +321,7 @@ elif nav_module == "📡 Feed Alertas Globales":
     st.info("🌋 [USGS REAL-TIME] Monitoreo de sismos activo. Sincronizado con la placa de Nazca.")
     st.warning("🔥 [NASA FIRMS] Escaneo térmico satelital procesando datos en tiempo real.")
 
-# 7. HISTORIAL DE CHAT, BOTÓN DE PURGA Y CAJA DE ENTRADA INTERACTIVA
+# 7. HISTORIAL DE CHAT, BOTÓN DE PURGA Y MINI REPRODUCTOR DE SPOTIFY ABAJO A LA IZQUIERDA
 st.markdown("---")
 col_chat_title, col_chat_btn = st.columns([0.85, 0.15])
 with col_chat_title:
@@ -341,7 +348,6 @@ if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     with st.chat_message("assistant"):
         st.markdown(response_msg)
         
-        # Conexión directa con ElevenLabs utilizando la API Key ingresada en el sidebar
         if eleven_key and len(eleven_key) > 5:
             try:
                 voice_id = "21m00Tcm4TlvDq8ikWAM"
@@ -373,5 +379,19 @@ if user_prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
 
     st.session_state.messages.append({"role": "assistant", "content": response_msg})
 
+# 8. PIE DE PÁGINA CON MINI REPRODUCTOR DE SPOTIFY ENLAZADO A LA IZQUIERDA
 st.markdown("---")
-st.markdown("*J.A.R.V.I.S. Quantum AI Core — Taller de Inteligencia Autónoma | Buin, Chile.*")
+col_spot, col_foot = st.columns([1, 1])
+
+with col_spot:
+    st.markdown("### 🎵 Spotify Tactical Audio")
+    components.html(
+        '''
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXdLENR312A25?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        ''',
+        height=90
+    )
+
+with col_foot:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("*J.A.R.V.I.S. IA Autónomo — Taller de Inteligencia Autónoma | Buin, Chile.*")
