@@ -189,16 +189,46 @@ if "messages" not in str_lit.session_state:
         str_lit.session_state.messages.append({"role": "assistant", "content": saludo_inicial})
         guardar_mensaje_db("assistant", saludo_inicial)
 
-def hablar_jarvis(texto):
+def hablar_jarvis(texto, api_key_eleven="", voice_id="21m00Tcm4TlvDq8ikWAM"):
+    # Intento con ElevenLabs si hay API Key configurada
+    if api_key_eleven and api_key_eleven.strip():
+        try:
+            url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+            headers = {
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": api_key_eleven.strip()
+            }
+            data = {
+                "text": texto,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.75,
+                    "similarity_boost": 0.85
+                }
+            }
+            response = requests.post(url, json=data, headers=headers, timeout=10)
+            if response.status_code == 200:
+                audio_path = "jarvis_voice.mp3"
+                with open(audio_path, "wb") as f:
+                    f.write(response.content)
+                with open(audio_path, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                    audio_html = f'<audio autoplay style="display:none;"><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>'
+                    str_lit.markdown(audio_html, unsafe_allow_html=True)
+                return
+        except Exception:
+            pass # Si falla ElevenLabs, recurre al respaldo de gTTS
+
+    # Respaldo gTTS clásico
     try:
-        velocidad = str_lit.session_state.get("voz_lenta", False)
-        tts = gTTS(text=texto, lang='es', slow=velocidad)
+        tts = gTTS(text=texto, lang='es', slow=False)
         audio_path = "jarvis_voice.mp3"
         tts.save(audio_path)
         with open(audio_path, "rb") as f:
             data = f.read()
             b64 = base64.b64encode(data).decode()
-            audio_html = '<audio autoplay style="display:none;"><source src="data:audio/mp3;base64,' + b64 + '" type="audio/mp3"></audio>'
+            audio_html = f'<audio autoplay style="display:none;"><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>'
             str_lit.markdown(audio_html, unsafe_allow_html=True)
     except Exception:
         pass
@@ -429,13 +459,29 @@ with str_lit.sidebar:
             unsafe_allow_html=True
         )
 
-        str_lit.markdown("#### 2. Visualizador de Voz (Holograma)")
+        str_lit.markdown("#### 2. Biblioteca de Voz (ElevenLabs)")
+        eleven_api_key = str_lit.text_input("ElevenLabs API Key:", type="password", value="", key="eleven_key_input")
+        voice_choice = str_lit.selectbox("Seleccionar Voz Cinematográfica:", [
+            "Adam (Profunda / Varonil)",
+            "Antoni (Suave / Sofisticada)",
+            "Rachel (Asistente Estándar)"
+        ], key="voice_profile_sb")
+        
+        # Mapeo de IDs de voz profesionales de ElevenLabs
+        voice_id_map = {
+            "Adam (Profunda / Varonil)": "pNInz6OBpgDQGcFmaJgB",
+            "Antoni (Suave / Sofisticada)": "ErXwobaYiN019PkySvjV",
+            "Rachel (Asistente Estándar)": "21m00Tcm4TlvDq8ikWAM"
+        }
+        selected_voice_id = voice_id_map[voice_choice]
+
+        str_lit.markdown("#### 3. Visualizador de Voz (Holograma)")
         renderizar_visualizador_audio(color_neon_principal)
 
-        str_lit.markdown("#### 3. Terminal de Hackeo Stark")
+        str_lit.markdown("#### 4. Terminal de Hackeo Stark")
         renderizar_terminal_hackeo(color_neon_principal)
 
-        str_lit.markdown("#### 4. Hotword Hey JARVIS")
+        str_lit.markdown("#### 5. Hotword Hey JARVIS")
         hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
         if hotword_activo:
             str_lit.info("🎙️ Escucha activa de voz habilitada en terminal local.")
@@ -583,7 +629,7 @@ with str_lit.sidebar:
                 
                 reporte_texto = f"Atención Jefa. Reporte del Centro de Comando en Buin: Temperatura actual a {datos_c['temp']} grados Celsius. Tiene {pend_count} misiones pendientes en curso. Sistemas nominales."
                 str_lit.success(reporte_texto)
-                hablar_jarvis(reporte_texto)
+                hablar_jarvis(reporte_texto, eleven_api_key, selected_voice_id)
             except Exception as e:
                 str_lit.error(f"Error generando reporte: {e}")
 
@@ -787,4 +833,4 @@ if prompt_usuario:
     
     str_lit.session_state.messages.append({"role": "assistant", "content": respuesta})
     guardar_mensaje_db("assistant", respuesta)
-    hablar_jarvis(respuesta)
+    hablar_jarvis(respuesta, eleven_api_key, selected_voice_id)
