@@ -42,9 +42,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Encabezado principal
+# Encabezado principal solicitado
+st.markdown("## J.A.R.V.I.S IA Autónomo")
 st.markdown(
-    "### 💬 Interfaz de Conversación Autónoma (Comando de Voz: 'Hey Jarvis')"
+    "<small style='color: #8a99ad;'>Taller de Inteligencia Autónoma | Buin, Chile</small>",
+    unsafe_allow_html=True,
 )
 
 col_btn1, col_btn2 = st.columns([1, 5])
@@ -54,7 +56,7 @@ with col_btn1:
 
 st.markdown("---")
 
-# Distribución principal: Izquierda (Módulos / Juguetes), Derecha (Mapas y Globo Terráqueo + Chat)
+# Distribución principal: Izquierda (Módulos de telemetría), Derecha (Chat + Mapas ajustados)
 col_left, col_right = st.columns([1, 2], gap="medium")
 
 with col_left:
@@ -108,61 +110,17 @@ with col_left:
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        "<small style='color: #8a99ad;'>J.A.R.V.I.S. IA Autónomo — Buin, Chile.</small>",
-        unsafe_allow_html=True,
-    )
-
 with col_right:
-    st.markdown("#### 🌍 Enlace Cartográfico y Globo Terráqueo Táctico")
-
-    # Coordenadas base para Buin, Chile (-33.7333, -70.7333)
-    map_data = pd.DataFrame(
-        {"latitude": [-33.7333], "longitude": [-70.7333]}
-    )
-
-    # Sub-columnas a la derecha para mostrar Mapa y Globo lado a lado
-    map_col1, map_col2 = st.columns(2)
-
-    with map_col1:
-        st.markdown(
-            "<small style='color: #00f0ff;'>🗺️ Mapa Cartográfico (Buin)</small>",
-            unsafe_allow_html=True,
-        )
-        st.map(map_data, zoom=10, use_container_width=True)
-
-    with map_col2:
-        st.markdown(
-            "<small style='color: #00f0ff;'>🌐 Globo Terráqueo 3D</small>",
-            unsafe_allow_html=True,
-        )
-        # Renderizado del Globo Terráqueo usando PyDeck con proyección de globo
-        globe_view = pdk.ViewState(
-            latitude=-33.7333,
-            longitude=-70.7333,
-            zoom=2,
-            pitch=0,
-            projection="globe",
-        )
-        r = pdk.Deck(
-            views=[pdk.View(type="MapView")],
-            initial_view_state=globe_view,
-            tooltip={"text": "Buin, Chile - Núcleo Activo"},
-        )
-        st.pydeck_chart(r, use_container_width=True)
-
-    st.markdown("---")
+    # --- 1. CAJA DE CHAT ARRIBA DE LOS MAPAS ---
     st.markdown("#### 🎙️ Núcleo Conversacional")
 
-    # Contenedor del historial de chat
-    chat_container = st.container(height=300)
+    chat_container = st.container(height=220)
 
     with chat_container:
         st.chat_message("assistant").write(
-            "Sistemas restaurados, Cindy. Telemetría a la izquierda y módulos cartográficos/globo 3D activos a la derecha. ¿Qué orden ejecutamos?"
+            "Sistemas en línea, Cindy. Caja de chat reposicionada y módulos cartográficos optimizados. ¿Qué orden ejecutamos?"
         )
 
-    # Entrada de texto del chat
     user_input = st.chat_input("Escriba su comando o diga 'Hey Jarvis'...")
 
     if user_input:
@@ -171,3 +129,88 @@ with col_right:
             st.chat_message("assistant").write(
                 f"Comando ejecutado con éxito: '{user_input}'"
             )
+
+    st.markdown("---")
+
+    # --- 2. BOTÓN DE DÍA / NOCHE Y CONTROLES CARTOGRÁFICOS ---
+    st.markdown("#### 🌍 Enlace Cartográfico y Globo Táctico")
+
+    ctrl_col1, ctrl_col2 = st.columns(2)
+    with ctrl_col1:
+        # Botón para alternar modo Día / Noche
+        modo_noche = st.toggle("🌙 Modo Noche / Día", value=True)
+    with ctrl_col2:
+        # Selector para ver calles/ciudades detalladas o satélite
+        tipo_mapa = st.selectbox(
+            "Capa Cartográfica", ["Calles y Ciudades", "Satélite"], index=0
+        )
+
+    # Configuración de estilos según el modo Día/Noche y tipo de mapa
+    if modo_noche:
+        map_style = "mapbox://styles/mapbox/dark-v10"
+        globe_background = [10, 14, 20]
+    else:
+        map_style = (
+            "mapbox://styles/mapbox/streets-v11"
+            if tipo_mapa == "Calles y Ciudades"
+            else "mapbox://styles/mapbox/satellite-v9"
+        )
+        globe_background = [240, 240, 240]
+
+    # Coordenadas base para Buin, Chile (-33.7333, -70.7333)
+    map_data = pd.DataFrame(
+        {
+            "latitude": [-33.7333],
+            "longitude": [-70.7333],
+            "name": ["Buin Central"],
+        }
+    )
+
+    # Sub-columnas para achicar los mapas (tamaño compacto)
+    map_col1, map_col2 = st.columns(2)
+
+    with map_col1:
+        st.markdown(
+            "<small style='color: #00f0ff;'>🗺️ Mapa Cartográfico (Calles)</small>",
+            unsafe_allow_html=True,
+        )
+        # Usamos PyDeck para controlar el mapa con calles y zoom ajustado de tamaño compacto
+        layer = pdk.Layer(
+            "ScatterplotLayer",
+            data=map_data,
+            get_position=["longitude", "latitude"],
+            get_color=[0, 240, 255, 200],
+            get_radius=500,
+            pickable=True,
+        )
+        view_state = pdk.ViewState(
+            latitude=-33.7333, longitude=-70.7333, zoom=12, pitch=30
+        )
+        r_map = pdk.Deck(
+            layers=[layer],
+            initial_view_state=view_state,
+            map_style=map_style,
+            tooltip={"text": "{name} - Buin, CL"},
+        )
+        # Se achica la altura usando height=250
+        st.pydeck_chart(r_map, use_container_width=True, height=250)
+
+    with map_col2:
+        st.markdown(
+            "<small style='color: #00f0ff;'>🌐 Globo Terráqueo 3D</small>",
+            unsafe_allow_html=True,
+        )
+        globe_view = pdk.ViewState(
+            latitude=-33.7333,
+            longitude=-70.7333,
+            zoom=1.5,
+            pitch=0,
+            projection="globe",
+        )
+        r_globe = pdk.Deck(
+            views=[pdk.View(type="MapView")],
+            initial_view_state=globe_view,
+            tooltip={"text": "Buin, Chile - Nodo Activo"},
+        )
+        # Se achica la altura usando height=250
+        st.pydeck_chart(r_globe, use_container_width=True, height=250)
