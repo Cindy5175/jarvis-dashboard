@@ -42,7 +42,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Encabezado principal solicitado
+# Encabezado principal
 st.markdown("## J.A.R.V.I.S IA Autónomo")
 st.markdown(
     "<small style='color: #8a99ad;'>Taller de Inteligencia Autónoma | Buin, Chile</small>",
@@ -56,7 +56,7 @@ with col_btn1:
 
 st.markdown("---")
 
-# Distribución principal: Izquierda (Módulos de telemetría), Derecha (Chat + Mapas ajustados)
+# Distribución principal: Izquierda (Módulos), Derecha (Chat arriba + Mapas compactos abajo)
 col_left, col_right = st.columns([1, 2], gap="medium")
 
 with col_left:
@@ -111,14 +111,14 @@ with col_left:
     )
 
 with col_right:
-    # --- 1. CAJA DE CHAT ARRIBA DE LOS MAPAS ---
+    # --- 1. CAJA DE CHAT ARRIBA ---
     st.markdown("#### 🎙️ Núcleo Conversacional")
 
-    chat_container = st.container(height=220)
+    chat_container = st.container(height=200)
 
     with chat_container:
         st.chat_message("assistant").write(
-            "Sistemas en línea, Cindy. Caja de chat reposicionada y módulos cartográficos optimizados. ¿Qué orden ejecutamos?"
+            "Sistemas operativos, Cindy. Panel táctico configurado. ¿Qué orden ejecutamos hoy?"
         )
 
     user_input = st.chat_input("Escriba su comando o diga 'Hey Jarvis'...")
@@ -127,37 +127,32 @@ with col_right:
         with chat_container:
             st.chat_message("user").write(user_input)
             st.chat_message("assistant").write(
-                f"Comando ejecutado con éxito: '{user_input}'"
+                f"Comando procesado: '{user_input}'"
             )
 
     st.markdown("---")
 
-    # --- 2. BOTÓN DE DÍA / NOCHE Y CONTROLES CARTOGRÁFICOS ---
+    # --- 2. CONTROLES Y MAPAS ABAJO ---
     st.markdown("#### 🌍 Enlace Cartográfico y Globo Táctico")
 
     ctrl_col1, ctrl_col2 = st.columns(2)
     with ctrl_col1:
-        # Botón para alternar modo Día / Noche
         modo_noche = st.toggle("🌙 Modo Noche / Día", value=True)
     with ctrl_col2:
-        # Selector para ver calles/ciudades detalladas o satélite
         tipo_mapa = st.selectbox(
             "Capa Cartográfica", ["Calles y Ciudades", "Satélite"], index=0
         )
 
-    # Configuración de estilos según el modo Día/Noche y tipo de mapa
+    # Definir estilos de mapa según el modo y selector
     if modo_noche:
         map_style = "mapbox://styles/mapbox/dark-v10"
-        globe_background = [10, 14, 20]
     else:
         map_style = (
             "mapbox://styles/mapbox/streets-v11"
             if tipo_mapa == "Calles y Ciudades"
             else "mapbox://styles/mapbox/satellite-v9"
         )
-        globe_background = [240, 240, 240]
 
-    # Coordenadas base para Buin, Chile (-33.7333, -70.7333)
     map_data = pd.DataFrame(
         {
             "latitude": [-33.7333],
@@ -166,7 +161,7 @@ with col_right:
         }
     )
 
-    # Sub-columnas para achicar los mapas (tamaño compacto)
+    # Mapas compactos lado a lado
     map_col1, map_col2 = st.columns(2)
 
     with map_col1:
@@ -174,13 +169,12 @@ with col_right:
             "<small style='color: #00f0ff;'>🗺️ Mapa Cartográfico (Calles)</small>",
             unsafe_allow_html=True,
         )
-        # Usamos PyDeck para controlar el mapa con calles y zoom ajustado de tamaño compacto
         layer = pdk.Layer(
             "ScatterplotLayer",
             data=map_data,
             get_position=["longitude", "latitude"],
             get_color=[0, 240, 255, 200],
-            get_radius=500,
+            get_radius=400,
             pickable=True,
         )
         view_state = pdk.ViewState(
@@ -192,8 +186,7 @@ with col_right:
             map_style=map_style,
             tooltip={"text": "{name} - Buin, CL"},
         )
-        # Se achica la altura usando height=250
-        st.pydeck_chart(r_map, use_container_width=True, height=250)
+        st.pydeck_chart(r_map, use_container_width=True, height=220)
 
     with map_col2:
         st.markdown(
@@ -212,5 +205,4 @@ with col_right:
             initial_view_state=globe_view,
             tooltip={"text": "Buin, Chile - Nodo Activo"},
         )
-        # Se achica la altura usando height=250
-        st.pydeck_chart(r_globe, use_container_width=True, height=250)
+        st.pydeck_chart(r_globe, use_container_width=True, height=220)
