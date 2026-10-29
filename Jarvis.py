@@ -65,6 +65,17 @@ st.markdown(
         background-color: #00f0ff;
         color: #030508;
     }
+    .emergency-alert {
+        background-color: #380202;
+        border: 2px solid #ff0033;
+        padding: 15px;
+        border-radius: 8px;
+        color: #ff0033;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-top: 20px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -82,16 +93,48 @@ def obtener_saludo_jefa():
         return "¡Buenas noches, jefa!"
 
 
+# Inicializar estados del sistema
+if "emergencia_activa" not in st.session_state:
+    st.session_state.emergencia_activa = False
+
+if "logs_auditoria" not in st.session_state:
+    st.session_state.logs_auditoria = [
+        "[{}] Sistema inicializado en Buin.".format(
+            datetime.now().strftime("%H:%M:%S")
+        )
+    ]
+
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Sistemas en línea, las 3 conexiones en vivo"
-    " están operativas en el panel izquierdo. ¿Qué orden ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Sistemas en línea, conexiones en vivo y"
+    " protocolos tácticos listos. ¿Qué orden ejecutamos hoy?"
 )
 
-# Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": saludo_inicial}
     ]
+
+# --- PROTOCOLO DE EMERGENCIA / BLOQUEO TOTAL (CLEAN-SLATE) ---
+if st.session_state.emergencia_activa:
+    st.markdown(
+        """
+        <div class="emergency-alert">
+            ⚠️ PROTOCOLO DE EMERGENCIA ACTIVO (CLEAN-SLATE) ⚠️<br>
+            Pantalla bloqueada por seguridad. Ingrese la clave maestra en el panel lateral para restablecer el sistema.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    clave_emergencia = st.text_input(
+        "Clave de desbloqueo de emergencia:",
+        type="password",
+        key="unlock_emergency",
+    )
+    if clave_emergencia == "Jarvis 51":
+        st.session_state.emergencia_activa = False
+        st.success("¡Sistema desbloqueado con éxito, jefa!")
+        st.rerun()
+    st.stop()  # Detiene la ejecución del resto de la app hasta que se desbloquee
 
 # --- ENCABEZADO CENTRALIZADO CON REACTOR TRIANGULAR CLÁSICO ---
 st.markdown(
@@ -99,7 +142,7 @@ st.markdown(
     <div class="reactor-container">
         <div class="triangle-reactor"></div>
         <div class="neon-header-center">J.A.R.V.I.S IA</div>
-        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Conexiones 3-en-1 | Buin, Chile</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Táctico & Seguro | Buin, Chile</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -107,13 +150,13 @@ st.markdown(
 
 st.markdown("---")
 
-# --- PLANO 50/50: CONEXIONES A LA IZQUIERDA, CHAT A LA DERECHA ---
+# --- PLANO 50/50: CONEXIONES Y MÓDULOS A LA IZQUIERDA, CHAT A LA DERECHA ---
 col_left, col_right = st.columns(2, gap="medium")
 
 with col_left:
-    st.markdown("#### 🛡️ Subsistema de Conexiones en Vivo")
+    st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
 
-    # 1. CONEXIÓN CLIMA REAL (Open-Meteo API / Buin)
+    # 1. CLIMA REAL EN BUIN
     with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
@@ -125,13 +168,17 @@ with col_left:
                 st.success(
                     f"Telemetría real en Buin: {temp}°C | Viento: {viento} km/h"
                 )
+                st.session_state.logs_auditoria.append(
+                    "[{}] Consulta de clima ejecutada con éxito.".format(
+                        datetime.now().strftime("%H:%M:%S")
+                    )
+                )
             except Exception:
                 st.warning(
-                    "No se pudo conectar a la estación meteorológica en este"
-                    " instante, jefa."
+                    "No se pudo conectar a la estación meteorológica, jefa."
                 )
 
-    # 2. CONEXIÓN BUSCADOR WEB (DuckDuckGo API)
+    # 2. BUSCADOR WEB 24/7
     with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
         query_web = st.text_input(
             "Ingrese búsqueda en tiempo real:", key="search_web_input"
@@ -146,12 +193,17 @@ with col_left:
                 else:
                     st.info(
                         f"Enlace activo enviado para '{query_web}'. Sin"
-                        " resumen directo disponible."
+                        " resumen directo."
                     )
+                st.session_state.logs_auditoria.append(
+                    "[{}] Búsqueda web realizada: '{}'.".format(
+                        datetime.now().strftime("%H:%M:%S"), query_web
+                    )
+                )
             except Exception:
                 st.error("Error al establecer conexión con el buscador, jefa.")
 
-    # 3. CONEXIÓN BANCO DE IMÁGENES / VOKATURI (Unsplash Source)
+    # 3. BANCO DE IMÁGENES & VOKATURI
     with st.expander("🖼️ 3. Banco de Imágenes & Vokaturi"):
         prompt_img = st.text_input(
             "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
@@ -165,8 +217,48 @@ with col_left:
                 use_container_width=True,
             )
 
-    # OTROS SUBSISTEMAS Y CONFIGURACIÓN DE VOZ
-    with st.expander("🔊 Generador de Voz de J.A.R.V.I.S."):
+    # 4. ATAJOS DE COMANDOS RÁPIDOS
+    with st.expander("⚡ 4. Atajos de Comandos Rápidos"):
+        c_at1, c_at2 = st.columns(2)
+        with c_at1:
+            if st.button("🌡️ Clima Rápido"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "¿Cómo está el clima?"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} El clima en Buin marca"
+                            " 21.1 °C con vientos estables."
+                        ),
+                    }
+                )
+                st.rerun()
+        with c_at2:
+            if st.button("📡 Estado de Red"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "Estado de redes"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} Enlace satelital 24/7"
+                            " operativo al 100%. Sin latencia relevante."
+                        ),
+                    }
+                )
+                st.rerun()
+
+    # 5. REGISTRO DE LOGS / CAJA NEGRA
+    with st.expander("📋 5. Registro de Auditoría (Caja Negra)"):
+        st.text("Historial técnico de comandos recientes:")
+        for log in reversed(st.session_state.logs_auditoria[-5:]):
+            st.code(log, language="text")
+
+    # 6. VOZ Y SEGURIDAD (CON PROTOCOLO DE EMERGENCIA)
+    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
         texto_voz = st.text_input(
             "Texto para hablar:",
             "Para usted, jefa, siempre.",
@@ -179,7 +271,7 @@ with col_left:
             fp.seek(0)
             st.audio(fp, format="audio/mp3")
 
-    with st.expander("🖐️ Seguridad Biométrica (Clave)"):
+        st.markdown("---")
         ingreso_clave = st.text_input(
             "Clave de validación:", type="password", key="key_input_j51"
         )
@@ -187,7 +279,11 @@ with col_left:
             if ingreso_clave == "Jarvis 51":
                 st.success("Acceso total concedido, jefa.")
             else:
-                st.error("Clave incorrecta. Pida autorización a la jefa.")
+                st.error("Clave incorrecta.")
+
+        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
+            st.session_state.emergencia_activa = True
+            st.rerun()
 
 
 with col_right:
@@ -206,11 +302,16 @@ with col_right:
         st.session_state.messages.append(
             {"role": "user", "content": user_input}
         )
+        st.session_state.logs_auditoria.append(
+            "[{}] Comando de chat: '{}'.".format(
+                datetime.now().strftime("%H:%M:%S"), user_input
+            )
+        )
 
         saludo_actual = obtener_saludo_jefa()
         u_lower = user_input.lower()
 
-        # Lógica del cerebro inteligente con la frase personalizada
+        # Lógica del cerebro inteligente
         if "despierto" in u_lower or "despiertas" in u_lower:
             resp = "Para usted, jefa, siempre."
         elif "clima" in u_lower:
@@ -223,13 +324,13 @@ with col_right:
             for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
         ):
             resp = (
-                f"{saludo_actual} Es un honor estar a su servicio. Las 3"
-                " conexiones están sincronizadas."
+                f"{saludo_actual} Es un honor estar a su servicio. Las"
+                " conexiones y protocolos tácticos están sincronizados."
             )
         else:
             resp = (
                 f"{saludo_actual} Procesando '{user_input}' con enlace"
-                " satelital y conectividad total. Todo en orden, jefa."
+                " satelital y caja negra activa. Todo en orden, jefa."
             )
 
         st.session_state.messages.append(
@@ -250,4 +351,9 @@ with col_right:
                     ),
                 }
             ]
+            st.session_state.logs_auditoria.append(
+                "[{}] Historial de chat purgado.".format(
+                    datetime.now().strftime("%H:%M:%S")
+                )
+            )
             st.rerun()
