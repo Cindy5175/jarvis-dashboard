@@ -103,7 +103,7 @@ with st.sidebar:
 # --- PANTALLA PRINCIPAL: NÚCLEO CONVERSACIONAL ---
 st.markdown(
     "### 💬 Interfaz de Conversación Autónoma (Comando de Voz: 'Hey Jarvis')"
-> )
+)
 
 col_btn1, col_btn2 = st.columns([1, 4])
 with col_btn1:
