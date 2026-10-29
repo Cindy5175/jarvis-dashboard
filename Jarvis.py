@@ -44,6 +44,19 @@ st.markdown(
         font-size: 0.8em;
         color: #00ff66;
     }
+    /* Estilo para los botones táctiles neón */
+    .stButton button {
+        background-color: #000000;
+        color: #00f0ff;
+        border: 1px solid #00f0ff;
+        width: 100%;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    .stButton button:hover {
+        background-color: #00f0ff;
+        color: #000000;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -57,59 +70,121 @@ if st.button("🗑️ Purgar Chat"):
 
 st.markdown("---")
 
-# Distribución principal: Izquierda (Módulos de Telemetría), Derecha (Chat + Mapas y Globo 3D)
+# Distribución principal: Izquierda (Módulo rígido con botones táctiles), Derecha (Chat + Mapas)
 col_left, col_right = st.columns([1, 2], gap="medium")
 
 with col_left:
-    st.markdown("#### ⚡ Telemetría y Sistemas")
+    st.markdown("#### ⚡ Módulos Tácticos del Sistema")
 
-    # Bloque 1: Ubicación Base
-    st.markdown(
-        """
-        <div class="metric-box">
-            <div class="metric-title">Ubicación Base</div>
-            <div class="metric-value">Buin, CL</div>
-            <div class="metric-sub">↑ Seguro / Biometría OK</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Inicializar estados de los botones en la sesión si no existen
+    if "show_telemetria" not in st.session_state:
+        st.session_state.show_telemetria = True
+    if "show_voz" not in st.session_state:
+        st.session_state.show_voz = False
+    if "show_radar" not in st.session_state:
+        st.session_state.show_radar = False
+    if "show_clave" not in st.session_state:
+        st.session_state.show_clave = False
+    if "show_satelite" not in st.session_state:
+        st.session_state.show_satelite = False
 
-    # Bloque 2: Clima Real
-    st.markdown(
-        """
-        <div class="metric-box">
-            <div class="metric-title">Clima Real (Buin)</div>
-            <div class="metric-value">21.1 °C</div>
-            <div class="metric-sub">↑ Viento: 9.2 km/h</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Botones táctiles apilados a la izquierda
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        if st.button("📊 Telemetría"):
+            st.session_state.show_telemetria = not st.session_state.show_telemetria
+        if st.button("🎙️ Voz Fluida"):
+            st.session_state.show_voz = not st.session_state.show_voz
+        if st.button("📡 Radar"):
+            st.session_state.show_radar = not st.session_state.show_radar
+    with col_b2:
+        if st.button("🔑 Clave"):
+            st.session_state.show_clave = not st.session_state.show_clave
+        if st.button("🛰️ Satelital"):
+            st.session_state.show_satelite = not st.session_state.show_satelite
 
-    # Bloque 3: Estado del Sistema
-    st.markdown(
-        """
-        <div class="metric-box">
-            <div class="metric-title">Estado del Sistema</div>
-            <div class="metric-value">99.8% Neural</div>
-            <div class="metric-sub">↑ Quantum Core</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("---")
 
-    # Bloque 4: Latencia de Red
-    st.markdown(
-        """
-        <div class="metric-box">
-            <div class="metric-title">Latencia de Red</div>
-            <div class="metric-value">0.38 ms</div>
-            <div class="metric-sub">↑ Óptimo</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Despliegue condicional según el botón táctil presionado
+    if st.session_state.show_telemetria:
+        st.markdown("##### 📊 Telemetría del Sistema")
+        st.markdown(
+            """
+            <div class="metric-box">
+                <div class="metric-title">Ubicación Base</div>
+                <div class="metric-value">Buin, CL</div>
+                <div class="metric-sub">↑ Seguro / Biometría OK</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Clima Real (Buin)</div>
+                <div class="metric-value">21.1 °C</div>
+                <div class="metric-sub">↑ Viento: 9.2 km/h</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Estado del Sistema</div>
+                <div class="metric-value">99.8% Neural</div>
+                <div class="metric-sub">↑ Quantum Core</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-title">Latencia de Red</div>
+                <div class="metric-value">0.38 ms</div>
+                <div class="metric-sub">↑ Óptimo</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if st.session_state.show_voz:
+        st.markdown("##### 🎙️ Subsistema de Voz Fluida")
+        st.markdown(
+            """
+            <div class="metric-box">
+                <div class="metric-title">Estado de Audio</div>
+                <div class="metric-value">Activo / gTTS Link</div>
+                <div class="metric-sub">↑ Comando 'Hey Jarvis' en escucha</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if st.session_state.show_radar:
+        st.markdown("##### 📡 Radar Táctico")
+        st.markdown(
+            """
+            <div class="metric-box">
+                <div class="metric-title">Frecuencia de Barrido</div>
+                <div class="metric-value">1.4 GHz (Buin Sector)</div>
+                <div class="metric-sub">↑ Sin anomalías detectadas</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if st.session_state.show_clave:
+        st.markdown("##### 🔑 Protocolo de Claves")
+        st.markdown(
+            """
+            <div class="metric-box">
+                <div class="metric-title">Nivel de Autorización</div>
+                <div class="metric-value">Omega-1 (Cindy)</div>
+                <div class="metric-sub">↑ Encriptación Cuántica OK</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if st.session_state.show_satelite:
+        st.markdown("##### 🛰️ Enlace Satelital")
+        st.markdown(
+            """
+            <div class="metric-box">
+                <div class="metric-title">Órbita Activa</div>
+                <div class="metric-value">SYN-OS 4.2</div>
+                <div class="metric-sub">↑ Conexión Estable</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 with col_right:
     st.markdown("#### 🎙️ Núcleo Conversacional")
@@ -118,7 +193,7 @@ with col_right:
 
     with chat_container:
         st.chat_message("assistant").write(
-            "Sistemas en línea, Cindy. Enlace cartográfico y globo táctico activados. ¿Qué orden ejecutamos hoy?"
+            "Sistemas en línea, Cindy. Panel táctico izquierdo configurado con botones modulares. ¿Qué orden ejecutamos hoy?"
         )
 
     user_input = st.chat_input("Escriba su comando o diga 'Hey Jarvis'...")
@@ -133,7 +208,6 @@ with col_right:
     st.markdown("---")
     st.markdown("#### 🌍 Enlace Cartográfico y Globo Táctico")
 
-    # Coordenadas base para Buin, Chile (-33.7333, -70.7333)
     map_data = pd.DataFrame(
         {
             "latitude": [-33.7333],
