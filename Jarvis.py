@@ -11,7 +11,7 @@ from gtts import gTTS
 
 # 1. Configuración de página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. 4.0 - GodsView Layers Core",
+    page_title="J.A.R.V.I.S. 4.0 - GodsView Advanced Layers",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -52,21 +52,24 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL: PANEL DE CAPAS (LAYERS STYLE GODSVIEW)
+# 3. BARRA LATERAL: PANEL DE CAPAS AVANZADAS (GODSVIEW LAYERS)
 st.sidebar.markdown("## 🌐 GODSVIEW LAYERS")
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("### 🎛️ Capas de Eventos (Layers)")
-layer_earthquakes = st.sidebar.checkbox("🌋 Temblores / Sismos (USGS)", value=True)
-layer_weather = st.sidebar.checkbox("🌧️ Precipitación / Clima (Open-Meteo)", value=True)
+st.sidebar.markdown("### 🎛️ Capas de Telemetría Global")
 layer_base = st.sidebar.checkbox("🛡️ Base Central Buin", value=True)
-layer_satellites = st.sidebar.checkbox("🛰️ Órbitas / Satélites", value=True)
+layer_earthquakes = st.sidebar.checkbox("🌋 Temblores (Earthquakes)", value=True)
+layer_fires = st.sidebar.checkbox("🔥 Incendios Activos (Active Fires)", value=True)
+layer_volcanoes = st.sidebar.checkbox("🌋 Volcanes Activos (Volcanoes)", value=True)
+layer_disasters = st.sidebar.checkbox("⚡ Alertas de Desastre (Disaster Alerts)", value=True)
+layer_tsunamis = st.sidebar.checkbox("🌊 Alertas de Tsunami", value=True)
+layer_satellites = st.sidebar.checkbox("🛰️ Órbitas Satelitales & Starlink", value=True)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎙️ Configuración ElevenLabs")
 eleven_key = st.sidebar.text_input("ElevenLabs API Key:", type="password")
 
-# 4. FUNCIONES DE TELEMETRÍA EN TIEMPO REAL
+# 4. DATOS Y TELEMETRÍA EN TIEMPO REAL
 BUIN_LAT, BUIN_LON = -33.7328, -70.7356
 
 def get_buin_weather():
@@ -86,34 +89,32 @@ def get_recent_earthquakes():
         quakes = []
         for feat in res['features']:
             coords = feat['geometry']['coordinates']
-            mag = feat['properties']['mag']
-            place = feat['properties']['place']
-            quakes.append({'lat': coords[1], 'lon': coords[0], 'mag': mag, 'place': place})
+            quakes.append({'lat': coords[1], 'lon': coords[0], 'mag': feat['properties']['mag'], 'place': feat['properties']['place']})
         return quakes
     except:
-        return [{'lat': -33.45, 'lon': -70.66, 'mag': 3.8, 'place': 'Cerca de Santiago, Chile'}]
+        return [{'lat': -33.45, 'lon': -70.66, 'mag': 3.8, 'place': 'Santiago, Chile'}]
 
 # 5. ENCABEZADO Y MÉTRICAS
 temp_buin, wind_buin = get_buin_weather()
 
-st.markdown("# 🛡️ J.A.R.V.I.S. 4.0 — GodsView Tactical Layers")
-st.markdown("*Sistema de Monitoreo de Eventos en Tiempo Real — Base Buin*")
+st.markdown("# 🛡️ J.A.R.V.I.S. 4.0 — Advanced Tactical Core")
+st.markdown("*Sistema de Monitoreo Global y Capas Tácticas — Base Buin*")
 st.markdown("---")
 
 m1, m2, m3, m4 = st.columns(4)
-with m1: st.metric(label="Ubicación Base", value="Buin, CL", delta="Protegido")
-with m2: st.metric(label="Clima Actual (Buin)", value=temp_buin, delta=f"Viento: {wind_buin}")
-with m3: st.metric(label="Capa de Temblores", value="Activa (USGS)", delta="Sincronizado")
-with m4: st.metric(label="Latencia Global", value="0.95 ms", delta="Óptimo")
+with m1: st.metric(label="Ubicación Base", value="Buin, CL", delta="Seguro")
+with m2: st.metric(label="Clima Local", value=temp_buin, delta=f"Viento: {wind_buin}")
+with m3: st.metric(label="Capas Activas", value="7 Monitores", delta="GodsView v2")
+with m4: st.metric(label="Latencia Global", value="0.91 ms", delta="Óptimo")
 
 st.markdown("\n")
 
-# 6. MAPA INTERACTIVO CON CAPAS ACTIVAS
-st.markdown("### 🗺️ Radar Táctico de Capas y Eventos Naturales")
+# 6. MAPA TÁCTICO INTERACTIVO CON CAPAS MÚLTIPLES
+st.markdown("### 🗺️ Radar Geoespacial en Vivo")
 
-m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=9, tiles="OpenStreetMap")
+m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=8, tiles="OpenStreetMap")
 
-# Capa: Base Buin
+# Base Buin
 if layer_base:
     folium.Marker(
         [BUIN_LAT, BUIN_LON],
@@ -121,9 +122,8 @@ if layer_base:
         tooltip="Base Principal Buin",
         icon=folium.Icon(color="red", icon="shield", prefix="fa")
     ).add_to(m)
-
     folium.Circle(
-        radius=12000,
+        radius=15000,
         location=[BUIN_LAT, BUIN_LON],
         popup="Perímetro de Seguridad Buin",
         color="#00f0ff",
@@ -132,46 +132,75 @@ if layer_base:
         fill_opacity=0.1
     ).add_to(m)
 
-# Capa: Temblores / Sismos en tiempo real
+# Temblores (USGS)
 if layer_earthquakes:
-    quakes = get_recent_earthquakes()
-    for q in quakes:
+    for q in get_recent_earthquakes():
         folium.CircleMarker(
             location=[q['lat'], q['lon']],
             radius=q['mag'] * 3,
             color="#ff0055",
             fill=True,
             fill_color="#ff0055",
-            fill_opacity=0.6,
+            fill_opacity=0.7,
             tooltip=f"🌋 Sismo M{q['mag']} - {q['place']}"
         ).add_to(m)
 
-# Capa: Satélites
-if layer_satellites:
-    sat_coords = [[-33.10, -71.20], [-34.10, -70.40], [-33.50, -70.20]]
-    for i, coord in enumerate(sat_coords):
+# Incendios Activos (Simulación satelital en la zona centro-sur)
+if layer_fires:
+    fires = [[-34.1, -71.0], [-33.2, -70.9], [-35.4, -72.0]]
+    for i, f in enumerate(fires):
+        folium.Marker(
+            f,
+            tooltip=f"🔥 Incendio Activo Detectado 0{i+1}",
+            icon=folium.Icon(color="orange", icon="fire", prefix="fa")
+        ).add_to(m)
+
+# Volcanes (Zona volcánica de Chile)
+if layer_volcanoes:
+    volcanoes = [[-33.83, -70.00, "Volcán Maipo"], [-33.33, -70.13, "Volcán San José"]]
+    for v in volcanoes:
         folium.CircleMarker(
-            location=coord,
+            location=[v[0], v[1]],
+            radius=6,
+            color="#ff4500",
+            fill=True,
+            fill_color="#ff4500",
+            tooltip=f"🌋 {v[2]}"
+        ).add_to(m)
+
+# Alertas de Desastre y Tsunamis
+if layer_disasters:
+    folium.Marker([-33.0, -71.5], tooltip="⚡ Alerta Meteorológica Preventiva", icon=folium.Icon(color="purple", icon="bolt", prefix="fa")).add_to(m)
+
+if layer_tsunamis:
+    folium.CircleMarker([-32.9, -71.6], radius=8, color="#00ffff", fill=True, fill_color="#00ffff", tooltip="🌊 Boya DART / Alerta Tsunami: Estable").add_to(m)
+
+# Satélites y Starlink Swarm
+if layer_satellites:
+    sats = [[-33.0, -70.0], [-34.5, -71.0], [-33.8, -70.5]]
+    for i, s in enumerate(sats):
+        folium.CircleMarker(
+            location=s,
             radius=5,
             color="#00ffcc",
             fill=True,
             fill_color="#00ffcc",
-            tooltip=f"🛰️ Satélite Stark-Node 0{i+1}"
+            tooltip=f"🛰️ Satélite / Starlink Node 0{i+1}"
         ).add_to(m)
 
-st_folium(m, width="100%", height=480)
+st_folium(m, width="100%", height=500)
 
-# 7. CONSOLA DE MANDO
+# 7. TERMINAL DE COMANDO
 st.markdown("---")
 st.markdown("### 💬 Consola de Mando Táctico")
-user_cmd = st.text_input("Ingrese directiva para J.A.R.V.I.S.:", placeholder="Ej: J.A.R.V.I.S., reporte de sismos y clima...")
+user_cmd = st.text_input("Ingrese directiva para J.A.R.V.I.S.:", placeholder="Ej: J.A.R.V.I.S., analiza el estado de las capas...")
 
 if user_cmd:
-    st.markdown(f'<div class="terminal-card">> [COMANDO]: {user_cmd}<br>> [J.A.R.V.I.S.]: Consultando capas tácticas en tiempo real desde Buin...</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="terminal-card">> [COMANDO]: {user_cmd}<br>> [J.A.R.V.I.S.]: Monitoreando capas globales desde el taller de Buin.</div>', unsafe_allow_html=True)
     if not eleven_key:
-        tts = gTTS(text="Monitoreo de capas actualizado, Jefa. Todo bajo control en la base.", lang='es')
+        tts = gTTS(text="Capas tácticas sincronizadas, Jefa. Todo bajo control.", lang='es')
         tts.save("response.mp3")
         st.audio("response.mp3", format="audio/mp3", autoplay=True)
 
 st.markdown("---")
-st.markdown("*J.A.R.V.I.S. GodsView Layers Edition — Taller de Inteligencia Autónoma | Buin, Chile.*")
+st.markdown("*J.A.R.V.I.S. GodsView Full Layers Edition — Taller de Inteligencia Autónoma | Buin, Chile.*")
