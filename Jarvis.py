@@ -117,7 +117,6 @@ with col_left:
     with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
-                # Coordenadas aproximadas de Buin, Chile (-33.73, -70.73)
                 url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
                 res = requests.get(url_clima, timeout=5).json()
                 curr = res["current_weather"]
@@ -170,7 +169,7 @@ with col_left:
     with st.expander("🔊 Generador de Voz de J.A.R.V.I.S."):
         texto_voz = st.text_input(
             "Texto para hablar:",
-            f"{obtener_saludo_jefa()} Todo el sistema está bajo control.",
+            "Para usted, jefa, siempre.",
             key="tts_box",
         )
         if st.button("🔊 Sintonizar Voz"):
@@ -209,15 +208,18 @@ with col_right:
         )
 
         saludo_actual = obtener_saludo_jefa()
+        u_lower = user_input.lower()
 
-        # Lógica del cerebro inteligente reconociendo a la jefa según la hora
-        if "clima" in user_input.lower():
+        # Lógica del cerebro inteligente con la frase personalizada
+        if "despierto" in u_lower or "despiertas" in u_lower:
+            resp = "Para usted, jefa, siempre."
+        elif "clima" in u_lower:
             resp = (
                 f"{saludo_actual} El módulo de clima en el panel izquierdo tiene"
                 " la telemetría exacta en tiempo real para Buin."
             )
         elif any(
-            w in user_input.lower()
+            w in u_lower
             for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
         ):
             resp = (
