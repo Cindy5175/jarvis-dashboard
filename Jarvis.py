@@ -45,22 +45,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 3. BARRA LATERAL: NAVEGACIÓN, SPOTIFY Y CAPAS
-st.sidebar.markdown("## ⚡ J.A.R.V.I.S. SYSTEM SUBSYSTEMS")
+st.sidebar.markdown("## ⚡ J.A.R.V.I.S. SUBSYSTEMS")
 
 nav_module = st.sidebar.radio(
     "Módulos del Sistema:",
     [
-        "🌍 Radar Satelital (NASA/USGS Real-Time)",
-        "🌀 Quantum Orbital Core (And Not One)",
-        "🧠 Neural Network Matrix (Policy Network)",
-        "📈 Trading & Market Liquidity",
-        "📡 Feed de Alertas Globales"
+        "🌍 Radar Satelital Real-Time",
+        "🌀 Quantum Orbital Core",
+        "🧠 Neural Network Matrix",
+        "📈 Trading & Liquidity",
+        "📡 Feed Alertas Globales"
     ]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎵 Spotify Tactical Audio")
-spotify_uri = st.sidebar.text_input("Spotify Playlist / Track URI:", value="37i9dQZF1DXdLENR312A25")
+spotify_uri = st.sidebar.text_input("Spotify URI:", value="37i9dQZF1DXdLENR312A25")
 components.html(
     f'''
     <div style="background:#010206; border-radius:12px; padding:4px; box-shadow: 0 0 10px rgba(0,240,255,0.2);">
@@ -73,8 +73,8 @@ components.html(
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎛️ Capas Tácticas en Vivo")
 layer_base = st.sidebar.checkbox("🛡️ Base Central Buin", value=True)
-layer_earthquakes = st.sidebar.checkbox("🌋 Sismos en Vivo (USGS)", value=True)
-layer_fires = st.sidebar.checkbox("🔥 Incendios Satelitales (NASA FIRMS)", value=True)
+layer_earthquakes = st.sidebar.checkbox("🌋 Sismos USGS", value=True)
+layer_fires = st.sidebar.checkbox("🔥 Incendios NASA FIRMS", value=True)
 layer_satellites = st.sidebar.checkbox("🛰️ Órbitas Satelitales", value=True)
 
 st.sidebar.markdown("---")
@@ -138,7 +138,7 @@ with m4: st.metric(label="Latencia de Red", value="0.38 ms", delta="Óptimo")
 st.markdown("\n")
 
 # 6. MÓDULOS DINÁMICOS
-if nav_module == "🌍 Radar Satelital (NASA/USGS Real-Time)":
+if nav_module == "🌍 Radar Satelital Real-Time":
     st.markdown("### 🗺️ Telemetría Satelital Geoespacial en Vivo")
     m = folium.Map(location=[BUIN_LAT, BUIN_LON], zoom_start=8, tiles="OpenStreetMap")
 
@@ -185,7 +185,7 @@ if nav_module == "🌍 Radar Satelital (NASA/USGS Real-Time)":
 
     st_folium(m, width="100%", height=480)
 
-elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
+elif nav_module == "🌀 Quantum Orbital Core":
     st.markdown("### 🌀 Visualizador Holográfico de Núcleo Cuántico Orbital")
     components.html("""
     <!DOCTYPE html>
@@ -236,7 +236,7 @@ elif nav_module == "🌀 Quantum Orbital Core (And Not One)":
     </html>
     """, height=430)
 
-elif nav_module == "🧠 Neural Network Matrix (Policy Network)":
+elif nav_module == "🧠 Neural Network Matrix":
     st.markdown("### 🧠 Red Neuronal de Inferencia Vertical")
     components.html("""
     <!DOCTYPE html>
@@ -286,7 +286,7 @@ elif nav_module == "🧠 Neural Network Matrix (Policy Network)":
     </html>
     """, height=430)
 
-elif nav_module == "📈 Trading & Market Liquidity":
+elif nav_module == "📈 Trading & Liquidity":
     st.markdown("### 📊 Algoritmos de Liquidez Financiera e Indicadores")
     chart_data = pd.DataFrame(
         np.random.randn(30, 3) * [12, 6, 3] + [120, 85, 45],
@@ -294,7 +294,7 @@ elif nav_module == "📈 Trading & Market Liquidity":
     )
     st.line_chart(chart_data, color=["#00f0ff", "#e000ff", "#00ffcc"])
 
-elif nav_module == "📡 Feed de Alertas Globales":
+elif nav_module == "📡 Feed Alertas Globales":
     st.markdown("### 🚨 Monitor de Alertas Sísmicas y Térmicas")
     st.info("🌋 [USGS REAL-TIME] Monitoreo de sismos activo. Sincronizado con la placa de Nazca.")
     st.warning("🔥 [NASA FIRMS] Escaneo térmico satelital procesando datos en tiempo real.")
