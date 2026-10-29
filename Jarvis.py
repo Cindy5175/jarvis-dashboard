@@ -12,7 +12,6 @@ st.markdown(
         background-color: #030508;
         color: #00f0ff;
     }
-    /* Estilo centrado para el encabezado con el Reactor Triangular Clásico */
     .reactor-container {
         display: flex;
         flex-direction: column;
@@ -84,7 +83,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- ENCABEZADO CENTRALIZADO CON REACTOR TRIANGULAR CLÁSICO ---
+# --- ENCABEZADO CON REACTOR TRIANGULAR CLÁSICO ---
 st.markdown(
     """
     <div class="reactor-container">
@@ -98,15 +97,12 @@ st.markdown(
 
 st.markdown("---")
 
-# --- DISTRIBUCIÓN EN UN SOLO PLANO: MÓDULOS A LA IZQUIERDA, CHAT A LA DERECHA ---
-col_left, col_right = st.columns(
-    [1, 1], gap="medium"
-)  # Plano equilibrado 50/50
+# --- PLANO UNIFICADO: MÓDULOS IZQUIERDA, CHAT DERECHA ---
+col_left, col_right = st.columns([1, 1], gap="medium")
 
 with col_left:
     st.markdown("#### 🛡️ Subsistema Sigiloso y Módulos Avanzados")
 
-    # Inicializar estados de los módulos
     if "modo_sensor" not in st.session_state:
         st.session_state.modo_sensor = False
     if "modo_facial" not in st.session_state:
@@ -122,7 +118,6 @@ with col_left:
     if "modo_img" not in st.session_state:
         st.session_state.modo_img = False
 
-    # Botones táctiles organizados
     b1, b2 = st.columns(2)
     with b1:
         if st.button("👁️ Movimiento"):
@@ -143,7 +138,6 @@ with col_left:
 
     st.markdown("---")
 
-    # Visualización de módulos activos en el plano izquierdo
     if st.session_state.modo_sensor:
         st.markdown(
             """
@@ -167,7 +161,8 @@ with col_left:
         )
 
     if st.session_state.modo_huella:
-        clave_secreta = "JARVIS-OMEGA-75"
+        # Clave actualizada a petición a "Yerbi"
+        clave_secreta = "Yerbi"
         st.markdown(
             """
             <div class="stealth-box">
@@ -182,9 +177,11 @@ with col_left:
         )
         if ingreso_clave:
             if ingreso_clave == clave_secreta:
-                st.success("Clave aceptada. Protocolo de alta seguridad activo.")
+                st.success("Clave aceptada ('Yerbi'). Acceso total concedido.")
             else:
-                st.error("Clave incorrecta. Acceso limitado.")
+                st.error(
+                    "Clave incorrecta. Intente nuevamente con la clave correcta."
+                )
 
     if st.session_state.modo_voz:
         st.markdown(
@@ -235,7 +232,6 @@ with col_left:
         st.text_input("Buscar imagen en la red (Prompt):", key="img_query")
 
 
-# --- PLANO DERECHO: NÚCLEO CONVERSACIONAL Y PURGA DE CHAT ---
 with col_right:
     st.markdown("#### 💬 Núcleo Conversacional Autónomo")
 
@@ -243,7 +239,7 @@ with col_right:
 
     with chat_container:
         st.chat_message("assistant").write(
-            "Sistemas integrados en un solo plano, Cindy. Satélites enlazados y motores de descarga listos. ¿Qué orden ejecutamos ahora?"
+            "Clave actualizada en el sistema, Cindy. Ahora sí, con 'Yerbi' de pasaporte, nadie nos detiene. ¿Qué mandas a hacer?"
         )
 
     user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
@@ -252,11 +248,12 @@ with col_right:
         with chat_container:
             st.chat_message("user").write(user_input)
             st.chat_message("assistant").write(
-                f"Procesando '{user_input}' con enlace satelital activo... Menos mal que me tienes a mí para organizar todo esto."
+                f"Procesando '{user_input}' con privilegios de seguridad máximos..."
             )
 
-    # Botón de purga colocado cómodamente debajo de la caja del chat
     c_purg1, c_purg2 = st.columns([3, 1])
     with c_purg2:
         if st.button("🗑️ Purgar Chat"):
-            st.toast("Historial purgado con éxito.", icon="🧹")
+            st.toast(
+                "Historial purgado con éxito. ¡Tabula rasa, Cindy!", icon="🧹"
+            )
