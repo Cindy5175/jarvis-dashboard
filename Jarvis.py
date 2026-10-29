@@ -30,9 +30,24 @@ if "enlace_satelital" not in str_lit.session_state:
 color_neon_principal = "#ff3333" if str_lit.session_state.codigo_rojo else "#00d2ff"
 color_sombra_neon = "rgba(255, 51, 51, 0.8)" if str_lit.session_state.codigo_rojo else "rgba(0, 210, 255, 0.6)"
 
-# Estilos globales dinámicos
+# Estilos globales dinámicos con Protocolo House Party (Strobe si hay Código Rojo)
+strobe_anim = """
+@keyframes houseParty {
+    0% { border: 2px solid #ff3333; box-shadow: 0 0 25px #ff3333; }
+    50% { border: 2px solid #ffffff; box-shadow: 0 0 50px #ffffff; }
+    100% { border: 2px solid #ff3333; box-shadow: 0 0 25px #ff3333; }
+}
+.house-party-box {
+    animation: houseParty 0.8s infinite;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+""" if str_lit.session_state.codigo_rojo else ""
+
 str_lit.markdown(f"""
     <style>
+    {strobe_anim}
     h1, h2, h3, h4, h5, h6, span.neon-title {{
         color: {color_neon_principal} !important;
         text-shadow: 0 0 10px {color_sombra_neon};
@@ -218,6 +233,54 @@ def generar_html_pdf(historial):
     html_content += "</body></html>"
     return html_content
 
+# COMPONENTES LOCOS STARK
+def renderizar_visualizador_audio(hex_color):
+    audio_viz_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ margin: 0; background: transparent; display: flex; justify-content: center; align-items: center; height: 50px; }}
+            .wave {{ display: flex; gap: 5px; align-items: center; height: 40px; }}
+            .bar {{ width: 5px; background: {hex_color}; animation: soundWave 1.2s infinite alternate ease-in-out; border-radius: 3px; box-shadow: 0 0 8px {hex_color}; }}
+            @keyframes soundWave {{ 0% {{ height: 5px; opacity: 0.3; }} 100% {{ height: 38px; opacity: 1.0; }} }}
+        </style>
+    </head>
+    <body>
+        <div class="wave">
+            <div class="bar" style="animation-delay: 0.1s"></div>
+            <div class="bar" style="animation-delay: 0.4s"></div>
+            <div class="bar" style="animation-delay: 0.2s"></div>
+            <div class="bar" style="animation-delay: 0.5s"></div>
+            <div class="bar" style="animation-delay: 0.3s"></div>
+            <div class="bar" style="animation-delay: 0.6s"></div>
+        </div>
+    </body>
+    </html>
+    """
+    components.html(audio_viz_html, height=60, scrolling=False)
+
+def renderizar_terminal_hackeo(hex_color):
+    matrix_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ margin: 0; background: rgba(0,0,0,0.85); color: {hex_color}; font-family: monospace; font-size: 11px; padding: 8px; border: 1px solid {hex_color}; border-radius: 4px; overflow: hidden; }}
+            .matrix-text {{ text-shadow: 0 0 6px {hex_color}; }}
+        </style>
+    </head>
+    <body>
+        <div class="matrix-text">
+            > STARK_CORE: SECURE GATEWAY OPEN<br>
+            > BYPASSING ENCRYPTION LAYER... [OK]<br>
+            > NODE BUIN: QUANTUM SYNC STABLE
+        </div>
+    </body>
+    </html>
+    """
+    components.html(matrix_html, height=65, scrolling=False)
+
 def renderizar_globo_terraqueo(hex_color):
     try:
         glogo_html = f"""
@@ -366,17 +429,16 @@ with str_lit.sidebar:
             unsafe_allow_html=True
         )
 
-        str_lit.markdown("#### 2. Hotword Hey JARVIS")
+        str_lit.markdown("#### 2. Visualizador de Voz (Holograma)")
+        renderizar_visualizador_audio(color_neon_principal)
+
+        str_lit.markdown("#### 3. Terminal de Hackeo Stark")
+        renderizar_terminal_hackeo(color_neon_principal)
+
+        str_lit.markdown("#### 4. Hotword Hey JARVIS")
         hotword_activo = str_lit.checkbox("Activar Escucha Continua de Voz", value=False)
         if hotword_activo:
             str_lit.info("🎙️ Escucha activa de voz habilitada en terminal local.")
-
-        str_lit.markdown("#### 3. Alertas Climáticas Auto")
-        if str_lit.button("Forzar Chequeo Clima Buin"):
-            datos_c = obtener_clima_buin()
-            msg_clima = f"Temperatura: {datos_c['temp']}°C | Viento: {datos_c['wind']} km/h. Estado: Óptimo."
-            enviar_alerta_telegram(msg_clima)
-            str_lit.success(f"📡 Reporte enviado a Telegram: {msg_clima}")
 
     with str_lit.expander("👁️ Ojo de Dios - Protocolo F&F 8"):
         str_lit.markdown("#### 1. Rastreo Orbital de Satélites & Drones")
@@ -456,7 +518,7 @@ with str_lit.sidebar:
                     enviar_alerta_telegram("Sistema normalizado. Código Rojo desactivado.")
                     str_lit.rerun()
             else:
-                if str_lit.button("🚨 ACTIVAR CÓDIGO ROJO (EMERGENCIA)"):
+                if str_lit.button("🚨 ACTIVAR CÓDIGO ROJO (HOUSE PARTY)"):
                     str_lit.session_state.codigo_rojo = True
                     enviar_alerta_telegram("¡ATENCIÓN! Código Rojo activado en el Centro de Comando Buin.")
                     str_lit.rerun()
@@ -526,26 +588,6 @@ with str_lit.sidebar:
                 str_lit.error(f"Error generando reporte: {e}")
 
         str_lit.markdown("---")
-        str_lit.markdown("#### 3. Log de Alertas Climáticas")
-        if str_lit.button("Registrar Chequeo Climático Buin"):
-            datos_c = obtener_clima_buin()
-            ahora_chile = datetime.now(pytz.timezone("America/Santiago")).strftime("%H:%M:%S")
-            detalles_log = f"Temp: {datos_c['temp']}°C | Viento: {datos_c['wind']} km/h"
-            
-            c_db = db_conn.cursor()
-            c_db.execute("INSERT INTO clima_log (timestamp, detalles) VALUES (?, ?)", (ahora_chile, detalles_log))
-            db_conn.commit()
-            enviar_alerta_telegram(f"Reporte Manual Buin -> {detalles_log}")
-            str_lit.success(f"📡 Registro guardado [{ahora_chile}]: {detalles_log}")
-
-        c_db = db_conn.cursor()
-        c_db.execute("SELECT timestamp, detalles FROM clima_log ORDER BY id DESC LIMIT 3")
-        logs_clima = c_db.fetchall()
-        if logs_clima:
-            for l_time, l_det in logs_clima:
-                str_lit.caption(f"[{l_time}] {l_det}")
-
-        str_lit.markdown("---")
         str_lit.markdown("#### 4. Diagnóstico de Red & Ping Test")
         if str_lit.button("Ejecutar Ping a Servidores"):
             with str_lit.spinner("Midiendo latencia de enlaces globales..."):
@@ -567,24 +609,6 @@ with str_lit.sidebar:
                 str_lit.success(f"🟢 Groq API ({tipo_ping}): {ms_groq} ms")
                 str_lit.success(f"🟢 Open-Meteo GPS (Caché 5m): {ms_meteo} ms")
                 str_lit.success("🟢 SQLite Local: 1 ms")
-
-        str_lit.markdown("---")
-        str_lit.markdown("#### 5. Indexador RAG (Documentos)")
-        doc_subido = str_lit.file_uploader("Cargar manual o PDF para indexar:", type=["txt", "pdf", "md"], key="rag_uploader")
-        if doc_subido is not None:
-            contenido_doc = doc_subido.read().decode("utf-8", errors="ignore")
-            c_db = db_conn.cursor()
-            c_db.execute("INSERT INTO documentos_rag (nombre, contenido) VALUES (?, ?)", (doc_subido.name, contenido_doc))
-            db_conn.commit()
-            str_lit.success(f"📚 Documento '{doc_subido.name}' indexado en memoria vectorial local.")
-
-        c_db = db_conn.cursor()
-        c_db.execute("SELECT nombre FROM documentos_rag")
-        docs_indexados = c_db.fetchall()
-        if docs_indexados:
-            str_lit.markdown("**Base de Conocimiento RAG:**")
-            for d in docs_indexados:
-                str_lit.caption(f"📄 {d[0]}")
 
     with str_lit.expander("📂 Historial de Sesiones Archivadas"):
         c_db = db_conn.cursor()
@@ -609,87 +633,7 @@ with str_lit.sidebar:
         datos_c = obtener_clima_buin()
         str_lit.metric(label="Temperatura en Vivo", value=f"{datos_c['temp']}°C", delta=f"Viento: {datos_c['wind']} km/h")
 
-    with str_lit.expander("🪙 Terminal Cripto & Stablecoins"):
-        crypto_sel = str_lit.selectbox("Activo Cripto:", ["tether", "bitcoin", "ethereum"], key="crypto_sb")
-        if str_lit.button("Consultar Precio Cripto"):
-            try:
-                res = requests.get(f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_sel}&vs_currencies=usd", timeout=2.0)
-                if res.status_code == 200:
-                    val = res.json().get(crypto_sel, {}).get("usd", 1.00)
-                    str_lit.success(f"{crypto_sel.upper()} / USD: ${val:,.2f}")
-            except Exception:
-                str_lit.info("Consulta simulada: $1.00")
-
-    with str_lit.expander("⚡ Protocolo Stark (IA Code Gen)"):
-        lenguaje_code = str_lit.selectbox("Lenguaje:", ["Python", "Streamlit", "HTML/CSS"], key="lang_sb")
-        prompt_code = str_lit.text_input("Solicitud de snippet:", "Crear un botón neón", key="prompt_sb")
-        if str_lit.button("Generar Snippet Táctico", key="btn_gen_snippet"):
-            if prompt_code and client:
-                with str_lit.spinner("Procesando código en laboratorio..."):
-                    p_code = f"Genera un código limpio y directo en {lenguaje_code} para: {prompt_code}. Muestra solo el bloque de código."
-                    comp_code = client.chat.completions.create(
-                        messages=[{"role": "user", "content": p_code}],
-                        model="openai/gpt-oss-20b"
-                    )
-                    snippet = comp_code.choices[0].message.content
-                    str_lit.code(snippet, language=lenguaje_code.lower())
-            else:
-                str_lit.info("Escriba un requerimiento para generar el código.")
-
-    with str_lit.expander("🎙️ Notas de Voz a Misiones (Whisper)"):
-        str_lit.markdown("Grabe una nota de voz y J.A.R.V.I.S. la convertirá en misión:")
-        audio_bytes_nota = audio_recorder(text="Grabar Nota de Misión", icon_size="2x", key="rec_nota_mision")
-        if audio_bytes_nota:
-            str_lit.audio(audio_bytes_nota, format="audio/wav")
-            if client:
-                with str_lit.spinner("Procesando nota de voz con Whisper..."):
-                    try:
-                        with open("temp_nota.wav", "wb") as f_n:
-                            f_n.write(audio_bytes_nota)
-                        with open("temp_nota.wav", "rb") as f_n:
-                            trans_nota = client.audio.transcriptions.create(
-                                model="whisper-large-v3",
-                                file=("temp_nota.wav", f_n.read()),
-                                language="es"
-                            )
-                        texto_nota = trans_nota.text
-                        c_db = db_conn.cursor()
-                        c_db.execute("INSERT INTO misiones (tarea, estado) VALUES (?, ?)", (f"[Voz] {texto_nota}", "Pendiente"))
-                        db_conn.commit()
-                        str_lit.success(f"🎯 ¡Misión creada por voz: '{texto_nota}'!")
-                        str_lit.rerun()
-                    except Exception as e:
-                        str_lit.error(f"Error procesando nota de voz: {e}")
-
-    with str_lit.expander("📈 Mercado Bursátil Tradicional"):
-        ticker_symbol = str_lit.selectbox("Acción:", ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN"], key="stock_sb")
-        if str_lit.button("Consultar Cotización"):
-            try:
-                stock = yf.Ticker(ticker_symbol)
-                price = stock.history(period="1d")['Close'].iloc[-1]
-                str_lit.success(f"Cotización {ticker_symbol}: ${price:.2f}")
-            except Exception:
-                str_lit.info("Datos bursátiles en modo estable.")
-
-    with str_lit.expander("📝 Libreta & Bitácora DB"):
-        str_lit.text_area("Notas rápidas (SQLite):", "1. Sistema nominal.\n2. Módulos integrados.", key="nota_sb")
-        if str_lit.button("Guardar Bitácora", key="btn_bitacora"):
-            str_lit.success("Datos asegurados en base de datos.")
-            
-        if str_lit.session_state.messages:
-            html_reporte = generar_html_pdf(str_lit.session_state.messages)
-            str_lit.download_button(
-                label="📄 Descargar Informe Táctico (PDF)",
-                data=html_reporte,
-                file_name="informe_tactico_jarvis.html",
-                mime="text/html",
-                key="dl_pdf_sb"
-            )
-
-    with str_lit.expander("🎵 Reproductor de Música (Spotify)"):
-        spotify_html = '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'
-        components.html(spotify_html, height=160, scrolling=False)
-
+    # MAPA CARTOGRÁFICO EN BARRA LATERAL
     str_lit.markdown("---")
     str_lit.markdown("### 🗺️ Mapa Cartográfico GPS")
     
@@ -749,7 +693,7 @@ with col_reloj:
     components.html(reloj_html, height=65, scrolling=False)
 
 if str_lit.session_state.codigo_rojo:
-    str_lit.error("⚠️ **¡ATENCIÓN JEFA! PROTOCOLO DE EMERGENCIA ACTIVADO // CÓDIGO ROJO DE DEFENSA EN CURSO** ⚠️")
+    str_lit.error("⚠️ **¡ATENCIÓN JEFA! PROTOCOLO HOUSE PARTY ACTIVADO // CÓDIGO ROJO DE DEFENSA EN CURSO** ⚠️")
 
 str_lit.markdown("---")
 
