@@ -1,3 +1,5 @@
+import pandas as pd
+import pydeck as pdk
 import streamlit as st
 
 # Configuración inicial de la página
@@ -40,10 +42,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- BARRA LATERAL: TELEMETRÍA Y SISTEMAS ---
-with st.sidebar:
-    st.markdown("### ⚡ Telemetría y Sistemas")
-    st.markdown("---")
+# Encabezado principal
+st.markdown(
+    "### 💬 Interfaz de Conversación Autónoma (Comando de Voz: 'Hey Jarvis')"
+)
+
+col_btn1, col_btn2 = st.columns([1, 5])
+with col_btn1:
+    if st.button("🗑️ Purgar Chat"):
+        st.toast("Historial de chat purgado con éxito.", icon="🧹")
+
+st.markdown("---")
+
+# Distribución principal: Izquierda (Módulos / Juguetes), Derecha (Mapas y Globo Terráqueo + Chat)
+col_left, col_right = st.columns([1, 2], gap="medium")
+
+with col_left:
+    st.markdown("#### ⚡ Telemetría y Sistemas")
 
     # Módulo 1: Ubicación Base
     st.markdown(
@@ -93,39 +108,66 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("---")
     st.markdown(
-        "<small style='color: #8a99ad;'>J.A.R.V.I.S. IA Autónomo<br>Buin, Chile.</small>",
+        "<small style='color: #8a99ad;'>J.A.R.V.I.S. IA Autónomo — Buin, Chile.</small>",
         unsafe_allow_html=True,
     )
 
+with col_right:
+    st.markdown("#### 🌍 Enlace Cartográfico y Globo Terráqueo Táctico")
 
-# --- PANTALLA PRINCIPAL: NÚCLEO CONVERSACIONAL ---
-st.markdown(
-    "### 💬 Interfaz de Conversación Autónoma (Comando de Voz: 'Hey Jarvis')"
-)
-
-col_btn1, col_btn2 = st.columns([1, 4])
-with col_btn1:
-    if st.button("🗑️ Purgar Chat"):
-        st.toast("Historial de chat purgado con éxito.", icon="🧹")
-
-st.markdown("---")
-
-# Contenedor del historial de chat en la pantalla principal con buen espacio
-chat_container = st.container(height=420)
-
-with chat_container:
-    st.chat_message("assistant").write(
-        "Sistemas en línea, Cindy. Telemetría movida al panel lateral para optimizar la interfaz. ¿Qué orden ejecutamos hoy?"
+    # Coordenadas base para Buin, Chile (-33.7333, -70.7333)
+    map_data = pd.DataFrame(
+        {"latitude": [-33.7333], "longitude": [-70.7333]}
     )
 
-# Entrada de texto del chat
-user_input = st.chat_input("Escriba su comando o diga 'Hey Jarvis'...")
+    # Sub-columnas a la derecha para mostrar Mapa y Globo lado a lado
+    map_col1, map_col2 = st.columns(2)
 
-if user_input:
-    with chat_container:
-        st.chat_message("user").write(user_input)
-        st.chat_message("assistant").write(
-            f"Comando procesado correctamente: '{user_input}'"
+    with map_col1:
+        st.markdown(
+            "<small style='color: #00f0ff;'>🗺️ Mapa Cartográfico (Buin)</small>",
+            unsafe_allow_html=True,
         )
+        st.map(map_data, zoom=10, use_container_width=True)
+
+    with map_col2:
+        st.markdown(
+            "<small style='color: #00f0ff;'>🌐 Globo Terráqueo 3D</small>",
+            unsafe_allow_html=True,
+        )
+        # Renderizado del Globo Terráqueo usando PyDeck con proyección de globo
+        globe_view = pdk.ViewState(
+            latitude=-33.7333,
+            longitude=-70.7333,
+            zoom=2,
+            pitch=0,
+            projection="globe",
+        )
+        r = pdk.Deck(
+            views=[pdk.View(type="MapView")],
+            initial_view_state=globe_view,
+            tooltip={"text": "Buin, Chile - Núcleo Activo"},
+        )
+        st.pydeck_chart(r, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("#### 🎙️ Núcleo Conversacional")
+
+    # Contenedor del historial de chat
+    chat_container = st.container(height=300)
+
+    with chat_container:
+        st.chat_message("assistant").write(
+            "Sistemas restaurados, Cindy. Telemetría a la izquierda y módulos cartográficos/globo 3D activos a la derecha. ¿Qué orden ejecutamos?"
+        )
+
+    # Entrada de texto del chat
+    user_input = st.chat_input("Escriba su comando o diga 'Hey Jarvis'...")
+
+    if user_input:
+        with chat_container:
+            st.chat_message("user").write(user_input)
+            st.chat_message("assistant").write(
+                f"Comando ejecutado con éxito: '{user_input}'"
+            )
