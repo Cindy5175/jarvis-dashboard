@@ -260,26 +260,4 @@ function actualizarReloj() {
     const dia = String(ahora.getDate()).padStart(2, '0');
     const mes = String(ahora.getMonth() + 1).padStart(2, '0');
     const anio = ahora.getFullYear();
-    const horas = String(ahora.getHours()).padStart(2, '0');
-    const minutos = String(ahora.getMinutes()).padStart(2, '0');
-    const segundos = String(ahora.getSeconds()).padStart(2, '0');
-    
-    document.getElementById('fecha-live').textContent = dia + '/' + mes + '/' + anio;
-    document.getElementById('reloj-live').textContent = horas + ':' + minutos + ':' + segundos;
-}
-setInterval(actualizarReloj, 1000);
-actualizarReloj();
-</script>
-"""
-components.html(reloj_html, height=35)
-
-st.markdown("---")
-
-# PLANO 50/50
-col_left, col_right = st.columns(2, gap="medium")
-
-# ==========================================
-# COLUMNA IZQUIERDA: MINI VIÑETA Y PANEL DESPLEGABLE DE MÓDULOS
-# ==========================================
-with col_left:
-    # VIÑETA / MINI MÓDULO OCULTO PRINCIPAL
+    const horas = String(ahora.
