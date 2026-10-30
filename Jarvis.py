@@ -344,7 +344,7 @@ with col_left:
         unsafe_allow_html=True,
     )
 
-    # VISOR HOLOGRÁFICO 3D CON GLOBO Y SATÉLITE GIRANDO + COORDENADAS
+    # VISOR HOLOGRÁFICO 3D CON ALTURA CORREGIDA PARA LAS COORDENADAS
     globo_holografico_3d_html = """
     <div style="background-color: #05080f; border: 1px solid #00f0ff; border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);">
         <div style="color: #00f0ff; font-weight: bold; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 6px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
@@ -398,7 +398,7 @@ with col_left:
     animate();
     </script>
     """
-    components.html(globo_holografico_3d_html, height=255)
+    components.html(globo_holografico_3d_html, height=290)
 
 with col_right:
     st.markdown("#### 💬 Chat IA")
