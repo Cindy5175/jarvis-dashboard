@@ -266,18 +266,16 @@ with col_left:
 
     with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
         st.markdown(
-            """
-            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">
-                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 5px;">ESTADO DE NODOS GLOBALES</div>
-                <div style="font-size: 0.85em; color: #8a99ad;">Santiago/Buin ⇄ Servidores Cloud ⇄ Enlaces Satelitales</div>
-                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 8px 0;">
-                <div style="display: flex; justify-content: space-around; font-size: 0.8em; color: #00f0ff;">
-                    <span>🟢 Latencia: 14ms</span>
-                    <span>🟢 Tráfico: Seguro</span>
-                    <span>🟢 Nodo: Activo</span>
-                </div>
-            </div>
-            """,
+            '<div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">'
+            '<div style="color: #00f0ff; font-weight: bold; margin-bottom: 5px;">ESTADO DE NODOS GLOBALES</div>'
+            '<div style="font-size: 0.85em; color: #8a99ad;">Santiago/Buin ⇄ Servidores Cloud ⇄ Enlaces Satelitales</div>'
+            '<hr style="border-color: #00f0ff; opacity: 0.3; margin: 8px 0;">'
+            '<div style="display: flex; justify-content: space-around; font-size: 0.8em; color: #00f0ff;">'
+            "<span>🟢 Latencia: 14ms</span>"
+            "<span>🟢 Tráfico: Seguro</span>"
+            "<span>🟢 Nodo: Activo</span>"
+            "</div>"
+            "</div>",
             unsafe_allow_html=True,
         )
         if st.button("🛰️ Sincronizar Mapa Global"):
@@ -291,9 +289,10 @@ with col_left:
 
     with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
         st.markdown(
-            """
-            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">
-                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">TERMINAL DE TRADING ALGORÍTMICO</div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;">
-                    <span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span>
-                    <span>FLUX: <strong style="color: #00f0ff;">+$1
+            '<div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">'
+            '<div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">TERMINAL DE TRADING ALGORÍTMICO</div>'
+            '<div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;">'
+            '<span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span>'
+            '<span>FLUX: <strong style="color: #00f0ff;">+$1,290,861</strong></span>'
+            "</div>"
+            '<div style="display: flex; justify-content: space-between; font-size
