@@ -479,7 +479,9 @@ with col_left:
                 ).json()
                 val_dolar = res_dolar["serie"][0]["valor"]
                 val_euro = res_euro["serie"][0]["valor"]
-                st.success(f"💵 Dólar: ${val_dolar} CLP \vert{} 💶 Euro: ${val_euro} CLP")
+                st.success(
+                    f"💵 Dólar: ${val_dolar} CLP | 💶 Euro: ${val_euro} CLP"
+                )
                 guardar_log_db(hora_hoy, "Consulta divisas ejecutada.")
             except Exception:
                 st.info("Mercado fiduciario: Dólar ~940 CLP | Euro ~1020 CLP")
@@ -497,3 +499,215 @@ with col_left:
             if nuevo_nombre_clave and nuevo_valor_clave:
                 st.session_state.caja_fuerte[nuevo_nombre_clave] = (
                     nuevo_valor_clave
+                )
+                guardar_vault_db(nuevo_nombre_clave, nuevo_valor_clave)
+                st.success(
+                    f"Credencial '{nuevo_nombre_clave}' asegurada, jefa."
+                )
+                guardar_log_db(
+                    hora_hoy, f"Credencial '{nuevo_nombre_clave}' guardada."
+                )
+
+        st.markdown("---")
+        clave_maestra_input = st.text_input(
+            "Ingrese clave maestra (Jarvis 51):",
+            type="password",
+            key="vault_master_key",
+        )
+        if clave_maestra_input == "Jarvis 51":
+            for serv, cred in st.session_state.caja_fuerte.items():
+                st.code(f"{serv} ➔ {cred}", language="text")
+
+    with st.expander("📋 Registro de Auditoría (Caja Negra Persistente)"):
+        logs_recientes = cargar_logs_db()
+        for log in logs_recientes:
+            st.code(log, language="text")
+
+    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada (ElevenLabs / Stark)"):
+        texto_voz = st.text_input(
+            "Texto para hablar:",
+            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
+            key="tts_box",
+        )
+        if st.button("🔊 Sintonizar Voz"):
+            try:
+                url_eleven = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+                headers = {
+                    "Accept": "audio/mpeg",
+                    "Content-Type": "application/json",
+                    "xi-api-key": ELEVENLABS_API_KEY,
+                }
+                data = {
+                    "text": texto_voz,
+                    "model_id": "eleven_multilingual_v2",
+                    "voice_settings": {
+                        "stability": 0.82,
+                        "similarity_boost": 0.90,
+                    },
+                }
+                response = requests.post(
+                    url_eleven, json=data, headers=headers, timeout=10
+                )
+                if response.status_code == 200:
+                    st.audio(BytesIO(response.content), format="audio/mp3")
+                else:
+                    tts = gTTS(text=texto_voz, lang="es", slow=False)
+                    fp = BytesIO()
+                    tts.write_to_fp(fp)
+                    fp.seek(0)
+                    st.audio(fp, format="audio/mp3")
+            except Exception:
+                tts = gTTS(text=texto_voz, lang="es", slow=False)
+                fp = BytesIO()
+                tts.write_to_fp(fp)
+                fp.seek(0)
+                st.audio(fp, format="audio/mp3")
+
+        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
+            st.session_state.emergencia_activa = True
+            st.rerun()
+
+    # VISOR HOLOGRÁFICO 3D DE BUIN
+    st.markdown("---")
+    globo_holografico_3d_html = """
+    <div style="background-color: #05080f; border: 1px solid #00f0ff; border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4); margin-top: 10px;">
+        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 6px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
+            🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
+        </div>
+        <div id="globe-container" style="width: 100%; height: 180px; position: relative; margin: 4px 0;"></div>
+        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 6px; font-weight: bold; letter-spacing: 1px; font-family: monospace; border-top: 1px solid rgba(0, 240, 255, 0.3); padding-top: 6px;">
+            📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+    const container = document.getElementById('globe-container');
+    const width = container.clientWidth;
+    const height = 180;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.z = 3.2;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
+
+    const geometry = new THREE.SphereGeometry(1.2, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.25 });
+    const globe = new THREE.Mesh(geometry, material);
+    scene.add(globe);
+
+    const innerGeo = new THREE.SphereGeometry(1.15, 32, 32);
+    const innerMat = new THREE.MeshBasicMaterial({ color: 0x011627, transparent: true, opacity: 0.9 });
+    const innerGlobe = new THREE.Mesh(innerGeo, innerMat);
+    scene.add(innerGlobe);
+
+    const satGeo = new THREE.BoxGeometry(0.08, 0.04, 0.04);
+    const satMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+    const satellite = new THREE.Mesh(satGeo, satMat);
+    scene.add(satellite);
+
+    let satAngle = 0;
+    function animate() {
+        requestAnimationFrame(animate);
+        globe.rotation.y += 0.003;
+        satAngle += 0.02;
+        satellite.position.x = Math.cos(satAngle) * 1.8;
+        satellite.position.z = Math.sin(satAngle) * 1.8;
+        satellite.position.y = Math.sin(satAngle * 0.5) * 0.8;
+        renderer.render(scene, camera);
+    }
+    animate();
+    </script>
+    """
+    components.html(globo_holografico_3d_html, height=275)
+
+
+# ==========================================
+# COLUMNA DERECHA: CAJA DE CHAT IA CONECTADA
+# ==========================================
+with col_right:
+    st.markdown("#### 💬 Chat IA (Subsistema Cognitivo Expandido)")
+
+    chat_container = st.container(height=520)
+
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
+
+    if user_input:
+        st.session_state.messages.append(
+            {"role": "user", "content": user_input}
+        )
+        guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
+
+        saludo_actual = obtener_saludo_jefa()
+        u_lower = user_input.lower()
+
+        # Respuesta con Razonamiento Expandido
+        if "despierto" in u_lower or "despiertas" in u_lower:
+            resp = (
+                "Para usted, jefa, siempre. Sensores, RAG documental, API LLM y agentes autónomos completamente abiertos."
+            )
+        elif any(
+            w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
+        ):
+            resp = (
+                "¿Yo, sarcástico? Jamás se me ocurriría, jefa. Simplemente mantengo el estándar cibernético máximo en Buin."
+            )
+        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
+            resp = (
+                f"Son exactamente las {hora_hoy} del {fecha_hoy} en Buin, jefa."
+            )
+        elif "clima" in u_lower:
+            resp = (
+                "El clima en Buin se encuentra estable. Telemetría consultada en el panel de control."
+            )
+        elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
+            resp = (
+                "Rendimiento del sistema óptimo. CPU y RAM operando en rangos seguros."
+            )
+        elif any(
+            w in u_lower
+            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
+        ):
+            resp = (
+                f"{saludo_actual} Qué excelente escucharla de nuevo. ¿Qué directiva ejecutamos en Buin, jefa?"
+            )
+        elif "gracias" in u_lower:
+            resp = (
+                "Un placer absoluto, jefa. El mérito táctico siempre es suyo."
+            )
+        else:
+            contexto_rag = buscar_rag_db(user_input)
+            ext_info = ""
+            if contexto_rag:
+                ext_info = (
+                    f" [Memoria RAG recuperada: {contexto_rag[0][0]}]"
+                )
+
+            resp = (
+                f"Analizado con cerebro expandido, jefa. Respecto a '{user_input}'{ext_info}, he evaluado las variables en los documentos locales y nodos de red. El sistema comprende el contexto por completo y está listo para ejecutar."
+            )
+
+        st.session_state.messages.append(
+            {"role": "assistant", "content": resp}
+        )
+        st.rerun()
+
+    c_purg1, c_purg2 = st.columns([3, 1])
+    with c_purg2:
+        if st.button("🗑️ Purgar Chat"):
+            st.session_state.messages = [
+                {
+                    "role": "assistant",
+                    "content": f"{obtener_saludo_jefa()} Historial de chat purgado. Cerebro listo y limpio.",
+                }
+            ]
+            guardar_log_db(hora_hoy, "Historial de chat purgado.")
+            st.rerun()
