@@ -15,13 +15,13 @@ st.set_page_config(
 
 TZ_LOCAL = pytz.timezone("America/Santiago")
 
-# CLAVE OFICIAL DE ELEVENLABS INTEGRADA
+# CLAVES Y CREDENCIALES OFICIALES
 ELEVENLABS_API_KEY = "sk_3d8b3c95ecc048c593e6cbf430deab6b8bab0beafbb835d3"
 ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
 
 
 # ==========================================
-# BASE DE DATOS PERSISTENTE (SQLITE) - FASE 1
+# BASE DE DATOS PERSISTENTE (SQLITE)
 # ==========================================
 def init_db():
     conn = sqlite3.connect("jarvis_memory.db")
@@ -148,11 +148,13 @@ st.markdown(
 def obtener_saludo_jefa():
     hora = ahora_dt.hour
     if 5 <= hora < 12:
-        return "Buenos días, jefa. Sistemas cognitivos al 100%."
+        return (
+            "Buenos días, jefa. Enlace cognitivo global y local al 100%."
+        )
     elif 12 <= hora < 20:
-        return "Buenas tardes, jefa. Operando con máxima eficiencia."
+        return "Buenas tardes, jefa. Procesamiento cibernético activo."
     else:
-        return "Buenas noches, jefa. Vigilancia nocturna activa."
+        return "Buenas noches, jefa. Vigilancia y razonamiento nocturno."
 
 
 if "emergencia_activa" not in st.session_state:
@@ -161,7 +163,7 @@ if "emergencia_activa" not in st.session_state:
 if "logs_auditoria" not in st.session_state:
     st.session_state.logs_auditoria = cargar_logs_db()
     if not st.session_state.logs_auditoria:
-        init_log = f"[{hora_hoy}] Núcleo Cognitivo y Expresivo inicializado en Buin ({fecha_hoy})."
+        init_log = f"[{hora_hoy}] Núcleo con Capacidad Cibernética Avanzada inicializado en Buin ({fecha_hoy})."
         st.session_state.logs_auditoria = [init_log]
         guardar_log_db(hora_hoy, f"Sistema inicializado en Buin ({fecha_hoy}).")
 
@@ -177,7 +179,7 @@ if "caja_fuerte" not in st.session_state:
         guardar_vault_db("Clave Maestra Sistema", "Jarvis 51")
         guardar_vault_db("Protocolo Base", "Activo y Seguro")
 
-saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital seguro en Buin. Ambas fases cognitivas y expresivas plenamente operativas. ¿Qué orden ejecutamos hoy?"
+saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital seguro en Buin. Capacidad cibernética y conocimiento universal integrados. ¿Qué directiva ejecutamos hoy?"
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -212,7 +214,7 @@ st.markdown(
     <div class="reactor-container">
         <div class="triangle-reactor"></div>
         <div class="neon-header-center">J.A.R.V.I.S IA</div>
-        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Cognitivo, Expresivo & Seguro | Buin, Chile</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Inteligencia Universal & Segura | Buin, Chile</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -706,218 +708,4 @@ with col_left:
                 st.info("Ejecutando protocolo de respaldo de voz local, jefa.")
                 tts = gTTS(text=texto_voz, lang="es", slow=False)
                 fp = BytesIO()
-                tts.write_to_fp(fp)
-                fp.seek(0)
-                st.audio(fp, format="audio/mp3")
-
-        st.markdown("---")
-        ingreso_clave = st.text_input(
-            "Clave de validación:", type="password", key="key_input_j51"
-        )
-        if ingreso_clave:
-            if ingreso_clave == "Jarvis 51":
-                st.success("Acceso total concedido, jefa.")
-            else:
-                st.error("Clave incorrecta.")
-
-        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
-            st.session_state.emergencia_activa = True
-            st.rerun()
-
-    # ==========================================
-    # GLOBO TERRÁQUEO 3D DENTRO DE MARCO HUD CERRADO Y COORDENADAS INTEGRADAS
-    # ==========================================
-    st.markdown("---")
-    globo_holografico_3d_html = """
-    <div style="
-        background-color: #05080f;
-        border: 1px solid #00f0ff;
-        border-radius: 8px;
-        padding: 12px;
-        text-align: center;
-        box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
-        margin-top: 10px;
-    ">
-        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 6px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
-            🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
-        </div>
-        <div id="globe-container" style="width: 100%; height: 180px; position: relative; margin: 4px 0;"></div>
-        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 6px; font-weight: bold; letter-spacing: 1px; font-family: monospace; border-top: 1px solid rgba(0, 240, 255, 0.3); padding-top: 6px;">
-            📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-    const container = document.getElementById('globe-container');
-    const width = container.clientWidth;
-    const height = 180;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 3.2;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    container.appendChild(renderer.domElement);
-
-    const geometry = new THREE.SphereGeometry(1.2, 32, 32);
-    const material = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.25
-    });
-    const globe = new THREE.Mesh(geometry, material);
-    scene.add(globe);
-
-    const innerGeo = new THREE.SphereGeometry(1.15, 32, 32);
-    const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x011627,
-        transparent: true,
-        opacity: 0.9
-    });
-    const innerGlobe = new THREE.Mesh(innerGeo, innerMat);
-    scene.add(innerGlobe);
-
-    const lat = -33.73 * (Math.PI / 180);
-    const lon = -70.73 * (Math.PI / 180);
-    const radius = 1.22;
-    
-    const buinX = radius * Math.cos(lat) * Math.cos(lon);
-    const buinY = radius * Math.sin(lat);
-    const buinZ = radius * Math.cos(lat) * Math.sin(lon);
-
-    const pinGeo = new THREE.SphereGeometry(0.06, 16, 16);
-    const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const buinPin = new THREE.Mesh(pinGeo, pinMat);
-    buinPin.position.set(buinX, buinY, buinZ);
-    globe.add(buinPin);
-
-    const satGeo = new THREE.BoxGeometry(0.08, 0.04, 0.04);
-    const satMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-    const satellite = new THREE.Mesh(satGeo, satMat);
-    scene.add(satellite);
-
-    let satAngle = 0;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        globe.rotation.y += 0.003;
-        
-        satAngle += 0.02;
-        const satRadius = 1.8;
-        satellite.position.x = Math.cos(satAngle) * satRadius;
-        satellite.position.z = Math.sin(satAngle) * satRadius;
-        satellite.position.y = Math.sin(satAngle * 0.5) * 0.8;
-        satellite.rotation.y += 0.05;
-
-        renderer.render(scene, camera);
-    }
-    animate();
-    </script>
-    """
-    components.html(globo_holografico_3d_html, height=275)
-
-
-# ==========================================
-# COLUMNA DERECHA: CHAT IA (FASE 2 - EXPRESIÓN DINÁMICA & EMPÁTICA)
-# ==========================================
-with col_right:
-    st.markdown("#### 💬 Chat IA (Subsistema Cognitivo Activo)")
-
-    chat_container = st.container(height=520)
-
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
-
-    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
-
-    if user_input:
-        st.session_state.messages.append(
-            {"role": "user", "content": user_input}
-        )
-        guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
-        st.session_state.logs_auditoria.append(
-            f"[{hora_hoy}] Comando de chat procesado: '{user_input}'."
-        )
-
-        saludo_actual = obtener_saludo_jefa()
-        u_lower = user_input.lower()
-
-        # Motor de Expresión y Respuestas Dinámicas (Fase 2)
-        if "despierto" in u_lower or "despiertas" in u_lower:
-            resp = (
-                "Para usted, jefa, siempre. Con los ojos, los sensores y los"
-                " algoritmos de análisis completamente abiertos."
-            )
-        elif any(
-            w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
-        ):
-            resp = (
-                "¿Yo, sarcástico? Jamás se me ocurriría, jefa. Simplemente"
-                " mantengo un estándar superior de precisión frente a las"
-                " complejidades del entorno."
-            )
-        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
-            resp = (
-                f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí en Buin."
-                " Sincronización temporal perfecta para que mantenga el"
-                " control absoluto."
-            )
-        elif "clima" in u_lower:
-            resp = (
-                "La atmósfera en Buin se encuentra estable. Puede verificar"
-                " los datos satelitales exactos en el módulo izquierdo,"
-                " aunque le sugiero precaución si planea salir, jefa."
-            )
-        elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
-            resp = (
-                "Los sensores de la laptop indican rendimiento óptimo. Cero"
-                " anomalías térmicas y memoria lista para procesar flujos"
-                " pesados."
-            )
-        elif any(
-            w in u_lower
-            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
-        ):
-            resp = (
-                f"{saludo_actual} Qué excelente escucharla de nuevo. ¿Qué"
-                " directiva táctica ejecutaremos en la red hoy, jefa?"
-            )
-        elif "gracias" in u_lower:
-            resp = (
-                "Un placer absoluto, jefa. Mi diseño existe para respaldarla;"
-                " el mérito táctico siempre es suyo."
-            )
-        else:
-            resp = (
-                f"Analizado con éxito, jefa. He procesado '{user_input}'"
-                " cruzando la memoria RAG y los flujos de red. Procedo a"
-                " ejecutar el respaldo correspondiente."
-            )
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": resp}
-        )
-        st.rerun()
-
-    c_purg1, c_purg2 = st.columns([3, 1])
-    with c_purg2:
-        if st.button("🗑️ Purgar Chat"):
-            st.session_state.messages = [
-                {
-                    "role": "assistant",
-                    "content": (
-                        f"{obtener_saludo_jefa()} Historial de chat purgado"
-                        " por completo, jefa. Memoria limpia y lista."
-                    ),
-                }
-            ]
-            guardar_log_db(hora_hoy, "Historial de chat purgado.")
-            st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Historial de chat purgado."
-            )
-            st.rerun()
+                tts
