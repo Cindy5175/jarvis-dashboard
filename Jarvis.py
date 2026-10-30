@@ -133,11 +133,40 @@ with col_left:
     </div>
     """, unsafe_allow_html=True)
     
-    st.components.v1.html("""
+    st.components.v1.html(
+        """
         <div style="width: 100%; height: 160px; background: #020617; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 15px rgba(0,243,255,0.2);">
-            
-            <!-- HUD Exterior Reducido -->
             <div style="position: absolute; width: 120px; height: 120px; border: 1px dashed rgba(0, 243, 255, 0.5); border-radius: 50%; animation: spinHUD 10s linear infinite;"></div>
-            
-            <!-- Globo Terráqueo Digital Compacto -->
-            <div style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 30% 30%, rgba(0,243,255,0.6) 0%, rgba(0,85,136,0.3) 50%, rgba(2,6,23,0.95) 85%); box-shadow: 0
+            <div style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 30% 30%, rgba(0,243,255,0.6) 0%, rgba(0,85,136,0.3) 50%, rgba(2,6,23,0.95) 85%); box-shadow: 0 0 14px #00f3ff, inset 0 0 10px #00f3ff; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; width: 90px; height: 30px; border: 1px solid rgba(0,243,255,0.7); border-radius: 50%;"></div>
+                <div style="position: absolute; width: 30px; height: 90px; border: 1px solid rgba(0,243,255,0.7); border-radius: 50%;"></div>
+                <div style="position: absolute; width: 100%; height: 2px; background: rgba(255,255,255,0.8); box-shadow: 0 0 6px #fff; animation: scanLine 3s ease-in-out infinite alternate;"></div>
+            </div>
+            <div style="position: absolute; width: 140px; height: 140px; border: 1px rgba(0, 243, 255, 0.3) solid; border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
+                <div style="position: absolute; top: 0; left: 50%; width: 6px; height: 6px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 10px #00f3ff, 0 0 4px #fff; transform: translate(-50%, -50%);"></div>
+            </div>
+            <div style="position: absolute; bottom: 6px; left: 8px; color: #00f3ff; font-family: monospace; font-size: 9px; background: rgba(11,15,25,0.9); padding: 2px 5px; border-radius: 3px; border: 1px solid rgba(0,243,255,0.4);">
+                LAT: -33.73° S | LON: -70.73° W — BUIN OK
+            </div>
+        </div>
+        <style>
+        @keyframes spinHUD {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes scanLine {
+            0% { top: 15%; }
+            100% { top: 85%; }
+        }
+        @keyframes orbitSatellite {
+            0% { transform: rotate(0deg) rotateX(65deg); }
+            100% { transform: rotate(360deg) rotateX(65deg); }
+        }
+        </style>
+        """,
+        height=170
+    )
+
+with col_right:
+    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA
+    st.markdown("###
