@@ -335,4 +335,23 @@ with col_left:
                     disco = psutil.disk_usage("/")
                     disco_uso = disco.percent
 
-                    info_bat = " | Entorno
+                    info_bat = " | Entorno Cloud (Sin batería física)"
+                    try:
+                        bateria = psutil.sensors_battery()
+                        if bateria:
+                            bat_pct = bateria.percent
+                            bat_enchufado = (
+                                "🔌 Conectado"
+                                if bateria.power_plugged
+                                else "🔋 Batería"
+                            )
+                            info_bat = f" | {bat_enchufado}: {bat_pct}%"
+                    except Exception:
+                        pass
+
+                    st.success(
+                        f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
+                    )
+                    guardar_log_db(
+                        hora_hoy,
+                        f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.",
