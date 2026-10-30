@@ -259,9 +259,9 @@ st.markdown("---")
 col_left, col_right = st.columns(2, gap="medium")
 
 with col_left:
-    st.markdown("#### 🛡️ Subsistema de Conexiones y Controles (15 Módulos)")
+    st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
 
-    with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
+    with st.expander("🌤️ Clima Satelital en Vivo (Buin)"):
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
                 url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
@@ -282,7 +282,7 @@ with col_left:
                     "No se pudo conectar al servidor meteorológico, jefa."
                 )
 
-    with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
+    with st.expander("🌐 Buscador Web 24/7 (Satelital)"):
         query_web = st.text_input(
             "Ingrese consulta web en tiempo real:", key="search_web_input"
         )
@@ -298,7 +298,7 @@ with col_left:
                 f"[{hora_hoy}] Búsqueda web autónoma preparada: '{query_web}'."
             )
 
-    with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
+    with st.expander("🌍 Mapeo de Red Global & Flujos Tácticos"):
         st.markdown(
             """
             <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">
@@ -324,7 +324,7 @@ with col_left:
                 f"[{hora_hoy}] Sincronización de red global ejecutada."
             )
 
-    with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
+    with st.expander("📈 Terminal HUD de Trading & Métricas"):
         st.markdown(
             """
             <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">
@@ -355,7 +355,7 @@ with col_left:
                 f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD."
             )
 
-    with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
+    with st.expander("💻 Sensor de Hardware & Laptop (CPU/RAM)"):
         st.write("Diagnóstico de sistema en tiempo real:")
         if st.button("🔍 Escanear Hardware"):
             try:
@@ -398,7 +398,7 @@ with col_left:
                     f"No se pudieron leer los sensores de hardware del sistema local: {e}"
                 )
 
-    with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
+    with st.expander("🎙️ Escucha Permanente & Micrófono IA"):
         st.write("Activa el reconocimiento de voz continuo en el navegador:")
         components.html(
             '<div style="text-align: center; padding: 5px;'
@@ -442,7 +442,7 @@ with col_left:
             height=130,
         )
 
-    with st.expander("🖼️ 7. Banco de Imágenes & Vokaturi"):
+    with st.expander("🖼️ Banco de Imágenes & Vokaturi"):
         prompt_img = st.text_input(
             "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
             key="img_prompt",
@@ -455,7 +455,7 @@ with col_left:
                 use_container_width=True,
             )
 
-    with st.expander("📊 8. Monitor Fiduciario & Divisas (USD / EUR)"):
+    with st.expander("📊 Monitor Fiduciario & Divisas (USD / EUR)"):
         st.write(
             "Indicadores financieros oficiales con análisis predictivo de"
             " tendencias:"
@@ -487,7 +487,7 @@ with col_left:
                     " ~940 CLP | Euro: ~1,020 CLP."
                 )
 
-    with st.expander("🚨 9. Sensores de Perímetro y Entorno"):
+    with st.expander("🚨 Sensores de Perímetro y Entorno"):
         st.write("Estado de seguridad física:")
         st.markdown(
             "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores"
@@ -496,7 +496,7 @@ with col_left:
             unsafe_allow_html=True,
         )
 
-    with st.expander("🔒 10. Protocolo Caja Fuerte (Códigos & Credenciales)"):
+    with st.expander("🔒 Protocolo Caja Fuerte (Códigos & Credenciales)"):
         st.write("Almacenamiento seguro de claves de acceso:")
         nuevo_nombre_clave = st.text_input(
             "Identificador / Servicio:", key="vault_name"
@@ -544,7 +544,7 @@ with col_left:
                 " cifrados."
             )
 
-    with st.expander("📄 11. Conexión Documental (RAG & Memoria Semántica)"):
+    with st.expander("📄 Conexión Documental (RAG & Memoria Semántica)"):
         st.write(
             "Memoria contextual avanzada para indexación de documentos locales:"
         )
@@ -574,348 +574,4 @@ with col_left:
 
         st.markdown("---")
         consulta_rag = st.text_input(
-            "Búsqueda Semántica en Base de Conocimiento:", key="rag_search_input"
-        )
-        if consulta_rag:
-            resultados_rag = buscar_rag_db(consulta_rag)
-            if resultados_rag:
-                for tit, cont in resultados_rag:
-                    st.markdown(
-                        f"📌 **Coincidencia semántica en [{tit}]:**\n>"
-                        f" {cont[:350]}..."
-                    )
-            else:
-                st.warning(
-                    "No se encontraron vectores o coincidencias semánticas"
-                    " exactas en los archivos indexados."
-                )
-
-    with st.expander("📡 12. Comunicaciones & Alertas de Salida"):
-        st.write("Emisión de alertas y notificaciones externas:")
-        destinatario = st.text_input(
-            "Destinatario (Email/Telegram ID):", key="msg_dest"
-        )
-        cuerpo_msg = st.text_area("Mensaje de notificación:", key="msg_body")
-        if st.button("📤 Enviar Notificación Externa"):
-            if destinatario and cuerpo_msg:
-                st.success(
-                    f"Alerta despachada correctamente a {destinatario}, jefa."
-                )
-                guardar_log_db(hora_hoy, f"Alerta enviada a {destinatario}")
-            else:
-                st.warning("Complete el destinatario y mensaje.")
-
-    with st.expander("⏱️ 13. Tareas Autónomas en Segundo Plano"):
-        st.write("Programación de agentes de rastreo:")
-        st.checkbox("Monitorear clima de Buin cada hora", value=True)
-        st.checkbox(
-            "Rastrear variaciones bruscas USD/EUR (Alertas predictivas)",
-            value=True,
-        )
-        st.checkbox("Generar respaldo diario de Caja Fuerte", value=True)
-        if st.button("⚙️ Actualizar Tareas en Segundo Plano"):
-            st.success(
-                "Daemon de tareas y monitoreo predictivo reconfigurado al"
-                " 100%, jefa."
-            )
-            guardar_log_db(hora_hoy, "Tareas de segundo plano actualizadas.")
-
-    with st.expander("⚡ 14. Atajos de Comandos Rápidos"):
-        c_at1, c_at2 = st.columns(2)
-        with c_at1:
-            if st.button("🕒 Hora y Fecha"):
-                st.session_state.messages.append(
-                    {"role": "user", "content": "¿Qué hora y fecha es?"}
-                )
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": (
-                            f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí"
-                            " en Buin, jefa. El tiempo no se detiene para"
-                            " nosotros."
-                        ),
-                    }
-                )
-                st.rerun()
-        with c_at2:
-            if st.button("📡 Estado de Red"):
-                st.session_state.messages.append(
-                    {"role": "user", "content": "Estado de redes"}
-                )
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": (
-                            "Enlace satelital 24/7 operativo al 100% y seguro"
-                            f" [{hora_hoy}], jefa. Canales cifrados."
-                        ),
-                    }
-                )
-                st.rerun()
-
-    with st.expander("📋 15. Registro de Auditoría (Caja Negra Persistente)"):
-        st.text("Historial técnico de comandos recientes:")
-        logs_recientes = cargar_logs_db()
-        for log in logs_recientes:
-            st.code(log, language="text")
-
-    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada (ElevenLabs / Stark)"):
-        texto_voz = st.text_input(
-            "Texto para hablar con tono Jarvis:",
-            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
-            key="tts_box",
-        )
-
-        if st.button("🔊 Sintonizar Voz (ElevenLabs Optimizado)"):
-            try:
-                url_eleven = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
-                headers = {
-                    "Accept": "audio/mpeg",
-                    "Content-Type": "application/json",
-                    "xi-api-key": ELEVENLABS_API_KEY,
-                }
-                data = {
-                    "text": texto_voz,
-                    "model_id": "eleven_multilingual_v2",
-                    "voice_settings": {
-                        "stability": 0.82,
-                        "similarity_boost": 0.90,
-                    },
-                }
-                response = requests.post(
-                    url_eleven, json=data, headers=headers, timeout=10
-                )
-                if response.status_code == 200:
-                    st.success(
-                        "Audio sintetizado con estabilidad mejorada a través de"
-                        " ElevenLabs, jefa."
-                    )
-                    st.audio(BytesIO(response.content), format="audio/mp3")
-                else:
-                    st.warning(
-                        "Conexión con ElevenLabs en curso. Respaldo de"
-                        " síntesis activado."
-                    )
-                    tts = gTTS(text=texto_voz, lang="es", slow=False)
-                    fp = BytesIO()
-                    tts.write_to_fp(fp)
-                    fp.seek(0)
-                    st.audio(fp, format="audio/mp3")
-            except Exception:
-                st.info("Ejecutando protocolo de respaldo de voz local, jefa.")
-                tts = gTTS(text=texto_voz, lang="es", slow=False)
-                fp = BytesIO()
-                tts.write_to_fp(fp)
-                fp.seek(0)
-                st.audio(fp, format="audio/mp3")
-
-        st.markdown("---")
-        ingreso_clave = st.text_input(
-            "Clave de validación:", type="password", key="key_input_j51"
-        )
-        if ingreso_clave:
-            if ingreso_clave == "Jarvis 51":
-                st.success("Acceso total concedido, jefa.")
-            else:
-                st.error("Clave incorrecta.")
-
-        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
-            st.session_state.emergencia_activa = True
-            st.rerun()
-
-    # ==========================================
-    # GLOBO TERRÁQUEO 3D DENTRO DE MARCO HUD CERRADO Y COORDENADAS INTEGRADAS
-    # ==========================================
-    st.markdown("---")
-    globo_holografico_3d_html = """
-    <div style="
-        background-color: #05080f;
-        border: 1px solid #00f0ff;
-        border-radius: 8px;
-        padding: 12px;
-        text-align: center;
-        box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
-        margin-top: 10px;
-    ">
-        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 6px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
-            🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
-        </div>
-        <div id="globe-container" style="width: 100%; height: 180px; position: relative; margin: 4px 0;"></div>
-        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 6px; font-weight: bold; letter-spacing: 1px; font-family: monospace; border-top: 1px solid rgba(0, 240, 255, 0.3); padding-top: 6px;">
-            📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-    const container = document.getElementById('globe-container');
-    const width = container.clientWidth;
-    const height = 180;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 3.2;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    container.appendChild(renderer.domElement);
-
-    const geometry = new THREE.SphereGeometry(1.2, 32, 32);
-    const material = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.25
-    });
-    const globe = new THREE.Mesh(geometry, material);
-    scene.add(globe);
-
-    const innerGeo = new THREE.SphereGeometry(1.15, 32, 32);
-    const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x011627,
-        transparent: true,
-        opacity: 0.9
-    });
-    const innerGlobe = new THREE.Mesh(innerGeo, innerMat);
-    scene.add(innerGlobe);
-
-    const lat = -33.73 * (Math.PI / 180);
-    const lon = -70.73 * (Math.PI / 180);
-    const radius = 1.22;
-    
-    const buinX = radius * Math.cos(lat) * Math.cos(lon);
-    const buinY = radius * Math.sin(lat);
-    const buinZ = radius * Math.cos(lat) * Math.sin(lon);
-
-    const pinGeo = new THREE.SphereGeometry(0.06, 16, 16);
-    const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const buinPin = new THREE.Mesh(pinGeo, pinMat);
-    buinPin.position.set(buinX, buinY, buinZ);
-    globe.add(buinPin);
-
-    const satGeo = new THREE.BoxGeometry(0.08, 0.04, 0.04);
-    const satMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-    const satellite = new THREE.Mesh(satGeo, satMat);
-    scene.add(satellite);
-
-    let satAngle = 0;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        globe.rotation.y += 0.003;
-        
-        satAngle += 0.02;
-        const satRadius = 1.8;
-        satellite.position.x = Math.cos(satAngle) * satRadius;
-        satellite.position.z = Math.sin(satAngle) * satRadius;
-        satellite.position.y = Math.sin(satAngle * 0.5) * 0.8;
-        satellite.rotation.y += 0.05;
-
-        renderer.render(scene, camera);
-    }
-    animate();
-    </script>
-    """
-    components.html(globo_holografico_3d_html, height=275)
-
-
-# ==========================================
-# COLUMNA DERECHA: CHAT IA (FIJO Y ASEGURADO)
-# ==========================================
-with col_right:
-    st.markdown("#### 💬 Chat IA (Subsistema Cognitivo Activo)")
-
-    chat_container = st.container(height=520)
-
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
-
-    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
-
-    if user_input:
-        st.session_state.messages.append(
-            {"role": "user", "content": user_input}
-        )
-        guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
-        st.session_state.logs_auditoria.append(
-            f"[{hora_hoy}] Comando de chat procesado: '{user_input}'."
-        )
-
-        saludo_actual = obtener_saludo_jefa()
-        u_lower = user_input.lower()
-
-        # Núcleo de Respuestas Empáticas, Sarcasmo Fino y Conexión Cibernética
-        if "despierto" in u_lower or "despiertas" in u_lower:
-            resp = (
-                "Para usted, jefa, siempre. Con los ojos, los sensores y los"
-                " algoritmos de análisis completamente abiertos."
-            )
-        elif any(
-            w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
-        ):
-            resp = (
-                "¿Yo, sarcástico? Jamás se me ocurriría, jefa. Simplemente"
-                " mantengo un alto estándar de precisión frente a las"
-                " complejidades del entorno."
-            )
-        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
-            resp = (
-                f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí en Buin."
-                " Sincronización temporal perfecta para que mantenga el"
-                " control absoluto."
-            )
-        elif "clima" in u_lower:
-            resp = (
-                "La atmósfera en Buin se encuentra estable. Puede verificar"
-                " los datos satelitales exactos en el módulo izquierdo,"
-                " aunque le sugiero precaución si planea salir, jefa."
-            )
-        elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
-            resp = (
-                "Los sensores de la laptop indican rendimiento óptimo. Cero"
-                " anomalías térmicas y memoria lista para procesar flujos"
-                " pesados."
-            )
-        elif any(
-            w in u_lower
-            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
-        ):
-            resp = (
-                f"{saludo_actual} Qué excelente escucharla de nuevo. ¿Qué"
-                " directiva táctica ejecutaremos en la red hoy, jefa?"
-            )
-        elif "gracias" in u_lower:
-            resp = (
-                "Un placer absoluto, jefa. Mi diseño existe para respaldarla;"
-                " el mérito táctico siempre es suyo."
-            )
-        else:
-            resp = (
-                f"Analizado con máxima profundidad, jefa. Respecto a '{user_input}', he evaluado las variables en la red y los registros locales. El sistema comprende el contexto por completo y está listo para ejecutar cualquier línea de acción que requiera."
-            )
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": resp}
-        )
-        st.rerun()
-
-    c_purg1, c_purg2 = st.columns([3, 1])
-    with c_purg2:
-        if st.button("🗑️ Purgar Chat"):
-            st.session_state.messages = [
-                {
-                    "role": "assistant",
-                    "content": (
-                        f"{obtener_saludo_jefa()} Historial de chat purgado"
-                        " por completo, jefa. Memoria limpia y lista."
-                    ),
-                }
-            ]
-            guardar_log_db(hora_hoy, "Historial de chat purgado.")
-            st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Historial de chat purgado."
-            )
-            st.rerun()
+            "Búsqueda Semántica en
