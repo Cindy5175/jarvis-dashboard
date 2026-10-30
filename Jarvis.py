@@ -23,28 +23,30 @@ st.markdown("""
     .metric-card {
         background-color: #0d1527;
         border: 1px solid #00f3ff;
-        padding: 15px;
+        padding: 12px;
         border-radius: 8px;
         box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
-        margin-bottom: 15px;
-    }
-    /* Estilo para simular el contenedor del chat alineado */
-    .chat-container-box {
-        border: 1px solid #00f3ff;
-        border-radius: 8px;
-        padding: 10px;
-        background-color: #0d1527;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+        margin-bottom: 12px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- CABECERA PRINCIPAL CON EL TRIÁNGULO EXACTO ---
+# --- CABECERA PRINCIPAL CON EL TRIÁNGULO ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 5px;">
         <h1 style="font-size: 2.2rem; margin: 0; color: #00f3ff;">▲</h1>
         <h2 style="font-size: 1.8rem; margin: 0; color: #00f3ff;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
-        <p style="color: #9ca3af; font-size: 0.9rem; margin-top: 4px;">Starlink & 15 Módulos Activos | Buin, Chile</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- RECTÁNGULO PEQUEÑO ABAJO DE J.A.R.V.I.S: STARLINK ORBITAL LINK (BUIN) ---
+st.markdown("""
+    <div class="metric-card" style="max-width: 500px; margin: 10px auto 15px auto;">
+        <h4 style="margin: 0 0 6px 0; text-align: center; font-size: 0.95rem;">📡 STARLINK ORBITAL LINK (BUIN)</h4>
+        <div style="display: flex; justify-content: space-around; font-size: 12px; color: #00f3ff;">
+            <div><b>ENLACE:</b> LÁSER &nbsp;|&nbsp; <b>LATENCIA:</b> 18.4 ms</div>
+            <div><b>NODOS:</b> 14 Activos &nbsp;|&nbsp; <b>BANDA:</b> 385 Mbps</div>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -84,72 +86,4 @@ with col_left:
             st.write("Estado: Standby de voz sincronizado.")
         with st.expander("💶 Monitor Fiduciario & Divisas"):
             st.write("Estado: Seguimiento financiero OK.")
-        with st.expander("🔒 Protocolo Caja Fuerte"):
-            st.write("Seguridad: Cifrado táctico activo.")
-        with st.expander("📋 Registro de Auditoría (Caja Negra)"):
-            st.write("Registro: Base SQLite verificada.")
-        with st.expander("🔊 Voz & Seguridad Avanzada"):
-            st.write("Estado: Reconocimiento biométrico en espera.")
-        with st.expander("📡 Starlink Orbital Link (Buin)"):
-            st.write("Estado: Latencia 18.4ms | 385 Mbps.")
-        with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
-            st.write("Visualización 3D Orbital en ejecución.")
-
-    # 2. TARJETA STARLINK ORBITAL LINK
-    st.markdown("""
-    <div class="metric-card">
-        <h4 style="margin:0 0 8px 0;">📡 STARLINK ORBITAL LINK (BUIN)</h4>
-        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #00f3ff;">
-            <div><b>ENLACE:</b> LÁSER<br><b>LATENCIA:</b> 18.4 ms</div>
-            <div style="text-align: right;"><b>NODOS:</b> 14 Activos<br><b>BANDA:</b> 385 Mbps</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 3. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO 3D EXPRESO
-    st.markdown("""
-    <div class="metric-card">
-        <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
-    """, unsafe_allow_html=True)
-    
-    st.components.v1.html("""
-        <div style="width: 100%; height: 160px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-            <!-- Malla 3D simulada del Globo Orbital -->
-            <div style="position: absolute; width: 130px; height: 130px; border: 2px dashed #00f3ff; border-radius: 50%; animation: spinGlobe 12s linear infinite; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);"></div>
-            <div style="position: absolute; width: 90px; height: 90px; border: 1px dotted #00f3ff; border-radius: 50%; animation: spinGlobeReverse 8s linear infinite;"></div>
-            <div style="position: absolute; width: 50px; height: 50px; border: 1px solid #00f3ff; border-radius: 50%; background: rgba(0, 243, 255, 0.1);"></div>
-            <div style="color: #00f3ff; font-family: monospace; font-size: 11px; text-align: center; z-index: 2;">
-                🟢 GLOBO ÓRBITA EN VIVO<br><span style="font-size: 9px; color: #9ca3af;">BUIN SECTOR - OK</span>
-            </div>
-        </div>
-        <style>
-        @keyframes spinGlobe { 0% { transform: rotate(0deg) rotateX(60deg); } 100% { transform: rotate(360deg) rotateX(60deg); } }
-        @keyframes spinGlobeReverse { 0% { transform: rotate(360deg) rotateY(45deg); } 100% { transform: rotate(0deg) rotateY(45deg); } }
-        </style>
-    """, height=170)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with col_right:
-    # COLUMNA DERECHA: CAJA DEL CHAT ALINEADA A LA MISMA ALTURA
-    st.markdown("### 💬 Chat IA")
-    
-    # Mostrar el historial dentro del área asignada
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-# --- ENTRADA DE COMANDOS DE CHAT (BARRA FLOTANTE AL FONDO) ---
-if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    prompt_lower = prompt.lower().strip()
-    if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
-        response = "para Ud señorita siempre"
-    else:
-        response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
-
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
+        with
