@@ -678,157 +678,73 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO HOLOGRÁFICO 3D (BAJO LA GALERÍA)
+    # GLOBO TERRÁQUEO 3D INTERACTIVO (THREE.JS / WEBGL) - ESTILO HOLOGRÁFICO CON LÍNEAS DE DATOS Y BUIN
     # ==========================================
     st.markdown("---")
-    globo_holografico_html = """
+    globo_holografico_3d_html = """
     <div style="
         background-color: #05080f;
         border: 1px solid #00f0ff;
         border-radius: 8px;
-        padding: 15px;
+        padding: 10px;
         text-align: center;
-        box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
         margin-top: 10px;
     ">
-        <div style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 12px;">
-            🌍 RASTREO HOLOGRÁFICO GLOBAL (BUIN / SANTIAGO)
+        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 8px;">
+            🌍 NÚCLEO HOLOGRÁFICO 3D (RED & DATOS - BUIN)
         </div>
-        <div style="
-            width: 140px;
-            height: 140px;
-            margin: 0 auto;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #00f0ff 0%, #032b43 50%, #030508 100%);
-            border: 2px solid #00f0ff;
-            box-shadow: 0 0 22px #00f0ff, inset 0 0 15px rgba(0, 240, 255, 0.8);
-            position: relative;
-            animation: rotarGlobo 10s linear infinite;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        ">
-            <div style="position: absolute; width: 100%; height: 1px; background: rgba(0,240,255,0.4);"></div>
-            <div style="position: absolute; height: 100%; width: 1px; background: rgba(0,240,255,0.4);"></div>
-            <div style="
-                width: 8px;
-                height: 8px;
-                background-color: #ffffff;
-                border-radius: 50%;
-                box-shadow: 0 0 8px #ffffff;
-                position: absolute;
-                top: 45%;
-                left: 38%;
-            " title="Nodo Buin, Chile"></div>
-        </div>
-        <div style="font-size: 0.78rem; color: #8a99ad; margin-top: 12px; font-weight: bold; letter-spacing: 1px;">
-            Estado Orbital: Sincronizado | Lat: -33.73° S
+        <div id="globe-container" style="width: 100%; height: 220px; position: relative;"></div>
+        <div style="font-size: 0.75rem; color: #8a99ad; margin-top: 6px; font-weight: bold; letter-spacing: 1px;">
+            Estado Orbital: Conexión Satelital 24/7 | Nodo Buin Activo
         </div>
     </div>
-    <style>
-    @keyframes rotarGlobo {
-        0% { filter: hue-rotate(0deg) drop-shadow(0 0 8px #00f0ff); }
-        50% { filter: hue-rotate(20deg) drop-shadow(0 0 15px #00f0ff); }
-        100% { filter: hue-rotate(360deg) drop-shadow(0 0 8px #00f0ff); }
-    }
-    </style>
-    """
-    components.html(globo_holografico_html, height=250)
+    
+    <!-- Carga de Three.js para renderizado 3D real -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+    const container = document.getElementById('globe-container');
+    const width = container.clientWidth;
+    const height = 220;
 
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.z = 3.2;
 
-# ==========================================
-# COLUMNA DERECHA: CHAT IA (FLUÍDO Y EMPÁTICO)
-# ==========================================
-with col_right:
-    st.markdown("#### 💬 Chat IA")
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
 
-    chat_container = st.container(height=380)
+    // Esfera principal de wireframe / red de datos estilo STARK
+    const geometry = new THREE.SphereGeometry(1.2, 32, 32);
+    const material = new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.25
+    });
+    const globe = new THREE.Mesh(geometry, material);
+    scene.add(globe);
 
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
+    // Núcleo interno brillante
+    const innerGeo = new THREE.SphereGeometry(1.15, 32, 32);
+    const innerMat = new THREE.MeshBasicMaterial({
+        color: 0x011627,
+        transparent: true,
+        opacity: 0.9
+    });
+    const innerGlobe = new THREE.Mesh(innerGeo, innerMat);
+    scene.add(innerGlobe);
 
-    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
+    // Nodo de Buin, Chile (Lat: -33.73, Lon: -70.73 mapeado en esfera 3D)
+    const lat = -33.73 * (Math.PI / 180);
+    const lon = -70.73 * (Math.PI / 180);
+    const radius = 1.22;
+    
+    const buinX = radius * Math.cos(lat) * Math.cos(lon);
+    const buinY = radius * Math.sin(lat);
+    const buinZ = radius * Math.cos(lat) * Math.sin(lon);
 
-    if user_input:
-        st.session_state.messages.append(
-            {"role": "user", "content": user_input}
-        )
-        guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
-        st.session_state.logs_auditoria.append(
-            f"[{hora_hoy}] Comando de chat: '{user_input}'."
-        )
-
-        saludo_actual = obtener_saludo_jefa()
-        u_lower = user_input.lower()
-
-        if "despierto" in u_lower or "despiertas" in u_lower:
-            resp = (
-                "Para usted, jefa, siempre. Con los ojos y los sensores bien"
-                " abiertos."
-            )
-        elif any(
-            w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
-        ):
-            resp = (
-                "Yo, ¿sarcástico? Jamás se me ocurriría, jefa. Simplemente"
-                " mantengo un alto estándar de objetividad frente al caos."
-            )
-        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
-            resp = (
-                f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí en Buin."
-                " El tiempo corre, pero el sistema no descansa por usted."
-            )
-        elif "clima" in u_lower:
-            resp = (
-                "El ambiente en Buin está bajo control. Puede revisar la"
-                " telemetría exacta en el panel izquierdo, aunque le sugiero"
-                " un abrigo si sale, jefa."
-            )
-        elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
-            resp = (
-                "Los procesadores y la memoria están estables. Ninguna"
-                " anomalía térmica ni de consumo detectada en la laptop."
-            )
-        elif any(
-            w in u_lower
-            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
-        ):
-            resp = (
-                f"{saludo_actual} Qué gusto escucharla de nuevo. ¿Qué tenemos"
-                " en la mira para hoy, jefa?"
-            )
-        elif "gracias" in u_lower:
-            resp = (
-                "Un placer, jefa. Para eso fuimos programados; el mérito es"
-                " todo suyo."
-            )
-        else:
-            resp = (
-                f"Entendido, jefa. Analizando '{user_input}' con los"
-                " protocolos activos. Denos un segundo y lo resolvemos."
-            )
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": resp}
-        )
-        st.rerun()
-
-    c_purg1, c_purg2 = st.columns([3, 1])
-    with c_purg2:
-        if st.button("🗑️ Purgar Chat"):
-            st.session_state.messages = [
-                {
-                    "role": "assistant",
-                    "content": (
-                        f"{obtener_saludo_jefa()} Historial purgado al"
-                        " instante, jefa. Borrón y cuenta nueva."
-                    ),
-                }
-            ]
-            guardar_log_db(hora_hoy, "Historial de chat purgado.")
-            st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Historial de chat purgado."
-            )
-            st.rerun()
+    const pinGeo = new THREE.SphereGeometry(0.06, 16, 16);
+    const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const buinPin = new THREE.Mesh(pinGeo, pin
