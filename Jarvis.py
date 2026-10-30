@@ -196,8 +196,8 @@ function actualizarReloj() {
     const minutos = String(ahora.getMinutes()).padStart(2, '0');
     const segundos = String(ahora.getSeconds()).padStart(2, '0');
     
-    document.getElementById('fecha-live').textContent = `${dia}/${mes}/${anio}`;
-    document.getElementById('reloj-live').textContent = `${horas}:${minutos}:${segundos}`;
+    document.getElementById('fecha-live').textContent = dia + '/' + mes + '/' + anio;
+    document.getElementById('reloj-live').textContent = horas + ':' + minutos + ':' + segundos;
 }
 setInterval(actualizarReloj, 1000);
 actualizarReloj();
@@ -341,7 +341,6 @@ with col_left:
                     f" local: {e}"
                 )
 
-    # NUEVO MÓDULO: ESCUCHA PERMANENTE Y MICROFONO INTELIGENTE (SPEECH RECOGNITION)
     with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
         st.write(
             "Activa el reconocimiento de voz continuo en el navegador:"
@@ -362,4 +361,4 @@ with col_left:
             <p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p>
         </div>
         <script>
-        
+        function iniciar
