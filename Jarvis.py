@@ -87,11 +87,8 @@ with col_left:
                 st.write("Estado: Cámara en modo standby.")
 
         with st.expander("⛅ Clima Satelital en Vivo (Buin)"):
-            st.markdown("""
-                * **Ubicación:** Buin, Chile (Lat: -33.73° S, Lon: -70.73° W)
-                * **Temperatura:** 21.5°C | **Condición:** Despejado / Órbita Óptima
-                * **Humedad:** 45% | **Viento:** 12 km/h S-W
-            """)
+            st.write("Ubicación: Buin, Chile (Lat: -33.73° S, Lon: -70.73° W)")
+            st.write("Temperatura: 21.5°C | Condición: Despejado / Órbitas Óptimas")
 
         with st.expander("🌐 Buscador Web 24/7"):
             web_query = st.text_input("Consulta de búsqueda web en vivo:", placeholder="Escriba aquí para buscar en la red...")
@@ -99,5 +96,48 @@ with col_left:
                 st.success(f"Buscando directiva: '{web_query}' en la red global...")
 
         with st.expander("📊 Terminal HUD de Trading & Divisas"):
-            st.markdown("""
-                * **
+            st.write("EUR / CLP: 1,045.20 $\vert{} USD / CLP: 968.50$")
+
+        with st.expander("💻 Sensor de Hardware (CPU/RAM)"):
+            st.write(f"CPU en uso: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}%")
+            st.progress(psutil.cpu_percent() / 100.0)
+
+        with st.expander("🎙️ Escucha Permanente & Micrófono IA"):
+            mic_active = st.toggle("Activar Escucha Permanente de Voz", value=True, key="mic_toggle")
+            st.write(f"Micrófono: {'🟢 Escuchando activamente' if mic_active else '🔴 Silenciado'}")
+
+        with st.expander("💶 Monitor Fiduciario & Divisas"):
+            st.metric(label="Euro (EUR)", value="1,045.20 CLP", delta="+2.4%")
+
+        with st.expander("🔒 Protocolo Caja Fuerte"):
+            safe_box = st.button("Ejecutar Protocolo Caja Fuerte")
+            if safe_box:
+                st.error("🔒 Protocolo de seguridad activado. Cifrado de alta confidencialidad aplicado.")
+
+        with st.expander("📋 Registro de Auditoría (Caja Negra)"):
+            st.write("Base de datos SQLite: 1,420 registros sincronizados sin anomalías.")
+
+        with st.expander("🔊 Voz & Seguridad Avanzada"):
+            st.toggle("Biometría de Voz Activa", value=True, key="bio_toggle")
+
+        with st.expander("📡 Starlink Orbital Link (Buin)"):
+            st.write("Enlace Láser Activo — Latencia: 18.4 ms | Ancho de banda: 385 Mbps.")
+
+        with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
+            st.write("Visualización 3D principal sincronizada.")
+
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO REDUCIDO Y COMPACTO (ESTILO STARK)
+    st.markdown("""
+    <div class="metric-card">
+        <h4 style="margin:0 0 8px 0; font-size: 0.9rem;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.components.v1.html("""
+        <div style="width: 100%; height: 160px; background: #020617; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 15px rgba(0,243,255,0.2);">
+            
+            <!-- HUD Exterior Reducido -->
+            <div style="position: absolute; width: 120px; height: 120px; border: 1px dashed rgba(0, 243, 255, 0.5); border-radius: 50%; animation: spinHUD 10s linear infinite;"></div>
+            
+            <!-- Globo Terráqueo Digital Compacto -->
+            <div style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 30% 30%, rgba(0,243,255,0.6) 0%, rgba(0,85,136,0.3) 50%, rgba(2,6,23,0.95) 85%); box-shadow: 0
