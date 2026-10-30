@@ -199,3 +199,96 @@ if st.session_state.emergencia_activa:
         "Clave de desbloqueo de emergencia:",
         type="password",
         key="unlock_emergency",
+    )
+    if clave_emergencia == "Jarvis 51":
+        st.session_state.emergencia_activa = False
+        st.success("Sistema desbloqueado con éxito, jefa.")
+        st.rerun()
+    st.stop()
+
+# ENCABEZADO CENTRAL CON REACTOR HOLOGRÁFICO PULSANTE
+st.markdown(
+    """
+    <div class="reactor-container">
+        <div class="triangle-reactor"></div>
+        <div class="neon-header-center">J.A.R.V.I.S IA</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Cognitivo & Seguro | Buin, Chile</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+reloj_html = """
+<div style="display: flex; justify-content: center; align-items: center; font-family: monospace; margin: 0px; padding: 0px;">
+    <div style="
+        background-color: #05080f;
+        border: 1px solid #00f0ff;
+        padding: 5px 14px;
+        border-radius: 20px;
+        color: #00f0ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    ">
+        📅 <span id="fecha-live">--/--/----</span> &nbsp;|&nbsp; 🕒 <span id="reloj-live">00:00:00</span>
+    </div>
+</div>
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const anio = ahora.getFullYear();
+    const horas = String(ahora.getHours()).padStart(2, '0');
+    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+    const segundos = String(ahora.getSeconds()).padStart(2, '0');
+    
+    document.getElementById('fecha-live').textContent = dia + '/' + mes + '/' + anio;
+    document.getElementById('reloj-live').textContent = horas + ':' + minutos + ':' + segundos;
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+"""
+components.html(reloj_html, height=35)
+
+st.markdown("---")
+
+# PLANO 50/50
+col_left, col_right = st.columns(2, gap="medium")
+
+with col_left:
+    # GALERÍA MAESTRA OCULTA / EXPANDIBLE
+    with st.expander(
+        "🗂️ Galería de Subsistemas Tácticos [Expandir Menús]", expanded=True
+    ):
+        st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
+
+        with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
+            if st.button("🛰️ Consultar Telemetría de Buin"):
+                try:
+                    url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
+                    res = requests.get(url_clima, timeout=5).json()
+                    curr = res["current_weather"]
+                    temp = curr["temperature"]
+                    viento = curr["windspeed"]
+                    st.success(
+                        f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h"
+                    )
+                    guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
+                    st.session_state.logs_auditoria.append(
+                        f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
+                    )
+                except Exception:
+                    st.warning(
+                        "No se pudo conectar al servidor meteorológico, jefa."
+                    )
+
+        with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
+            query_web = st.text_input(
+                "Ingrese consulta web en tiempo real:", key="search_web_input"
+            )
+            if query_web:
+                url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
+                st.success
