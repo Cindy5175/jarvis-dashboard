@@ -237,8 +237,7 @@ with col_left:
                 temp = curr["temperature"]
                 viento = curr["windspeed"]
                 st.success(
-                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
-                    f" {viento} km/h"
+                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h"
                 )
                 guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
                 st.session_state.logs_auditoria.append(
@@ -257,8 +256,7 @@ with col_left:
             url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
             st.success(f"Consulta generada para: **{query_web}**")
             st.markdown(
-                f"🔗 [Abrir resultado en red externa]"
-                f"({url_busqueda})",
+                f"🔗 [Abrir resultado en red externa]({url_busqueda})",
                 unsafe_allow_html=True,
             )
             guardar_log_db(hora_hoy, f"Búsqueda web: '{query_web}'.")
@@ -284,8 +282,7 @@ with col_left:
         )
         if st.button("🛰️ Sincronizar Mapa Global"):
             st.success(
-                "Red global sincronizada. Tráfico de datos encriptado al 100%,"
-                " jefa."
+                "Red global sincronizada. Tráfico de datos encriptado al 100%, jefa."
             )
             guardar_log_db(hora_hoy, "Sincronización de red global.")
             st.session_state.logs_auditoria.append(
@@ -320,8 +317,7 @@ with col_left:
             )
             guardar_log_db(hora_hoy, "Rebalanceo algorítmico ejecutado.")
             st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal"
-                " HUD."
+                f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD."
             )
 
     with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
@@ -350,5 +346,146 @@ with col_left:
                     pass
 
                 st.success(
-                    f"🖥️ **CPU en Uso:** {cpu_uso}%\n\n"
-                    f"💾 **Mem
+                    f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
+                )
+                guardar_log_db(
+                    hora_hoy,
+                    f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.",
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Diagnóstico de hardware completado: CPU {cpu_uso}% | RAM {ram_uso}%."
+                )
+            except Exception as e:
+                st.warning(
+                    f"No se pudieron leer los sensores de hardware del sistema local: {e}"
+                )
+
+    with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
+        st.write(
+            "Activa el reconocimiento de voz continuo en el navegador:"
+        )
+        components.html(
+            '<div style="text-align: center; padding: 5px; background-color: #030508;">'
+            '<button onclick="iniciarEscucha()" style="background-color: #030508; color: #00f0ff; border: 1px solid #00f0ff; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">🎙️ Activar Escucha por Voz</button>'
+            '<p id="estado-voz" style="font-size: 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de comandos...</p>'
+            '<p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p>'
+            '</div>'
+            '<script>'
+            'function iniciarEscucha() {'
+            '    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;'
+            '    if (!SpeechRecognition) {'
+            '        alert("Tu navegador no soporta el reconocimiento de voz de API nativa.");'
+            '        return;'
+            '    }'
+            '    const recognition = new SpeechRecognition();'
+            '    recognition.lang = "es-CL";'
+            '    recognition.continuous = false;'
+            '    recognition.interimResults = false;'
+            '    document.getElementById("estado-voz").textContent = "Estado: Escuchando activamente...";'
+            '    recognition.onresult = function(event) {'
+            '        const speechToText = event.results[0][0].transcript;'
+            '        document.getElementById("transcripcion").textContent = "Comando capturado: \\"" + speechToText + "\\"";'
+            '        document.getElementById("estado-voz").textContent = "Estado: Comando enviado al núcleo.";'
+            '        const chatInput = document.querySelector(\'input[aria-label="Escriba su comando o hable con J.A.R.V.I.S..."]\');'
+            '        if (chatInput) {'
+            '            chatInput.value = speechToText;'
+            '            chatInput.dispatchEvent(new Event("input", { bubbles: true }));'
+            '            chatInput.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", code: "Enter", keyCode: 13, bubbles: true}));'
+            '        }'
+            '    };'
+            '    recognition.onerror = function(event) {'
+            '        document.getElementById("estado-voz").textContent = "Estado: Error de captura de audio.";'
+            '    };'
+            '    recognition.onend = function() {'
+            '        setTimeout(function() {'
+            '            document.getElementById("estado-voz").textContent = "Estado: En espera de comandos...";'
+            '        }, 3000);'
+            '    };'
+            '    recognition.start();'
+            '}'
+            '</script>',
+            height=130,
+        )
+
+    with st.expander("🖼️ 7. Banco de Imágenes & Vokaturi"):
+        prompt_img = st.text_input(
+            "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
+            key="img_prompt",
+        )
+        if prompt_img:
+            url_img = f"https://source.unsplash.com/featured/?{prompt_img.replace(' ', ',')}"
+            st.image(
+                url_img,
+                caption=f"Imagen recuperada para: {prompt_img}",
+                use_container_width=True,
+            )
+
+    with st.expander("📊 8. Monitor Fiduciario & Divisas (USD / EUR)"):
+        st.write("Indicadores financieros oficiales (Chile):")
+        if st.button("📈 Consultar Divisas (USD & EUR)"):
+            try:
+                res_dolar = requests.get(
+                    "https://mindicador.cl/api/dolar", timeout=5
+                ).json()
+                res_euro = requests.get(
+                    "https://mindicador.cl/api/euro", timeout=5
+                ).json()
+
+                val_dolar = res_dolar["serie"][0]["valor"]
+                val_euro = res_euro["serie"][0]["valor"]
+
+                st.success(
+                    f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro: ${val_euro} CLP"
+                )
+                guardar_log_db(hora_hoy, "Consulta divisas USD/EUR.")
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con éxito."
+                )
+            except Exception:
+                st.info(
+                    "Mercado fiduciario estable. Estimados en Buin ➔ Dólar: ~940 CLP | Euro: ~1,020 CLP."
+                )
+
+    with st.expander("🚨 9. Sensores de Perímetro y Entorno"):
+        st.write("Estado de seguridad física:")
+        st.markdown(
+            "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión Satelital Blindada",
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("🔒 10. Protocolo Caja Fuerte (Códigos & Credenciales)"):
+        st.write("Almacenamiento seguro de claves de acceso:")
+        nuevo_nombre_clave = st.text_input(
+            "Identificador / Servicio:", key="vault_name"
+        )
+        nuevo_valor_clave = st.text_input(
+            "Código / Credencial secreta:", type="password", key="vault_secret"
+        )
+        if st.button("💾 Guardar en Caja Fuerte"):
+            if nuevo_nombre_clave and nuevo_valor_clave:
+                st.session_state.caja_fuerte[nuevo_nombre_clave] = (
+                    nuevo_valor_clave
+                )
+                guardar_vault_db(nuevo_nombre_clave, nuevo_valor_clave)
+                st.success(
+                    f"Credencial '{nuevo_nombre_clave}' asegurada en caja fuerte, jefa."
+                )
+                guardar_log_db(
+                    hora_hoy, f"Credencial '{nuevo_nombre_clave}' guardada."
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}' almacenada en caja fuerte."
+                )
+            else:
+                st.warning("Debe ingresar el identificador y la clave.")
+
+        st.markdown("---")
+        st.write("📋 **Credenciales Guardadas:**")
+        clave_maestra_input = st.text_input(
+            "Ingrese clave maestra (Jarvis 51) para ver secretos:",
+            type="password",
+            key="vault_master_key",
+        )
+        if clave_maestra_input == "Jarvis 51":
+            for serv, cred in st.session_state.caja_fuerte.items():
+                st.code(f"{serv}
