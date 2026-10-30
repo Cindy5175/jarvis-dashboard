@@ -86,4 +86,67 @@ with col_left:
             st.write("Estado: Standby de voz sincronizado.")
         with st.expander("💶 Monitor Fiduciario & Divisas"):
             st.write("Estado: Seguimiento financiero OK.")
-        with
+        with st.expander("🔒 Protocolo Caja Fuerte"):
+            st.write("Seguridad: Cifrado táctico activo.")
+        with st.expander("📋 Registro de Auditoría (Caja Negra)"):
+            st.write("Registro: Base SQLite verificada.")
+        with st.expander("🔊 Voz & Seguridad Avanzada"):
+            st.write("Estado: Reconocimiento biométrico en espera.")
+        with st.expander("📡 Starlink Orbital Link (Buin)"):
+            st.write("Estado: Latencia 18.4ms | 385 Mbps.")
+        with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
+            st.write("Visualización 3D Orbital en ejecución.")
+
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO DIGITAL 3D Y COORDENADAS
+    st.markdown("""
+    <div class="metric-card">
+        <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
+    """, unsafe_allow_html=True)
+    
+    st.components.v1.html("""
+        <div style="width: 100%; height: 210px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <!-- Globo Terráqueo Digital (Esfera Neón) -->
+            <div style="position: absolute; width: 110px; height: 110px; border: 2px solid #00f3ff; border-radius: 50%; box-shadow: inset 0 0 15px #00f3ff, 0 0 15px rgba(0, 243, 255, 0.4); background: radial-gradient(circle, rgba(0,243,255,0.1) 0%, rgba(3,7,18,0.8) 80%);"></div>
+            <!-- Rejilla Meridiana del Globo -->
+            <div style="position: absolute; width: 110px; height: 50px; border: 1px dashed rgba(0, 243, 255, 0.6); border-radius: 50%;"></div>
+            <div style="position: absolute; width: 50px; height: 110px; border: 1px dashed rgba(0, 243, 255, 0.6); border-radius: 50%;"></div>
+            
+            <!-- Órbita del Satélite -->
+            <div style="position: absolute; width: 160px; height: 160px; border: 1px rgba(0, 243, 255, 0.3); border-radius: 50%; animation: spinOrbit 6s linear infinite;">
+                <!-- Satélite Pequeño Orbitando -->
+                <div style="position: absolute; top: 0; left: 50%; width: 10px; height: 10px; background: #00f3ff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
+            </div>
+            
+            <!-- Coordenadas en Pantalla -->
+            <div style="position: absolute; bottom: 8px; left: 10px; color: #00f3ff; font-family: monospace; font-size: 10px; background: rgba(11,15,25,0.7); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,243,255,0.3);">
+                LAT: -33.73° S | LON: -70.73° W — BUIN SECTOR OK
+            </div>
+        </div>
+        <style>
+        @keyframes spinOrbit { 0% { transform: rotate(0deg) rotateX(70deg); } 100% { transform: rotate(360deg) rotateX(70deg); } }
+        </style>
+    """, height=220)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col_right:
+    # COLUMNA DERECHA: CHAT IA
+    st.markdown("### 💬 Chat IA")
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+# --- ENTRADA DE COMANDOS DE CHAT ---
+if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    prompt_lower = prompt.lower().strip()
+    if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+        response = "para Ud señorita siempre"
+    else:
+        response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
