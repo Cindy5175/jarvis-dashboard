@@ -31,11 +31,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- CABECERA PRINCIPAL CON EL TRIÁNGULO ---
+# --- CABECERA CON EL REACTOR ARC TRIANGULAR (ESTILO IRON MAN) ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 5px;">
-        <h1 style="font-size: 2.2rem; margin: 0; color: #00f3ff;">▲</h1>
-        <h2 style="font-size: 1.8rem; margin: 0; color: #00f3ff;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
+        <div style="display: inline-block; position: relative; width: 60px; height: 60px; border: 2px solid #00f3ff; border-radius: 50%; box-shadow: 0 0 20px #00f3ff, inset 0 0 15px #00f3ff; background: rgba(0, 243, 255, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto;">
+            <div style="font-size: 28px; color: #ffffff; text-shadow: 0 0 12px #00f3ff; line-height: 0;">▲</div>
+        </div>
+        <h2 style="font-size: 1.8rem; margin: 0; color: #00f3ff; letter-spacing: 2px;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
     </div>
 """, unsafe_allow_html=True)
 
@@ -176,15 +178,4 @@ with col_right:
 
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        prompt_lower = prompt.lower().strip()
-        if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
-            response = "para Ud señorita siempre"
-        else:
-            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
-
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        with st.chat_message("assistant"):
-            st.markdown(response)
+        with st.chat_message
