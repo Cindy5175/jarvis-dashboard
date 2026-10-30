@@ -62,7 +62,7 @@ if "messages" not in st.session_state:
 col_left, col_right = st.columns([1.05, 1])
 
 with col_left:
-    # 1. MENÚ DESPLEGABLE CON LOS 15 MÓDULOS E ÍCONOS PEQUEÑOS
+    # 1. MENÚ DESPLEGABLE CON LOS 15 MÓDULOS E ÍCONOS
     with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
         st.markdown("### 🛡️ Subsistema de Controles Tácticos")
         
@@ -97,24 +97,24 @@ with col_left:
         with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
             st.write("Visualización 3D Orbital en ejecución.")
 
-    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO NORMAL, SATÉLITE Y COORDENADAS
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO DIGITAL
     st.markdown("""
     <div class="metric-card">
         <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
     """, unsafe_allow_html=True)
     
     st.components.v1.html("""
-        <div style="width: 100%; height: 230px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <div style="width: 100%; height: 210px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
             
             <!-- Globo Terráqueo Digital Estándar (Esfera con meridiano neón) -->
-            <div style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 35% 35%, rgba(0,243,255,0.4) 0%, rgba(3,7,18,0.95) 75%); box-shadow: 0 0 15px rgba(0,243,255,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
-                <div style="position: absolute; width: 120px; height: 40px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
-                <div style="position: absolute; width: 40px; height: 120px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
+            <div style="width: 110px; height: 110px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 35% 35%, rgba(0,243,255,0.4) 0%, rgba(3,7,18,0.95) 75%); box-shadow: 0 0 15px rgba(0,243,255,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; width: 110px; height: 35px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
+                <div style="position: absolute; width: 35px; height: 110px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
             </div>
 
             <!-- Órbita y Satélite Pequeño Girando Alrededor -->
-            <div style="position: absolute; width: 175px; height: 175px; border: 1px dotted rgba(0, 243, 255, 0.4); border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
-                <div style="position: absolute; top: 0; left: 50%; width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
+            <div style="position: absolute; width: 160px; height: 160px; border: 1px dotted rgba(0, 243, 255, 0.4); border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
+                <div style="position: absolute; top: 0; left: 50%; width: 7px; height: 7px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
             </div>
             
             <!-- Coordenadas Exactas -->
@@ -128,28 +128,30 @@ with col_left:
             100% { transform: rotate(360deg) rotateX(60deg); }
         }
         </style>
-    """, height=240)
+    """, height=220)
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA
+    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA EN LA MISMA COLUMNA
     st.markdown("### 💬 Chat IA")
+    
+    # Contenedor para el historial y la caja de chat alineados en la columna derecha
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# --- ENTRADA DE COMANDOS DE CHAT ---
-if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    # Caja de entrada de comandos situada exactamente debajo del chat en su columna
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    prompt_lower = prompt.lower().strip()
-    if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
-        response = "para Ud señorita siempre"
-    else:
-        response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+        prompt_lower = prompt.lower().strip()
+        if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+            response = "para Ud señorita siempre"
+        else:
+            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.markdown(response)
