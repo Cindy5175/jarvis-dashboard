@@ -126,8 +126,8 @@ if "caja_fuerte" not in st.session_state:
     }
 
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Sistemas en línea con Mapeo de Red Global"
-    " integrado. Enlace satelital activo en Buin. ¿Qué orden ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Núcleo conversacional restaurado y sistemas en"
+    " línea. Enlace satelital activo en Buin. ¿Qué orden ejecutamos hoy?"
 )
 
 if "messages" not in st.session_state:
@@ -418,28 +418,4 @@ with col_left:
         for log in reversed(st.session_state.logs_auditoria[-5:]):
             st.code(log, language="text")
 
-    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
-        texto_voz = st.text_input(
-            "Texto para hablar:",
-            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
-            key="tts_box",
-        )
-        if st.button("🔊 Sintonizar Voz"):
-            tts = gTTS(text=texto_voz, lang="es")
-            fp = BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            st.audio(fp, format="audio/mp3")
-
-        st.markdown("---")
-        ingreso_clave = st.text_input(
-            "Clave de validación:", type="password", key="key_input_j51"
-        )
-        if ingreso_clave:
-            if ingreso_clave == "Jarvis 51":
-                st.success("Acceso total concedido, jefa.")
-            else:
-                st.error("Clave incorrecta.")
-
-        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
-            st.session_state.emergencia_activa
+    with st
