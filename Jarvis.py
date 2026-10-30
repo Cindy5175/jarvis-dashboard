@@ -24,7 +24,7 @@ except ImportError:
     pypdf = None
 
 st.set_page_config(
-    page_title="J.A.R.V.I.S. IA Autónomo - Expansión Cerebral Total",
+    page_title="J.A.R.V.I.S. IA Autónomo - Núcleo Oculto",
     page_icon="⚡",
     layout="wide",
 )
@@ -165,7 +165,7 @@ st.markdown(
 def obtener_saludo_jefa():
     hora = ahora_dt.hour
     if 5 <= hora < 12:
-        return "Buenos días, jefa. Expansión cerebral y redes al 100%."
+        return "Buenos días, jefa. Paneles ocultos y redes al 100%."
     elif 12 <= hora < 20:
         return "Buenas tardes, jefa. Procesamiento cibernético activo."
     else:
@@ -181,11 +181,9 @@ if "llm_api_key" not in st.session_state:
 if "logs_auditoria" not in st.session_state:
     st.session_state.logs_auditoria = cargar_logs_db()
     if not st.session_state.logs_auditoria:
-        init_log = f"[{hora_hoy}] Expansión cerebral y agentes activos inicializados en Buin ({fecha_hoy})."
+        init_log = f"[{hora_hoy}] Núcleo HUD Oculto inicializado en Buin ({fecha_hoy})."
         st.session_state.logs_auditoria = [init_log]
-        guardar_log_db(
-            hora_hoy, f"Expansión cerebral inicializada ({fecha_hoy})."
-        )
+        guardar_log_db(hora_hoy, f"Núcleo HUD Oculto inicializado ({fecha_hoy}).")
 
 if "caja_fuerte" not in st.session_state:
     db_vault = cargar_vault_db()
@@ -199,7 +197,7 @@ if "caja_fuerte" not in st.session_state:
         guardar_vault_db("Clave Maestra Sistema", "Jarvis 51")
         guardar_vault_db("Protocolo Base", "Activo y Seguro")
 
-saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital seguro en Buin. Cerebro expandido: RAG Masivo, LLM API, Agentes Autónomos y Ojos Digitales integrados. ¿Qué directiva ejecutamos hoy?"
+saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital seguro en Buin. Paneles en modo oculto listos para desplegarse. ¿Qué directiva ejecutamos hoy?"
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -233,8 +231,8 @@ st.markdown(
     """
     <div class="reactor-container">
         <div class="triangle-reactor"></div>
-        <div class="neon-header-center">J.A.R.V.I.S IA - NÚCLEO EXPANDIDO</div>
-        <div style="color: #8a99ad; font-size: 0.75em;">Cerebro Expandido v4.0 | RAG, LLM API, Agentes & Visión | Buin, Chile</div>
+        <div class="neon-header-center">J.A.R.V.I.S IA - NÚCLEO TÁCTICO OCULTO</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Modo Desplegable | Inteligencia Universal & Segura | Buin, Chile</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -281,15 +279,13 @@ st.markdown("---")
 col_left, col_right = st.columns(2, gap="medium")
 
 # ==========================================
-# COLUMNA IZQUIERDA: MÓDULOS TÁCTICOS Y EXPANSIONES
+# COLUMNA IZQUIERDA: MÓDULOS TÁCTICOS (MODO OCULTO / RETRÁCTIL)
 # ==========================================
 with col_left:
-    st.markdown("#### 🛡️ Subsistema de Conexiones y Controles Expandidos")
+    st.markdown("#### 🛡️ Subsistema de Controles Tácticos Ocultos")
 
-    # EXPANSIÓN 1: RAG DOCUMENTAL MASIVO
-    with st.expander(
-        "🧠 1. Expansión 1: Memoria Documental Masiva (RAG Avanzado)"
-    ):
+    # MÓDULO 1: RAG DOCUMENTAL MASIVO
+    with st.expander("🧠 Memoria Documental Masiva (RAG Avanzado)"):
         st.write(
             "Alimente el cerebro de J.A.R.V.I.S. con archivos de conocimiento:"
         )
@@ -346,8 +342,8 @@ with col_left:
                     "No hay coincidencias vectoriales/semánticas en los archivos."
                 )
 
-    # EXPANSIÓN 2: CONEXIÓN API LLM
-    with st.expander("⚡ 2. Expansión 2: Motor de API LLM (Razonamiento)"):
+    # MÓDULO 2: CONEXIÓN API LLM
+    with st.expander("⚡ Motor de API LLM (Razonamiento)"):
         st.write("Configure un motor de modelo de lenguaje externo:")
         api_key_input = st.text_input(
             "OpenAI / External API Key:",
@@ -362,10 +358,8 @@ with col_left:
             )
             guardar_log_db(hora_hoy, "Enlace API LLM actualizado.")
 
-    # EXPANSIÓN 3: AGENTES AUTÓNOMOS DE SEGUNDO PLANO
-    with st.expander(
-        "🤖 3. Expansión 3: Agentes Autónomos & Tareas de Fondo"
-    ):
+    # MÓDULO 3: AGENTES AUTÓNOMOS
+    with st.expander("🤖 Agentes Autónomos & Tareas de Fondo"):
         st.write("Monitor continuo de tareas en segundo plano:")
         st.checkbox("Daemon de Telemetría Buin (Cada 60s)", value=True)
         st.checkbox("Daemon de Alertas Cripto/Divisas USD-EUR", value=True)
@@ -379,10 +373,8 @@ with col_left:
                 hora_hoy, "Agente autónomo ejecutado manualmente."
             )
 
-    # EXPANSIÓN 4: OJOS DIGITALES Y VISIÓN POR COMPUTADOR
-    with st.expander(
-        "👁️ 4. Expansión 4: Ojos Digitales (Cámara Web & Visión)"
-    ):
+    # MÓDULO 4: OJOS DIGITALES
+    with st.expander("👁️ Ojos Digitales (Cámara Web & Visión)"):
         st.write("Sensor de captura de imagen en tiempo real:")
         img_camera = st.camera_input("Capturar fotograma para análisis:")
         if img_camera:
@@ -400,7 +392,7 @@ with col_left:
                     "Análisis de fotograma de cámara completado con éxito.",
                 )
 
-    # MÓDULOS HUD COMPLEMENTARIOS
+    # MÓDULO 5: CLIMA
     with st.expander("🌤️ Clima Satelital en Vivo (Buin)"):
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
@@ -418,6 +410,7 @@ with col_left:
                     "No se pudo conectar al servidor meteorológico, jefa."
                 )
 
+    # MÓDULO 6: BUSCADOR WEB
     with st.expander("🌐 Buscador Web 24/7 (Satelital)"):
         query_web = st.text_input(
             "Ingrese consulta web en tiempo real:", key="search_web_input"
@@ -431,6 +424,7 @@ with col_left:
             )
             guardar_log_db(hora_hoy, f"Búsqueda web avanzada: '{query_web}'.")
 
+    # MÓDULO 7: TRADING
     with st.expander("📈 Terminal HUD de Trading & Métricas"):
         st.markdown(
             '<div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;"><div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">TERMINAL DE TRADING ALGORÍTMICO</div><div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;"><span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span><span>FLUX: <strong style="color: #00f0ff;">+$1,290,861</strong></span></div><div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 8px;"><span>FILL RATE: <strong style="color: #00f0ff;">99.27%</strong></span><span>ÓRDENES: <strong style="color: #00f0ff;">37 Activas</strong></span></div><hr style="border-color: #00f0ff; opacity: 0.3; margin: 6px 0;"><div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.855ms (ÓPTIMO)</div><div style="background-color: #030508; border: 1px solid #00f0ff; height: 8px; border-radius: 4px; overflow: hidden;"><div style="background-color: #00f0ff; width: 85%; height: 100%;"></div></div></div>',
@@ -442,6 +436,7 @@ with col_left:
             )
             guardar_log_db(hora_hoy, "Rebalanceo algorítmico ejecutado.")
 
+    # MÓDULO 8: HARDWARE
     with st.expander("💻 Sensor de Hardware & Laptop (CPU/RAM)"):
         if st.button("🔍 Escanear Hardware"):
             try:
@@ -462,12 +457,14 @@ with col_left:
             except Exception as e:
                 st.warning(f"Error al leer sensores locales: {e}")
 
+    # MÓDULO 9: VOZ
     with st.expander("🎙️ Escucha Permanente & Micrófono IA"):
         components.html(
             '<div style="text-align: center; padding: 5px; background-color: #030508;"><button onclick="iniciarEscucha()" style="background-color: #030508; color: #00f0ff; border: 1px solid #00f0ff; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">🎙️ Activar Escucha por Voz</button><p id="estado-voz" style="font-size: 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de comandos...</p><p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p></div><script>function iniciarEscucha() {const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;if (!SpeechRecognition) {alert("Tu navegador no soporta reconocimiento de voz.");return;}const recognition = new SpeechRecognition();recognition.lang = "es-CL";recognition.start();recognition.onresult = function(event) {const speechToText = event.results[0][0].transcript;document.getElementById("transcripcion").textContent = "Comando: " + speechToText;const inputs = window.parent.document.querySelectorAll("input[type=\'text\']");for (let input of inputs) {if (input.placeholder && input.placeholder.includes("Escriba su comando")) {input.value = speechToText;input.dispatchEvent(new Event("input", { bubbles: true }));break;}}};}</script>',
             height=130,
         )
 
+    # MÓDULO 10: DIVISAS
     with st.expander("📊 Monitor Fiduciario & Divisas (USD / EUR)"):
         if st.button("📈 Consultar Divisas"):
             try:
@@ -486,6 +483,7 @@ with col_left:
             except Exception:
                 st.info("Mercado fiduciario: Dólar ~940 CLP | Euro ~1020 CLP")
 
+    # MÓDULO 11: CAJA FUERTE
     with st.expander("🔒 Protocolo Caja Fuerte (Códigos & Credenciales)"):
         nuevo_nombre_clave = st.text_input(
             "Identificador / Servicio:", key="vault_name"
@@ -518,11 +516,13 @@ with col_left:
             for serv, cred in st.session_state.caja_fuerte.items():
                 st.code(f"{serv} ➔ {cred}", language="text")
 
+    # MÓDULO 12: AUDITORÍA
     with st.expander("📋 Registro de Auditoría (Caja Negra Persistente)"):
         logs_recientes = cargar_logs_db()
         for log in logs_recientes:
             st.code(log, language="text")
 
+    # MÓDULO 13: VOZ & SEGURIDAD AVANZADA
     with st.expander("🔊 Voz & 🔒 Seguridad Avanzada (ElevenLabs / Stark)"):
         texto_voz = st.text_input(
             "Texto para hablar:",
