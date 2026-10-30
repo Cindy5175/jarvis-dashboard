@@ -178,4 +178,15 @@ with col_right:
 
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        prompt_lower = prompt.lower().strip()
+        if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+            response = "para Ud señorita siempre"
+        else:
+            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.markdown(response)
