@@ -42,30 +42,13 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
-# --- SECCIÓN DE CHAT INTELIGENTE ---
+# --- SECCIÓN DE CHAT INTELIGENTE (MENSAJES) ---
 st.markdown("### 💬 Chat IA")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    prompt_lower = prompt.lower().strip()
-    if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
-        response = "para Ud señorita siempre"
-    else:
-        response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
-
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
-
-st.markdown("---")
-
-# --- CONTENEDOR EXPANDIBLE PRINCIPAL DE LOS 15 MÓDULOS ---
+# --- CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS (DEBAJO DEL CHAT) ---
 with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
     st.markdown("### 🛡️ Subsistema de Controles Tácticos")
     
@@ -105,3 +88,19 @@ with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
+# --- ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
+if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    prompt_lower = prompt.lower().strip()
+    if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+        response = "para Ud señorita siempre"
+    else:
+        response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
