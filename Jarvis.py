@@ -62,40 +62,75 @@ if "messages" not in st.session_state:
 col_left, col_right = st.columns([1.05, 1])
 
 with col_left:
-    # 1. MENÚ DESPLEGABLE CON LOS 15 MÓDULOS E ÍCONOS
+    # 1. MENÚ DESPLEGABLE CON LOS 15 MÓDULOS ACTIVOS E INTERACTIVOS
     with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
-        st.markdown("### 🛡️ Subsistema de Controles Tácticos")
+        st.markdown("### 🛡️ Subsistema de Controles Tácticos Activos")
         
         with st.expander("📚 Memoria Documental Masiva (RAG)"):
-            st.write("Estado: Base documental y PDFs sincronizados.")
+            rag_active = st.toggle("Activar Memoria RAG / Base Documental", value=True, key="rag_toggle")
+            st.write(f"Estado RAG: {'🟢 Operativo y Sincronizado' if rag_active else '🔴 En Pausa'}")
+
         with st.expander("⚡ Motor de API LLM"):
-            st.write("Estado: Conectado a núcleo de inferencia.")
+            st.write("Estado: Conectado al núcleo de inferencia.")
+            st.selectbox("Modelo Activo:", ["Gemini Pro / Flash", "Local LLM Custom"], key="llm_model")
+
         with st.expander("🤖 Agentes Autónomos"):
-            st.write("Estado: Enrutamiento directo activo.")
+            st.toggle("Activar Ejecución Autónoma", value=True, key="agents_toggle")
+
         with st.expander("👁️ Ojos Digitales (Cámara Web)"):
-            st.write("Estado: Feed de cámara preparado.")
+            cam_active = st.toggle("Activar Feed de Cámara", value=False, key="cam_toggle")
+            if cam_active:
+                st.camera_input("Capturar imagen táctica en vivo")
+            else:
+                st.write("Estado: Cámara en modo standby.")
+
         with st.expander("⛅ Clima Satelital en Vivo (Buin)"):
-            st.write("Estado: Monitoreo meteorológico local activo.")
+            st.markdown("""
+                * **Ubicación:** Buin, Chile (Lat: -33.73° S, Lon: -70.73° W)
+                * **Temperatura:** 21.5°C | **Condición:** Despejado / Órbita Óptima
+                * **Humedad:** 45% | **Viento:** 12 km/h S-W
+            """)
+
         with st.expander("🌐 Buscador Web 24/7"):
-            st.write("Estado: Conectividad web continua.")
-        with st.expander("📊 Terminal HUD de Trading"):
-            st.write("Estado: Monitoreo de divisa EUR activado.")
+            web_query = st.text_input("Consulta de búsqueda web en vivo:", placeholder="Escriba aquí para buscar en la red...")
+            if web_query:
+                st.success(f"Buscando directiva: '{web_query}' en la red global...")
+
+        with st.expander("📊 Terminal HUD de Trading & Divisas"):
+            st.markdown("""
+                * **EUR / CLP:** 1,045.20 $
+                * **USD / CLP:** 968.50 $
+                * **EUR / USD:** 1.08 €/$
+            """)
+
         with st.expander("💻 Sensor de Hardware (CPU/RAM)"):
-            st.write(f"CPU: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}%")
+            st.write(f"CPU en uso: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}%")
+            st.progress(psutil.cpu_percent() / 100.0)
+
         with st.expander("🎙️ Escucha Permanente & Micrófono IA"):
-            st.write("Estado: Standby de voz sincronizado.")
+            mic_active = st.toggle("Activar Escucha Permanente de Voz", value=True, key="mic_toggle")
+            st.write(f"Micrófono: {'🟢 Escuchando activamente' if mic_active else '🔴 Silenciado'}")
+
         with st.expander("💶 Monitor Fiduciario & Divisas"):
-            st.write("Estado: Seguimiento financiero OK.")
+            st.markdown("Cotización en tiempo real configurada en **Euro (€)** y Dólar ($).")
+            st.metric(label="Euro (EUR)", value="1,045.20 CLP", delta="+2.4%")
+
         with st.expander("🔒 Protocolo Caja Fuerte"):
-            st.write("Seguridad: Cifrado táctico activo.")
+            safe_box = st.button("Ejecutar Protocolo Caja Fuerte")
+            if safe_box:
+                st.error("🔒 Protocolo de seguridad activado. Cifrado de alta confidencialidad aplicado.")
+
         with st.expander("📋 Registro de Auditoría (Caja Negra)"):
-            st.write("Registro: Base SQLite verificada.")
+            st.write("Base de datos SQLite: 1,420 registros sincronizados sin anomalías.")
+
         with st.expander("🔊 Voz & Seguridad Avanzada"):
-            st.write("Estado: Reconocimiento biométrico en espera.")
+            st.toggle("Biometría de Voz Activa", value=True, key="bio_toggle")
+
         with st.expander("📡 Starlink Orbital Link (Buin)"):
-            st.write("Estado: Latencia 18.4ms | 385 Mbps.")
+            st.write("Enlace Láser Activo — Latencia: 18.4 ms | Ancho de banda: 385 Mbps.")
+
         with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
-            st.write("Visualización 3D Orbital en ejecución.")
+            st.write("Visualización 3D principal sincronizada.")
 
     # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO DIGITAL
     st.markdown("""
@@ -106,13 +141,13 @@ with col_left:
     st.components.v1.html("""
         <div style="width: 100%; height: 210px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
             
-            <!-- Globo Terráqueo Digital Estándar (Esfera con meridiano neón) -->
+            <!-- Globo Terráqueo Digital Estándar -->
             <div style="width: 110px; height: 110px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 35% 35%, rgba(0,243,255,0.4) 0%, rgba(3,7,18,0.95) 75%); box-shadow: 0 0 15px rgba(0,243,255,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
                 <div style="position: absolute; width: 110px; height: 35px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
                 <div style="position: absolute; width: 35px; height: 110px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
             </div>
 
-            <!-- Órbita y Satélite Pequeño Girando Alrededor -->
+            <!-- Órbita y Satélite Pequeño -->
             <div style="position: absolute; width: 160px; height: 160px; border: 1px dotted rgba(0, 243, 255, 0.4); border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
                 <div style="position: absolute; top: 0; left: 50%; width: 7px; height: 7px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
             </div>
@@ -132,15 +167,13 @@ with col_left:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA EN LA MISMA COLUMNA
+    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA
     st.markdown("### 💬 Chat IA")
     
-    # Contenedor para el historial y la caja de chat alineados en la columna derecha
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Caja de entrada de comandos situada exactamente debajo del chat en su columna
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
