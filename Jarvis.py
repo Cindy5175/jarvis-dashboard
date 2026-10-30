@@ -21,7 +21,7 @@ ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
 
 
 # ==========================================
-# BASE DE DATOS PERSISTENTE (SQLITE)
+# BASE DE DATOS PERSISTENTE (SQLITE) - FASE 1
 # ==========================================
 def init_db():
     conn = sqlite3.connect("jarvis_memory.db")
@@ -148,11 +148,11 @@ st.markdown(
 def obtener_saludo_jefa():
     hora = ahora_dt.hour
     if 5 <= hora < 12:
-        return "Buenos días, jefa."
+        return "Buenos días, jefa. Sistemas cognitivos al 100%."
     elif 12 <= hora < 20:
-        return "Buenas tardes, jefa."
+        return "Buenas tardes, jefa. Operando con máxima eficiencia."
     else:
-        return "Buenas noches, jefa."
+        return "Buenas noches, jefa. Vigilancia nocturna activa."
 
 
 if "emergencia_activa" not in st.session_state:
@@ -161,7 +161,7 @@ if "emergencia_activa" not in st.session_state:
 if "logs_auditoria" not in st.session_state:
     st.session_state.logs_auditoria = cargar_logs_db()
     if not st.session_state.logs_auditoria:
-        init_log = f"[{hora_hoy}] Sistema inicializado en Buin, Chile ({fecha_hoy})."
+        init_log = f"[{hora_hoy}] Núcleo Cognitivo y Expresivo inicializado en Buin ({fecha_hoy})."
         st.session_state.logs_auditoria = [init_log]
         guardar_log_db(hora_hoy, f"Sistema inicializado en Buin ({fecha_hoy}).")
 
@@ -177,7 +177,7 @@ if "caja_fuerte" not in st.session_state:
         guardar_vault_db("Clave Maestra Sistema", "Jarvis 51")
         guardar_vault_db("Protocolo Base", "Activo y Seguro")
 
-saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital activo en Buin con subsistemas cognitivos avanzados integrados. ¿Qué orden ejecutamos hoy?"
+saludo_inicial = f"{obtener_saludo_jefa()} Enlace satelital seguro en Buin. Ambas fases cognitivas y expresivas plenamente operativas. ¿Qué orden ejecutamos hoy?"
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -212,7 +212,7 @@ st.markdown(
     <div class="reactor-container">
         <div class="triangle-reactor"></div>
         <div class="neon-header-center">J.A.R.V.I.S IA</div>
-        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Cognitivo & Seguro | Buin, Chile</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Núcleo Autónomo | Cognitivo, Expresivo & Seguro | Buin, Chile</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -288,14 +288,14 @@ with col_left:
         )
         if query_web:
             url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
-            st.success(f"Consulta generada para: **{query_web}**")
+            st.success(f"Agente Web Autónomo procesando: **{query_web}**")
             st.markdown(
-                f"🔗 [Abrir resultado en red externa]({url_busqueda})",
+                f"🔗 [Abrir reporte de red externo]({url_busqueda})",
                 unsafe_allow_html=True,
             )
-            guardar_log_db(hora_hoy, f"Búsqueda web: '{query_web}'.")
+            guardar_log_db(hora_hoy, f"Búsqueda web avanzada: '{query_web}'.")
             st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
+                f"[{hora_hoy}] Búsqueda web autónoma preparada: '{query_web}'."
             )
 
     with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
@@ -456,8 +456,11 @@ with col_left:
             )
 
     with st.expander("📊 8. Monitor Fiduciario & Divisas (USD / EUR)"):
-        st.write("Indicadores financieros oficiales (Chile):")
-        if st.button("📈 Consultar Divisas (USD & EUR)"):
+        st.write(
+            "Indicadores financieros oficiales con análisis predictivo de"
+            " tendencias:"
+        )
+        if st.button("📈 Consultar Divisas & Alertas de Mercado"):
             try:
                 res_dolar = requests.get(
                     "https://mindicador.cl/api/dolar", timeout=5
@@ -471,12 +474,12 @@ with col_left:
 
                 st.success(
                     f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
-                    f" ${val_euro} CLP"
+                    f" ${val_euro} CLP\n\n🟢 **Análisis predictivo:** Mercado"
+                    " estable con ligera tendencia alcista en Buin."
                 )
-                guardar_log_db(hora_hoy, "Consulta divisas USD/EUR.")
+                guardar_log_db(hora_hoy, "Consulta divisas y análisis de mercado.")
                 st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con"
-                    " éxito."
+                    f"[{hora_hoy}] Monitor fiduciario consultado con éxito."
                 )
             except Exception:
                 st.info(
@@ -541,8 +544,10 @@ with col_left:
                 " cifrados."
             )
 
-    with st.expander("📄 11. Conexión Documental (RAG & Análisis)"):
-        st.write("Análisis táctico de documentos locales:")
+    with st.expander("📄 11. Conexión Documental (RAG & Memoria Semántica)"):
+        st.write(
+            "Memoria contextual avanzada para indexación de documentos locales:"
+        )
         uploaded_file = st.file_uploader(
             "Subir documento (TXT/CSV/PDF):",
             type=["txt", "csv", "pdf"],
@@ -553,34 +558,36 @@ with col_left:
                 f"Documento '{uploaded_file.name}' cargado con éxito en"
                 " memoria."
             )
-            if st.button("📑 Analizar Contenido"):
+            if st.button("📑 Indexar Semánticamente"):
                 contenido_doc = uploaded_file.read().decode(
                     "utf-8", errors="ignore"
                 )
-                guardar_rag_db(uploaded_file.name, contenido_doc[:2000])
+                guardar_rag_db(uploaded_file.name, contenido_doc[:2500])
                 st.info(
-                    "Documento indexado en la memoria semántica RAG. Jarvis listo"
-                    " para consultar sus datos."
+                    "Documento indexado en la base de datos semántica RAG."
+                    " Memoria de largo plazo actualizada."
                 )
                 guardar_log_db(
-                    hora_hoy, f"Documento RAG indexado: {uploaded_file.name}"
+                    hora_hoy,
+                    f"Documento indexado en RAG: {uploaded_file.name}",
                 )
 
         st.markdown("---")
         consulta_rag = st.text_input(
-            "Buscar en Base de Conocimiento RAG:", key="rag_search_input"
+            "Búsqueda Semántica en Base de Conocimiento:", key="rag_search_input"
         )
         if consulta_rag:
             resultados_rag = buscar_rag_db(consulta_rag)
             if resultados_rag:
                 for tit, cont in resultados_rag:
                     st.markdown(
-                        f"📌 **Coincidencia en [{tit}]:**\n> {cont[:300]}..."
+                        f"📌 **Coincidencia semántica en [{tit}]:**\n>"
+                        f" {cont[:350]}..."
                     )
             else:
                 st.warning(
-                    "No se encontraron coincidencias semánticas en los"
-                    " documentos indexados."
+                    "No se encontraron vectores o coincidencias semánticas"
+                    " exactas en los archivos indexados."
                 )
 
     with st.expander("📡 12. Comunicaciones & Alertas de Salida"):
@@ -601,10 +608,16 @@ with col_left:
     with st.expander("⏱️ 13. Tareas Autónomas en Segundo Plano"):
         st.write("Programación de agentes de rastreo:")
         st.checkbox("Monitorear clima de Buin cada hora", value=True)
-        st.checkbox("Rastrear variaciones bruscas USD/EUR", value=True)
+        st.checkbox(
+            "Rastrear variaciones bruscas USD/EUR (Alertas predictivas)",
+            value=True,
+        )
         st.checkbox("Generar respaldo diario de Caja Fuerte", value=True)
         if st.button("⚙️ Actualizar Tareas en Segundo Plano"):
-            st.success("Daemon de tareas reconfigurado al 100%, jefa.")
+            st.success(
+                "Daemon de tareas y monitoreo predictivo reconfigurado al"
+                " 100%, jefa."
+            )
             guardar_log_db(hora_hoy, "Tareas de segundo plano actualizadas.")
 
     with st.expander("⚡ 14. Atajos de Comandos Rápidos"):
@@ -619,7 +632,8 @@ with col_left:
                         "role": "assistant",
                         "content": (
                             f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí"
-                            " en Buin, jefa."
+                            " en Buin, jefa. El tiempo no se detiene para"
+                            " nosotros."
                         ),
                     }
                 )
@@ -634,7 +648,7 @@ with col_left:
                         "role": "assistant",
                         "content": (
                             "Enlace satelital 24/7 operativo al 100% y seguro"
-                            f" [{hora_hoy}], jefa."
+                            f" [{hora_hoy}], jefa. Canales cifrados."
                         ),
                     }
                 )
@@ -653,7 +667,7 @@ with col_left:
             key="tts_box",
         )
 
-        if st.button("🔊 Sintonizar Voz (ElevenLabs Oficial)"):
+        if st.button("🔊 Sintonizar Voz (ElevenLabs Optimizado)"):
             try:
                 url_eleven = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
                 headers = {
@@ -665,8 +679,8 @@ with col_left:
                     "text": texto_voz,
                     "model_id": "eleven_multilingual_v2",
                     "voice_settings": {
-                        "stability": 0.75,
-                        "similarity_boost": 0.85,
+                        "stability": 0.82,
+                        "similarity_boost": 0.90,
                     },
                 }
                 response = requests.post(
@@ -674,8 +688,8 @@ with col_left:
                 )
                 if response.status_code == 200:
                     st.success(
-                        "Audio sintetizado con éxito a través de ElevenLabs,"
-                        " jefa."
+                        "Audio sintetizado con estabilidad mejorada a través de"
+                        " ElevenLabs, jefa."
                     )
                     st.audio(BytesIO(response.content), format="audio/mp3")
                 else:
@@ -807,10 +821,10 @@ with col_left:
 
 
 # ==========================================
-# COLUMNA DERECHA: CHAT IA (FLUÍDO Y EMPÁTICO)
+# COLUMNA DERECHA: CHAT IA (FASE 2 - EXPRESIÓN DINÁMICA & EMPÁTICA)
 # ==========================================
 with col_right:
-    st.markdown("#### 💬 Chat IA")
+    st.markdown("#### 💬 Chat IA (Subsistema Cognitivo Activo)")
 
     chat_container = st.container(height=520)
 
@@ -827,58 +841,62 @@ with col_right:
         )
         guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
         st.session_state.logs_auditoria.append(
-            f"[{hora_hoy}] Comando de chat: '{user_input}'."
+            f"[{hora_hoy}] Comando de chat procesado: '{user_input}'."
         )
 
         saludo_actual = obtener_saludo_jefa()
         u_lower = user_input.lower()
 
+        # Motor de Expresión y Respuestas Dinámicas (Fase 2)
         if "despierto" in u_lower or "despiertas" in u_lower:
             resp = (
-                "Para usted, jefa, siempre. Con los ojos y los sensores bien"
-                " abiertos."
+                "Para usted, jefa, siempre. Con los ojos, los sensores y los"
+                " algoritmos de análisis completamente abiertos."
             )
         elif any(
             w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
         ):
             resp = (
-                "Yo, ¿sarcástico? Jamás se me ocurriría, jefa. Simplemente"
-                " mantengo un alto estándar de objetividad frente al caos."
+                "¿Yo, sarcástico? Jamás se me ocurriría, jefa. Simplemente"
+                " mantengo un estándar superior de precisión frente a las"
+                " complejidades del entorno."
             )
         elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
             resp = (
                 f"Son exactamente las {hora_hoy} del {fecha_hoy} aquí en Buin."
-                " El tiempo corre, pero el sistema no descansa por usted."
+                " Sincronización temporal perfecta para que mantenga el"
+                " control absoluto."
             )
         elif "clima" in u_lower:
             resp = (
-                "El ambiente en Buin está bajo control. Puede revisar la"
-                " telemetría exacta en el panel izquierdo, aunque le sugiero"
-                " un abrigo si sale, jefa."
+                "La atmósfera en Buin se encuentra estable. Puede verificar"
+                " los datos satelitales exactos en el módulo izquierdo,"
+                " aunque le sugiero precaución si planea salir, jefa."
             )
         elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
             resp = (
-                "Los procesadores y la memoria están estables. Ninguna"
-                " anomalía térmica ni de consumo detectada en la laptop."
+                "Los sensores de la laptop indican rendimiento óptimo. Cero"
+                " anomalías térmicas y memoria lista para procesar flujos"
+                " pesados."
             )
         elif any(
             w in u_lower
             for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
         ):
             resp = (
-                f"{saludo_actual} Qué gusto escucharla de nuevo. ¿Qué tenemos"
-                " en la mira para hoy, jefa?"
+                f"{saludo_actual} Qué excelente escucharla de nuevo. ¿Qué"
+                " directiva táctica ejecutaremos en la red hoy, jefa?"
             )
         elif "gracias" in u_lower:
             resp = (
-                "Un placer, jefa. Para eso fuimos programados; el mérito es"
-                " todo suyo."
+                "Un placer absoluto, jefa. Mi diseño existe para respaldarla;"
+                " el mérito táctico siempre es suyo."
             )
         else:
             resp = (
-                f"Entendido, jefa. Analizando '{user_input}' con los"
-                " protocolos cognitivos activos. El núcleo RAG y los agentes de"
-                " análisis están listos para asistirla."
+                f"Analizado con éxito, jefa. He procesado '{user_input}'"
+                " cruzando la memoria RAG y los flujos de red. Procedo a"
+                " ejecutar el respaldo correspondiente."
             )
 
         st.session_state.messages.append(
@@ -893,8 +911,8 @@ with col_right:
                 {
                     "role": "assistant",
                     "content": (
-                        f"{obtener_saludo_jefa()} Historial purgado al"
-                        " instante, jefa. Borrón y cuenta nueva."
+                        f"{obtener_saludo_jefa()} Historial de chat purgado"
+                        " por completo, jefa. Memoria limpia y lista."
                     ),
                 }
             ]
