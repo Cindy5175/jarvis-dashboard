@@ -126,8 +126,9 @@ if "caja_fuerte" not in st.session_state:
     }
 
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Núcleo conversacional restaurado y sistemas en"
-    " línea. Enlace satelital activo en Buin. ¿Qué orden ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Terminal HUD de Trading y Mapeo Global"
+    " sincronizados. Enlace satelital activo en Buin. ¿Qué orden ejecutamos"
+    " hoy?"
 )
 
 if "messages" not in st.session_state:
@@ -248,4 +249,92 @@ with col_left:
                 f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
             )
 
-    with st.expander("🌍 3
+    with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
+        st.markdown(
+            """
+            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 5px;">ESTADO DE NODOS GLOBALES</div>
+                <div style="font-size: 0.85em; color: #8a99ad;">Santiago/Buin ⇄ Servidores Cloud ⇄ Enlaces Satelitales</div>
+                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 8px 0;">
+                <div style="display: flex; justify-content: space-around; font-size: 0.8em; color: #00f0ff;">
+                    <span>🟢 Latencia: 14ms</span>
+                    <span>🟢 Tráfico: Seguro</span>
+                    <span>🟢 Nodo: Activo</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🛰️ Sincronizar Mapa Global"):
+            st.success(
+                "Red global sincronizada. Tráfico de datos encriptado al 100%,"
+                " jefa."
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Sincronización de red global ejecutada."
+            )
+
+    # NUEVO COMPONENTE: HUD DE TRADING Y ANALÍTICAS ALGORÍTMICAS
+    with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
+        st.markdown(
+            """
+            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">ALGORITHM TRADING TERMINAL</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;">
+                    <span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span>
+                    <span>FLUX: <strong style="color: #00f0ff;">+$1,290,861</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 8px;">
+                    <span>FILL RATE: <strong style="color: #00f0ff;">99.27%</strong></span>
+                    <span>ORDERS: <strong style="color: #00f0ff;">37 Active</strong></span>
+                </div>
+                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 6px 0;">
+                <div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.855ms (ÓPTIMO)</div>
+                <div style="background-color: #030508; border: 1px solid #00f0ff; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background-color: #00f0ff; width: 85%; height: 100%;"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("⚡ Ejecutar Rebalanceo Algorítmico"):
+            st.success(
+                "Rebalanceo de portafolio y rutas ejecutado con éxito, jefa."
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal"
+                " HUD."
+            )
+
+    with st.expander("🖼️ 5. Banco de Imágenes & Vokaturi"):
+        prompt_img = st.text_input(
+            "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
+            key="img_prompt",
+        )
+        if prompt_img:
+            url_img = f"https://source.unsplash.com/featured/?{prompt_img.replace(' ', ',')}"
+            st.image(
+                url_img,
+                caption=f"Imagen recuperada para: {prompt_img}",
+                use_container_width=True,
+            )
+
+    with st.expander("📊 6. Monitor Fiduciario & Divisas (USD / EUR)"):
+        st.write("Indicadores financieros oficiales (Chile):")
+        if st.button("📈 Consultar Divisas (USD & EUR)"):
+            try:
+                res_dolar = requests.get(
+                    "https://mindicador.cl/api/dolar", timeout=5
+                ).json()
+                res_euro = requests.get(
+                    "https://mindicador.cl/api/euro", timeout=5
+                ).json()
+
+                val_dolar = res_dolar["serie"][0]["valor"]
+                val_euro = res_euro["serie"][0]["valor"]
+
+                st.success(
+                    f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
+                    f" ${val_euro} CLP"
+                )
+                st.session_state.logs_auditoria.append
