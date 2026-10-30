@@ -265,4 +265,26 @@ with col_left:
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
                 url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
-                res = requests.get(url_
+                res = requests.get(url_clima, timeout=5).json()
+                curr = res["current_weather"]
+                temp = curr["temperature"]
+                viento = curr["windspeed"]
+                st.success(
+                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h"
+                )
+                guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
+                )
+            except Exception:
+                st.warning(
+                    "No se pudo conectar al servidor meteorológico, jefa."
+                )
+
+    with st.expander("🌐 Buscador Web 24/7 (Satelital)"):
+        query_web = st.text_input(
+            "Ingrese consulta web en tiempo real:", key="search_web_input"
+        )
+        if query_web:
+            url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
+            st.success
