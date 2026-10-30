@@ -230,7 +230,7 @@ with col_left:
                 )
             except Exception:
                 st.warning(
-                    "No se pudo conectar a la estación meteorológica, jefa."
+                    "No se pudo conectar al servidor meteorológico, jefa."
                 )
 
     with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
@@ -312,53 +312,4 @@ with col_left:
                 cpu_uso = psutil.cpu_percent(interval=1)
                 ram = psutil.virtual_memory()
                 ram_uso = ram.percent
-                ram_disp = round(ram.available / (1024**3), 2)
-                disco = psutil.disk_usage("/")
-                disco_uso = disco.percent
-
-                bateria = psutil.sensors_battery()
-                if bateria:
-                    bat_pct = bateria.percent
-                    bat_enchufado = (
-                        "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
-                    )
-                    info_bat = f" | {bat_enchufado}: {bat_pct}%"
-                else:
-                    info_bat = " | Energía de Red Estacionaria"
-
-                st.success(
-                    f"🖥️ **CPU en Uso:** {cpu_uso}%\n\n💾 **Memoria RAM:**"
-                    f" {ram_uso}% usada ({ram_disp} GB libres)\n\n💽"
-                    f" **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
-                )
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Diagnóstico de hardware completado:"
-                    f" CPU {cpu_uso}% | RAM {ram_uso}%."
-                )
-            except Exception as e:
-                st.warning(
-                    "No se pudieron leer los sensores de hardware del sistema"
-                    f" local: {e}"
-                )
-
-    with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
-        st.write(
-            "Activa el reconocimiento de voz continuo en el navegador:"
-        )
-        voice_html = """
-        <div style="text-align: center; padding: 5px;">
-            <button onclick="iniciarEscucha()" style="
-                background-color: #030508; 
-                color: #00f0ff; 
-                border: 1px solid #00f0ff; 
-                padding: 10px 20px; 
-                border-radius: 6px; 
-                font-weight: bold; 
-                cursor: pointer;
-                box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-            ">🎙️ Activar Escucha por Voz</button>
-            <p id="estado-voz" style="font-size: 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de comandos...</p>
-            <p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p>
-        </div>
-        <script>
-        function iniciar
+                ram_disp = round(ram.available /
