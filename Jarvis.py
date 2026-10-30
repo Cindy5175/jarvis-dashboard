@@ -220,4 +220,43 @@ if st.session_state.emergencia_activa:
         type="password",
         key="unlock_emergency",
     )
-    if clave_emergencia == "Jarvis 51
+    if clave_emergencia == "Jarvis 51":
+        st.session_state.emergencia_activa = False
+        st.success("Sistema desbloqueado con éxito, jefa.")
+        st.rerun()
+    st.stop()
+
+# ENCABEZADO CENTRAL
+st.markdown(
+    """
+    <div class="reactor-container">
+        <div class="triangle-reactor"></div>
+        <div class="neon-header-center">J.A.R.V.I.S IA - NÚCLEO TÁCTICO OCULTO</div>
+        <div style="color: #8a99ad; font-size: 0.75em;">Modo Oculto & Desplegable | Inteligencia Universal & Segura | Buin, Chile</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+reloj_html = """
+<div style="display: flex; justify-content: center; align-items: center; font-family: monospace; margin: 0px; padding: 0px;">
+    <div style="
+        background-color: #05080f;
+        border: 1px solid #00f0ff;
+        padding: 5px 14px;
+        border-radius: 20px;
+        color: #00f0ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    ">
+        📅 <span id="fecha-live">--/--/----</span> &nbsp;|&nbsp; 🕒 <span id="reloj-live">00:00:00</span>
+    </div>
+</div>
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const anio = ahora.
