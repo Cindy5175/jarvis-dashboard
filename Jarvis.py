@@ -17,7 +17,6 @@ TZ_LOCAL = pytz.timezone("America/Santiago")
 
 # CLAVE OFICIAL DE ELEVENLABS INTEGRADA
 ELEVENLABS_API_KEY = "sk_3d8b3c95ecc048c593e6cbf430deab6b8bab0beafbb835d3"
-# ID de voz predeterminado para JARVIS (Voz limpia y formal, ej: Adam o similar de la librería)
 ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
 
 
