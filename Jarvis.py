@@ -97,35 +97,41 @@ with col_left:
         with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
             st.write("Visualización 3D Orbital en ejecución.")
 
-    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO DIGITAL 3D Y COORDENADAS
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO GIRANDO EN VIVO
     st.markdown("""
     <div class="metric-card">
         <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
     """, unsafe_allow_html=True)
     
     st.components.v1.html("""
-        <div style="width: 100%; height: 210px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-            <!-- Globo Terráqueo Digital (Esfera Neón) -->
-            <div style="position: absolute; width: 110px; height: 110px; border: 2px solid #00f3ff; border-radius: 50%; box-shadow: inset 0 0 15px #00f3ff, 0 0 15px rgba(0, 243, 255, 0.4); background: radial-gradient(circle, rgba(0,243,255,0.1) 0%, rgba(3,7,18,0.8) 80%);"></div>
-            <!-- Rejilla Meridiana del Globo -->
-            <div style="position: absolute; width: 110px; height: 50px; border: 1px dashed rgba(0, 243, 255, 0.6); border-radius: 50%;"></div>
-            <div style="position: absolute; width: 50px; height: 110px; border: 1px dashed rgba(0, 243, 255, 0.6); border-radius: 50%;"></div>
+        <div style="width: 100%; height: 220px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <!-- Contenedor del Globo Terráqueo Digital Giratorio -->
+            <div style="width: 130px; height: 130px; border-radius: 50%; border: 2px solid #00f3ff; box-shadow: inset 0 0 20px #00f3ff, 0 0 20px rgba(0, 243, 255, 0.5); background: radial-gradient(circle at 30% 30%, rgba(0,243,255,0.3) 0%, rgba(3,7,18,0.9) 70%), repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,243,255,0.15) 10px, rgba(0,243,255,0.15) 12px); animation: spinEarth 15s linear infinite; position: relative;">
+                <!-- Líneas de meridianos simulados girando -->
+                <div style="position: absolute; inset: 0; border-radius: 50%; border: 1px dashed rgba(0, 243, 255, 0.5);"></div>
+            </div>
             
-            <!-- Órbita del Satélite -->
-            <div style="position: absolute; width: 160px; height: 160px; border: 1px rgba(0, 243, 255, 0.3); border-radius: 50%; animation: spinOrbit 6s linear infinite;">
-                <!-- Satélite Pequeño Orbitando -->
-                <div style="position: absolute; top: 0; left: 50%; width: 10px; height: 10px; background: #00f3ff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
+            <!-- Órbita del Satélite Exterior -->
+            <div style="position: absolute; width: 175px; height: 175px; border: 1px dotted rgba(0, 243, 255, 0.4); border-radius: 50%; animation: spinOrbit 8s linear infinite;">
+                <div style="position: absolute; top: 0; left: 50%; width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 10px #00f3ff; transform: translate(-50%, -50%);"></div>
             </div>
             
             <!-- Coordenadas en Pantalla -->
-            <div style="position: absolute; bottom: 8px; left: 10px; color: #00f3ff; font-family: monospace; font-size: 10px; background: rgba(11,15,25,0.7); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,243,255,0.3);">
+            <div style="position: absolute; bottom: 8px; left: 10px; color: #00f3ff; font-family: monospace; font-size: 10px; background: rgba(11,15,25,0.8); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,243,255,0.4);">
                 LAT: -33.73° S | LON: -70.73° W — BUIN SECTOR OK
             </div>
         </div>
         <style>
-        @keyframes spinOrbit { 0% { transform: rotate(0deg) rotateX(70deg); } 100% { transform: rotate(360deg) rotateX(70deg); } }
+        @keyframes spinEarth {
+            0% { background-position: 0 0; transform: rotate(0deg); }
+            100% { background-position: 100px 0; transform: rotate(360deg); }
+        }
+        @keyframes spinOrbit {
+            0% { transform: rotate(0deg) rotateX(65deg); }
+            100% { transform: rotate(360deg) rotateX(65deg); }
+        }
         </style>
-    """, height=220)
+    """, height=230)
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col_right:
