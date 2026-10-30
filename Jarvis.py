@@ -768,7 +768,9 @@ with col_right:
                 "Para usted, jefa, siempre. Con los ojos y los sensores bien"
                 " abiertos."
             )
-        elif "sarcástico" in u_lower or "sarcasmo" in u_lower:
+        elif any(
+            w in u_lower for w in ["sarcástico", "sarcastico", "sarcasmo"]
+        ):
             resp = (
                 "Yo, ¿sarcástico? Jamás se me ocurriría, jefa. Simplemente"
                 " mantengo un alto estándar de objetividad frente al caos."
