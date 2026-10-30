@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- CABECERA Y COORDENADAS ---
+# --- 1. CABECERA Y COORDENADAS ---
 st.markdown("<h1>⚡ J.A.R.V.I.S. IA // NÚCLEO TÁCTICO</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #9ca3af;'>Starlink & 15 Módulos Activos | Buin, Chile (Lat: -33.73° S | Lon: -70.73° W)</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -42,7 +42,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
-# --- 1. SECCIÓN DE CHAT INTELIGENTE ---
+# --- 2. SECCIÓN DE CHAT INTELIGENTE ---
 st.markdown("### 💬 Chat IA")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -50,7 +50,7 @@ for message in st.session_state.messages:
 
 st.markdown("---")
 
-# --- 2. CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS ---
+# --- 3. CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS ---
 with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
     st.markdown("### 🛡️ Subsistema de Controles Tácticos")
     
@@ -93,7 +93,7 @@ with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
 
 st.markdown("---")
 
-# --- 3. TARJETAS LATERALES DE ESTADO ORBITAL Y HOLOGRÁFICO ---
+# --- 4. TARJETAS DE ESTADO: STARLINK Y NÚCLEO HOLOGRÁFICO ---
 col_starlink, col_holo = st.columns(2)
 
 with col_starlink:
@@ -115,7 +115,7 @@ with col_holo:
     </div>
     """, unsafe_allow_html=True)
 
-# --- 4. ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
+# --- 5. ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
 if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
