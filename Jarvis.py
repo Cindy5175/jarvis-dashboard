@@ -270,8 +270,7 @@ with col_left:
                 temp = curr["temperature"]
                 viento = curr["windspeed"]
                 st.success(
-                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
-                    f" {viento} km/h"
+                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h"
                 )
                 guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
                 st.session_state.logs_auditoria.append(
@@ -316,8 +315,7 @@ with col_left:
         )
         if st.button("🛰️ Sincronizar Mapa Global"):
             st.success(
-                "Red global sincronizada. Tráfico de datos encriptado al 100%,"
-                " jefa."
+                "Red global sincronizada. Tráfico de datos encriptado al 100%, jefa."
             )
             guardar_log_db(hora_hoy, "Sincronización de red global.")
             st.session_state.logs_auditoria.append(
@@ -338,183 +336,4 @@ with col_left:
                     <span>ÓRDENES: <strong style="color: #00f0ff;">37 Activas</strong></span>
                 </div>
                 <hr style="border-color: #00f0ff; opacity: 0.3; margin: 6px 0;">
-                <div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.855ms (ÓPTIMO)</div>
-                <div style="background-color: #030508; border: 1px solid #00f0ff; height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background-color: #00f0ff; width: 85%; height: 100%;"></div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("⚡ Ejecutar Rebalanceo Algorítmico"):
-            st.success(
-                "Rebalanceo de portafolio y rutas ejecutado con éxito, jefa."
-            )
-            guardar_log_db(hora_hoy, "Rebalanceo algorítmico ejecutado.")
-            st.session_state.logs_auditoria.append(
-                f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD."
-            )
-
-    with st.expander("💻 Sensor de Hardware & Laptop (CPU/RAM)"):
-        st.write("Diagnóstico de sistema en tiempo real:")
-        if st.button("🔍 Escanear Hardware"):
-            try:
-                cpu_uso = psutil.cpu_percent(interval=1)
-                ram = psutil.virtual_memory()
-                ram_uso = ram.percent
-                ram_disp = round(ram.available / (1024**3), 2)
-                disco = psutil.disk_usage("/")
-                disco_uso = disco.percent
-
-                info_bat = " | Entorno Cloud (Sin batería física)"
-                try:
-                    bateria = psutil.sensors_battery()
-                    if bateria:
-                        bat_pct = bateria.percent
-                        bat_enchufado = (
-                            "🔌 Conectado"
-                            if bateria.power_plugged
-                            else "🔋 Batería"
-                        )
-                        info_bat = f" | {bat_enchufado}: {bat_pct}%"
-                except Exception:
-                    pass
-
-                st.success(
-                    f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:**"
-                    f" {ram_uso}% usada ({ram_disp} GB libres)  \n💽"
-                    f" **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
-                )
-                guardar_log_db(
-                    hora_hoy,
-                    f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.",
-                )
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Diagnóstico de hardware completado: CPU"
-                    f" {cpu_uso}% | RAM {ram_uso}%."
-                )
-            except Exception as e:
-                st.warning(
-                    f"No se pudieron leer los sensores de hardware del sistema local: {e}"
-                )
-
-    with st.expander("🎙️ Escucha Permanente & Micrófono IA"):
-        st.write("Activa el reconocimiento de voz continuo en el navegador:")
-        components.html(
-            '<div style="text-align: center; padding: 5px;'
-            ' background-color: #030508;"><button'
-            ' onclick="iniciarEscucha()" style="background-color: #030508;'
-            ' color: #00f0ff; border: 1px solid #00f0ff; padding: 10px'
-            ' 20px; border-radius: 6px; font-weight: bold; cursor: pointer;'
-            ' box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">🎙️ Activar'
-            ' Escucha por Voz</button><p id="estado-voz" style="font-size:'
-            ' 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de'
-            ' comandos...</p><p id="transcripcion" style="font-size: 0.9em;'
-            ' color: #00f0ff; font-weight: bold;"></p></div><script>function'
-            ' iniciarEscucha() {const SpeechRecognition ='
-            ' window.SpeechRecognition || window.webkitSpeechRecognition;if'
-            ' (!SpeechRecognition) {alert("Tu navegador no soporta el'
-            ' reconocimiento de voz de API nativa.");return;}const'
-            ' recognition = new SpeechRecognition();recognition.lang ='
-            ' "es-CL";recognition.continuous = false;recognition.interimResults'
-            ' = false;document.getElementById("estado-voz").textContent ='
-            ' "Estado: Escuchando'
-            ' activamente...";recognition.onresult = function(event) {const'
-            ' speechToText = event.results[0][0].transcript;'
-            ' document.getElementById("transcripcion").textContent ='
-            ' "Comando capturado: \\"" + speechToText + "\\"";'
-            ' document.getElementById("estado-voz").textContent = "Estado:'
-            ' Transmitido al núcleo.";const inputs ='
-            ' window.parent.document.querySelectorAll("input[type=\'text\']");for'
-            ' (let input of inputs) {if (input.placeholder &&'
-            ' input.placeholder.includes("Escriba su comando")) {input.value'
-            ' = speechToText;input.dispatchEvent(new Event("input", {'
-            ' bubbles: true }));const enterEvent = new'
-            ' KeyboardEvent("keydown", {key: "Enter", code: "Enter",'
-            ' keyCode: 13, which: 13, bubbles: true});'
-            ' input.dispatchEvent(enterEvent);break;}}};'
-            ' recognition.onerror = function(event) {'
-            ' document.getElementById("estado-voz").textContent = "Estado:'
-            ' Error de captura de audio.";};recognition.onend = function()'
-            ' {setTimeout(function() {'
-            ' document.getElementById("estado-voz").textContent = "Estado:'
-            ' En espera de comandos...";}, 3000);};recognition.start();}</script>',
-            height=130,
-        )
-
-    with st.expander("🖼️ Banco de Imágenes & Vokaturi"):
-        prompt_img = st.text_input(
-            "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
-            key="img_prompt",
-        )
-        if prompt_img:
-            url_img = f"https://source.unsplash.com/featured/?{prompt_img.replace(' ', ',')}"
-            st.image(
-                url_img,
-                caption=f"Imagen recuperada para: {prompt_img}",
-                use_container_width=True,
-            )
-
-    with st.expander("📊 Monitor Fiduciario & Divisas (USD / EUR)"):
-        st.write(
-            "Indicadores financieros oficiales con análisis predictivo de"
-            " tendencias:"
-        )
-        if st.button("📈 Consultar Divisas & Alertas de Mercado"):
-            try:
-                res_dolar = requests.get(
-                    "https://mindicador.cl/api/dolar", timeout=5
-                ).json()
-                res_euro = requests.get(
-                    "https://mindicador.cl/api/euro", timeout=5
-                ).json()
-
-                val_dolar = res_dolar["serie"][0]["valor"]
-                val_euro = res_euro["serie"][0]["valor"]
-
-                st.success(
-                    f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
-                    f" ${val_euro} CLP\n\n🟢 **Análisis predictivo:** Mercado"
-                    " estable con ligera tendencia alcista en Buin."
-                )
-                guardar_log_db(hora_hoy, "Consulta divisas y análisis de mercado.")
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Monitor fiduciario consultado con éxito."
-                )
-            except Exception:
-                st.info(
-                    "Mercado fiduciario estable. Estimados en Buin ➔ Dólar:"
-                    " ~940 CLP | Euro: ~1,020 CLP."
-                )
-
-    with st.expander("🚨 Sensores de Perímetro y Entorno"):
-        st.write("Estado de seguridad física:")
-        st.markdown(
-            "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores"
-            " Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión"
-            " Satelital Blindada",
-            unsafe_allow_html=True,
-        )
-
-    with st.expander("🔒 Protocolo Caja Fuerte (Códigos & Credenciales)"):
-        st.write("Almacenamiento seguro de claves de acceso:")
-        nuevo_nombre_clave = st.text_input(
-            "Identificador / Servicio:", key="vault_name"
-        )
-        nuevo_valor_clave = st.text_input(
-            "Código / Credencial secreta:",
-            type="password",
-            key="vault_secret",
-        )
-        if st.button("💾 Guardar en Caja Fuerte"):
-            if nuevo_nombre_clave and nuevo_valor_clave:
-                st.session_state.caja_fuerte[nuevo_nombre_clave] = (
-                    nuevo_valor_clave
-                )
-                guardar_vault_db(nuevo_nombre_clave, nuevo_valor_clave)
-                st.success(
-                    f"Credencial '{nuevo_nombre_clave}' asegurada en caja"
-                    " fuerte, jefa."
-                )
-                guardar_log_db(
-                    hora_hoy, f"Credencial '{
+                <div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.85
