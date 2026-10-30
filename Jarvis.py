@@ -129,4 +129,78 @@ with col_left:
             st.toggle("Biometría de Voz Activa", value=True, key="bio_toggle")
 
         with st.expander("📡 Starlink Orbital Link (Buin)"):
-            st.write("Enlace Láser Activo — Latencia: 18.4 ms | Ancho
+            st.write("Enlace Láser Activo — Latencia: 18.4 ms | Ancho de banda: 385 Mbps.")
+
+        with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
+            st.write("Visualización 3D principal sincronizada.")
+
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO AVANZADO (ESTILO HOLOGRAMA STARK)
+    st.markdown("""
+    <div class="metric-card">
+        <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
+    """, unsafe_allow_html=True)
+    
+    st.components.v1.html("""
+        <div style="width: 100%; height: 220px; background: #020617; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,243,255,0.2);">
+            
+            <!-- HUD Exterior Giratorio (Anillo Stark) -->
+            <div style="position: absolute; width: 155px; height: 155px; border: 1px dashed rgba(0, 243, 255, 0.5); border-radius: 50%; animation: spinHUD 10s linear infinite;"></div>
+            
+            <!-- Globo Terráqueo Digital Holográfico Avanzado -->
+            <div style="width: 115px; height: 115px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 30% 30%, rgba(0,243,255,0.6) 0%, rgba(0,85,136,0.3) 50%, rgba(2,6,23,0.95) 85%); box-shadow: 0 0 18px #00f3ff, inset 0 0 12px #00f3ff; position: relative; display: flex; align-items: center; justify-content: center;">
+                <!-- Malla de Meridianos y Paralelos Holográficos -->
+                <div style="position: absolute; width: 115px; height: 40px; border: 1px solid rgba(0,243,255,0.7); border-radius: 50%;"></div>
+                <div style="position: absolute; width: 40px; height: 115px; border: 1px solid rgba(0,243,255,0.7); border-radius: 50%;"></div>
+                <!-- Línea de Escaneo Láser Central -->
+                <div style="position: absolute; width: 100%; height: 2px; background: rgba(255,255,255,0.8); box-shadow: 0 0 8px #fff; animation: scanLine 3s ease-in-out infinite alternate;"></div>
+            </div>
+
+            <!-- Órbita y Satélite Avanzado -->
+            <div style="position: absolute; width: 185px; height: 185px; border: 1px rgba(0, 243, 255, 0.3) solid; border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
+                <div style="position: absolute; top: 0; left: 50%; width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 12px #00f3ff, 0 0 6px #fff; transform: translate(-50%, -50%);"></div>
+            </div>
+            
+            <!-- Coordenadas Tácticas de Buin -->
+            <div style="position: absolute; bottom: 8px; left: 10px; color: #00f3ff; font-family: monospace; font-size: 10px; background: rgba(11,15,25,0.9); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,243,255,0.5); letter-spacing: 1px;">
+                STARK HUD // LAT: -33.73° S | LON: -70.73° W — BUIN OK
+            </div>
+        </div>
+        <style>
+        @keyframes spinHUD {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes scanLine {
+            0% { top: 15%; }
+            100% { top: 85%; }
+        }
+        @keyframes orbitSatellite {
+            0% { transform: rotate(0deg) rotateX(65deg); }
+            100% { transform: rotate(360deg) rotateX(65deg); }
+        }
+        </style>
+    """, height=230)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col_right:
+    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA
+    st.markdown("### 💬 Chat IA")
+    
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        prompt_lower = prompt.lower().strip()
+        if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+            response = "para Ud señorita siempre"
+        else:
+            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.markdown(response)
