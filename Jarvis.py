@@ -612,7 +612,7 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO 3D DENTRO DE MARCO HUD CERRADO
+    # GLOBO TERRÁQUEO 3D DENTRO DE MARCO HUD CERRADO Y COORDENADAS INTEGRADAS
     # ==========================================
     st.markdown("---")
     globo_holografico_3d_html = """
@@ -628,7 +628,7 @@ with col_left:
         <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 6px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
             🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
         </div>
-        <div id="globe-container" style="width: 100%; height: 200px; position: relative; margin: 4px 0;"></div>
+        <div id="globe-container" style="width: 100%; height: 180px; position: relative; margin: 4px 0;"></div>
         <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 6px; font-weight: bold; letter-spacing: 1px; font-family: monospace; border-top: 1px solid rgba(0, 240, 255, 0.3); padding-top: 6px;">
             📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
         </div>
@@ -638,7 +638,7 @@ with col_left:
     <script>
     const container = document.getElementById('globe-container');
     const width = container.clientWidth;
-    const height = 200;
+    const height = 180;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
