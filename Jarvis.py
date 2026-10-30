@@ -23,10 +23,10 @@ st.markdown("""
     .metric-card {
         background-color: #111827;
         border: 1px solid #00f3ff;
-        padding: 12px;
+        padding: 15px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -42,13 +42,15 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
-# --- SECCIÓN DE CHAT INTELIGENTE (MENSAJES) ---
+# --- 1. SECCIÓN DE CHAT INTELIGENTE ---
 st.markdown("### 💬 Chat IA")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# --- CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS (DEBAJO DEL CHAT) ---
+st.markdown("---")
+
+# --- 2. CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS ---
 with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
     st.markdown("### 🛡️ Subsistema de Controles Tácticos")
     
@@ -82,14 +84,38 @@ with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
         st.write("Banda: 385 Mbps | Enlace Láser Activo.")
     with st.expander("📁 Núcleo Holográfico con Satélite en Órbita"):
         st.markdown("""
-            <div style="width: 100%; height: 180px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <div style="width: 100%; height: 160px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
                 <div style="color: #00f3ff; font-family: monospace; font-size: 13px; text-align: center;">
                     🟢 SATÉLITE ÓRBITA EN VIVO - BUIN SECTOR OK
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
-# --- ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
+st.markdown("---")
+
+# --- 3. TARJETAS LATERALES DE ESTADO ORBITAL Y HOLOGRÁFICO ---
+col_starlink, col_holo = st.columns(2)
+
+with col_starlink:
+    st.markdown("""
+    <div class="metric-card">
+        <h3>📡 STARLINK ORBITAL LINK (BUIN)</h3>
+        <p><b>ENLACE:</b> LÁSER &nbsp;&nbsp;|&nbsp;&nbsp; <b>NODOS:</b> 14 Activos<br>
+        <b>LATENCIA:</b> 18.4 ms &nbsp;&nbsp;|&nbsp;&nbsp; <b>BANDA:</b> 385 Mbps</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_holo:
+    st.markdown("""
+    <div class="metric-card">
+        <h3>🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h3>
+        <div style="width: 100%; height: 90px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: #00f3ff; font-family: monospace; font-size: 12px;">🟢 3D ORBITAL MESH ACTIVE</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- 4. ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
 if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
