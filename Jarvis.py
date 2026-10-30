@@ -246,18 +246,4 @@ reloj_html = """
         padding: 5px 14px;
         border-radius: 20px;
         color: #00f0ff;
-        font-size: 13px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
-    ">
-        📅 <span id="fecha-live">--/--/----</span> &nbsp;|&nbsp; 🕒 <span id="reloj-live">00:00:00</span>
-    </div>
-</div>
-<script>
-function actualizarReloj() {
-    const ahora = new Date();
-    const dia = String(ahora.getDate()).padStart(2, '0');
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const anio = ahora.getFullYear();
-    const horas = String(ahora.
+        font-
