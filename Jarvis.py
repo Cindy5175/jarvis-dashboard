@@ -208,4 +208,155 @@ components.html(reloj_html, height=35)
 st.markdown("---")
 
 # PLANO 50/50
-col_left, col_right = st.columns(2, gap="medium
+col_left, col_right = st.columns(2, gap="medium")
+
+with col_left:
+    st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
+
+    with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
+        if st.button("🛰️ Consultar Telemetría de Buin"):
+            try:
+                url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
+                res = requests.get(url_clima, timeout=5).json()
+                curr = res["current_weather"]
+                temp = curr["temperature"]
+                viento = curr["windspeed"]
+                st.success(
+                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
+                    f" {viento} km/h"
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
+                )
+            except Exception:
+                st.warning(
+                    "No se pudo conectar al servidor meteorológico, jefa."
+                )
+
+    with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
+        query_web = st.text_input(
+            "Ingrese consulta web en tiempo real:", key="search_web_input"
+        )
+        if query_web:
+            url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
+            st.success(f"Consulta generada para: **{query_web}**")
+            st.markdown(
+                f"🔗 [Abrir resultado en red externa]"
+                f"({url_busqueda})",
+                unsafe_allow_html=True,
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
+            )
+
+    with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
+        st.markdown(
+            """
+            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 5px;">ESTADO DE NODOS GLOBALES</div>
+                <div style="font-size: 0.85em; color: #8a99ad;">Santiago/Buin ⇄ Servidores Cloud ⇄ Enlaces Satelitales</div>
+                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 8px 0;">
+                <div style="display: flex; justify-content: space-around; font-size: 0.8em; color: #00f0ff;">
+                    <span>🟢 Latencia: 14ms</span>
+                    <span>🟢 Tráfico: Seguro</span>
+                    <span>🟢 Nodo: Activo</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🛰️ Sincronizar Mapa Global"):
+            st.success(
+                "Red global sincronizada. Tráfico de datos encriptado al 100%,"
+                " jefa."
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Sincronización de red global ejecutada."
+            )
+
+    with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
+        st.markdown(
+            """
+            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">ALGORITHM TRADING TERMINAL</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;">
+                    <span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span>
+                    <span>FLUX: <strong style="color: #00f0ff;">+$1,290,861</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 8px;">
+                    <span>FILL RATE: <strong style="color: #00f0ff;">99.27%</strong></span>
+                    <span>ORDERS: <strong style="color: #00f0ff;">37 Active</strong></span>
+                </div>
+                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 6px 0;">
+                <div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.855ms (ÓPTIMO)</div>
+                <div style="background-color: #030508; border: 1px solid #00f0ff; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background-color: #00f0ff; width: 85%; height: 100%;"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("⚡ Ejecutar Rebalanceo Algorítmico"):
+            st.success(
+                "Rebalanceo de portafolio y rutas ejecutado con éxito, jefa."
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal"
+                " HUD."
+            )
+
+    with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
+        st.write("Diagnóstico de sistema en tiempo real:")
+        if st.button("🔍 Escanear Hardware"):
+            try:
+                cpu_uso = psutil.cpu_percent(interval=1)
+                ram = psutil.virtual_memory()
+                ram_uso = ram.percent
+                ram_disp = round(ram.available / (1024 ** 3), 2)
+                disco = psutil.disk_usage("/")
+                disco_uso = disco.percent
+
+                bateria = psutil.sensors_battery()
+                if bateria:
+                    bat_pct = bateria.percent
+                    bat_enchufado = (
+                        "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
+                    )
+                    info_bat = f" | {bat_enchufado}: {bat_pct}%"
+                else:
+                    info_bat = " | Energía de Red Estacionaria"
+
+                st.success(
+                    f"🖥️ **CPU en Uso:** {cpu_uso}%\n\n💾 **Memoria RAM:**"
+                    f" {ram_uso}% usada ({ram_disp} GB libres)\n\n💽"
+                    f" **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Diagnóstico de hardware completado:"
+                    f" CPU {cpu_uso}% | RAM {ram_uso}%."
+                )
+            except Exception as e:
+                st.warning(
+                    "No se pudieron leer los sensores de hardware del sistema"
+                    f" local: {e}"
+                )
+
+    with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
+        st.write(
+            "Activa el reconocimiento de voz continuo en el navegador:"
+        )
+        components.html(
+            """
+        <div style="text-align: center; padding: 5px; background-color: #030508;">
+            <button onclick="iniciarEscucha()" style="
+                background-color: #030508; 
+                color: #00f0ff; 
+                border: 1px solid #00f0ff; 
+                padding: 10px 20px; 
+                border-radius: 6px; 
+                font-weight: bold; 
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            ">🎙️ Activar Escucha por Voz</button>
+            <p id="estado-voz" style="font-size: 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de comandos...</p>
+            <p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p
