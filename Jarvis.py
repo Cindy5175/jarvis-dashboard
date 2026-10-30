@@ -612,7 +612,7 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO 3D CON ÓRBITA SATELITAL ANIMADA
+    # GLOBO TERRÁQUEO 3D CON ÓRBITA Y COORDENADAS DE BUIN
     # ==========================================
     st.markdown("---")
     globo_holografico_3d_html = """
@@ -629,8 +629,8 @@ with col_left:
             🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
         </div>
         <div id="globe-container" style="width: 100%; height: 220px; position: relative;"></div>
-        <div style="font-size: 0.75rem; color: #8a99ad; margin-top: 6px; font-weight: bold; letter-spacing: 1px;">
-            Órbita Satelital Activa | Nodo Buin Sincronizado
+        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 8px; font-weight: bold; letter-spacing: 1px; font-family: monospace;">
+            📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
         </div>
     </div>
     
