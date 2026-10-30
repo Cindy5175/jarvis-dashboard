@@ -1,7 +1,5 @@
 streamlit
-folium
-streamlit-folium
-pandas
-numpy
-pytz
+psutil
 gTTS
+pytz
+requests
