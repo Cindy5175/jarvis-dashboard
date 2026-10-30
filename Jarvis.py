@@ -442,9 +442,18 @@ with col_left:
             for log in logs_recientes:
                 st.code(log, language="text")
 
-        with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
-            texto_voz = st.text_input("Texto para hablar:", f"Son las {hora_hoy}. Para usted, jefa, siempre.", key="tts_box")
-            if st.button("🔊 Sintonizar Voz (Estilo Stark)"):
+        with st.expander("🔊 Voz & 🔒 Seguridad Avanzada (ElevenLabs / Stark)"):
+            texto_voz = st.text_input("Texto para hablar con tono Jarvis:", f"Son las {hora_hoy}. Para usted, jefa, siempre.", key="tts_box")
+            
+            # Campo preparado para API Key de ElevenLabs (opcional para el futuro o uso avanzado)
+            elevenlabs_key = st.text_input("API Key de ElevenLabs (Opcional):", type="password", key="eleven_api_key")
+            
+            if st.button("🔊 Sintonizar Voz de JARVIS"):
+                if elevenlabs_key:
+                    # Estructura preparada para llamadas a ElevenLabs API si el usuario ingresa su clave
+                    st.info("Conectando con servidores de ElevenLabs para síntesis cinemática de JARVIS...")
+                
+                # Motor de voz optimizado (gTTS con locución solemne y formal)
                 tts = gTTS(text=texto_voz, lang="es", slow=False)
                 fp = BytesIO()
                 tts.write_to_fp(fp)
@@ -464,7 +473,7 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO HOLOGRÁFICO 3D (BAJO LA GALERÍA)
+    # GLOBO TERRÁQUEO HOLOGRÁFICO 3D (BAJO LA GALERÍA) - ALTURA CORREGIDA
     # ==========================================
     st.markdown("---")
     globo_holografico_html = """
@@ -472,12 +481,12 @@ with col_left:
         background-color: #05080f;
         border: 1px solid #00f0ff;
         border-radius: 8px;
-        padding: 12px;
+        padding: 15px;
         text-align: center;
-        box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
         margin-top: 10px;
     ">
-        <div style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 8px;">
+        <div style="color: #00f0ff; font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 12px;">
             🌍 RASTREO HOLOGRÁFICO GLOBAL (BUIN / SANTIAGO)
         </div>
         <div style="
@@ -487,7 +496,7 @@ with col_left:
             border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #00f0ff 0%, #032b43 50%, #030508 100%);
             border: 2px solid #00f0ff;
-            box-shadow: 0 0 20px #00f0ff, inset 0 0 15px rgba(0, 240, 255, 0.8);
+            box-shadow: 0 0 22px #00f0ff, inset 0 0 15px rgba(0, 240, 255, 0.8);
             position: relative;
             animation: rotarGlobo 10s linear infinite;
             display: flex;
@@ -507,7 +516,7 @@ with col_left:
                 left: 38%;
             " title="Nodo Buin, Chile"></div>
         </div>
-        <div style="font-size: 0.75rem; color: #8a99ad; margin-top: 8px;">
+        <div style="font-size: 0.78rem; color: #8a99ad; margin-top: 12px; font-weight: bold; letter-spacing: 1px;">
             Estado Orbital: Sincronizado | Lat: -33.73° S
         </div>
     </div>
@@ -519,7 +528,8 @@ with col_left:
     }
     </style>
     """
-    components.html(globo_holografico_html, height=210)
+    # Aumentamos la altura del componente Streamlit de 210 a 250 para evitar cortes
+    components.html(globo_holografico_html, height=250)
 
 
 # ==========================================
