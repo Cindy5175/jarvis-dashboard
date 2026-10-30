@@ -612,7 +612,7 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO 3D CON ÓRBITA Y COORDENADAS DE BUIN
+    # GLOBO TERRÁQUEO 3D CON MARCO CERRADO Y COORDENADAS DE BUIN
     # ==========================================
     st.markdown("---")
     globo_holografico_3d_html = """
@@ -620,16 +620,16 @@ with col_left:
         background-color: #05080f;
         border: 1px solid #00f0ff;
         border-radius: 8px;
-        padding: 10px;
+        padding: 12px;
         text-align: center;
         box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
         margin-top: 10px;
     ">
-        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 8px;">
+        <div style="color: #00f0ff; font-weight: bold; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 8px; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 6px;">
             🛰️ NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA (BUIN)
         </div>
-        <div id="globe-container" style="width: 100%; height: 220px; position: relative;"></div>
-        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 8px; font-weight: bold; letter-spacing: 1px; font-family: monospace;">
+        <div id="globe-container" style="width: 100%; height: 210px; position: relative; margin: 5px 0;"></div>
+        <div style="font-size: 0.78rem; color: #00f0ff; margin-top: 8px; font-weight: bold; letter-spacing: 1px; font-family: monospace; border-top: 1px solid rgba(0, 240, 255, 0.3); padding-top: 6px;">
             📍 BUIN, CHILE &nbsp;|&nbsp; Lat: -33.73° S &nbsp;|&nbsp; Lon: -70.73° W
         </div>
     </div>
@@ -638,7 +638,7 @@ with col_left:
     <script>
     const container = document.getElementById('globe-container');
     const width = container.clientWidth;
-    const height = 220;
+    const height = 210;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -704,7 +704,7 @@ with col_left:
     animate();
     </script>
     """
-    components.html(globo_holografico_3d_html, height=275)
+    components.html(globo_holografico_3d_html, height=285)
 
 
 # ==========================================
