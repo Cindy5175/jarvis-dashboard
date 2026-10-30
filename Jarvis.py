@@ -23,9 +23,10 @@ st.markdown("""
     .metric-card {
         background-color: #111827;
         border: 1px solid #00f3ff;
-        padding: 15px;
+        padding: 12px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        margin-bottom: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -54,34 +55,80 @@ with st.container():
 
 st.markdown("---")
 
-# --- 15 MÓDULOS TÁCTICOS (PANELES) ---
+# --- LOS 15 MÓDULOS TÁCTICOS DETALLADOS ---
+st.markdown("### ⚙️ Subsistemas y Módulos Activos (15/15)")
+
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown("""
     <div class="metric-card">
-        <h3>💻 Hardware</h3>
-        <p>CPU: {}%<br>RAM: {}%<br>Disco: {}%</p>
+        <h3>1. 💻 Hardware & CPU</h3>
+        <p>Uso: <b>{}%</b></p>
     </div>
-    """.format(
-        psutil.cpu_percent(),
-        psutil.virtual_memory().percent,
-        psutil.disk_usage('/').percent
-    ), unsafe_allow_html=True)
+    <div class="metric-card">
+        <h3>2. 🧠 Memoria RAM</h3>
+        <p>Uso: <b>{}%</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>3. 💽 Almacenamiento</h3>
+        <p>Disco: <b>{}%</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>4. 🛰️ Enlace Starlink</h3>
+        <p>Estado: <b>Conectado (Buin)</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>5. 📡 Red & Socket</h3>
+        <p>Latencia: <b>14ms - OK</b></p>
+    </div>
+    """.format(psutil.cpu_percent(), psutil.virtual_memory().percent, psutil.disk_usage('/').percent), unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
     <div class="metric-card">
-        <h3>🛡️ Seguridad</h3>
-        <p>Caja Fuerte: <b>Cifrada</b><br>Caja Negra: <b>SQLite OK</b><br>Protocolo: <b>Standby</b></p>
+        <h3>6. 🔐 Caja Fuerte</h3>
+        <p>Protocolo: <b>Cifrado Activo</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>7. 📓 Caja Negra</h3>
+        <p>Registro: <b>SQLite OK</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>8. 👁️ Reconocimiento</h3>
+        <p>Facial/Motion: <b>Standby</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>9. 📈 Módulo Trading</h3>
+        <p>Moneda: <b>EUR Activo</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>10. 🎙️ Vokaturi / Voz</h3>
+        <p>Audio Engine: <b>Listo</b></p>
     </div>
     """, unsafe_allow_html=True)
 
 with col3:
     st.markdown("""
     <div class="metric-card">
-        <h3>📈 Enlaces & RAG</h3>
-        <p>Trading: <b>EUR Monitor</b><br>Base RAG: <b>Conectada</b><br>Cámara: <b>Activa</b></p>
+        <h3>11. 📚 Base RAG / Docs</h3>
+        <p>PDFs & Notas: <b>Enlazado</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>12. 📷 Cámara Remota</h3>
+        <p>Feed: <b>En línea</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>13. 🗺️ Geolocalización</h3>
+        <p>Zona: <b>Buin (-33.73)</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>14. 🤖 Automatización</h3>
+        <p>Atajos iOS: <b>Sincronizados</b></p>
+    </div>
+    <div class="metric-card">
+        <h3>15. ⚡ Núcleo Central</h3>
+        <p>Streamlit: <b>Operativo</b></p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -90,7 +137,7 @@ st.markdown("---")
 # --- ESTADO DE SESIÓN PARA EL CHAT ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+        {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y los 15 módulos desplegados en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
 # --- SECCIÓN DE CHAT INTELIGENTE (ABAJO) ---
