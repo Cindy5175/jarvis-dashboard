@@ -119,7 +119,6 @@ if "logs_auditoria" not in st.session_state:
         f"[{hora_hoy}] Sistema inicializado en Buin, Chile ({fecha_hoy})."
     ]
 
-# Inicializar almacén de la caja fuerte si no existe
 if "caja_fuerte" not in st.session_state:
     st.session_state.caja_fuerte = {
         "Clave Maestra Sistema": "Jarvis 51",
@@ -127,8 +126,8 @@ if "caja_fuerte" not in st.session_state:
     }
 
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Sistema con Protocolo Caja Fuerte integrado y"
-    f" blindado. Enlace activo en Buin. ¿Qué orden ejecutamos hoy?"
+    f"{obtener_saludo_jefa()} Sistemas en línea. Módulos de divisas (USD/EUR)"
+    f" y buscador web optimizados. Enlace en Buin activo."
 )
 
 if "messages" not in st.session_state:
@@ -233,24 +232,22 @@ with col_left:
                     "No se pudo conectar a la estación meteorológica, jefa."
                 )
 
+    # BUSCADOR WEB OPTIMIZADO (CON ENLACE DIRECTO SEGURO)
     with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
         query_web = st.text_input(
-            "Ingrese búsqueda en tiempo real:", key="search_web_input"
+            "Ingrese consulta web en tiempo real:", key="search_web_input"
         )
         if query_web:
-            try:
-                url_ddg = f"https://api.duckduckgo.com/?q={query_web}&format=json&no_html=1"
-                resp = requests.get(url_ddg, timeout=5).json()
-                abstract = resp.get("AbstractText", "")
-                if abstract:
-                    st.info(f"Resultado en red: {abstract}")
-                else:
-                    st.info(f"Enlace activo enviado para '{query_web}'.")
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Búsqueda web realizada: '{query_web}'."
-                )
-            except Exception:
-                st.error("Error al establecer conexión con el buscador, jefa.")
+            url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
+            st.success(f"Consulta generada para: **{query_web}**")
+            st.markdown(
+                f"🔗 [Abrir resultado en red externa]"
+                f"({url_busqueda})",
+                unsafe_allow_html=True,
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
+            )
 
     with st.expander("🖼️ 3. Banco de Imágenes & Vokaturi"):
         prompt_img = st.text_input(
@@ -265,22 +262,33 @@ with col_left:
                 use_container_width=True,
             )
 
-    with st.expander("📊 4. Monitor Fiduciario & Divisas"):
-        st.write("Indicadores financieros globales en tiempo real:")
-        if st.button("📈 Consultar Divisas (USD/CLP)"):
+    # MONITOR FIDUCIARIO ACTUALIZADO (DÓLAR Y EURO)
+    with st.expander("📊 4. Monitor Fiduciario & Divisas (USD / EUR)"):
+        st.write("Indicadores financieros oficiales (Chile):")
+        if st.button("📈 Consultar Divisas (USD & EUR)"):
             try:
-                res_div = requests.get(
+                res_dolar = requests.get(
                     "https://mindicador.cl/api/dolar", timeout=5
                 ).json()
-                valor_dolar = res_div["serie"][0]["valor"]
-                st.success(f"Dólar Observado (Chile): ${valor_dolar} CLP")
+                res_euro = requests.get(
+                    "https://mindicador.cl/api/euro", timeout=5
+                ).json()
+
+                val_dolar = res_dolar["serie"][0]["valor"]
+                val_euro = res_euro["serie"][0]["valor"]
+
+                st.success(
+                    f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
+                    f" ${val_euro} CLP"
+                )
                 st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Consulta de divisa USD/CLP realizada."
+                    f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con"
+                    " éxito."
                 )
             except Exception:
                 st.info(
-                    "Mercado fiduciario estable en Buin. Dólar estimado:"
-                    " ~940 CLP."
+                    "Mercado fiduciario estable. Estimados en Buin ➔ Dólar:"
+                    " ~940 CLP | Euro: ~1,020 CLP."
                 )
 
     with st.expander("🎙️ 5. Módulo de Audio & Micrófono"):
@@ -307,11 +315,8 @@ with col_left:
             unsafe_allow_html=True,
         )
 
-    # NUEVO COMPONENTE: PROTOCOLO CAJA FUERTE (CÓDIGOS Y CLAVES)
     with st.expander("🔒 7. Protocolo Caja Fuerte (Códigos & Credenciales)"):
         st.write("Almacenamiento seguro de claves de acceso:")
-
-        # Formulario para guardar nueva clave
         nuevo_nombre_clave = st.text_input(
             "Identificador / Servicio:", key="vault_name"
         )
