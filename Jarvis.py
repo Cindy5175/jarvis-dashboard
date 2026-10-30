@@ -32,117 +32,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- CABECERA Y COORDENADAS ---
-st.markdown("<h1>⚡ J.A.R.V.I.S. // NÚCLEO TÁCTICO</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #9ca3af;'>Lat: -33.73° S | Lon: -70.73° W — Buin, Chile | Enlace Starlink: <b>ACTIVO</b></p>", unsafe_allow_html=True)
-st.markdown("---")
-
-# --- VISOR 3D HOLOGRÁFICO (ARRIBA) ---
-with st.container():
-    st.markdown("### 🌐 Visualizador Holográfico Orbital")
-    st.components.v1.html("""
-        <div style="width: 100%; height: 220px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-            <div style="position: absolute; width: 150px; height: 150px; border: 2px dashed rgba(0, 243, 255, 0.4); border-radius: 50%; animation: spin 10s linear infinite;"></div>
-            <div style="position: absolute; width: 100px; height: 100px; border: 1px solid rgba(0, 243, 255, 0.7); border-radius: 50%;"></div>
-            <div style="color: #00f3ff; font-family: monospace; font-size: 14px; text-align: center; z-index: 2;">
-                🟢 SATÉLITE ÓRBITA EN VIVO<br>
-                <span style="font-size: 11px; color: #9ca3af;">BUIN SECTOR - OK</span>
-            </div>
-        </div>
-        <style>
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        </style>
-    """, height=240)
-
-st.markdown("---")
-
-# --- LOS 15 MÓDULOS TÁCTICOS DETALLADOS ---
-st.markdown("### ⚙️ Subsistemas y Módulos Activos (15/15)")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("""
-    <div class="metric-card">
-        <h3>1. 💻 Hardware & CPU</h3>
-        <p>Uso: <b>{}%</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>2. 🧠 Memoria RAM</h3>
-        <p>Uso: <b>{}%</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>3. 💽 Almacenamiento</h3>
-        <p>Disco: <b>{}%</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>4. 🛰️ Enlace Starlink</h3>
-        <p>Estado: <b>Conectado (Buin)</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>5. 📡 Red & Socket</h3>
-        <p>Latencia: <b>14ms - OK</b></p>
-    </div>
-    """.format(psutil.cpu_percent(), psutil.virtual_memory().percent, psutil.disk_usage('/').percent), unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="metric-card">
-        <h3>6. 🔐 Caja Fuerte</h3>
-        <p>Protocolo: <b>Cifrado Activo</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>7. 📓 Caja Negra</h3>
-        <p>Registro: <b>SQLite OK</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>8. 👁️ Reconocimiento</h3>
-        <p>Facial/Motion: <b>Standby</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>9. 📈 Módulo Trading</h3>
-        <p>Moneda: <b>EUR Activo</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>10. 🎙️ Vokaturi / Voz</h3>
-        <p>Audio Engine: <b>Listo</b></p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown("""
-    <div class="metric-card">
-        <h3>11. 📚 Base RAG / Docs</h3>
-        <p>PDFs & Notas: <b>Enlazado</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>12. 📷 Cámara Remota</h3>
-        <p>Feed: <b>En línea</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>13. 🗺️ Geolocalización</h3>
-        <p>Zona: <b>Buin (-33.73)</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>14. 🤖 Automatización</h3>
-        <p>Atajos iOS: <b>Sincronizados</b></p>
-    </div>
-    <div class="metric-card">
-        <h3>15. ⚡ Núcleo Central</h3>
-        <p>Streamlit: <b>Operativo</b></p>
-    </div>
-    """, unsafe_allow_html=True)
-
+st.markdown("<h1>⚡ J.A.R.V.I.S. IA // NÚCLEO TÁCTICO</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #9ca3af;'>Starlink & 15 Módulos Activos | Buin, Chile (Lat: -33.73° S | Lon: -70.73° W)</p>", unsafe_allow_html=True)
 st.markdown("---")
 
 # --- ESTADO DE SESIÓN PARA EL CHAT ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y los 15 módulos desplegados en Buin. ¿Qué directiva ejecutamos?"}
+        {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
-# --- SECCIÓN DE CHAT INTELIGENTE (ABAJO) ---
-st.markdown("### 💬 Chat IA - Interfaz Directa")
-
+# --- SECCIÓN DE CHAT INTELIGENTE ---
+st.markdown("### 💬 Chat IA")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -161,3 +62,46 @@ if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)
+
+st.markdown("---")
+
+# --- CONTENEDOR EXPANDIBLE PRINCIPAL DE LOS 15 MÓDULOS ---
+with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
+    st.markdown("### 🛡️ Subsistema de Controles Tácticos")
+    
+    with st.expander("📁 Memoria Documental Masiva (RAG)"):
+        st.write("Estado: Enlazado con base de notas y PDFs.")
+    with st.expander("📁 Motor de API LLM"):
+        st.write("Estado: Conectado y operativo.")
+    with st.expander("📁 Agentes Autónomos"):
+        st.write("Estado: En espera de directivas.")
+    with st.expander("📁 Ojos Digitales (Cámara Web)"):
+        st.write("Estado: Activo / Monitoreo visual.")
+    with st.expander("📁 Clima Satelital en Vivo (Buin)"):
+        st.write("Temperatura actual: 20°C - Señal Órbita OK.")
+    with st.expander("📁 Buscador Web 24/7"):
+        st.write("Estado: Conectado a la red.")
+    with st.expander("📁 Terminal HUD de Trading"):
+        st.write("Monitoreo de divisas (EUR) activo.")
+    with st.expander("📁 Sensor de Hardware (CPU/RAM)"):
+        st.write(f"CPU: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}% | Disco: {psutil.disk_usage('/').percent}%")
+    with st.expander("📁 Escucha Permanente & Micrófono IA"):
+        st.write("Estado: Standby / Sincronizado.")
+    with st.expander("📁 Monitor Fiduciario & Divisas"):
+        st.write("Estado: Operativo (EUR configurado).")
+    with st.expander("📁 Protocolo Caja Fuerte"):
+        st.write("Seguridad: Cifrado activo.")
+    with st.expander("📁 Registro de Auditoría (Caja Negra)"):
+        st.write("Base de datos SQLite: OK.")
+    with st.expander("📁 Voz & Seguridad Avanzada"):
+        st.write("Motor biométrico y Vokaturi en espera.")
+    with st.expander("📁 Starlink Orbital Link (Buin)"):
+        st.write("Banda: 385 Mbps | Enlace Láser Activo.")
+    with st.expander("📁 Núcleo Holográfico con Satélite en Órbita"):
+        st.markdown("""
+            <div style="width: 100%; height: 180px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                <div style="color: #00f3ff; font-family: monospace; font-size: 13px; text-align: center;">
+                    🟢 SATÉLITE ÓRBITA EN VIVO - BUIN SECTOR OK
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
