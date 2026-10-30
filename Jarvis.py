@@ -97,7 +97,7 @@ with col_left:
         with st.expander("🌐 Núcleo Holográfico con Satélite en Órbita"):
             st.write("Visualización 3D Orbital en ejecución.")
 
-    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO ESFÉRICO 3D GIRANDO
+    # 2. TARJETA VISUALIZADOR HOLOGRÁFICO CON EL GLOBO TERRÁQUEO NORMAL, SATÉLITE Y COORDENADAS
     st.markdown("""
     <div class="metric-card">
         <h4 style="margin:0 0 10px 0;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h4>
@@ -106,31 +106,26 @@ with col_left:
     st.components.v1.html("""
         <div style="width: 100%; height: 230px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
             
-            <!-- ESFERA TERRÁQUEO 3D REAL CON ROTACIÓN DE CONTINENTES -->
-            <div style="width: 130px; height: 130px; border-radius: 50%; position: relative; box-shadow: inset -20px -20px 30px rgba(0,0,0,0.8), inset 10px 10px 20px rgba(0,243,255,0.4), 0 0 25px rgba(0, 243, 255, 0.4); background: radial-gradient(circle at 35% 35%, #00f3ff 0%, #005577 45%, #020b18 80%); overflow: hidden;">
-                
-                <!-- Patrón de meridianos y continentes holográficos simulando la esfera -->
-                <div style="position: absolute; width: 300%; height: 100%; top: 0; left: 0; background: repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(0, 243, 255, 0.35) 15px, rgba(0, 243, 255, 0.35) 18px), radial-gradient(ellipse at center, transparent 30%, rgba(0, 243, 255, 0.25) 70%); animation: rotateSphere 12s linear infinite; opacity: 0.85;"></div>
+            <!-- Globo Terráqueo Digital Estándar (Esfera con meridiano neón) -->
+            <div style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #00f3ff; background: radial-gradient(circle at 35% 35%, rgba(0,243,255,0.4) 0%, rgba(3,7,18,0.95) 75%); box-shadow: 0 0 15px rgba(0,243,255,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; width: 120px; height: 40px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
+                <div style="position: absolute; width: 40px; height: 120px; border: 1px dashed rgba(0,243,255,0.6); border-radius: 50%;"></div>
             </div>
 
-            <!-- ÓRBITA DEL SATÉLITE PEQUEÑO -->
-            <div style="position: absolute; width: 180px; height: 180px; border: 1px dotted rgba(0, 243, 255, 0.45); border-radius: 50%; animation: spinOrbit 7s linear infinite;">
-                <div style="position: absolute; top: 0; left: 50%; width: 7px; height: 7px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 10px #00f3ff, 0 0 4px #ffffff; transform: translate(-50%, -50%);"></div>
+            <!-- Órbita y Satélite Pequeño Girando Alrededor -->
+            <div style="position: absolute; width: 175px; height: 175px; border: 1px dotted rgba(0, 243, 255, 0.4); border-radius: 50%; animation: orbitSatellite 6s linear infinite;">
+                <div style="position: absolute; top: 0; left: 50%; width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #00f3ff; transform: translate(-50%, -50%);"></div>
             </div>
             
-            <!-- COORDENADAS TÁCTICAS -->
+            <!-- Coordenadas Exactas -->
             <div style="position: absolute; bottom: 8px; left: 10px; color: #00f3ff; font-family: monospace; font-size: 10px; background: rgba(11,15,25,0.85); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,243,255,0.4);">
                 LAT: -33.73° S | LON: -70.73° W — BUIN SECTOR OK
             </div>
         </div>
         <style>
-        @keyframes rotateSphere {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
-        }
-        @keyframes spinOrbit {
-            0% { transform: rotate(0deg) rotateX(65deg); }
-            100% { transform: rotate(360deg) rotateX(65deg); }
+        @keyframes orbitSatellite {
+            0% { transform: rotate(0deg) rotateX(60deg); }
+            100% { transform: rotate(360deg) rotateX(60deg); }
         }
         </style>
     """, height=240)
