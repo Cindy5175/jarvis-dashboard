@@ -320,17 +320,4 @@ with col_left:
                         if bateria:
                             bat_pct = bateria.percent
                             bat_enchufado = "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
-                            info_bat = f" | {bat_enchufado}: {bat_pct}%"
-                    except Exception:
-                        pass
-
-                    st.success(f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}")
-                    guardar_log_db(hora_hoy, f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.")
-                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Diagnóstico de hardware completado: CPU {cpu_uso}% | RAM {ram_uso}%.")
-                except Exception as e:
-                    st.warning(f"No se pudieron leer los sensores de hardware del sistema local: {e}")
-
-        with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
-            st.write("Activa el reconocimiento de voz continuo en el navegador:")
-            components.html(
-                '<div style="text-align: center; padding:
+                            info_bat = f" | {bat_enchufado}: {bat_pct}%
