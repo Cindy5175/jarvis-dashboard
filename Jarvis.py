@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 1. CABECERA Y COORDENADAS ---
+# --- CABECERA PRINCIPAL ---
 st.markdown("<h1>⚡ J.A.R.V.I.S. IA // NÚCLEO TÁCTICO</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #9ca3af;'>Starlink & 15 Módulos Activos | Buin, Chile (Lat: -33.73° S | Lon: -70.73° W)</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -42,80 +42,75 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
     ]
 
-# --- 2. SECCIÓN DE CHAT INTELIGENTE ---
-st.markdown("### 💬 Chat IA")
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# --- DISTRIBUCIÓN DE DOS COLUMNAS (IZQUIERDA: MÓDULOS / DERECHA: CHAT IA) ---
+col_left, col_right = st.columns([1.1, 1.1])
 
-st.markdown("---")
-
-# --- 3. CONTENEDOR EXPANDIBLE DE LOS 15 MÓDULOS ---
-with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
-    st.markdown("### 🛡️ Subsistema de Controles Tácticos")
-    
-    with st.expander("📁 Memoria Documental Masiva (RAG)"):
-        st.write("Estado: Enlazado con base de notas y PDFs.")
-    with st.expander("📁 Motor de API LLM"):
-        st.write("Estado: Conectado y operativo.")
-    with st.expander("📁 Agentes Autónomos"):
-        st.write("Estado: En espera de directivas.")
-    with st.expander("📁 Ojos Digitales (Cámara Web)"):
-        st.write("Estado: Activo / Monitoreo visual.")
-    with st.expander("📁 Clima Satelital en Vivo (Buin)"):
-        st.write("Temperatura actual: 20°C - Señal Órbita OK.")
-    with st.expander("📁 Buscador Web 24/7"):
-        st.write("Estado: Conectado a la red.")
-    with st.expander("📁 Terminal HUD de Trading"):
-        st.write("Monitoreo de divisas (EUR) activo.")
-    with st.expander("📁 Sensor de Hardware (CPU/RAM)"):
-        st.write(f"CPU: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}% | Disco: {psutil.disk_usage('/').percent}%")
-    with st.expander("📁 Escucha Permanente & Micrófono IA"):
-        st.write("Estado: Standby / Sincronizado.")
-    with st.expander("📁 Monitor Fiduciario & Divisas"):
-        st.write("Estado: Operativo (EUR configurado).")
-    with st.expander("📁 Protocolo Caja Fuerte"):
-        st.write("Seguridad: Cifrado activo.")
-    with st.expander("📁 Registro de Auditoría (Caja Negra)"):
-        st.write("Base de datos SQLite: OK.")
-    with st.expander("📁 Voz & Seguridad Avanzada"):
-        st.write("Motor biométrico y Vokaturi en espera.")
-    with st.expander("📁 Starlink Orbital Link (Buin)"):
-        st.write("Banda: 385 Mbps | Enlace Láser Activo.")
-    with st.expander("📁 Núcleo Holográfico con Satélite en Órbita"):
-        st.markdown("""
-            <div style="width: 100%; height: 160px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                <div style="color: #00f3ff; font-family: monospace; font-size: 13px; text-align: center;">
-                    🟢 SATÉLITE ÓRBITA EN VIVO - BUIN SECTOR OK
+with col_left:
+    # Contenedor expandible de los 15 módulos
+    with st.expander("📂 [CLIC AQUÍ] Desplegar Núcleo Táctico y Módulos"):
+        st.markdown("### 🛡️ Subsistema de Controles Tácticos")
+        
+        with st.expander("📁 Memoria Documental Masiva (RAG)"):
+            st.write("Estado: Enlazado con base de notas y PDFs.")
+        with st.expander("📁 Motor de API LLM"):
+            st.write("Estado: Conectado y operativo.")
+        with st.expander("📁 Agentes Autónomos"):
+            st.write("Estado: En espera de directivas.")
+        with st.expander("📁 Ojos Digitales (Cámara Web)"):
+            st.write("Estado: Activo / Monitoreo visual.")
+        with st.expander("📁 Clima Satelital en Vivo (Buin)"):
+            st.write("Temperatura actual: 20°C - Señal Órbita OK.")
+        with st.expander("📁 Buscador Web 24/7"):
+            st.write("Estado: Conectado a la red.")
+        with st.expander("📁 Terminal HUD de Trading"):
+            st.write("Monitoreo de divisas (EUR) activo.")
+        with st.expander("📁 Sensor de Hardware (CPU/RAM)"):
+            st.write(f"CPU: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}% | Disco: {psutil.disk_usage('/').percent}%")
+        with st.expander("📁 Escucha Permanente & Micrófono IA"):
+            st.write("Estado: Standby / Sincronizado.")
+        with st.expander("📁 Monitor Fiduciario & Divisas"):
+            st.write("Estado: Operativo (EUR configurado).")
+        with st.expander("📁 Protocolo Caja Fuerte"):
+            st.write("Seguridad: Cifrado activo.")
+        with st.expander("📁 Registro de Auditoría (Caja Negra)"):
+            st.write("Base de datos SQLite: OK.")
+        with st.expander("📁 Voz & Seguridad Avanzada"):
+            st.write("Motor biométrico y Vokaturi en espera.")
+        with st.expander("📁 Starlink Orbital Link (Buin)"):
+            st.write("Banda: 385 Mbps | Enlace Láser Activo.")
+        with st.expander("📁 Núcleo Holográfico con Satélite en Órbita"):
+            st.markdown("""
+                <div style="width: 100%; height: 150px; background: #030712; border: 1px solid #00f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #00f3ff; font-family: monospace; font-size: 12px;">🟢 SATÉLITE ÓRBITA EN VIVO - BUIN</span>
                 </div>
-            </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-st.markdown("---")
-
-# --- 4. TARJETAS DE ESTADO: STARLINK Y NÚCLEO HOLOGRÁFICO ---
-col_starlink, col_holo = st.columns(2)
-
-with col_starlink:
+    # Tarjetas inferiores izquierdas (Starlink y Holograma)
     st.markdown("""
     <div class="metric-card">
         <h3>📡 STARLINK ORBITAL LINK (BUIN)</h3>
-        <p><b>ENLACE:</b> LÁSER &nbsp;&nbsp;|&nbsp;&nbsp; <b>NODOS:</b> 14 Activos<br>
-        <b>LATENCIA:</b> 18.4 ms &nbsp;&nbsp;|&nbsp;&nbsp; <b>BANDA:</b> 385 Mbps</p>
+        <p><b>ENLACE:</b> LÁSER &nbsp;|&nbsp; <b>NODOS:</b> 14 Activos<br>
+        <b>LATENCIA:</b> 18.4 ms &nbsp;|&nbsp; <b>BANDA:</b> 385 Mbps</p>
     </div>
     """, unsafe_allow_html=True)
 
-with col_holo:
     st.markdown("""
     <div class="metric-card">
         <h3>🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</h3>
-        <div style="width: 100%; height: 90px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 100%; height: 80px; background: #030712; border: 1px solid #00f3ff; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
             <span style="color: #00f3ff; font-family: monospace; font-size: 12px;">🟢 3D ORBITAL MESH ACTIVE</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 5. ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
+with col_right:
+    # Columna derecha exclusiva para el Chat IA
+    st.markdown("### 💬 Chat IA")
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+# --- ENTRADA DE COMANDOS DE CHAT (AL FONDO) ---
 if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
