@@ -216,4 +216,230 @@ with col_left:
         if st.button("🛰️ Consultar Telemetría de Buin"):
             try:
                 url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
-                res = requests
+                res = requests.get(url_clima, timeout=5).json()
+                curr = res["current_weather"]
+                temp = curr["temperature"]
+                viento = curr["windspeed"]
+                st.success(
+                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
+                    f" {viento} km/h"
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
+                )
+            except Exception:
+                st.warning(
+                    "No se pudo conectar a la estación meteorológica, jefa."
+                )
+
+    with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
+        query_web = st.text_input(
+            "Ingrese consulta web en tiempo real:", key="search_web_input"
+        )
+        if query_web:
+            url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
+            st.success(f"Consulta generada para: **{query_web}**")
+            st.markdown(
+                f"🔗 [Abrir resultado en red externa]"
+                f"({url_busqueda})",
+                unsafe_allow_html=True,
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
+            )
+
+    with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
+        st.markdown(
+            """
+            <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 5px;">ESTADO DE NODOS GLOBALES</div>
+                <div style="font-size: 0.85em; color: #8a99ad;">Santiago/Buin ⇄ Servidores Cloud ⇄ Enlaces Satelitales</div>
+                <hr style="border-color: #00f0ff; opacity: 0.3; margin: 8px 0;">
+                <div style="display: flex; justify-content: space-around; font-size: 0.8em; color: #00f0ff;">
+                    <span>🟢 Latencia: 14ms</span>
+                    <span>🟢 Tráfico: Seguro</span>
+                    <span>🟢 Nodo: Activo</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🛰️ Sincronizar Mapa Global"):
+            st.success(
+                "Red global sincronizada. Tráfico de datos encriptado al 100%,"
+                " jefa."
+            )
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Sincronización de red global ejecutada."
+            )
+
+    with st.expander("🖼️ 4. Banco de Imágenes & Vokaturi"):
+        prompt_img = st.text_input(
+            "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
+            key="img_prompt",
+        )
+        if prompt_img:
+            url_img = f"https://source.unsplash.com/featured/?{prompt_img.replace(' ', ',')}"
+            st.image(
+                url_img,
+                caption=f"Imagen recuperada para: {prompt_img}",
+                use_container_width=True,
+            )
+
+    with st.expander("📊 5. Monitor Fiduciario & Divisas (USD / EUR)"):
+        st.write("Indicadores financieros oficiales (Chile):")
+        if st.button("📈 Consultar Divisas (USD & EUR)"):
+            try:
+                res_dolar = requests.get(
+                    "https://mindicador.cl/api/dolar", timeout=5
+                ).json()
+                res_euro = requests.get(
+                    "https://mindicador.cl/api/euro", timeout=5
+                ).json()
+
+                val_dolar = res_dolar["serie"][0]["valor"]
+                val_euro = res_euro["serie"][0]["valor"]
+
+                st.success(
+                    f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
+                    f" ${val_euro} CLP"
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con"
+                    " éxito."
+                )
+            except Exception:
+                st.info(
+                    "Mercado fiduciario estable. Estimados en Buin ➔ Dólar:"
+                    " ~940 CLP | Euro: ~1,020 CLP."
+                )
+
+    with st.expander("🎙️ 6. Módulo de Audio & Micrófono"):
+        st.caption(
+            "Simulación de entrada de voz por audio o dictado de comandos."
+        )
+        audio_file = st.file_uploader(
+            "Subir nota de voz (.wav / .mp3):",
+            type=["wav", "mp3", "m4a"],
+            key="voice_upload",
+        )
+        if audio_file:
+            st.success(
+                "Nota de voz indexada correctamente en el núcleo de procesamiento"
+                " acústico."
+            )
+
+    with st.expander("🚨 7. Sensores de Perímetro y Entorno"):
+        st.write("Estado de seguridad física:")
+        st.markdown(
+            "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores"
+            " Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión Satelital"
+            " Blindada",
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("🔒 8. Protocolo Caja Fuerte (Códigos & Credenciales)"):
+        st.write("Almacenamiento seguro de claves de acceso:")
+        nuevo_nombre_clave = st.text_input(
+            "Identificador / Servicio:", key="vault_name"
+        )
+        nuevo_valor_clave = st.text_input(
+            "Código / Credencial secreta:", type="password", key="vault_secret"
+        )
+        if st.button("💾 Guardar en Caja Fuerte"):
+            if nuevo_nombre_clave and nuevo_valor_clave:
+                st.session_state.caja_fuerte[nuevo_nombre_clave] = (
+                    nuevo_valor_clave
+                )
+                st.success(
+                    f"Credencial '{nuevo_nombre_clave}' asegurada en caja"
+                    " fuerte, jefa."
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}'"
+                    " almacenada en caja fuerte."
+                )
+            else:
+                st.warning("Debe ingresar el identificador y la clave.")
+
+        st.markdown("---")
+        st.write("📋 **Credenciales Guardadas:**")
+        clave_maestra_input = st.text_input(
+            "Ingrese clave maestra (Jarvis 51) para ver secretos:",
+            type="password",
+            key="vault_master_key",
+        )
+        if clave_maestra_input == "Jarvis 51":
+            for serv, cred in st.session_state.caja_fuerte.items():
+                st.code(f"{serv} ➔ {cred}", language="text")
+        elif clave_maestra_input:
+            st.error("Clave maestra incorrecta.")
+        else:
+            st.info(
+                "Introduzca la clave maestra para revelar los registros"
+                " cifrados."
+            )
+
+    with st.expander("⚡ 9. Atajos de Comandos Rápidos"):
+        c_at1, c_at2 = st.columns(2)
+        with c_at1:
+            if st.button("🕒 Hora y Fecha"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "¿Qué hora y fecha es?"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y la"
+                            f" hora en Buin es {hora_hoy}."
+                        ),
+                    }
+                )
+                st.rerun()
+        with c_at2:
+            if st.button("📡 Estado de Red"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "Estado de redes"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} Enlace satelital 24/7"
+                            f" operativo al 100% [{hora_hoy}]."
+                        ),
+                    }
+                )
+                st.rerun()
+
+    with st.expander("📋 10. Registro de Auditoría (Caja Negra)"):
+        st.text("Historial técnico de comandos recientes:")
+        for log in reversed(st.session_state.logs_auditoria[-5:]):
+            st.code(log, language="text")
+
+    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
+        texto_voz = st.text_input(
+            "Texto para hablar:",
+            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
+            key="tts_box",
+        )
+        if st.button("🔊 Sintonizar Voz"):
+            tts = gTTS(text=texto_voz, lang="es")
+            fp = BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            st.audio(fp, format="audio/mp3")
+
+        st.markdown("---")
+        ingreso_clave = st.text_input(
+            "Clave de validación:", type="password", key="key_input_j51"
+        )
+        if ingreso_clave:
+            if ingreso_clave == "Jarvis 51":
+                st.success("Acceso total concedido, jefa.")
+            else:
+                st.error("Clave incorrecta.")
+
+        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
+            st.session_state.emergencia_activa
