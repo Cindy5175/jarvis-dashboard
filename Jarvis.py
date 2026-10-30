@@ -15,6 +15,11 @@ st.set_page_config(
 
 TZ_LOCAL = pytz.timezone("America/Santiago")
 
+# CLAVE OFICIAL DE ELEVENLABS INTEGRADA
+ELEVENLABS_API_KEY = "sk_3d8b3c95ecc048c593e6cbf430deab6b8bab0beafbb835d3"
+# ID de voz predeterminado para JARVIS (Voz limpia y formal, ej: Adam o similar de la librería)
+ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
+
 
 # ==========================================
 # BASE DE DATOS PERSISTENTE (SQLITE)
@@ -229,7 +234,9 @@ col_left, col_right = st.columns(2, gap="medium")
 
 with col_left:
     # GALERÍA MAESTRA OCULTA / EXPANDIBLE
-    with st.expander("🗂️ Galería de Subsistemas Tácticos [Expandir Menús]", expanded=False):
+    with st.expander(
+        "🗂️ Galería de Subsistemas Tácticos [Expandir Menús]", expanded=False
+    ):
         st.markdown("#### 🛡️ Subsistema de Conexiones y Controles")
 
         with st.expander("🌤️ 1. Clima Satelital en Vivo (Buin)"):
@@ -240,20 +247,34 @@ with col_left:
                     curr = res["current_weather"]
                     temp = curr["temperature"]
                     viento = curr["windspeed"]
-                    st.success(f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h")
+                    st.success(
+                        f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
+                        f" {viento} km/h"
+                    )
                     guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
-                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Consulta de clima ejecutada con éxito.")
+                    st.session_state.logs_auditoria.append(
+                        f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
+                    )
                 except Exception:
-                    st.warning("No se pudo conectar al servidor meteorológico, jefa.")
+                    st.warning(
+                        "No se pudo conectar al servidor meteorológico, jefa."
+                    )
 
         with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
-            query_web = st.text_input("Ingrese consulta web en tiempo real:", key="search_web_input")
+            query_web = st.text_input(
+                "Ingrese consulta web en tiempo real:", key="search_web_input"
+            )
             if query_web:
                 url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
                 st.success(f"Consulta generada para: **{query_web}**")
-                st.markdown(f"🔗 [Abrir resultado en red externa]({url_busqueda})", unsafe_allow_html=True)
+                st.markdown(
+                    f"🔗 [Abrir resultado en red externa]({url_busqueda})",
+                    unsafe_allow_html=True,
+                )
                 guardar_log_db(hora_hoy, f"Búsqueda web: '{query_web}'.")
-                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'.")
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
+                )
 
         with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
             st.markdown(
@@ -272,9 +293,14 @@ with col_left:
                 unsafe_allow_html=True,
             )
             if st.button("🛰️ Sincronizar Mapa Global"):
-                st.success("Red global sincronizada. Tráfico de datos encriptado al 100%, jefa.")
+                st.success(
+                    "Red global sincronizada. Tráfico de datos encriptado al"
+                    " 100%, jefa."
+                )
                 guardar_log_db(hora_hoy, "Sincronización de red global.")
-                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Sincronización de red global ejecutada.")
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Sincronización de red global ejecutada."
+                )
 
         with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
             st.markdown(
@@ -299,9 +325,14 @@ with col_left:
                 unsafe_allow_html=True,
             )
             if st.button("⚡ Ejecutar Rebalanceo Algorítmico"):
-                st.success("Rebalanceo de portafolio y rutas ejecutado con éxito, jefa.")
+                st.success(
+                    "Rebalanceo de portafolio y rutas ejecutado con éxito, jefa."
+                )
                 guardar_log_db(hora_hoy, "Rebalanceo algorítmico ejecutado.")
-                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD.")
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal"
+                    " HUD."
+                )
 
         with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
             st.write("Diagnóstico de sistema en tiempo real:")
@@ -319,92 +350,215 @@ with col_left:
                         bateria = psutil.sensors_battery()
                         if bateria:
                             bat_pct = bateria.percent
-                            bat_enchufado = "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
+                            bat_enchufado = (
+                                "🔌 Conectado"
+                                if bateria.power_plugged
+                                else "🔋 Batería"
+                            )
                             info_bat = f" | {bat_enchufado}: {bat_pct}%"
                     except Exception:
                         pass
 
-                    st.success(f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}")
-                    guardar_log_db(hora_hoy, f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.")
-                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Diagnóstico de hardware completado: CPU {cpu_uso}% | RAM {ram_uso}%.")
+                    st.success(
+                        f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:**"
+                        f" {ram_uso}% usada ({ram_disp} GB libres)  \n💽"
+                        f" **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
+                    )
+                    guardar_log_db(
+                        hora_hoy,
+                        f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.",
+                    )
+                    st.session_state.logs_auditoria.append(
+                        f"[{hora_hoy}] Diagnóstico de hardware completado: CPU"
+                        f" {cpu_uso}% | RAM {ram_uso}%."
+                    )
                 except Exception as e:
-                    st.warning(f"No se pudieron leer los sensores de hardware del sistema local: {e}")
+                    st.warning(
+                        "No se pudieron leer los sensores de hardware del"
+                        f" sistema local: {e}"
+                    )
 
         with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
-            st.write("Activa el reconocimiento de voz continuo en el navegador:")
-            components.html('<div style="text-align: center; padding: 5px; background-color: #030508;"><button onclick="iniciarEscucha()" style="background-color: #030508; color: #00f0ff; border: 1px solid #00f0ff; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">🎙️ Activar Escucha por Voz</button><p id="estado-voz" style="font-size: 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de comandos...</p><p id="transcripcion" style="font-size: 0.9em; color: #00f0ff; font-weight: bold;"></p></div><script>function iniciarEscucha() {const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;if (!SpeechRecognition) {alert("Tu navegador no soporta el reconocimiento de voz de API nativa.");return;}const recognition = new SpeechRecognition();recognition.lang = "es-CL";recognition.continuous = false;recognition.interimResults = false;document.getElementById("estado-voz").textContent = "Estado: Escuchando activamente...";recognition.onresult = function(event) {const speechToText = event.results[0][0].transcript;document.getElementById("transcripcion").textContent = "Comando capturado: \\"" + speechToText + "\\"";document.getElementById("estado-voz").textContent = "Estado: Comando enviado al núcleo.";const chatInput = document.querySelector(\'input[aria-label="Escriba su comando o hable con J.A.R.V.I.S..."]\');if (chatInput) {chatInput.value = speechToText;chatInput.dispatchEvent(new Event("input", { bubbles: true }));chatInput.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", code: "Enter", keyCode: 13, bubbles: true}));}};recognition.onerror = function(event) {document.getElementById("estado-voz").textContent = "Estado: Error de captura de audio.";};recognition.onend = function() {setTimeout(function() {document.getElementById("estado-voz").textContent = "Estado: En espera de comandos...";}, 3000);};recognition.start();}</script>', height=130)
+            st.write(
+                "Activa el reconocimiento de voz continuo en el navegador:"
+            )
+            components.html(
+                '<div style="text-align: center; padding: 5px;'
+                ' background-color: #030508;"><button'
+                ' onclick="iniciarEscucha()" style="background-color: #030508;'
+                ' color: #00f0ff; border: 1px solid #00f0ff; padding: 10px'
+                ' 20px; border-radius: 6px; font-weight: bold; cursor: pointer;'
+                ' box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);">🎙️ Activar'
+                ' Escucha por Voz</button><p id="estado-voz" style="font-size:'
+                ' 0.8em; color: #8a99ad; margin-top: 8px;">Estado: En espera de'
+                ' comandos...</p><p id="transcripcion" style="font-size: 0.9em;'
+                ' color: #00f0ff; font-weight: bold;"></p></div><script>function'
+                ' iniciarEscucha() {const SpeechRecognition ='
+                ' window.SpeechRecognition || window.webkitSpeechRecognition;if'
+                ' (!SpeechRecognition) {alert("Tu navegador no soporta el'
+                ' reconocimiento de voz de API nativa.");return;}const'
+                ' recognition = new SpeechRecognition();recognition.lang ='
+                ' "es-CL";recognition.continuous = false;recognition.interimResults'
+                ' = false;document.getElementById("estado-voz").textContent ='
+                ' "Estado: Escuchando'
+                ' activamente...";recognition.onresult = function(event) {const'
+                ' speechToText = event.results[0][0].transcript;'
+                ' document.getElementById("transcripcion").textContent ='
+                ' "Comando capturado: \\"" + speechToText + "\\"";'
+                ' document.getElementById("estado-voz").textContent = "Estado:'
+                ' Transmitido al núcleo.";const inputs ='
+                ' window.parent.document.querySelectorAll("input[type=\'text\']");for'
+                ' (let input of inputs) {if (input.placeholder &&'
+                ' input.placeholder.includes("Escriba su comando")) {input.value'
+                ' = speechToText;input.dispatchEvent(new Event("input", {'
+                ' bubbles: true }));const enterEvent = new'
+                ' KeyboardEvent("keydown", {key: "Enter", code: "Enter",'
+                ' keyCode: 13, which: 13, bubbles: true});'
+                ' input.dispatchEvent(enterEvent);break;}}};'
+                ' recognition.onerror = function(event) {'
+                ' document.getElementById("estado-voz").textContent = "Estado:'
+                ' Error de captura de audio.";};recognition.onend = function()'
+                ' {setTimeout(function() {'
+                ' document.getElementById("estado-voz").textContent = "Estado:'
+                ' En espera de comandos...";}, 3000);};recognition.start();}</script>',
+                height=130,
+            )
 
         with st.expander("🖼️ 7. Banco de Imágenes & Vokaturi"):
-            prompt_img = st.text_input("Buscar imagen en red (Ej: Iron Man, autos, galaxia):", key="img_prompt")
+            prompt_img = st.text_input(
+                "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
+                key="img_prompt",
+            )
             if prompt_img:
                 url_img = f"https://source.unsplash.com/featured/?{prompt_img.replace(' ', ',')}"
-                st.image(url_img, caption=f"Imagen recuperada para: {prompt_img}", use_container_width=True)
+                st.image(
+                    url_img,
+                    caption=f"Imagen recuperada para: {prompt_img}",
+                    use_container_width=True,
+                )
 
         with st.expander("📊 8. Monitor Fiduciario & Divisas (USD / EUR)"):
             st.write("Indicadores financieros oficiales (Chile):")
             if st.button("📈 Consultar Divisas (USD & EUR)"):
                 try:
-                    res_dolar = requests.get("https://mindicador.cl/api/dolar", timeout=5).json()
-                    res_euro = requests.get("https://mindicador.cl/api/euro", timeout=5).json()
+                    res_dolar = requests.get(
+                        "https://mindicador.cl/api/dolar", timeout=5
+                    ).json()
+                    res_euro = requests.get(
+                        "https://mindicador.cl/api/euro", timeout=5
+                    ).json()
 
                     val_dolar = res_dolar["serie"][0]["valor"]
                     val_euro = res_euro["serie"][0]["valor"]
 
-                    st.success(f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro: ${val_euro} CLP")
+                    st.success(
+                        f"💵 Dólar Observado: ${val_dolar} CLP\n\n💶 Euro:"
+                        f" ${val_euro} CLP"
+                    )
                     guardar_log_db(hora_hoy, "Consulta divisas USD/EUR.")
-                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con éxito.")
+                    st.session_state.logs_auditoria.append(
+                        f"[{hora_hoy}] Consulta de divisas USD/EUR realizada con"
+                        " éxito."
+                    )
                 except Exception:
-                    st.info("Mercado fiduciario estable. Estimados en Buin ➔ Dólar: ~940 CLP | Euro: ~1,020 CLP.")
+                    st.info(
+                        "Mercado fiduciario estable. Estimados en Buin ➔ Dólar:"
+                        " ~940 CLP | Euro: ~1,020 CLP."
+                    )
 
         with st.expander("🚨 9. Sensores de Perímetro y Entorno"):
             st.write("Estado de seguridad física:")
             st.markdown(
-                "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión Satelital Blindada",
+                "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores"
+                " Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión"
+                " Satelital Blindada",
                 unsafe_allow_html=True,
             )
 
         with st.expander("🔒 10. Protocolo Caja Fuerte (Códigos & Credenciales)"):
             st.write("Almacenamiento seguro de claves de acceso:")
-            nuevo_nombre_clave = st.text_input("Identificador / Servicio:", key="vault_name")
-            nuevo_valor_clave = st.text_input("Código / Credencial secreta:", type="password", key="vault_secret")
+            nuevo_nombre_clave = st.text_input(
+                "Identificador / Servicio:", key="vault_name"
+            )
+            nuevo_valor_clave = st.text_input(
+                "Código / Credencial secreta:",
+                type="password",
+                key="vault_secret",
+            )
             if st.button("💾 Guardar en Caja Fuerte"):
                 if nuevo_nombre_clave and nuevo_valor_clave:
-                    st.session_state.caja_fuerte[nuevo_nombre_clave] = nuevo_valor_clave
+                    st.session_state.caja_fuerte[nuevo_nombre_clave] = (
+                        nuevo_valor_clave
+                    )
                     guardar_vault_db(nuevo_nombre_clave, nuevo_valor_clave)
-                    st.success(f"Credencial '{nuevo_nombre_clave}' asegurada en caja fuerte, jefa.")
-                    guardar_log_db(hora_hoy, f"Credencial '{nuevo_nombre_clave}' guardada.")
-                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}' almacenada en caja fuerte.")
+                    st.success(
+                        f"Credencial '{nuevo_nombre_clave}' asegurada en caja"
+                        " fuerte, jefa."
+                    )
+                    guardar_log_db(
+                        hora_hoy, f"Credencial '{nuevo_nombre_clave}' guardada."
+                    )
+                    st.session_state.logs_auditoria.append(
+                        f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}'"
+                        " almacenada en caja fuerte."
+                    )
                 else:
                     st.warning("Debe ingresar el identificador y la clave.")
 
             st.markdown("---")
             st.write("📋 **Credenciales Guardadas:**")
-            clave_maestra_input = st.text_input("Ingrese clave maestra (Jarvis 51) para ver secretos:", type="password", key="vault_master_key")
+            clave_maestra_input = st.text_input(
+                "Ingrese clave maestra (Jarvis 51) para ver secretos:",
+                type="password",
+                key="vault_master_key",
+            )
             if clave_maestra_input == "Jarvis 51":
                 for serv, cred in st.session_state.caja_fuerte.items():
                     st.code(f"{serv} ➔ {cred}", language="text")
             elif clave_maestra_input:
                 st.error("Clave maestra incorrecta.")
             else:
-                st.info("Introduzca la clave maestra para revelar los registros cifrados.")
+                st.info(
+                    "Introduzca la clave maestra para revelar los registros"
+                    " cifrados."
+                )
 
         with st.expander("📄 11. Conexión Documental (RAG & Análisis)"):
             st.write("Análisis táctico de documentos locales:")
-            uploaded_file = st.file_uploader("Subir documento (TXT/CSV/PDF):", type=["txt", "csv", "pdf"], key="doc_uploader")
+            uploaded_file = st.file_uploader(
+                "Subir documento (TXT/CSV/PDF):",
+                type=["txt", "csv", "pdf"],
+                key="doc_uploader",
+            )
             if uploaded_file is not None:
-                st.success(f"Documento '{uploaded_file.name}' cargado con éxito en memoria.")
+                st.success(
+                    f"Documento '{uploaded_file.name}' cargado con éxito en"
+                    " memoria."
+                )
                 if st.button("📑 Analizar Contenido"):
-                    st.info("Documento procesado. Jarvis listo para responder consultas sobre este archivo.")
-                    guardar_log_db(hora_hoy, f"Documento analizado: {uploaded_file.name}")
+                    st.info(
+                        "Documento procesado. Jarvis listo para responder"
+                        " consultas sobre este archivo."
+                    )
+                    guardar_log_db(
+                        hora_hoy, f"Documento analizado: {uploaded_file.name}"
+                    )
 
         with st.expander("📡 12. Comunicaciones & Alertas de Salida"):
             st.write("Emisión de alertas y notificaciones externas:")
-            destinatario = st.text_input("Destinatario (Email/Telegram ID):", key="msg_dest")
+            destinatario = st.text_input(
+                "Destinatario (Email/Telegram ID):", key="msg_dest"
+            )
             cuerpo_msg = st.text_area("Mensaje de notificación:", key="msg_body")
             if st.button("📤 Enviar Notificación Externa"):
                 if destinatario and cuerpo_msg:
-                    st.success(f"Alerta despachada correctamente a {destinatario}, jefa.")
-                    guardar_log_db(hora_hoy, f"Alerta enviada a {destinatario}")
+                    st.success(
+                        "Alerta despachada correctamente a"
+                        f" {destinatario}, jefa."
+                    )
+                    guardar_log_db(
+                        hora_hoy, f"Alerta enviada a {destinatario}"
+                    )
                 else:
                     st.warning("Complete el destinatario y mensaje.")
 
@@ -421,47 +575,99 @@ with col_left:
             c_at1, c_at2 = st.columns(2)
             with c_at1:
                 if st.button("🕒 Hora y Fecha"):
-                    st.session_state.messages.append({"role": "user", "content": "¿Qué hora y fecha es?"})
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y la hora en Buin es {hora_hoy}."
-                    })
+                    st.session_state.messages.append(
+                        {"role": "user", "content": "¿Qué hora y fecha es?"}
+                    )
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": (
+                                f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y"
+                                f" la hora en Buin es {hora_hoy}."
+                            ),
+                        }
+                    )
                     st.rerun()
             with c_at2:
                 if st.button("📡 Estado de Red"):
-                    st.session_state.messages.append({"role": "user", "content": "Estado de redes"})
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": f"{obtener_saludo_jefa()} Enlace satelital 24/7 operativo al 100% [{hora_hoy}]."
-                    })
+                    st.session_state.messages.append(
+                        {"role": "user", "content": "Estado de redes"}
+                    )
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": (
+                                f"{obtener_saludo_jefa()} Enlace satelital"
+                                f" 24/7 operativo al 100% [{hora_hoy}]."
+                            ),
+                        }
+                    )
                     st.rerun()
 
-        with st.expander("📋 15. Registro de Auditoría (Caja Negra Persistente)"):
+        with st.expander(
+            "📋 15. Registro de Auditoría (Caja Negra Persistente)"
+        ):
             st.text("Historial técnico de comandos recientes:")
             logs_recientes = cargar_logs_db()
             for log in logs_recientes:
                 st.code(log, language="text")
 
         with st.expander("🔊 Voz & 🔒 Seguridad Avanzada (ElevenLabs / Stark)"):
-            texto_voz = st.text_input("Texto para hablar con tono Jarvis:", f"Son las {hora_hoy}. Para usted, jefa, siempre.", key="tts_box")
-            
-            # Campo preparado para API Key de ElevenLabs (opcional para el futuro o uso avanzado)
-            elevenlabs_key = st.text_input("API Key de ElevenLabs (Opcional):", type="password", key="eleven_api_key")
-            
-            if st.button("🔊 Sintonizar Voz de JARVIS"):
-                if elevenlabs_key:
-                    # Estructura preparada para llamadas a ElevenLabs API si el usuario ingresa su clave
-                    st.info("Conectando con servidores de ElevenLabs para síntesis cinemática de JARVIS...")
-                
-                # Motor de voz optimizado (gTTS con locución solemne y formal)
-                tts = gTTS(text=texto_voz, lang="es", slow=False)
-                fp = BytesIO()
-                tts.write_to_fp(fp)
-                fp.seek(0)
-                st.audio(fp, format="audio/mp3")
+            texto_voz = st.text_input(
+                "Texto para hablar con tono Jarvis:",
+                f"Son las {hora_hoy}. Para usted, jefa, siempre.",
+                key="tts_box",
+            )
+
+            if st.button("🔊 Sintonizar Voz (ElevenLabs Oficial)"):
+                try:
+                    url_eleven = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+                    headers = {
+                        "Accept": "audio/mpeg",
+                        "Content-Type": "application/json",
+                        "xi-api-key": ELEVENLABS_API_KEY,
+                    }
+                    data = {
+                        "text": texto_voz,
+                        "model_id": "eleven_multilingual_v2",
+                        "voice_settings": {
+                            "stability": 0.75,
+                            "similarity_boost": 0.85,
+                        },
+                    }
+                    response = requests.post(
+                        url_eleven, json=data, headers=headers, timeout=10
+                    )
+                    if response.status_code == 200:
+                        st.success(
+                            "Audio sintetizado con éxito a través de ElevenLabs,"
+                            " jefa."
+                        )
+                        st.audio(BytesIO(response.content), format="audio/mp3")
+                    else:
+                        st.warning(
+                            "Conexión con ElevenLabs en curso. Respaldo de"
+                            " síntesis activado."
+                        )
+                        tts = gTTS(text=texto_voz, lang="es", slow=False)
+                        fp = BytesIO()
+                        tts.write_to_fp(fp)
+                        fp.seek(0)
+                        st.audio(fp, format="audio/mp3")
+                except Exception:
+                    st.info(
+                        "Ejecutando protocolo de respaldo de voz local, jefa."
+                    )
+                    tts = gTTS(text=texto_voz, lang="es", slow=False)
+                    fp = BytesIO()
+                    tts.write_to_fp(fp)
+                    fp.seek(0)
+                    st.audio(fp, format="audio/mp3")
 
             st.markdown("---")
-            ingreso_clave = st.text_input("Clave de validación:", type="password", key="key_input_j51")
+            ingreso_clave = st.text_input(
+                "Clave de validación:", type="password", key="key_input_j51"
+            )
             if ingreso_clave:
                 if ingreso_clave == "Jarvis 51":
                     st.success("Acceso total concedido, jefa.")
@@ -473,7 +679,7 @@ with col_left:
                 st.rerun()
 
     # ==========================================
-    # GLOBO TERRÁQUEO HOLOGRÁFICO 3D (BAJO LA GALERÍA) - ALTURA CORREGIDA
+    # GLOBO TERRÁQUEO HOLOGRÁFICO 3D (BAJO LA GALERÍA)
     # ==========================================
     st.markdown("---")
     globo_holografico_html = """
@@ -528,7 +734,6 @@ with col_left:
     }
     </style>
     """
-    # Aumentamos la altura del componente Streamlit de 210 a 250 para evitar cortes
     components.html(globo_holografico_html, height=250)
 
 
@@ -548,9 +753,13 @@ with col_right:
     user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
 
     if user_input:
-        st.session_state.messages.append({"role": "user", "content": user_input})
+        st.session_state.messages.append(
+            {"role": "user", "content": user_input}
+        )
         guardar_log_db(hora_hoy, f"Chat: '{user_input}'")
-        st.session_state.logs_auditoria.append(f"[{hora_hoy}] Comando de chat: '{user_input}'.")
+        st.session_state.logs_auditoria.append(
+            f"[{hora_hoy}] Comando de chat: '{user_input}'."
+        )
 
         saludo_actual = obtener_saludo_jefa()
         u_lower = user_input.lower()
@@ -558,17 +767,38 @@ with col_right:
         if "despierto" in u_lower or "despiertas" in u_lower:
             resp = "Para usted, jefa, siempre."
         elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
-            resp = f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en Buin, Chile."
+            resp = (
+                f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en"
+                " Buin, Chile."
+            )
         elif "clima" in u_lower:
-            resp = f"{saludo_actual} El módulo de clima en el panel izquierdo tiene la telemetría exacta en tiempo real para Buin."
+            resp = (
+                f"{saludo_actual} El módulo de clima en el panel izquierdo tiene"
+                " la telemetría exacta en tiempo real para Buin."
+            )
         elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
-            resp = f"{saludo_actual} El sensor de hardware en el panel izquierdo está listo para escanear el rendimiento de CPU y memoria RAM en tiempo real."
-        elif any(w in u_lower for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]):
-            resp = f"{saludo_actual} Es un honor estar a su servicio. Las conexiones están sincronizadas a las {hora_hoy}."
+            resp = (
+                f"{saludo_actual} El sensor de hardware en el panel izquierdo"
+                " está listo para escanear el rendimiento de CPU y memoria RAM"
+                " en tiempo real."
+            )
+        elif any(
+            w in u_lower
+            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
+        ):
+            resp = (
+                f"{saludo_actual} Es un honor estar a su servicio. Las"
+                f" conexiones están sincronizadas a las {hora_hoy}."
+            )
         else:
-            resp = f"{saludo_actual} Procesando '{user_input}' con enlace satelital [{hora_hoy}]. Todo en orden, jefa."
+            resp = (
+                f"{saludo_actual} Procesando '{user_input}' con enlace"
+                f" satelital [{hora_hoy}]. Todo en orden, jefa."
+            )
 
-        st.session_state.messages.append({"role": "assistant", "content": resp})
+        st.session_state.messages.append(
+            {"role": "assistant", "content": resp}
+        )
         st.rerun()
 
     c_purg1, c_purg2 = st.columns([3, 1])
@@ -577,9 +807,14 @@ with col_right:
             st.session_state.messages = [
                 {
                     "role": "assistant",
-                    "content": f"{obtener_saludo_jefa()} Historial purgado al instante, jefa. Borrón y cuenta nueva.",
+                    "content": (
+                        f"{obtener_saludo_jefa()} Historial purgado al"
+                        " instante, jefa. Borrón y cuenta nueva."
+                    ),
                 }
             ]
             guardar_log_db(hora_hoy, "Historial de chat purgado.")
-            st.session_state.logs_auditoria.append(f"[{hora_hoy}] Historial de chat purgado.")
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Historial de chat purgado."
+            )
             st.rerun()
