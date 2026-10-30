@@ -1,7 +1,7 @@
-import base64
 from datetime import datetime
 from io import BytesIO
 from gtts import gTTS
+import psutil  # <--- Librería para telemetría de hardware
 import pytz
 import requests
 import streamlit as st
@@ -126,7 +126,7 @@ if "caja_fuerte" not in st.session_state:
     }
 
 saludo_inicial = (
-    f"{obtener_saludo_jefa()} Terminal HUD de Trading y Mapeo Global"
+    f"{obtener_saludo_jefa()} Sensores de hardware de laptop y red"
     " sincronizados. Enlace satelital activo en Buin. ¿Qué orden ejecutamos"
     " hoy?"
 )
@@ -305,7 +305,45 @@ with col_left:
                 " HUD."
             )
 
-    with st.expander("🖼️ 5. Banco de Imágenes & Vokaturi"):
+    # NUEVO COMPONENTE: SENSOR DE HARDWARE EN TIEMPO REAL (LAPTOP)
+    with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
+        st.write("Diagnóstico de sistema en tiempo real:")
+        if st.button("🔍 Escanear Hardware"):
+            try:
+                cpu_uso = psutil.cpu_percent(interval=1)
+                ram = psutil.virtual_memory()
+                ram_uso = ram.percent
+                ram_disp = round(ram.available / (1024**3), 2)
+                disco = psutil.disk_usage("/")
+                disco_uso = disco.percent
+
+                # Intentar leer batería si está disponible
+                bateria = psutil.sensors_battery()
+                if bateria:
+                    bat_pct = bateria.percent
+                    bat_enchufado = (
+                        "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
+                    )
+                    info_bat = f" | {bat_enchufado}: {bat_pct}%"
+                else:
+                    info_bat = " | Energía de Red Estacionaria"
+
+                st.success(
+                    f"🖥️ **CPU en Uso:** {cpu_uso}%\n\n💾 **Memoria RAM:**"
+                    f" {ram_uso}% usada ({ram_disp} GB libres)\n\n💽"
+                    f" **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Diagnóstico de hardware completado:"
+                    f" CPU {cpu_uso}% | RAM {ram_uso}%."
+                )
+            except Exception as e:
+                st.warning(
+                    "No se pudieron leer los sensores de hardware del sistema"
+                    f" local: {e}"
+                )
+
+    with st.expander("🖼️ 6. Banco de Imágenes & Vokaturi"):
         prompt_img = st.text_input(
             "Buscar imagen en red (Ej: Iron Man, autos, galaxia):",
             key="img_prompt",
@@ -318,7 +356,7 @@ with col_left:
                 use_container_width=True,
             )
 
-    with st.expander("📊 6. Monitor Fiduciario & Divisas (USD / EUR)"):
+    with st.expander("📊 7. Monitor Fiduciario & Divisas (USD / EUR)"):
         st.write("Indicadores financieros oficiales (Chile):")
         if st.button("📈 Consultar Divisas (USD & EUR)"):
             try:
@@ -346,7 +384,7 @@ with col_left:
                     " ~940 CLP | Euro: ~1,020 CLP."
                 )
 
-    with st.expander("🎙️ 7. Módulo de Audio & Micrófono"):
+    with st.expander("🎙️ 8. Módulo de Audio & Micrófono"):
         st.caption(
             "Simulación de entrada de voz por audio o dictado de comandos."
         )
@@ -361,6 +399,199 @@ with col_left:
                 " acústico."
             )
 
-    with st.expander("🚨 8. Sensores de Perímetro y Entorno"):
+    with st.expander("🚨 9. Sensores de Perímetro y Entorno"):
         st.write("Estado de seguridad física:")
-        
+        st.markdown(
+            "🔹 **Perímetro Buin:** Seguro (0 intrusiones) <br>🔹 **Sensores"
+            " Térmicos:** Normales <br>🔹 **Estado de Red:** Conexión Satelital"
+            " Blindada",
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("🔒 10. Protocolo Caja Fuerte (Códigos & Credenciales)"):
+        st.write("Almacenamiento seguro de claves de acceso:")
+        nuevo_nombre_clave = st.text_input(
+            "Identificador / Servicio:", key="vault_name"
+        )
+        nuevo_valor_clave = st.text_input(
+            "Código / Credencial secreta:", type="password", key="vault_secret"
+        )
+        if st.button("💾 Guardar en Caja Fuerte"):
+            if nuevo_nombre_clave and nuevo_valor_clave:
+                st.session_state.caja_fuerte[nuevo_nombre_clave] = (
+                    nuevo_valor_clave
+                )
+                st.success(
+                    f"Credencial '{nuevo_nombre_clave}' asegurada en caja"
+                    " fuerte, jefa."
+                )
+                st.session_state.logs_auditoria.append(
+                    f"[{hora_hoy}] Credencial '{nuevo_nombre_clave}'"
+                    " almacenada en caja fuerte."
+                )
+            else:
+                st.warning("Debe ingresar el identificador y la clave.")
+
+        st.markdown("---")
+        st.write("📋 **Credenciales Guardadas:**")
+        clave_maestra_input = st.text_input(
+            "Ingrese clave maestra (Jarvis 51) para ver secretos:",
+            type="password",
+            key="vault_master_key",
+        )
+        if clave_maestra_input == "Jarvis 51":
+            for serv, cred in st.session_state.caja_fuerte.items():
+                st.code(f"{serv} ➔ {cred}", language="text")
+        elif clave_maestra_input:
+            st.error("Clave maestra incorrecta.")
+        else:
+            st.info(
+                "Introduzca la clave maestra para revelar los registros"
+                " cifrados."
+            )
+
+    with st.expander("⚡ 11. Atajos de Comandos Rápidos"):
+        c_at1, c_at2 = st.columns(2)
+        with c_at1:
+            if st.button("🕒 Hora y Fecha"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "¿Qué hora y fecha es?"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} Hoy es {fecha_hoy} y la"
+                            f" hora en Buin es {hora_hoy}."
+                        ),
+                    }
+                )
+                st.rerun()
+        with c_at2:
+            if st.button("📡 Estado de Red"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": "Estado de redes"}
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"{obtener_saludo_jefa()} Enlace satelital 24/7"
+                            f" operativo al 100% [{hora_hoy}]."
+                        ),
+                    }
+                )
+                st.rerun()
+
+    with st.expander("📋 12. Registro de Auditoría (Caja Negra)"):
+        st.text("Historial técnico de comandos recientes:")
+        for log in reversed(st.session_state.logs_auditoria[-5:]):
+            st.code(log, language="text")
+
+    with st.expander("🔊 Voz & 🔒 Seguridad Avanzada"):
+        texto_voz = st.text_input(
+            "Texto para hablar:",
+            f"Son las {hora_hoy}. Para usted, jefa, siempre.",
+            key="tts_box",
+        )
+        if st.button("🔊 Sintonizar Voz"):
+            tts = gTTS(text=texto_voz, lang="es")
+            fp = BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            st.audio(fp, format="audio/mp3")
+
+        st.markdown("---")
+        ingreso_clave = st.text_input(
+            "Clave de validación:", type="password", key="key_input_j51"
+        )
+        if ingreso_clave:
+            if ingreso_clave == "Jarvis 51":
+                st.success("Acceso total concedido, jefa.")
+            else:
+                st.error("Clave incorrecta.")
+
+        if st.button("🚨 ACTIVAR BLOQUEO DE EMERGENCIA"):
+            st.session_state.emergencia_activa = True
+            st.rerun()
+
+
+# ==========================================
+# COLUMNA DERECHA: CHAT IA
+# ==========================================
+with col_right:
+    st.markdown("#### 💬 Chat IA")
+
+    chat_container = st.container(height=380)
+
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+    user_input = st.chat_input("Escriba su comando o hable con J.A.R.V.I.S...")
+
+    if user_input:
+        st.session_state.messages.append(
+            {"role": "user", "content": user_input}
+        )
+        st.session_state.logs_auditoria.append(
+            f"[{hora_hoy}] Comando de chat: '{user_input}'."
+        )
+
+        saludo_actual = obtener_saludo_jefa()
+        u_lower = user_input.lower()
+
+        if "despierto" in u_lower or "despiertas" in u_lower:
+            resp = "Para usted, jefa, siempre."
+        elif any(w in u_lower for w in ["hora", "fecha", "dia"]):
+            resp = (
+                f"{saludo_actual} Hoy es {fecha_hoy} y son las {hora_hoy} en"
+                " Buin, Chile."
+            )
+        elif "clima" in u_lower:
+            resp = (
+                f"{saludo_actual} El módulo de clima en el panel izquierdo tiene"
+                " la telemetría exacta en tiempo real para Buin."
+            )
+        elif "hardware" in u_lower or "cpu" in u_lower or "ram" in u_lower:
+            resp = (
+                f"{saludo_actual} El sensor de hardware en el panel izquierdo"
+                " está listo para escanear el rendimiento de CPU y memoria RAM"
+                " en tiempo real."
+            )
+        elif any(
+            w in u_lower
+            for w in ["hola", "buenos dias", "buenas tardes", "buenas noches"]
+        ):
+            resp = (
+                f"{saludo_actual} Es un honor estar a su servicio. Las"
+                f" conexiones están sincronizadas a las {hora_hoy}."
+            )
+        else:
+            resp = (
+                f"{saludo_actual} Procesando '{user_input}' con enlace"
+                f" satelital [{hora_hoy}]. Todo en orden, jefa."
+            )
+
+        st.session_state.messages.append(
+            {"role": "assistant", "content": resp}
+        )
+        st.rerun()
+
+    c_purg1, c_purg2 = st.columns([3, 1])
+    with c_purg2:
+        if st.button("🗑️ Purgar Chat"):
+            st.session_state.messages = [
+                {
+                    "role": "assistant",
+                    "content": (
+                        f"{obtener_saludo_jefa()} Historial purgado a las"
+                        f" {hora_hoy}. Borrón y cuenta nueva, jefa."
+                    ),
+                }
+            ]
+            st.session_state.logs_auditoria.append(
+                f"[{hora_hoy}] Historial de chat purgado."
+            )
+            st.rerun()
