@@ -112,8 +112,7 @@ def guardar_rag_db(titulo, contenido, fragmento=""):
     conn = sqlite3.connect("jarvis_memory.db")
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO rag_memory (titulo, contenido, fragmento) VALUES (?, ?,"
-        " ?)",
+        "INSERT INTO rag_memory (titulo, contenido, fragmento) VALUES (?, ?, ?)",
         (titulo, contenido, fragmento),
     )
     conn.commit()
@@ -124,8 +123,7 @@ def buscar_rag_db(keyword):
     conn = sqlite3.connect("jarvis_memory.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT titulo, contenido, fragmento FROM rag_memory WHERE titulo LIKE"
-        " ? OR contenido LIKE ?",
+        "SELECT titulo, contenido, fragmento FROM rag_memory WHERE titulo LIKE ? OR contenido LIKE ?",
         (f"%{keyword}%", f"%{keyword}%"),
     )
     filas = cursor.fetchall()
@@ -314,7 +312,6 @@ with col_left:
                             "utf-8", errors="ignore"
                         )
 
-                    # Fragmentación semántica en bloques de 1000 caracteres
                     bloques = [
                         texto_completo[i : i + 1000]
                         for i in range(0, len(texto_completo), 1000)
@@ -325,8 +322,7 @@ with col_left:
                         )
 
                     st.success(
-                        f"Documento '{arch.name}' procesado ({len(bloques)}"
-                        " bloques indexados)."
+                        f"Documento '{arch.name}' procesado ({len(bloques)} bloques indexados)."
                     )
                     guardar_log_db(
                         hora_hoy,
@@ -347,8 +343,7 @@ with col_left:
                     st.info(f"📌 **Origen: {tit}**\n\n{frag or cont[:300]}...")
             else:
                 st.warning(
-                    "No hay coincidencias vectoriales/semánticas en los"
-                    " archivos."
+                    "No hay coincidencias vectoriales/semánticas en los archivos."
                 )
 
     # EXPANSIÓN 2: CONEXIÓN API LLM
@@ -365,80 +360,4 @@ with col_left:
             st.success(
                 "Enlace con API externa configurado en el núcleo, jefa."
             )
-            guardar_log_db(hora_hoy, "Enlace API LLM actualizado.")
-
-    # EXPANSIÓN 3: AGENTES AUTÓNOMOS DE SEGUNDO PLANO
-    with st.expander(
-        "🤖 3. Expansión 3: Agentes Autónomos & Tareas de Fondo"
-    ):
-        st.write("Monitor continuo de tareas en segundo plano:")
-        st.checkbox("Daemon de Telemetría Buin (Cada 60s)", value=True)
-        st.checkbox("Daemon de Alertas Cripto/Divisas USD-EUR", value=True)
-        st.checkbox("Demonio de Limpieza y Respaldo SQLite", value=True)
-
-        if st.button("🚀 Disparar Agente Autónomo Manual"):
-            st.success(
-                "Agente de rastreo ejecutado. Telemetría de Buin y divisas"
-                " validadas."
-            )
-            guardar_log_db(
-                hora_hoy, "Agente autónomo ejecutado manualmente."
-            )
-
-    # EXPANSIÓN 4: OJOS DIGITALES Y VISIÓN POR COMPUTADOR
-    with st.expander(
-        "👁️ 4. Expansión 4: Ojos Digitales (Cámara Web & Visión)"
-    ):
-        st.write("Sensor de captura de imagen en tiempo real:")
-        img_camera = st.camera_input("Capturar fotograma para análisis:")
-        if img_camera:
-            st.image(
-                img_camera,
-                caption="Fotograma registrado por sensores",
-                use_container_width=True,
-            )
-            if st.button("🔍 Inspeccionar Fotograma"):
-                st.success(
-                    "Sensor de visión: Perímetro Buin analizado. Cero"
-                    " amenazas o intrusiones detectadas."
-                )
-                guardar_log_db(
-                    hora_hoy,
-                    "Análisis de fotograma de cámara completado con éxito.",
-                )
-
-    # MÓDULOS HUD COMPLEMENTARIOS
-    with st.expander("🌤️ Clima Satelital en Vivo (Buin)"):
-        if st.button("🛰️ Consultar Telemetría de Buin"):
-            try:
-                url_clima = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&longitude=-70.73&current_weather=true"
-                res = requests.get(url_clima, timeout=5).json()
-                curr = res["current_weather"]
-                temp = curr["temperature"]
-                viento = curr["windspeed"]
-                st.success(
-                    f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento:"
-                    f" {viento} km/h"
-                )
-                guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
-            except Exception:
-                st.warning(
-                    "No se pudo conectar al servidor meteorológico, jefa."
-                )
-
-    with st.expander("🌐 Buscador Web 24/7 (Satelital)"):
-        query_web = st.text_input(
-            "Ingrese consulta web en tiempo real:", key="search_web_input"
-        )
-        if query_web:
-            url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
-            st.success(f"Agente Web Autónomo procesando: **{query_web}**")
-            st.markdown(
-                f"🔗 [Abrir reporte de red externo]({url_busqueda})",
-                unsafe_allow_html=True,
-            )
-            guardar_log_db(hora_hoy, f"Búsqueda web avanzada: '{query_web}'.")
-
-    with st.expander("📈 Terminal HUD de Trading & Métricas"):
-        st.markdown(
-            '<div style="background
+            guardar_log_db(hora_hoy,
