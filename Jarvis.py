@@ -240,33 +240,20 @@ with col_left:
                     curr = res["current_weather"]
                     temp = curr["temperature"]
                     viento = curr["windspeed"]
-                    st.success(
-                        f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h"
-                    )
+                    st.success(f"Telemetría en Buin [{hora_hoy}]: {temp}°C | Viento: {viento} km/h")
                     guardar_log_db(hora_hoy, "Consulta de clima ejecutada.")
-                    st.session_state.logs_auditoria.append(
-                        f"[{hora_hoy}] Consulta de clima ejecutada con éxito."
-                    )
+                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Consulta de clima ejecutada con éxito.")
                 except Exception:
-                    st.warning(
-                        "No se pudo conectar al servidor meteorológico, jefa."
-                    )
+                    st.warning("No se pudo conectar al servidor meteorológico, jefa.")
 
         with st.expander("🌐 2. Buscador Web 24/7 (Satelital)"):
-            query_web = st.text_input(
-                "Ingrese consulta web en tiempo real:", key="search_web_input"
-            )
+            query_web = st.text_input("Ingrese consulta web en tiempo real:", key="search_web_input")
             if query_web:
                 url_busqueda = f"https://html.duckduckgo.com/html/?q={query_web}"
                 st.success(f"Consulta generada para: **{query_web}**")
-                st.markdown(
-                    f"🔗 [Abrir resultado en red externa]({url_busqueda})",
-                    unsafe_allow_html=True,
-                )
+                st.markdown(f"🔗 [Abrir resultado en red externa]({url_busqueda})", unsafe_allow_html=True)
                 guardar_log_db(hora_hoy, f"Búsqueda web: '{query_web}'.")
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'."
-                )
+                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Búsqueda web preparada: '{query_web}'.")
 
         with st.expander("🌍 3. Mapeo de Red Global & Flujos Tácticos"):
             st.markdown(
@@ -285,13 +272,9 @@ with col_left:
                 unsafe_allow_html=True,
             )
             if st.button("🛰️ Sincronizar Mapa Global"):
-                st.success(
-                    "Red global sincronizada. Tráfico de datos encriptado al 100%, jefa."
-                )
+                st.success("Red global sincronizada. Tráfico de datos encriptado al 100%, jefa.")
                 guardar_log_db(hora_hoy, "Sincronización de red global.")
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Sincronización de red global ejecutada."
-                )
+                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Sincronización de red global ejecutada.")
 
         with st.expander("📈 4. Terminal HUD de Trading & Métricas"):
             st.markdown(
@@ -316,13 +299,9 @@ with col_left:
                 unsafe_allow_html=True,
             )
             if st.button("⚡ Ejecutar Rebalanceo Algorítmico"):
-                st.success(
-                    "Rebalanceo de portafolio y rutas ejecutado con éxito, jefa."
-                )
+                st.success("Rebalanceo de portafolio y rutas ejecutado con éxito, jefa.")
                 guardar_log_db(hora_hoy, "Rebalanceo algorítmico ejecutado.")
-                st.session_state.logs_auditoria.append(
-                    f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD."
-                )
+                st.session_state.logs_auditoria.append(f"[{hora_hoy}] Rebalanceo algorítmico ejecutado desde terminal HUD.")
 
         with st.expander("💻 5. Sensor de Hardware & Laptop (CPU/RAM)"):
             st.write("Diagnóstico de sistema en tiempo real:")
@@ -340,18 +319,18 @@ with col_left:
                         bateria = psutil.sensors_battery()
                         if bateria:
                             bat_pct = bateria.percent
-                            bat_enchufado = (
-                                "🔌 Conectado"
-                                if bateria.power_plugged
-                                else "🔋 Batería"
-                            )
+                            bat_enchufado = "🔌 Conectado" if bateria.power_plugged else "🔋 Batería"
                             info_bat = f" | {bat_enchufado}: {bat_pct}%"
                     except Exception:
                         pass
 
-                    st.success(
-                        f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}"
-                    )
-                    guardar_log_db(
-                        hora_hoy,
-                        f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.",
+                    st.success(f"🖥️ **CPU en Uso:** {cpu_uso}%  \n💾 **Memoria RAM:** {ram_uso}% usada ({ram_disp} GB libres)  \n💽 **Almacenamiento:** {disco_uso}% utilizado{info_bat}")
+                    guardar_log_db(hora_hoy, f"Diagnóstico hardware: CPU {cpu_uso}% | RAM {ram_uso}%.")
+                    st.session_state.logs_auditoria.append(f"[{hora_hoy}] Diagnóstico de hardware completado: CPU {cpu_uso}% | RAM {ram_uso}%.")
+                except Exception as e:
+                    st.warning(f"No se pudieron leer los sensores de hardware del sistema local: {e}")
+
+        with st.expander("🎙️ 6. Escucha Permanente & Micrófono IA"):
+            st.write("Activa el reconocimiento de voz continuo en el navegador:")
+            components.html(
+                '<div style="text-align: center; padding:
