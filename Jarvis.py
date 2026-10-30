@@ -96,7 +96,7 @@ with col_left:
                 st.success(f"Buscando directiva: '{web_query}' en la red global...")
 
         with st.expander("📊 Terminal HUD de Trading & Divisas"):
-            st.write("EUR / CLP: 1,045.20 $\vert{} USD / CLP: 968.50$")
+            st.write("EUR / CLP: 1,045.20 $ | USD / CLP: 968.50 $")
 
         with st.expander("💻 Sensor de Hardware (CPU/RAM)"):
             st.write(f"CPU en uso: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}%")
@@ -169,4 +169,23 @@ with col_left:
 
 with col_right:
     # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA
-    st.markdown("###
+    st.markdown("### 💬 Chat IA")
+    
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        prompt_lower = prompt.lower().strip()
+        if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
+            response = "para Ud señorita siempre"
+        else:
+            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.markdown(response)
