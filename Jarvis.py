@@ -278,14 +278,14 @@ with col_left:
         st.markdown(
             """
             <div style="background-color: #05080f; border: 1px solid #00f0ff; padding: 12px; border-radius: 6px;">
-                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">ALGORITHM TRADING TERMINAL</div>
+                <div style="color: #00f0ff; font-weight: bold; margin-bottom: 8px; text-align: center;">TERMINAL DE TRADING ALGORÍTMICO</div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 4px;">
                     <span>ACTIVO: <strong style="color: #00f0ff;">$4.837B</strong></span>
                     <span>FLUX: <strong style="color: #00f0ff;">+$1,290,861</strong></span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #8a99ad; margin-bottom: 8px;">
                     <span>FILL RATE: <strong style="color: #00f0ff;">99.27%</strong></span>
-                    <span>ORDERS: <strong style="color: #00f0ff;">37 Active</strong></span>
+                    <span>ÓRDENES: <strong style="color: #00f0ff;">37 Activas</strong></span>
                 </div>
                 <hr style="border-color: #00f0ff; opacity: 0.3; margin: 6px 0;">
                 <div style="font-size: 0.75em; color: #00f0ff; margin-bottom: 4px;">LATENCIA DE RED: 1.855ms (ÓPTIMO)</div>
