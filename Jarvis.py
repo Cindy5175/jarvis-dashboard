@@ -96,13 +96,13 @@ MENSAJE_AUTO_EXTERNOS = (
 if "tareas_todo" not in st.session_state:
     st.session_state.tareas_todo = [
         "Revisar notificaciones de salud / Bci",
-        "Optimizar sistemas de voz nativa",
-        "Probar módulo de comandos en Buin"
+        "Optimizar tono de voz grave de J.A.R.V.I.S.",
+        "Monitorear nodo activo en Buin"
     ]
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos integrados y síntesis de voz nativa listos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Los 8 módulos tácticos operan en perfecta simetría desde Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -132,7 +132,7 @@ modulo_seleccionado = st.sidebar.selectbox("Seleccionar Módulo Activo", [
     "🛡️ Blindaje WhatsApp",
     "📧 Alertas Gmail",
     "📋 Tareas & Notas Tácticas",
-    "🎙️ Sintetizador de Voz Nativo",
+    "🎙️ Sintetizador de Voz Nativo (Varonil)",
     "💱 Conversor de Monedas",
     "📌 Marcadores Rápidos",
     "🧠 Memoria Masiva",
@@ -155,7 +155,7 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: 5 Módulos Simétricos<br>
+        &gt; MATRIZ: 8 Módulos Simétricos<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
@@ -197,28 +197,27 @@ with col_izq:
         st.markdown(f"• `{idx+1}.` {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 3: SINTETIZADOR DE VOZ NATIVO CON BOTÓN DE STREAMLIT PURO
+    # MÓDULO 3: SINTETIZADOR DE VOZ NATIVO (FORZANDO TONO GRAVE / VARONIL)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 🎙️ Módulo 3: Voz Robótica Nativa (Jarvis)")
-    st.caption("Utiliza el sintetizador de voz integrado del sistema con tono masculino.")
+    st.caption("Sintetizador con tono de varón grave y profundo optimizado.")
     
     texto_a_hablar = st.text_area("Texto a reproducir por voz:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin al 100%.", height=68)
     
-    # Usamos st.button nativo para asegurar la interacción con el mouse
-    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
-        # Componente HTML/JS dinámico que se dispara al pulsar el botón de Streamlit
+    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S. (Varón)", use_container_width=True):
         js_code = f"""
         <script>
         if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel(); // Detiene cualquier audio anterior
+            window.speechSynthesis.cancel();
             var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
             mensaje.lang = 'es-ES';
-            mensaje.rate = 0.95;
-            mensaje.pitch = 0.6;
+            mensaje.rate = 0.90; // Velocidad pausada y imponente
+            mensaje.pitch = 0.1; // Tono extremadamente grave (fuerza voz masculina profunda)
             
             var voces = window.speechSynthesis.getVoices();
             for(var i = 0; i < voces.length; i++) {{
-                if(voces[i].lang.includes('es') && (voces[i].name.toLowerCase().includes('male') || voces[i].name.toLowerCase().includes('pablo') || voces[i].name.toLowerCase().includes('carlos') || voces[i].name.toLowerCase().includes('latent') || voces[i].name.toLowerCase().includes('google español'))) {{
+                var nombre = voces[i].name.toLowerCase();
+                if(voces[i].lang.includes('es') && (nombre.includes('male') || nombre.includes('pablo') || nombre.includes('carlos') || nombre.includes('alberto') || nombre.includes('raul') || nombre.includes('diego'))) {{
                     mensaje.voice = voces[i];
                     break;
                 }}
@@ -228,7 +227,7 @@ with col_izq:
         </script>
         """
         st.components.v1.html(js_code, height=0)
-        st.success("Orden de emisión de voz enviada al núcleo, jefa.")
+        st.success("Orden de voz varonil enviada al núcleo, jefa.")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -298,7 +297,7 @@ with col_der:
         if "despierto" in p_low or "estás ahí" in p_low:
             resp = "Para usted, señorita, siempre."
         elif "hola" in p_low or "buenas" in p_low:
-            resp = f"{saludo_tiempo}, jefa. Todos los 5 módulos operan en perfecta armonía."
+            resp = f"{saludo_tiempo}, jefa. Todos los módulos operan en perfecta armonía."
         else:
             resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
         
