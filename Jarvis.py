@@ -15,7 +15,7 @@ st.markdown("""
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label, .stTextInput label, .stTextArea label { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         
-        /* Cajas de bordes neón simétricas en columna única */
+        /* Cajas de bordes neón simétricas */
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 10px;
@@ -33,8 +33,8 @@ st.markdown("""
             padding: 10px;
         }
         .globe {
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             border: 2px solid #00d2ff;
             box-shadow: inset 0 0 20px #00d2ff, 0 0 20px #00d2ff;
@@ -44,8 +44,8 @@ st.markdown("""
         }
         .orbit {
             position: absolute;
-            width: 160px;
-            height: 55px;
+            width: 170px;
+            height: 60px;
             border: 1px solid rgba(0, 210, 255, 0.6);
             border-radius: 50%;
             transform: rotate(-20deg);
@@ -96,13 +96,13 @@ MENSAJE_AUTO_EXTERNOS = (
 if "tareas_todo" not in st.session_state:
     st.session_state.tareas_todo = [
         "Revisar notificaciones de salud / Bci",
-        "Optimizar matriz de 8 módulos",
+        "Optimizar matriz del búnker",
         "Monitorear nodo activo en Buin"
     ]
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Los 8 módulos tácticos están alineados en columna izquierda desde Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo con globo terráqueo y consola activos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -142,37 +142,37 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: 8 Módulos en Columna<br>
+        &gt; MATRIZ: Holograma & Consola Central<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: 8 MÓDULOS EN ORDEN FILTRADOS A LA IZQUIERDA Y CHAT A LA DERECHA ---
-col_izq, col_der = st.columns([1.2, 1], gap="medium")
+# --- DISPOSICIÓN PRINCIPAL: MÓDULOS A LA IZQUIERDA / GLOBO Y CHAT A LA DERECHA ---
+col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
-    # MÓDULO 1: BLINDAJE WHATSAPP
+    # MÓDULO: BLINDAJE WHATSAPP
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 🛡️ Blindaje WhatsApp")
     st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
     st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 2: ALERTAS GMAIL
+    # MÓDULO: ALERTAS GMAIL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 📧 Alertas & Resumen Gmail")
     st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
+    c_m1, c_m2 = st.columns(2)
+    with c_m1:
         st.info("🏥 UC Christus: Receta disponible.")
-    with col_m2:
+    with c_m2:
         st.success("🏦 Bci: Renta CLP.")
     if st.button("🔄 Escanear Bandeja", use_container_width=True):
         st.toast("Bandeja escaneada con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 3: PROTOCOLO TO-DO TÁCTICO
+    # MÓDULO: PROTOCOLO TO-DO TÁCTICO
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 📋 Tareas & Notas Tácticas")
     st.caption("Gestión y registro rápido de pendientes en el búnker.")
@@ -184,7 +184,7 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 4: SINTETIZADOR DE VOZ NATIVO
+    # MÓDULO: SINTETIZADOR DE VOZ NATIVO
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 🎙️ Sintetizador de Voz Nativa (Varonil)")
     st.caption("Emisión de comandos con tono de voz grave y profundo.")
@@ -214,7 +214,7 @@ with col_izq:
         st.success("Voz emitida con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 5: CONVERSOR FINANCIERO CLP
+    # MÓDULO: CONVERSOR FINANCIERO CLP
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 💱 Conversor de Monedas")
     st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
@@ -228,7 +228,7 @@ with col_izq:
     st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 6: MARCADORES RÁPIDOS
+    # MÓDULO: MARCADORES RÁPIDOS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 📌 Enlaces & Marcadores Rápidos")
     st.caption("Accesos directos a portales clave.")
@@ -241,22 +241,7 @@ with col_izq:
         st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 7: MEMORIA MASIVA & GLOBO HOLOGRÁFICO
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 🧠 Memoria Masiva & Holograma")
-    st.caption("Proyección cartográfica y registros del núcleo.")
-    st.markdown("""
-        <div class="globe-container">
-            <div class="orbit"></div>
-            <div class="globe"></div>
-        </div>
-        <div style="font-family: monospace; color: #00d2ff; font-size: 0.75rem; text-align: center;">
-            BUIN OK — -33.73° S / -70.73° W
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # MÓDULO 8: TELEMETRÍA GLOBAL (ESTACIÓN SATELITAL)
+    # MÓDULO: TELEMETRÍA GLOBAL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 📡 Telemetría Global & Sensores")
     st.caption("Monitoreo de estado de conexiones y satélites.")
@@ -264,9 +249,22 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # CONSOLA DE CHAT IA E INTERACCIÓN PRINCIPAL
-    st.markdown('<div class="stark-card" style="min-height: 850px; display: flex; flex-direction: column; justify-content: space-between;">', unsafe_allow_html=True)
-    
+    # GLOBO HOLOGRÁFICO EN LA PARTE SUPERIOR DERECHA
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 🌍 Nodo Holográfico Global")
+    st.markdown("""
+        <div class="globe-container">
+            <div class="orbit"></div>
+            <div class="globe"></div>
+        </div>
+        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 8px;">
+            BUIN OK — COORDENADAS: -33.73° S / -70.73° W
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CONSOLA DE CHAT IA E INTERACCIÓN EN LA PARTE INFERIOR DERECHA
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     c_h1, c_h2 = st.columns([3, 1])
     with c_h1:
         st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
@@ -277,7 +275,7 @@ with col_der:
             ]
             st.rerun()
 
-    chat_box = st.container(height=650)
+    chat_box = st.container(height=350)
     with chat_box:
         for m in st.session_state.mensajes:
             with st.chat_message(m["role"]):
@@ -289,7 +287,7 @@ with col_der:
         if "despierto" in p_low or "estás ahí" in p_low:
             resp = "Para usted, señorita, siempre."
         elif "hola" in p_low or "buenas" in p_low:
-            resp = f"{saludo_tiempo}, jefa. Los 8 módulos operan en perfecta armonía."
+            resp = f"{saludo_tiempo}, jefa. Todos los sistemas operan en perfecta armonía."
         else:
             resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
         
