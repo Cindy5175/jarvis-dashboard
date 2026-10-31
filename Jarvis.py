@@ -8,18 +8,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia) + Color Azul Neón en Expandidores
+# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia) + Estilos limpios para expandidores
 st.markdown("""
     <style>
         .main { background-color: #060911; }
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label, .stTextInput label, .stTextArea label { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         
-        /* Forzar color azul neón en los títulos de los expandidores (módulos) */
-        .streamlit-expanderHeader, div[data-testid="stExpander"] summary p, div[data-testid="stExpander"] summary span {
+        /* Forzar color azul neón y tipografía limpia en los títulos de los expandidores */
+        div[data-testid="stExpander"] summary p, div[data-testid="stExpander"] summary span {
             color: #00d2ff !important;
             font-family: 'Courier New', monospace !important;
             font-weight: bold;
+            font-size: 1.05rem;
         }
         
         /* Cajas de bordes neón simétricas */
@@ -109,7 +110,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos con neón activo y núcleo libre a la derecha en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos limpios con neón activo en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -149,7 +150,7 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos Neón Activos<br>
+        &gt; MATRIZ: Módulos Limpios<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
