@@ -2,13 +2,26 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # Configuración de página táctica
-st.set_page_config(page_title="JARVIS System", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="JARVIS System - Stark Industries", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
-# --- CABECERA STARK ---
-st.markdown("<h1 style='text-align: center;'>▲ JARVIS CONTROL CENTER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #00d2ff;'>Sector: Buin, Chile [-33.73° S, -70.73° W]</p>", unsafe_allow_html=True)
+# Estilo personalizado para estética táctica
+st.markdown("""
+    <style>
+        .main { background-color: #0b0f19; }
+        h1, h2, h3 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
+        .stSelectbox label { color: #00d2ff !important; }
+    </style>
+""", unsafe_allow_html=True)
 
-# Selector de Módulos
+# Cabecera principal
+st.title("▲ JARVIS CONTROL CENTER")
+st.caption("Sector: Buin, Chile [-33.7320° S, -70.7300° W] | Estado: Operativo")
+
+# Menú lateral para navegación entre módulos
 modulo_seleccionado = st.sidebar.selectbox(
     "Módulos del Sistema",
     [
@@ -17,16 +30,16 @@ modulo_seleccionado = st.sidebar.selectbox(
         "03. Clima de Buin",
         "04. Buscador Web",
         "05. Sintetizador de Voz (ElevenLabs)",
-        # ... resto de sus 15 módulos
+        # Agregue aquí el resto de sus 15 módulos
     ]
 )
 
-# --- MÓDULO: OJO DE DIOS (OSIRIS INTEGRADO) ---
+# --- MÓDULO 01: OJO DE DIOS (OSIRIS INTEGRADO) ---
 if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
     st.subheader("🛰️ Módulo Táctico: Monitoreo Global en Tiempo Real")
-    st.caption("Capas activas: Satélites Militares, Tráfico Marítimo, Vuelos Privados, Sismos y Telemetría Global.")
+    st.caption("Telemetría activa: Satélites Militares/Comunicaciones, Tráfico Marítimo, Vuelos, Sismos y Redes Globales.")
     
-    # URL con todas las capas tácticas activas desde Buin
+    # URL completa con todas las capas activas centradas en Buin
     osiris_url = (
         "https://osirisai.live/?"
         "lat=-33.7320&lon=-70.7300&zoom=10.00&"
@@ -36,21 +49,21 @@ if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
         "wind_controls,rain_controls,gdelt_events"
     )
     
-    # Renderizado del visor en vivo mediante iframe fluido
+    # Renderizado en vivo mediante iframe responsivo
     components.html(
         f"""
         <iframe 
             src="{osiris_url}" 
             width="100%" 
-            height="750px" 
-            style="border: 2px solid #00d2ff; border-radius: 10px; background-color: #000;"
+            height="760px" 
+            style="border: 2px solid #00d2ff; border-radius: 12px; background-color: #000; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);"
             allowfullscreen>
         </iframe>
         """,
-        height=760
+        height=770
     )
 
-# --- MÓDULO ELEVENLABS (PENDIENTE) ---
+# --- MÓDULO 05: ELEVENLABS (CONEXIÓN DE VOZ) ---
 elif modulo_seleccionado == "05. Sintetizador de Voz (ElevenLabs)":
     st.subheader("🎙️ Configuración de Voz de Jarvis")
-    st.info("Módulo listo para conectar la API Key de ElevenLabs y clonar/asignar la voz varonil.")
+    st.info("Módulo reservado para la API Key de ElevenLabs e integración del modelo de voz varonil.")
