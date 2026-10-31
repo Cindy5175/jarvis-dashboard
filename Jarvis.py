@@ -134,11 +134,19 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
         
+        # Búsqueda multicapa blindada para la API Key
         api_key = ""
         try:
-            api_key = st.secrets["ELEVENLABS_API_KEY"]
-            st.success("🔒 Clave conectada automáticamente desde Secrets.")
+            if "ELEVENLABS_API_KEY" in st.secrets:
+                api_key = st.secrets["ELEVENLABS_API_KEY"]
+            elif hasattr(st.secrets, "get"):
+                api_key = st.secrets.get("ELEVENLABS_API_KEY", "")
         except Exception:
+            pass
+            
+        if api_key:
+            st.success("🔒 Clave conectada automáticamente desde el búnker.")
+        else:
             api_key = st.text_input("ElevenLabs API Key:", type="password")
             
         voice_id = st.text_input("Voice ID:", value="21m00Tcm4TlvDq8ikWAM")
