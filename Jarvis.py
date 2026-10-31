@@ -65,6 +65,18 @@ st.markdown("""
             color: #00d2ff;
             margin-top: 10px;
         }
+        
+        /* Estilo para botón de purga */
+        div.stButton > button {
+            background-color: #1e293b;
+            color: #00d2ff;
+            border: 1px solid #00d2ff;
+            border-radius: 6px;
+        }
+        div.stButton > button:hover {
+            background-color: #00d2ff;
+            color: #05070b;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -109,8 +121,62 @@ modulo_seleccionado = st.sidebar.selectbox(
 
 st.sidebar.markdown("---")
 
-# --- DESPLIEGUE ESPECÍFICO DE MÓDULOS ---
+# --- DESPLIEGUE ESPECÍFICO DE MÓDULOS EN BARRA LATERAL ---
 with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     if "Clima de Buin" in modulo_seleccionado:
         st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
-        st.markdown("💧 **Humedad:** 45% | 💨 **Viento
+        st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
+        st.markdown("📍 **Sector:** Buin Centro")
+    
+    elif "Ojo de Dios" in modulo_seleccionado:
+        st.markdown("🛰️ **Estado:** Constelación Global Activa")
+        osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
+        st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
+    
+    elif "Control Financiero" in modulo_seleccionado:
+        st.markdown("💵 **USD/CLP:** $945.50")
+        st.markdown("💶 **EUR/CLP:** $1,020.30")
+        st.markdown("📈 **Tendencia:** Estable")
+    
+    elif "Ojos Digitales" in modulo_seleccionado:
+        st.markdown("👁️ **Feeds CCTV:** 4 Cámaras activas")
+        st.markdown("🔒 **Seguridad Perimetral:** Sin anomalías")
+    
+    elif "Análisis de Amenazas" in modulo_seleccionado:
+        st.markdown("🛡️ **Escáner Firewall:** Blindado")
+        st.markdown("⚠️ **Alertas en Sector:** 0 detectadas")
+    
+    else:
+        st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
+        st.markdown("⚡ **Sincronización:** 100% Buin OK")
+
+# --- CONSOLA DINÁMICA DE TELEMETRÍA ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("⚡ **TERMINAL DE ACCIÓN Y TELEMETRÍA**")
+
+st.sidebar.caption("🔋 Potencia del Reactor Arc")
+st.sidebar.progress(98)
+
+st.sidebar.caption("📡 Estabilidad del Enlace Starlink")
+st.sidebar.progress(92)
+
+if "Amenazas" in modulo_seleccionado:
+    if st.sidebar.button("🛡️ Escaneo Profundo"):
+        st.sidebar.toast("Perímetro de Buin despejado. Sin anomalías.")
+elif "Clima" in modulo_seleccionado:
+    if st.sidebar.button("🌤️ Recargar Clima"):
+        st.sidebar.toast("Telemetría meteorológica de Buin actualizada.")
+else:
+    if st.sidebar.button("🔄 Sincronizar Nodo"):
+        st.sidebar.toast("Nodo en Buin sincronizado a máxima velocidad.")
+
+st.sidebar.markdown(f"""
+    <div class="tactical-console">
+        &gt; SYS_OK: Node Buin online<br>
+        &gt; ACTIVE: {modulo_seleccionado.split(' ')[1]}<br>
+        &gt; STARK_NET: Encryption AES-256<br>
+        &gt; STATUS: Esperando directivas, jefa...
+    </div>
+""", unsafe_allow_html=True)
+
+# --- DASHBOARD PRINCIPAL DE
