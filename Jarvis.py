@@ -162,7 +162,8 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
                     st.audio(audio_bytes, format="audio/mp3")
                     st.success("Audio generado con éxito desde Buin.")
                 except Exception as e:
-                    st.error(f"Error en la conexión con ElevenLabs: {e}")
+                    detalle_error = getattr(e, 'body', str(e))
+                    st.error(f"Detalle del error ElevenLabs: {detalle_error}")
 
     elif "Control Financiero" in modulo_seleccionado:
         st.markdown("💵 **USD/CLP:** $945.50")
