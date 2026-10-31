@@ -210,13 +210,13 @@ st.sidebar.progress(92)
 
 if "Amenazas" in modulo_seleccionado:
     if st.sidebar.button("🛡️ Escaneo Profundo"):
-        st.sidebar.toast("Perímetro de Buin despejado. Sin anomalías.")
+        st.toast("Perímetro de Buin despejado. Sin anomalías.")
 elif "Clima" in modulo_seleccionado:
     if st.sidebar.button("🌤️ Recargar Clima"):
-        st.sidebar.toast("Telemetría meteorológica de Buin actualizada.")
+        st.toast("Telemetría meteorológica de Buin actualizada.")
 else:
     if st.sidebar.button("🔄 Sincronizar Nodo"):
-        st.sidebar.toast("Nodo en Buin sincronizado a máxima velocidad.")
+        st.toast("Nodo en Buin sincronizado a máxima velocidad.")
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
