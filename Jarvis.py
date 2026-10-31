@@ -264,4 +264,39 @@ with col_der:
             <div class="globe"></div>
         </div>
         <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 6px;">
-            BUIN OK — NODO GEOGR
+            BUIN OK — NODO GEOGRÁFICO -33.73° S / -70.73° W
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CONSOLA DE CHAT IA E INTERACCIÓN
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    c_h1, c_h2 = st.columns([3, 1])
+    with c_h1:
+        st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
+    with c_h2:
+        if st.button("🗑️ Purgar", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Consola lista en Buin."}
+            ]
+            st.rerun()
+
+    chat_box = st.container(height=230)
+    with chat_box:
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.write(m["content"])
+
+    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": p})
+        p_low = p.lower()
+        if "despierto" in p_low or "estás ahí" in p_low:
+            resp = "Para usted, señorita, siempre."
+        elif "hola" in p_low or "buenas" in p_low:
+            resp = f"{saludo_tiempo}, jefa. Todos los 5 módulos operan en perfecta armonía."
+        else:
+            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": resp})
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
