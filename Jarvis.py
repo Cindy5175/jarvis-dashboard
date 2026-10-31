@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia) + Limpieza de iconos en expandidores
+# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia)
 st.markdown("""
     <style>
         .main { background-color: #060911; }
@@ -110,7 +110,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos con viñetas y neón activo en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos limpios en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -150,7 +150,7 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos con Viñetas<br>
+        &gt; MATRIZ: Módulos Limpios<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
@@ -166,7 +166,7 @@ with col_izq:
         st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
 
     # MÓDULO: ALERTAS GMAIL
-    with st.expander("• Alertas & Resumen Gmail"):
+    with st.expander("• Alertas y Resumen Gmail"):
         st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
         c_m1, c_m2 = st.columns(2)
         with c_m1:
@@ -177,7 +177,7 @@ with col_izq:
             st.toast("Bandeja escaneada con éxito.")
 
     # MÓDULO: PROTOCOLO TO-DO TÁCTICO
-    with st.expander("• Tareas & Notas Tácticas"):
+    with st.expander("• Tareas y Notas Tácticas"):
         st.caption("Gestión y registro rápido de pendientes en el búnker.")
         nueva_tarea = st.text_input("Nueva tarea:", placeholder="Ej: Revisar sensores...")
         if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
@@ -227,7 +227,7 @@ with col_izq:
         st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
 
     # MÓDULO: MARCADORES RÁPIDOS
-    with st.expander("• Enlaces & Marcadores Rápidos"):
+    with st.expander("• Enlaces y Marcadores Rápidos"):
         st.caption("Accesos directos a portales clave.")
         r1, r2 = st.columns(2)
         with r1:
@@ -238,7 +238,7 @@ with col_izq:
             st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
 
     # MÓDULO: TELEMETRÍA GLOBAL
-    with st.expander("• Telemetría Global & Sensores"):
+    with st.expander("• Telemetría Global y Sensores"):
         st.caption("Monitoreo de estado de conexiones y satélites.")
         st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
 
