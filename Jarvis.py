@@ -56,23 +56,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ENCABEZADO TÁCTICO CON TRIÁNGULO ARC REACTOR REAL ---
+# --- ENCABEZADO TÁCTICO STARK INDUSTRIES (Diseño Arc Reactor puro) ---
 st.markdown("""
-    <div style="text-align: center; margin-bottom: 20px;">
-        <svg width="60" height="60" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 10px #00d2ff);">
-            <!-- Triángulo exterior tecnológico -->
-            <polygon points="50,15 90,85 10,85" fill="none" stroke="#00d2ff" stroke-width="4"/>
-            <!-- Triángulo interior invertido (Diseño Arc Reactor Tony Stark) -->
-            <polygon points="50,75 75,30 25,30" fill="rgba(0, 210, 255, 0.15)" stroke="#00d2ff" stroke-width="2"/>
-            <!-- Núcleo central luminoso -->
-            <circle cx="50" cy="45" r="8" fill="#fff" style="box-shadow: 0 0 15px #00d2ff;" />
+    <div style="text-align: center; margin-bottom: 25px;">
+        <svg width="65" height="65" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
+            <!-- Marco exterior Arc Reactor -->
+            <polygon points="50,5 95,85 5,85" fill="none" stroke="#00d2ff" stroke-width="5" stroke-linejoin="round" />
+            <!-- Biseles internos tecnológicos -->
+            <polygon points="50,22 80,78 20,78" fill="rgba(0, 210, 255, 0.12)" stroke="#00d2ff" stroke-width="2" />
+            <!-- Núcleo de energía -->
+            <polygon points="50,38 68,70 32,70" fill="#00d2ff" opacity="0.8" />
+            <!-- Línea de corte táctica -->
+            <line x1="15" y1="85" x2="85" y2="85" stroke="#ffffff" stroke-width="3" />
         </svg>
-        <h2 style="margin: 5px 0 0 0;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
-        <p style="color: #64748b; font-size: 0.85rem; margin: 0;">Sector: Buin, Chile [-33.73° S | -70.73° W] | Estado: Óptimo</p>
+        <h2 style="margin: 8px 0 0 0; letter-spacing: 2px;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
+        <p style="color: #00d2ff; font-family: monospace; font-size: 0.85rem; margin-top: 4px; opacity: 0.8;">
+            [ STARK INDUSTRIES OPERATIONAL NODE // BUIN, CHILE ]
+        </p>
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (15 MÓDULOS) ---
+# --- BARRA LATERAL: 15 MÓDULOS DEL SISTEMA ---
+st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
@@ -94,7 +99,12 @@ modulo_seleccionado = st.sidebar.selectbox(
     ]
 )
 
-# --- VISTA SI ESTÁ EN EL MÓDULO 01 (OJO DE DIOS) ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("🌍 **Estado Orbital:** Satélites Activos")
+st.sidebar.info("Conexión segura establecida con el nodo central en Buin.")
+
+# --- LÓGICA DE LOS 15 MÓDULOS ---
+
 if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
     st.markdown("### 🛰️ Módulo 01: Ojo de Dios (Osiris Tactical)")
     osiris_url = (
@@ -106,45 +116,39 @@ if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
         "wind_controls,rain_controls,gdelt_events"
     )
     st.link_button("🚀 ABRIR CENTRO DE MANDO OSIRIS EN PANTALLA COMPLETA", osiris_url, use_container_width=True)
+    st.success("Acceso directo a la plataforma de monitoreo global con todas las capas activas para Buin.")
 
-# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
-col_izq, col_der = st.columns([1, 1.2])
+elif modulo_seleccionado == "02. Ojos Digitales":
+    st.subheader("👁️ Módulo 02: Ojos Digitales")
+    st.info("Cámaras de vigilancia y fuentes de video en circuito cerrado listas.")
 
-with col_izq:
-    st.markdown("""
-        <div class="stark-box">
-            <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-        <div class="stark-box" style="text-align: center;">
-            <div class="globe-container">
-                <div class="orbit"></div>
-                <div class="globe"></div>
-            </div>
-            <div style="font-family: monospace; color: #00d2ff; font-size: 0.8rem; margin-top: 10px; border-top: 1px solid #1e293b; padding-top: 5px;">
-                LAT: -33.73° S | LON: -70.73° W — BUIN OK
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+elif modulo_seleccionado == "03. Clima de Buin":
+    st.subheader("🌤️ Módulo 03: Clima de Buin")
+    st.info("Monitoreo atmosférico y métricas meteorológicas en tiempo real para Buin.")
 
-with col_der:
-    st.markdown("### 💬 Chat IA")
-    
-    if "mensajes" not in st.session_state:
-        st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
-        ]
-    
-    chat_container = st.container(height=280)
-    with chat_container:
-        for msg in st.session_state.mensajes:
-            with st.chat_message(msg["role"]):
-                st.write(msg["content"])
-    
-    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt})
-        respuesta_jarvis = f"Para usted, jefa, siempre. Directiva '{prompt}' procesada con éxito desde Buin."
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
-        st.rerun()
+elif modulo_seleccionado == "04. Buscador Web":
+    st.subheader("🔍 Módulo 04: Buscador Web")
+    st.info("Motores de búsqueda de inteligencia abierta conectados.")
+
+elif modulo_seleccionado == "05. Sintetizador de Voz (ElevenLabs)":
+    st.subheader("🎙️ Módulo 05: Sintetizador de Voz (ElevenLabs)")
+    st.info("Módulo reservado para la API Key y configuración de audio varonil.")
+
+elif modulo_seleccionado == "06. Escucha Permanente":
+    st.subheader("🎧 Módulo 06: Escucha Permanente")
+    st.info("Sensores de audio y comandos de voz en espera.")
+
+elif modulo_seleccionado == "07. Memoria Masiva":
+    st.subheader("🧠 Módulo 07: Memoria Masiva")
+    st.info("Base de datos de contexto y registros históricos activos.")
+
+elif modulo_seleccionado == "08. Telemetría Global":
+    st.subheader("📡 Módulo 08: Telemetría Global")
+    st.info("Estado de constelaciones satelitales y enlaces de baja órbita.")
+
+elif modulo_seleccionado == "09. Análisis de Amenazas":
+    st.subheader("🛡️ Módulo 09: Análisis de Amenazas")
+    st.info("Escáner de seguridad perimetral y defensas de red activas.")
+
+elif modulo_seleccionado == "10. Protocolo de Emergencia":
+    st.subheader("🚨 Módulo 10: Protocolo de
