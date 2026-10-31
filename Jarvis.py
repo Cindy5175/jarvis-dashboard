@@ -133,21 +133,27 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
-        api_key = st.text_input("ElevenLabs API Key:", type="password")
+        api_key = st.secrets.get("ELEVENLABS_API_KEY", "")
+        if api_key:
+            st.success("🔒 API Key cargada automáticamente desde el búnker (Secrets).")
+        else:
+            api_key = st.text_input("ElevenLabs API Key:", type="password")
+            
         voice_id = st.text_input("Voice ID:", value="21m00Tcm4TlvDq8ikWAM")
         texto_voz = st.text_area("Texto a sintetizar:", f"{saludo_tiempo}, jefa. Sistemas de voz en línea en Buin.")
+        
         if st.button("🔊 Generar Audio"):
             if not api_key:
-                st.error("Ingrese su API Key.")
+                st.error("No se detectó ninguna API Key, jefa.")
             else:
                 try:
                     from elevenlabs import generate, set_api_key
                     set_api_key(api_key)
                     audio = generate(text=texto_voz, voice=voice_id, model="eleven_multilingual_v2")
                     st.audio(audio, format="audio/mp3")
-                    st.success("Audio generado con éxito.")
+                    st.success("Audio generado con éxito desde Buin.")
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"Error en la conexión con ElevenLabs: {e}")
 
     elif "Control Financiero" in modulo_seleccionado:
         st.markdown("💵 **USD/CLP:** $945.50")
