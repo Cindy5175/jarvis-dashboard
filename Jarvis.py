@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 # Configuración de página
 st.set_page_config(
@@ -57,12 +56,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ENCABEZADO TÁCTICO CON TRIÁNGULO STARK ---
+# --- ENCABEZADO TÁCTICO CON TRIÁNGULO ARC REACTOR REAL ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 20px;">
-        <svg width="45" height="45" viewBox="0 0 100 100">
-            <polygon points="50,10 90,90 10,90" fill="none" stroke="#00d2ff" stroke-width="6" style="filter: drop-shadow(0 0 8px #00d2ff);" />
-            <circle cx="50" cy="60" r="10" fill="#00d2ff" />
+        <svg width="60" height="60" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 10px #00d2ff);">
+            <!-- Triángulo exterior tecnológico -->
+            <polygon points="50,15 90,85 10,85" fill="none" stroke="#00d2ff" stroke-width="4"/>
+            <!-- Triángulo interior invertido (Diseño Arc Reactor Tony Stark) -->
+            <polygon points="50,75 75,30 25,30" fill="rgba(0, 210, 255, 0.15)" stroke="#00d2ff" stroke-width="2"/>
+            <!-- Núcleo central luminoso -->
+            <circle cx="50" cy="45" r="8" fill="#fff" style="box-shadow: 0 0 15px #00d2ff;" />
         </svg>
         <h2 style="margin: 5px 0 0 0;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
         <p style="color: #64748b; font-size: 0.85rem; margin: 0;">Sector: Buin, Chile [-33.73° S | -70.73° W] | Estado: Óptimo</p>
@@ -104,18 +107,16 @@ if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
     )
     st.link_button("🚀 ABRIR CENTRO DE MANDO OSIRIS EN PANTALLA COMPLETA", osiris_url, use_container_width=True)
 
-# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS (TAL COMO EN SUS FOTOS) ---
+# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
 col_izq, col_der = st.columns([1, 1.2])
 
 with col_izq:
-    # Caja 1: Banner Núcleo Holográfico
     st.markdown("""
         <div class="stark-box">
             <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
         </div>
     """, unsafe_allow_html=True)
     
-    # Caja 2: Globo giratorio animado con coordenadas
     st.markdown("""
         <div class="stark-box" style="text-align: center;">
             <div class="globe-container">
@@ -131,20 +132,17 @@ with col_izq:
 with col_der:
     st.markdown("### 💬 Chat IA")
     
-    # Estado inicial de conversación
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
             {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
-    # Renderizado fluido de mensajes para no dejar espacio en blanco
     chat_container = st.container(height=280)
     with chat_container:
         for msg in st.session_state.mensajes:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
     
-    # Caja de entrada alineada abajo
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt})
         respuesta_jarvis = f"Para usted, jefa, siempre. Directiva '{prompt}' procesada con éxito desde Buin."
