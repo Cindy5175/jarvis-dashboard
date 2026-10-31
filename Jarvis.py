@@ -100,7 +100,7 @@ modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
         "🛰️ Ojo de Dios (Osiris Tactical)",
-        "🌍 God's Eye View (Pinokio 3D)",
+        "🌍 God's Eye (Pinokio)",
         "👁️ Ojos Digitales",
         "🌤️ Clima de Buin",
         "🔍 Buscador Web",
@@ -132,7 +132,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
         st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
 
-    elif "God's Eye View" in modulo_seleccionado:
+    elif "God's Eye" in modulo_seleccionado:
         st.markdown("🌍 **Motor 3D:** Pinokio")
         st.markdown("📌 **Consola:** God's Eye View")
         st.link_button("🌐 Abrir God's Eye View", "https://github.com/bilawalsidhu/gods-eye-view", use_container_width=True)
