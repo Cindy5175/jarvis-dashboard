@@ -102,7 +102,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo con globo terráqueo y consola activos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo con globo terráqueo y Chat IA activos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -142,13 +142,13 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Holograma & Consola Central<br>
+        &gt; MATRIZ: Módulos a la Izquierda<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: MÓDULOS A LA IZQUIERDA / GLOBO Y CHAT A LA DERECHA ---
+# --- DISPOSICIÓN PRINCIPAL: TODOS LOS MÓDULOS A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
@@ -249,7 +249,7 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # GLOBO HOLOGRÁFICO EN LA PARTE SUPERIOR DERECHA
+    # NODO HOLOGRÁFICO GLOBAL EN LA PARTE SUPERIOR DERECHA
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 🌍 Nodo Holográfico Global")
     st.markdown("""
@@ -263,15 +263,15 @@ with col_der:
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # CONSOLA DE CHAT IA E INTERACCIÓN EN LA PARTE INFERIOR DERECHA
+    # CHAT IA EN LA PARTE INFERIOR DERECHA
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     c_h1, c_h2 = st.columns([3, 1])
     with c_h1:
-        st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
+        st.markdown("### 💬 Chat IA")
     with c_h2:
         if st.button("🗑️ Purgar", use_container_width=True):
             st.session_state.mensajes = [
-                {"role": "assistant", "content": f"Memoria purgada, jefa. {saludo_tiempo}. Consola lista en Buin."}
+                {"role": "assistant", "content": f"Memoria purgada, jefa. {saludo_tiempo}. Chat IA listo en Buin."}
             ]
             st.rerun()
 
