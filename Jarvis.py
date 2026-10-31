@@ -105,32 +105,38 @@ st.sidebar.markdown("---")
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
-        "👁️ Ojos Digitales",
-        "🌤️ Clima de Buin",
-        "🔍 Buscador Web",
-        "🎙️ Sintetizador de Voz",
-        "🎧 Escucha Permanente",
         "🧠 Memoria Masiva",
+        "🔍 Buscador Web",
         "📡 Telemetría Global",
+        "🎙️ Sintetizador de Voz",
+        "🌤️ Clima de Buin",
+        "👁️ Ojos Digitales",
         "🛡️ Análisis de Amenazas",
-        "🚨 Protocolo de Emergencia",
-        "🌐 Redes Satelitales",
         "💵 Control Financiero",
-        "⚙️ Diagnóstico de Núcleo",
-        "🔐 Encriptación Cuántica",
-        "🦾 Modo Protocolo Stark"
+        "⚙️ Diagnóstico de Núcleo"
     ]
 )
 
 st.sidebar.markdown("---")
 
-# --- DESPLIEGUE ESPECÍFICO DE MÓDULOS EN BARRA LATERAL ---
+# --- DESPLIEGUE DE LOS 4 PILARES Y MÓDULOS EN BARRA LATERAL ---
 with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
-    if "Clima de Buin" in modulo_seleccionado:
-        st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
-        st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
-        st.markdown("📍 **Sector:** Buin Centro")
-    
+    if "Memoria Masiva" in modulo_seleccionado:
+        st.markdown("🧠 **Base Vectorial:** Activa")
+        st.markdown("📁 **Contexto Local:** 15 Manuales y Logs")
+        st.markdown("💡 **Estado:** Sincronización de índices OK")
+
+    elif "Buscador Web" in modulo_seleccionado:
+        st.markdown("🔍 **Motor de Consulta:** En línea")
+        query_web = st.text_input("Consulta rápida web:", "Estado satelital global")
+        if st.button("Buscar en Red"):
+            st.success(f"Resultados obtenidos para: {query_web}")
+
+    elif "Telemetría Global" in modulo_seleccionado:
+        st.markdown("📡 **Red Starlink:** Órbita estable")
+        st.markdown("⚡ **Reactor Arc:** 98% Potencia")
+        st.markdown("📍 **Nodo:** Buin, Chile - Activo")
+
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
         
@@ -175,18 +181,15 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
                     detalle_error = getattr(e, 'body', str(e))
                     st.error(f"Detalle del error ElevenLabs: {detalle_error}")
 
+    elif "Clima de Buin" in modulo_seleccionado:
+        st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
+        st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
+        st.markdown("📍 **Sector:** Buin Centro")
+
     elif "Control Financiero" in modulo_seleccionado:
         st.markdown("💵 **USD/CLP:** $945.50")
         st.markdown("💶 **EUR/CLP:** $1,020.30")
         st.markdown("📈 **Tendencia:** Estable")
-    
-    elif "Ojos Digitales" in modulo_seleccionado:
-        st.markdown("👁️ **Feeds CCTV:** 4 Cámaras activas")
-        st.markdown("🔒 **Seguridad Perimetral:** Sin anomalías")
-    
-    elif "Análisis de Amenazas" in modulo_seleccionado:
-        st.markdown("🛡️ **Escáner Firewall:** Blindado")
-        st.markdown("⚠️ **Alertas en Sector:** 0 detectadas")
     
     else:
         st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
@@ -202,15 +205,8 @@ st.sidebar.progress(98)
 st.sidebar.caption("📡 Estabilidad del Enlace Starlink")
 st.sidebar.progress(92)
 
-if "Amenazas" in modulo_seleccionado:
-    if st.sidebar.button("🛡️ Escaneo Profundo"):
-        st.toast("Perímetro de Buin despejado. Sin anomalías.")
-elif "Clima" in modulo_seleccionado:
-    if st.sidebar.button("🌤️ Recargar Clima"):
-        st.toast("Telemetría meteorológica de Buin actualizada.")
-else:
-    if st.sidebar.button("🔄 Sincronizar Nodo"):
-        st.toast("Nodo en Buin sincronizado a máxima velocidad.")
+if st.sidebar.button("🔄 Sincronizar Nodo"):
+    st.toast("Nodo en Buin sincronizado a máxima velocidad.")
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
@@ -256,7 +252,7 @@ with col_der:
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. En enlace con Osiris y todos los módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa con los 4 pilares de conocimiento listos en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
