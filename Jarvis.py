@@ -78,8 +78,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_tiempo = "Buenas noches"
 
-# --- LISTA BLANCA / CÍRCULO FAMILIAR PROTEGIDO (INMUNIDAD TOTAL) ---
-# Ningún mensaje de estos contactos recibirá respuesta automática; son contestados por la jefa.
+# --- CONFIGURACIÓN DE RESPUESTA Y BLINDAJE DE WHATSAPP ---
 CIRCULO_FAMILIAR_BLINDADO = [
     "Leonardo Del Transit Carrera Araya",
     "Leonardo Alberto Carrera Baude",
@@ -87,6 +86,11 @@ CIRCULO_FAMILIAR_BLINDADO = [
     "Silvia Grau",
     "Karin Grau de Folliot"
 ]
+
+MENSAJE_AUTO_EXTERNOS = (
+    "Hola, en este momento no puedo contestar. "
+    "Su mensaje ha sido registrado en el sistema y le será respondido a la brevedad posible, gracias."
+)
 
 # --- ENCABEZADO TÁCTICO STARK INDUSTRIES ---
 st.markdown("""
@@ -107,7 +111,6 @@ st.markdown("""
 # --- BARRA LATERAL: MÓDULOS CON ICONOS Y PILARES ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 
-# Lanzador exclusivo para Osiris Tactical
 st.sidebar.markdown("🚀 **Visor Satelital Activo**")
 st.sidebar.link_button("🛰️ Lanzar Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events", use_container_width=True)
 st.sidebar.markdown("---")
@@ -134,105 +137,67 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     if "Blindaje WhatsApp" in modulo_seleccionado:
         st.markdown("🛡️ **Protocolo de Inmunidad:** Activo")
         st.markdown(f"👥 **Protegidos:** {len(CIRCULO_FAMILIAR_BLINDADO)} familiares")
-        st.markdown("🔒 **Estado:** Sin automatización familiar")
+        st.markdown("💬 **Respuesta Externa:** Actualizada con éxito")
 
     elif "Memoria Masiva" in modulo_seleccionado:
         st.markdown("🧠 **Base Vectorial:** Activa")
-        st.markdown("📁 **Contexto Local:** 15 Manuales y Logs")
-        st.markdown("💡 **Estado:** Sincronización de índices OK")
+        st.markdown("📁 **Contexto Local:** Manuales y Logs OK")
 
     elif "Buscador Web" in modulo_seleccionado:
         st.markdown("🔍 **Motor de Consulta:** En línea")
-        query_web = st.text_input("Consulta rápida web:", "Estado satelital global")
-        if st.button("Buscar en Red"):
-            st.success(f"Resultados obtenidos para: {query_web}")
 
     elif "Telemetría Global" in modulo_seleccionado:
         st.markdown("📡 **Red Starlink:** Órbita estable")
         st.markdown("⚡ **Reactor Arc:** 98% Potencia")
-        st.markdown("📍 **Nodo:** Buin, Chile - Activo")
 
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
-        
-        api_key = ""
-        try:
-            if "ELEVENLABS_API_KEY" in st.secrets:
-                api_key = st.secrets["ELEVENLABS_API_KEY"]
-            elif hasattr(st.secrets, "get"):
-                api_key = st.secrets.get("ELEVENLABS_API_KEY", "")
-        except Exception:
-            pass
-            
-        if not api_key:
-            api_key = "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf"
-            
-        if api_key:
-            st.success("🔒 Clave de acceso operativo conectada.")
-        else:
-            api_key = st.text_input("ElevenLabs API Key:", type="password")
-            
+        api_key = st.secrets.get("ELEVENLABS_API_KEY", "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf")
         voice_id = st.text_input("Voice ID:", value="21m00Tcm4TlvDq8ikWAM")
         texto_voz = st.text_area("Texto a sintetizar:", f"{saludo_tiempo}, jefa. Sistemas de voz en línea en Buin.")
         
         if st.button("🔊 Generar Audio"):
-            if not api_key:
-                st.error("Por favor, ingrese su API Key, jefa.")
-            else:
-                try:
-                    from elevenlabs.client import ElevenLabs
-                    
-                    client = ElevenLabs(api_key=api_key)
-                    audio_stream = client.text_to_speech.convert(
-                        text=texto_voz,
-                        voice_id=voice_id,
-                        model_id="eleven_multilingual_v2"
-                    )
-                    
-                    audio_bytes = b"".join(audio_stream)
-                    st.audio(audio_bytes, format="audio/mp3")
-                    st.success("Audio generado con éxito desde Buin.")
-                except Exception as e:
-                    detalle_error = getattr(e, 'body', str(e))
-                    st.error(f"Detalle del error ElevenLabs: {detalle_error}")
+            try:
+                from elevenlabs.client import ElevenLabs
+                client = ElevenLabs(api_key=api_key)
+                audio_stream = client.text_to_speech.convert(
+                    text=texto_voz,
+                    voice_id=voice_id,
+                    model_id="eleven_multilingual_v2"
+                )
+                audio_bytes = b"".join(audio_stream)
+                st.audio(audio_bytes, format="audio/mp3")
+                st.success("Audio generado con éxito desde Buin.")
+            except Exception as e:
+                st.error(f"Error ElevenLabs: {str(e)}")
 
     elif "Clima de Buin" in modulo_seleccionado:
         st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
-        st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
-        st.markdown("📍 **Sector:** Buin Centro")
 
     elif "Control Financiero" in modulo_seleccionado:
         st.markdown("💵 **USD/CLP:** $945.50")
-        st.markdown("💶 **EUR/CLP:** $1,020.30")
-        st.markdown("📈 **Tendencia:** Estable")
     
     else:
         st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
-        st.markdown("⚡ **Sincronización:** 100% Buin OK")
 
-# --- CONSOLA DINÁMICA DE TELEMETRÍA ---
+# --- TERMINAL DE ACCIÓN Y TELEMETRÍA ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("⚡ **TERMINAL DE ACCIÓN Y TELEMETRÍA**")
-
 st.sidebar.caption("🔋 Potencia del Reactor Arc")
 st.sidebar.progress(98)
-
 st.sidebar.caption("📡 Estabilidad del Enlace Starlink")
 st.sidebar.progress(92)
-
-if st.sidebar.button("🔄 Sincronizar Nodo"):
-    st.toast("Nodo en Buin sincronizado a máxima velocidad.")
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
         &gt; SISTEMA_OK: Nodo Buin en línea<br>
-        &gt; BLINDAJE_WA: 5 contactos inmunes<br>
-        &gt; RED_STARK: Encriptación AES-256<br>
+        &gt; INMUNIDAD_FA: 5 contactos inmunes<br>
+        &gt; MENSAJE_EXT: Actualizado con agradecimiento<br>
         &gt; ESTADO: Esperando directivas, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
+# --- DASHBOARD PRINCIPAL ---
 col_izq, col_der = st.columns([1, 1.2])
 
 with col_izq:
@@ -241,7 +206,6 @@ with col_izq:
             <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
         </div>
     """, unsafe_allow_html=True)
-    
     st.markdown("""
         <div class="stark-box" style="text-align: center;">
             <div class="globe-container">
@@ -257,7 +221,7 @@ with col_izq:
 with col_der:
     col_head1, col_head2 = st.columns([3, 1])
     with col_head1:
-        st.markdown("### 💬 Chat IA & Simulador de Mensajería")
+        st.markdown("### 💬 Chat IA & Protocolos de Mensajería")
     with col_head2:
         if st.button("🗑️ Purgar"):
             st.session_state.mensajes = [
@@ -267,7 +231,7 @@ with col_der:
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Círculo familiar blindado activado ({len(CIRCULO_FAMILIAR_BLINDADO)} protegidos). ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Mensaje automático para externos actualizado con éxito. Los 5 familiares continúan blindados."}
         ]
     
     chat_container = st.container(height=280)
@@ -276,20 +240,16 @@ with col_der:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
     
-    if prompt := st.chat_input("Escriba su comando o simule un mensaje entrante..."):
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt})
         
         prompt_lower = prompt.lower()
         if "hola" in prompt_lower or "buenas" in prompt_lower:
-            respuesta_jarvis = f"{saludo_tiempo}, jefa. Sistemas al 100% y reporte táctico listo en Buin. ¿En qué trabajamos ahora?"
+            respuesta_jarvis = f"{saludo_tiempo}, jefa. Sistemas al 100% y listo para servirle."
         elif "despierto" in prompt_lower or "estás ahí" in prompt_lower:
-            respuesta_jarvis = "Para usted, señorita, siempre. El núcleo del reactor está activo y listo."
-        elif "clima" in prompt_lower:
-            respuesta_jarvis = "El sector de Buin registra 22°C con cielos parcialmente despejados, jefa. Sensores operando con normalidad."
-        elif "gracias" in prompt_lower:
-            respuesta_jarvis = "Es un placer servirle, jefa. El taller y los enlaces satelitales siguen bajo su mando."
+            respuesta_jarvis = "Para usted, señorita, siempre."
         else:
-            respuesta_jarvis = f"Para usted, jefa, siempre. Procesado con órbita Starlink en Buin. Directiva '{prompt}' comprendida y en ejecución."
+            respuesta_jarvis = f"Para usted, jefa, siempre. Directiva '{prompt}' procesada correctamente."
         
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
         st.rerun()
