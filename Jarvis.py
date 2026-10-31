@@ -57,10 +57,10 @@ st.markdown("---")
 # --- ESTADO DE SESIÓN PARA EL CHAT ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+        {"role": "assistant", "content": "Buenas tardes, jefa. Todos los sistemas en Buin operando al máximo rendimiento. ¿Qué directiva evaluamos ahora?"}
     ]
 
-# --- DISTRIBUCIÓN EN 2 COLUMNAS SIMÉTRICAS ---
+# --- DISTRIBUCIÓN EN 2 COLUMNAS SIMÉTRicas ---
 col_left, col_right = st.columns([1.05, 1])
 
 with col_left:
@@ -168,7 +168,7 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA INTERACTIVO Y BOTÓN DE PURGA
+    # COLUMNA DERECHA: CHAT IA INTERACTIVO, FLUIDO Y CON PERSONALIDAD
     st.markdown("### 💬 Chat IA")
     
     chat_container = st.container(height=340)
@@ -177,22 +177,26 @@ with col_right:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Caja de chat nativa y fluida
+    # Caja de chat nativa, fluida y con respuestas dinámicas y naturales
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S...", key="chat_input_right"):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         prompt_lower = prompt.lower().strip()
+        
+        # Validación estricta y natural de activación requerida por la jefa
         if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
             response = "para Ud señorita siempre"
+        elif "hola" in prompt_lower:
+            response = "A sus órdenes, jefa. Enlace directo y estableciendo parámetros en Buin. ¿En qué le colaboro hoy?"
         else:
-            response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
+            response = f"Directiva '{prompt}' recibida y analizada al instante, jefa. Todo bajo control en la red."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
 
-    # Botón de purga colocado justo debajo, limpio e interactivo
+    # Botón de purga integrado abajo con estilo y respuesta amigable
     if st.button("🗑️ Purgar Chat", key="btn_purgar_chat"):
         st.session_state.messages = [
-            {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
+            {"role": "assistant", "content": "Registros de chat limpios, jefa. Pantalla lista para nuevas directivas."}
         ]
         st.rerun()
