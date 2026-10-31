@@ -94,7 +94,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL: MÓDULOS CON ICONOS ---
+# --- BARRA LATERAL: MÓDULOS CON ICONOS Y PILARES ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 
 # Lanzador exclusivo para Osiris Tactical
