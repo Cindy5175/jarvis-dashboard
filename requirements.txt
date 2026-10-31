@@ -1,5 +1,2 @@
 streamlit
-psutil
-gTTS
-pytz
-requests
+elevenlabs
