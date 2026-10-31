@@ -168,13 +168,14 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA Y ENTRADA DE COMANDOS INTEGRADA
+    # COLUMNA DERECHA: CHAT IA (HISTORIAL Y CAJA DE ENTRADA AL FINAL)
     st.markdown("### 💬 Chat IA")
     
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+    # Caja de entrada de comandos colocada al fondo estricto de la columna derecha
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
