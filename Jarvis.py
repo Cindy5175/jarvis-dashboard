@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia) + Soporte de Voz Nativa
+# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia)
 st.markdown("""
     <style>
         .main { background-color: #060911; }
@@ -197,17 +197,20 @@ with col_izq:
         st.markdown(f"• `{idx+1}.` {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 3: SINTETIZADOR DE VOZ NATIVO (SIN LLAVES EXTERNAS)
+    # MÓDULO 3: SINTETIZADOR DE VOZ NATIVO CON BOTÓN DE STREAMLIT PURO
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("### 🎙️ Módulo 3: Voz Robótica Nativa (Jarvis)")
     st.caption("Utiliza el sintetizador de voz integrado del sistema con tono masculino.")
     
     texto_a_hablar = st.text_area("Texto a reproducir por voz:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin al 100%.", height=68)
     
-    hablar_script = f"""
-    <script>
-    function hablarJarvis() {{
+    # Usamos st.button nativo para asegurar la interacción con el mouse
+    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
+        # Componente HTML/JS dinámico que se dispara al pulsar el botón de Streamlit
+        js_code = f"""
+        <script>
         if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel(); // Detiene cualquier audio anterior
             var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
             mensaje.lang = 'es-ES';
             mensaje.rate = 0.95;
@@ -221,16 +224,12 @@ with col_izq:
                 }}
             }}
             window.speechSynthesis.speak(mensaje);
-        }} else {{
-            alert("Tu navegador no soporta síntesis de voz nativa.");
         }}
-    }}
-    </script>
-    <button onclick="hablarJarvis()" style="width: 100%; background-color: #0b1120; color: #00d2ff; border: 1.5px solid #00d2ff; padding: 10px; border-radius: 5px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
-        🔊 Reproducir Voz de J.A.R.V.I.S.
-    </button>
-    """
-    st.markdown(hablar_script, unsafe_allow_html=True)
+        </script>
+        """
+        st.components.v1.html(js_code, height=0)
+        st.success("Orden de emisión de voz enviada al núcleo, jefa.")
+    
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- COLUMNA DERECHA: MÓDULOS 4, 5 Y CHAT DE CONSOLA ---
