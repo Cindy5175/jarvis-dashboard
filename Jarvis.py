@@ -97,15 +97,15 @@ st.markdown("""
 # --- BARRA LATERAL: MÓDULOS CON ICONOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 
-# Botón táctico directo superior para God's Eye (evita recortes en el selectbox)
-st.sidebar.markdown("🌍 **Acceso Directo 3D**")
-st.sidebar.link_button("🌐 God's Eye (Pinokio)", "https://github.com/bilawalsidhu/gods-eye-view", use_container_width=True)
+# Accesos directos web prioritarios para visores 3D
+st.sidebar.markdown("🚀 **Lanzadores Satelitales**")
+st.sidebar.link_button("🚀 Lanzar Osiris Full", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events", use_container_width=True)
+st.sidebar.link_button("🌍 Lanzar God's Eye View", "https://maptheworld.ai/", use_container_width=True)
 st.sidebar.markdown("---")
 
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
-        "🛰️ Ojo de Dios (Osiris)",
         "👁️ Ojos Digitales",
         "🌤️ Clima de Buin",
         "🔍 Buscador Web",
@@ -131,11 +131,6 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
         st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
         st.markdown("📍 **Sector:** Buin Centro")
-    
-    elif "Ojo de Dios" in modulo_seleccionado:
-        st.markdown("🛰️ **Estado:** Constelación Global Activa")
-        osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
-        st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
