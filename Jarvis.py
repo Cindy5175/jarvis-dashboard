@@ -134,7 +134,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
 
     elif "Perspectiva de Dios" in modulo_seleccionado:
         st.markdown("🌍 **Motor 3D:** Pinokio / God's Eye View")
-        st.markdown("📌 **Estado:** Listo para lanzar consola local")
+        st.markdown("📌 **Estado:** Consola local lista")
         st.link_button("🌐 Abrir Repositorio / Guía", "https://github.com/bilawalsidhu/gods-eye-view", use_container_width=True)
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
