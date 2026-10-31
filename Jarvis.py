@@ -97,13 +97,13 @@ MENSAJE_AUTO_EXTERNOS = (
 if "tareas_todo" not in st.session_state:
     st.session_state.tareas_todo = [
         "Revisar notificaciones de salud / Bci",
-        "Sincronizar API Key de ElevenLabs",
+        "Verificar enlace seguro de ElevenLabs",
         "Probar módulo de dictado de voz"
     ]
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Los 5 módulos integrados operan en perfecta simetría desde Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos integrados y enlace de voz blindado listos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -206,16 +206,14 @@ with col_izq:
     if audio_input:
         st.success("Audio capturado correctamente. Procesando instrucción por voz, jefa...")
     
-    col_v1, col_v2 = st.columns(2)
-    with col_v1:
-        voice_id = st.text_input("Voice ID (ElevenLabs):", value="21m00Tcm4TlvDq8ikWAM")
-    with col_v2:
-        api_key = st.secrets.get("ELEVENLABS_API_KEY", "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf")
-        st.text_input("API Key Status:", value="Clave Encriptada", disabled=True)
-        
+    voice_id = st.text_input("Voice ID (ElevenLabs):", value="21m00Tcm4TlvDq8ikWAM")
     texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin.", height=68)
+    
     if st.button("🔊 Probar Síntesis de Voz", use_container_width=True):
         try:
+            # Obtención automática y segura de la llave desde st.secrets
+            api_key = st.secrets["ELEVENLABS_API_KEY"]
+            
             from elevenlabs.client import ElevenLabs
             client = ElevenLabs(api_key=api_key)
             audio_stream = client.text_to_speech.convert(
@@ -226,6 +224,8 @@ with col_izq:
             audio_bytes = b"".join(audio_stream)
             st.audio(audio_bytes, format="audio/mp3")
             st.success("Síntesis generada.")
+        except KeyError:
+            st.error("Falta configurar la llave 'ELEVENLABS_API_KEY' en el archivo secrets.toml del sistema, jefa.")
         except Exception as e:
             st.error(f"Error de conexión de voz: {str(e)}")
     st.markdown('</div>', unsafe_allow_html=True)
