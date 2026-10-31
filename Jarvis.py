@@ -151,4 +151,67 @@ elif modulo_seleccionado == "09. Análisis de Amenazas":
     st.info("Escáner de seguridad perimetral y defensas de red activas.")
 
 elif modulo_seleccionado == "10. Protocolo de Emergencia":
-    st.subheader("🚨 Módulo 10: Protocolo de
+    st.subheader("🚨 Módulo 10: Protocolo de Emergencia")
+    st.info("Sistemas de aislamiento y rutas de evacuación digital listos.")
+
+elif modulo_seleccionado == "11. Redes Satelitales":
+    st.subheader("🛰️ Módulo 11: Redes Satelitales")
+    st.info("Enlaces Starlink y pasarelas de comunicación encriptadas.")
+
+elif modulo_seleccionado == "12. Control Financiero (CLP/USD)":
+    st.subheader("💵 Módulo 12: Control Financiero")
+    st.info("Tasas de cambio y conversión de divisas (USD/EUR a CLP) operativas.")
+
+elif modulo_seleccionado == "13. Diagnóstico de Núcleo":
+    st.subheader("⚙️ Módulo 13: Diagnóstico de Núcleo")
+    st.info("Estabilidad del sistema y rendimiento de procesadores al 100%.")
+
+elif modulo_seleccionado == "14. Encriptación Cuántica":
+    st.subheader("🔐 Módulo 14: Encriptación Cuántica")
+    st.info("Claves de cifrado y túneles seguros de transmisión activos.")
+
+elif modulo_seleccionado == "15. Modo Protocolo Stark":
+    st.subheader("🦾 Módulo 15: Modo Protocolo Stark")
+    st.info("Sobrecarga de potencia y autonomía total del sistema autorizada.")
+
+# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
+col_izq, col_der = st.columns([1, 1.2])
+
+with col_izq:
+    st.markdown("""
+        <div class="stark-box">
+            <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="stark-box" style="text-align: center;">
+            <div class="globe-container">
+                <div class="orbit"></div>
+                <div class="globe"></div>
+            </div>
+            <div style="font-family: monospace; color: #00d2ff; font-size: 0.8rem; margin-top: 10px; border-top: 1px solid #1e293b; padding-top: 5px;">
+                LAT: -33.73° S | LON: -70.73° W — BUIN OK
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_der:
+    st.markdown("### 💬 Chat IA")
+    
+    if "mensajes" not in st.session_state:
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+        ]
+    
+    chat_container = st.container(height=280)
+    with chat_container:
+        for msg in st.session_state.mensajes:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+    
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt})
+        respuesta_jarvis = f"Para usted, jefa, siempre. Directiva '{prompt}' procesada con éxito desde Buin."
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
+        st.rerun()
