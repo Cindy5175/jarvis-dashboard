@@ -128,4 +128,119 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     
     elif "Ojo de Dios" in modulo_seleccionado:
         st.markdown("🛰️ **Estado:** Constelación Global Activa")
-        osiris_url = "
+        osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
+        st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
+    
+    elif "Sintetizador de Voz" in modulo_seleccionado:
+        st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
+        
+        api_key = ""
+        try:
+            api_key = st.secrets["ELEVENLABS_API_KEY"]
+            st.success("🔒 Clave conectada automáticamente desde Secrets.")
+        except Exception:
+            api_key = st.text_input("ElevenLabs API Key:", type="password")
+            
+        voice_id = st.text_input("Voice ID:", value="21m00Tcm4TlvDq8ikWAM")
+        texto_voz = st.text_area("Texto a sintetizar:", f"{saludo_tiempo}, jefa. Sistemas de voz en línea en Buin.")
+        
+        if st.button("🔊 Generar Audio"):
+            if not api_key:
+                st.error("Por favor, ingrese su API Key o verifique los secretos, jefa.")
+            else:
+                try:
+                    from elevenlabs.client import ElevenLabs
+                    
+                    client = ElevenLabs(api_key=api_key)
+                    audio_stream = client.text_to_speech.convert(
+                        text=texto_voz,
+                        voice_id=voice_id,
+                        model_id="eleven_multilingual_v2"
+                    )
+                    
+                    audio_bytes = b"".join(audio_stream)
+                    st.audio(audio_bytes, format="audio/mp3")
+                    st.success("Audio generado con éxito desde Buin.")
+                except Exception as e:
+                    st.error(f"Error en la conexión con ElevenLabs: {e}")
+
+    elif "Control Financiero" in modulo_seleccionado:
+        st.markdown("💵 **USD/CLP:** $945.50")
+        st.markdown("💶 **EUR/CLP:** $1,020.30")
+        st.markdown("📈 **Tendencia:** Estable")
+    
+    elif "Ojos Digitales" in modulo_seleccionado:
+        st.markdown("👁️ **Feeds CCTV:** 4 Cámaras activas")
+        st.markdown("🔒 **Seguridad Perimetral:** Sin anomalías")
+    
+    elif "Análisis de Amenazas" in modulo_seleccionado:
+        st.markdown("🛡️ **Escáner Firewall:** Blindado")
+        st.markdown("⚠️ **Alertas en Sector:** 0 detectadas")
+    
+    else:
+        st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
+        st.markdown("⚡ **Sincronización:** 100% Buin OK")
+
+# --- CONSOLA DINÁMICA DE TELEMETRÍA ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("⚡ **TERMINAL DE ACCIÓN Y TELEMETRÍA**")
+
+st.sidebar.caption("🔋 Potencia del Reactor Arc")
+st.sidebar.progress(98)
+
+st.sidebar.caption("📡 Estabilidad del Enlace Starlink")
+st.sidebar.progress(92)
+
+if "Amenazas" in modulo_seleccionado:
+    if st.sidebar.button("🛡️ Escaneo Profundo"):
+        st.sidebar.toast("Perímetro de Buin despejado. Sin anomalías.")
+elif "Clima" in modulo_seleccionado:
+    if st.sidebar.button("🌤️ Recargar Clima"):
+        st.sidebar.toast("Telemetría meteorológica de Buin actualizada.")
+else:
+    if st.sidebar.button("🔄 Sincronizar Nodo"):
+        st.sidebar.toast("Nodo en Buin sincronizado a máxima velocidad.")
+
+st.sidebar.markdown(f"""
+    <div class="tactical-console">
+        &gt; SISTEMA_OK: Nodo Buin en línea<br>
+        &gt; ACTIVO: {modulo_seleccionado.split(' ')[1]}<br>
+        &gt; RED_STARK: Encriptación AES-256<br>
+        &gt; ESTADO: Esperando directivas, jefa...
+    </div>
+""", unsafe_allow_html=True)
+
+# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
+col_izq, col_der = st.columns([1, 1.2])
+
+with col_izq:
+    st.markdown("""
+        <div class="stark-box">
+            <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="stark-box" style="text-align: center;">
+            <div class="globe-container">
+                <div class="orbit"></div>
+                <div class="globe"></div>
+            </div>
+            <div style="font-family: monospace; color: #00d2ff; font-size: 0.8rem; margin-top: 10px; border-top: 1px solid #1e293b; padding-top: 5px;">
+                LAT: -33.73° S | LON: -70.73° W — BUIN OK
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_der:
+    col_head1, col_head2 = st.columns([3, 1])
+    with col_head1:
+        st.markdown("### 💬 Chat IA")
+    with col_head2:
+        if st.button("🗑️ Purgar"):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Sistema de comunicaciones restablecido en Buin."}
+            ]
+            st.rerun()
+
+    if "mensajes" not in st.
