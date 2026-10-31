@@ -243,4 +243,31 @@ with col_der:
             ]
             st.rerun()
 
-    if "mensajes" not in st.
+    if "mensajes" not in st.session_state:
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+        ]
+    
+    chat_container = st.container(height=280)
+    with chat_container:
+        for msg in st.session_state.mensajes:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+    
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt})
+        
+        prompt_lower = prompt.lower()
+        if "hola" in prompt_lower or "buenas" in prompt_lower:
+            respuesta_jarvis = f"{saludo_tiempo}, jefa. Sistemas al 100% y reporte táctico listo en Buin. ¿En qué trabajamos ahora?"
+        elif "despierto" in prompt_lower or "estás ahí" in prompt_lower:
+            respuesta_jarvis = "Para usted, señorita, siempre. El núcleo del reactor está activo y listo."
+        elif "clima" in prompt_lower:
+            respuesta_jarvis = "El sector de Buin registra 22°C con cielos parcialmente despejados, jefa. Sensores operando con normalidad."
+        elif "gracias" in prompt_lower:
+            respuesta_jarvis = "Es un placer servirle, jefa. El taller y los enlaces satelitales siguen bajo su mando."
+        else:
+            respuesta_jarvis = f"Para usted, jefa, siempre. Procesado con órbita Starlink en Buin. Directiva '{prompt}' comprendida y en ejecución."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
+        st.rerun()
