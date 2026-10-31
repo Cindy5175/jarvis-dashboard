@@ -168,17 +168,16 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA CON CAJA DE COMANDOS FIJA AL FINAL
+    # COLUMNA DERECHA: CHAT IA CON CONTENEDOR Y BOTÓN DE PURGA ABAJO
     st.markdown("### 💬 Chat IA")
     
-    # Contenedor para el historial de mensajes
-    chat_container = st.container(height=380)
+    chat_container = st.container(height=340)
     with chat_container:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Entrada de comandos ubicada inmediatamente debajo del historial en la columna derecha
+    # Entrada de comandos de chat
     prompt = st.chat_input("Escriba su comando para J.A.R.V.I.S...", key="chat_input_right")
     
     if prompt:
@@ -192,3 +191,12 @@ with col_right:
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
+
+    # Botón de purga de chat situado justo debajo de la caja del chat en la columna derecha
+    col_purge1, col_purge2 = st.columns([1, 1])
+    with col_purge1:
+        if st.button("🗑️ Purgar Chat"):
+            st.session_state.messages = [
+                {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
+            ]
+            st.rerun()
