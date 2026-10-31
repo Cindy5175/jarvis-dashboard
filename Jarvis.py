@@ -102,7 +102,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo con globo terráqueo y Chat IA activos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos desplegables a la izquierda y núcleo libre a la derecha en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -142,111 +142,97 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos a la Izquierda<br>
+        &gt; MATRIZ: Módulos Desplegables<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: TODOS LOS MÓDULOS A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
+# --- DISPOSICIÓN PRINCIPAL: MÓDULOS DESPLEGABLES A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
     # MÓDULO: BLINDAJE WHATSAPP
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 🛡️ Blindaje WhatsApp")
-    st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
-    st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("🛡️ Blindaje WhatsApp", expanded=True):
+        st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
+        st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
 
     # MÓDULO: ALERTAS GMAIL
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 📧 Alertas & Resumen Gmail")
-    st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
-    c_m1, c_m2 = st.columns(2)
-    with c_m1:
-        st.info("🏥 UC Christus: Receta disponible.")
-    with c_m2:
-        st.success("🏦 Bci: Renta CLP.")
-    if st.button("🔄 Escanear Bandeja", use_container_width=True):
-        st.toast("Bandeja escaneada con éxito.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("📧 Alertas & Resumen Gmail"):
+        st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
+        c_m1, c_m2 = st.columns(2)
+        with c_m1:
+            st.info("🏥 UC Christus: Receta disponible.")
+        with c_m2:
+            st.success("🏦 Bci: Renta CLP.")
+        if st.button("🔄 Escanear Bandeja", use_container_width=True):
+            st.toast("Bandeja escaneada con éxito.")
 
     # MÓDULO: PROTOCOLO TO-DO TÁCTICO
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 📋 Tareas & Notas Tácticas")
-    st.caption("Gestión y registro rápido de pendientes en el búnker.")
-    nueva_tarea = st.text_input("Nueva tarea:", placeholder="Ej: Revisar sensores...")
-    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-        st.session_state.tareas_todo.append(nueva_tarea)
-        st.success("Tarea guardada.")
-    for t in st.session_state.tareas_todo:
-        st.markdown(f"• {t}")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("📋 Tareas & Notas Tácticas"):
+        st.caption("Gestión y registro rápido de pendientes en el búnker.")
+        nueva_tarea = st.text_input("Nueva tarea:", placeholder="Ej: Revisar sensores...")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+            st.session_state.tareas_todo.append(nueva_tarea)
+            st.success("Tarea guardada.")
+        for t in st.session_state.tareas_todo:
+            st.markdown(f"• {t}")
 
     # MÓDULO: SINTETIZADOR DE VOZ NATIVO
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 🎙️ Sintetizador de Voz Nativa (Varonil)")
-    st.caption("Emisión de comandos con tono de voz grave y profundo.")
-    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
-    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
-        js_code = f"""
-        <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
-            mensaje.lang = 'es-ES';
-            mensaje.rate = 0.90;
-            mensaje.pitch = 0.1;
-            var voces = window.speechSynthesis.getVoices();
-            for(var i = 0; i < voces.length; i++) {{
-                var nombre = voces[i].name.toLowerCase();
-                if(voces[i].lang.includes('es') && (nombre.includes('male') || nombre.includes('pablo') || nombre.includes('carlos') || nombre.includes('alberto') || nombre.includes('raul') || nombre.includes('diego'))) {{
-                    mensaje.voice = voces[i];
-                    break;
+    with st.expander("🎙️ Sintetizador de Voz Nativa (Varonil)"):
+        st.caption("Emisión de comandos con tono de voz grave y profundo.")
+        texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
+        if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
+            js_code = f"""
+            <script>
+            if ('speechSynthesis' in window) {{
+                window.speechSynthesis.cancel();
+                var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
+                mensaje.lang = 'es-ES';
+                mensaje.rate = 0.90;
+                mensaje.pitch = 0.1;
+                var voces = window.speechSynthesis.getVoices();
+                for(var i = 0; i < voces.length; i++) {{
+                    var nombre = voces[i].name.toLowerCase();
+                    if(voces[i].lang.includes('es') && (nombre.includes('male') || nombre.includes('pablo') || nombre.includes('carlos') || nombre.includes('alberto') || nombre.includes('raul') || nombre.includes('diego'))) {{
+                        mensaje.voice = voces[i];
+                        break;
+                    }}
                 }}
+                window.speechSynthesis.speak(mensaje);
             }}
-            window.speechSynthesis.speak(mensaje);
-        }}
-        </script>
-        """
-        st.components.v1.html(js_code, height=0)
-        st.success("Voz emitida con éxito.")
-    st.markdown('</div>', unsafe_allow_html=True)
+            </script>
+            """
+            st.components.v1.html(js_code, height=0)
+            st.success("Voz emitida con éxito.")
 
     # MÓDULO: CONVERSOR FINANCIERO CLP
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 💱 Conversor de Monedas")
-    st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
-    c_f1, c_f2 = st.columns(2)
-    with c_f1:
-        monto = st.number_input("Monto:", value=100.0, step=10.0)
-    with c_f2:
-        moneda = st.selectbox("Moneda:", ["USD", "EUR"])
-    tasa = 945.50 if moneda == "USD" else 1020.30
-    total = monto * tasa
-    st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("💱 Conversor de Monedas"):
+        st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
+        c_f1, c_f2 = st.columns(2)
+        with c_f1:
+            monto = st.number_input("Monto:", value=100.0, step=10.0)
+        with c_f2:
+            moneda = st.selectbox("Moneda:", ["USD", "EUR"])
+        tasa = 945.50 if moneda == "USD" else 1020.30
+        total = monto * tasa
+        st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
 
     # MÓDULO: MARCADORES RÁPIDOS
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 📌 Enlaces & Marcadores Rápidos")
-    st.caption("Accesos directos a portales clave.")
-    r1, r2 = st.columns(2)
-    with r1:
-        st.link_button("🌐 Osiris Global", "https://osirisai.live", use_container_width=True)
-        st.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-    with r2:
-        st.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
-        st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("📌 Enlaces & Marcadores Rápidos"):
+        st.caption("Accesos directos a portales clave.")
+        r1, r2 = st.columns(2)
+        with r1:
+            st.link_button("🌐 Osiris Global", "https://osirisai.live", use_container_width=True)
+            st.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+        with r2:
+            st.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
+            st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
 
     # MÓDULO: TELEMETRÍA GLOBAL
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 📡 Telemetría Global & Sensores")
-    st.caption("Monitoreo de estado de conexiones y satélites.")
-    st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander("📡 Telemetría Global & Sensores"):
+        st.caption("Monitoreo de estado de conexiones y satélites.")
+        st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
 
 with col_der:
     # NODO HOLOGRÁFICO GLOBAL EN LA PARTE SUPERIOR DERECHA
