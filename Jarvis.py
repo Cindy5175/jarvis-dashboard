@@ -1,4 +1,5 @@
 import streamlit as st
+import datetime
 
 # Configuración de página
 st.set_page_config(
@@ -67,6 +68,15 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
+# --- DETECCIÓN DE HORA PARA EL SALUDO AUTOMÁTICO ---
+hora_actual = datetime.datetime.now().hour
+if 5 <= hora_actual < 12:
+    saludo_tiempo = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_tiempo = "Buenas tardes"
+else:
+    saludo_tiempo = "Buenas noches"
 
 # --- ENCABEZADO TÁCTICO STARK INDUSTRIES ---
 st.markdown("""
@@ -138,7 +148,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
         st.markdown("⚡ **Sincronización:** 100% Buin OK")
 
-# --- CONSOLA DINÁMICA DE TELEMETRÍA (100% ESPAÑOL) ---
+# --- CONSOLA DINÁMICA DE TELEMETRÍA ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("⚡ **TERMINAL DE ACCIÓN Y TELEMETRÍA**")
 
@@ -158,17 +168,16 @@ else:
     if st.sidebar.button("🔄 Sincronizar Nodo"):
         st.sidebar.toast("Nodo en Buin sincronizado a máxima velocidad.")
 
-# Consola traducida al español
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; SISTERMA_OK: Nodo Buin en línea<br>
+        &gt; SISTEMA_OK: Nodo Buin en línea<br>
         &gt; ACTIVO: {modulo_seleccionado.split(' ')[1]}<br>
         &gt; RED_STARK: Encriptación AES-256<br>
         &gt; ESTADO: Esperando directivas, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- RECURACIÓN DE LA SEGUNDA IMAGEN (DASHBOARD PRINCIPAL DE 2 COLUMNAS) ---
+# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
 col_izq, col_der = st.columns([1, 1.2])
 
 with col_izq:
@@ -197,13 +206,13 @@ with col_der:
     with col_head2:
         if st.button("🗑️ Purgar"):
             st.session_state.mensajes = [
-                {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
+                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Sistema de comunicaciones restablecido en Buin."}
             ]
             st.rerun()
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
@@ -217,7 +226,7 @@ with col_der:
         
         prompt_lower = prompt.lower()
         if "hola" in prompt_lower or "buenas" in prompt_lower:
-            respuesta_jarvis = "Buenas tardes, jefa. Sistemas al 100% y reporte táctico listo en Buin. ¿En qué trabajamos ahora?"
+            respuesta_jarvis = f"{saludo_tiempo}, jefa. Sistemas al 100% y reporte táctico listo en Buin. ¿En qué trabajamos ahora?"
         elif "despierto" in prompt_lower or "estás ahí" in prompt_lower:
             respuesta_jarvis = "Para usted, señorita, siempre. El núcleo del reactor está activo y listo."
         elif "clima" in prompt_lower:
