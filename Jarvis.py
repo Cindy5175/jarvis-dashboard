@@ -78,6 +78,16 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_tiempo = "Buenas noches"
 
+# --- LISTA BLANCA / CÍRCULO FAMILIAR PROTEGIDO (INMUNIDAD TOTAL) ---
+# Ningún mensaje de estos contactos recibirá respuesta automática; son contestados por la jefa.
+CIRCULO_FAMILIAR_BLINDADO = [
+    "Leonardo Del Transit Carrera Araya",
+    "Leonardo Alberto Carrera Baude",
+    "Paola Carrera Baude",
+    "Silvia Grau",
+    "Karin Grau de Folliot"
+]
+
 # --- ENCABEZADO TÁCTICO STARK INDUSTRIES ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
@@ -105,13 +115,13 @@ st.sidebar.markdown("---")
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
+        "🛡️ Blindaje WhatsApp",
         "🧠 Memoria Masiva",
         "🔍 Buscador Web",
         "📡 Telemetría Global",
         "🎙️ Sintetizador de Voz",
         "🌤️ Clima de Buin",
         "👁️ Ojos Digitales",
-        "🛡️ Análisis de Amenazas",
         "💵 Control Financiero",
         "⚙️ Diagnóstico de Núcleo"
     ]
@@ -121,7 +131,12 @@ st.sidebar.markdown("---")
 
 # --- DESPLIEGUE DE LOS 4 PILARES Y MÓDULOS EN BARRA LATERAL ---
 with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
-    if "Memoria Masiva" in modulo_seleccionado:
+    if "Blindaje WhatsApp" in modulo_seleccionado:
+        st.markdown("🛡️ **Protocolo de Inmunidad:** Activo")
+        st.markdown(f"👥 **Protegidos:** {len(CIRCULO_FAMILIAR_BLINDADO)} familiares")
+        st.markdown("🔒 **Estado:** Sin automatización familiar")
+
+    elif "Memoria Masiva" in modulo_seleccionado:
         st.markdown("🧠 **Base Vectorial:** Activa")
         st.markdown("📁 **Contexto Local:** 15 Manuales y Logs")
         st.markdown("💡 **Estado:** Sincronización de índices OK")
@@ -211,7 +226,7 @@ if st.sidebar.button("🔄 Sincronizar Nodo"):
 st.sidebar.markdown(f"""
     <div class="tactical-console">
         &gt; SISTEMA_OK: Nodo Buin en línea<br>
-        &gt; ACTIVO: {modulo_seleccionado.split(' ')[1]}<br>
+        &gt; BLINDAJE_WA: 5 contactos inmunes<br>
         &gt; RED_STARK: Encriptación AES-256<br>
         &gt; ESTADO: Esperando directivas, jefa...
     </div>
@@ -242,7 +257,7 @@ with col_izq:
 with col_der:
     col_head1, col_head2 = st.columns([3, 1])
     with col_head1:
-        st.markdown("### 💬 Chat IA")
+        st.markdown("### 💬 Chat IA & Simulador de Mensajería")
     with col_head2:
         if st.button("🗑️ Purgar"):
             st.session_state.mensajes = [
@@ -252,7 +267,7 @@ with col_der:
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa con los 4 pilares de conocimiento listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Círculo familiar blindado activado ({len(CIRCULO_FAMILIAR_BLINDADO)} protegidos). ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
@@ -261,7 +276,7 @@ with col_der:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
     
-    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+    if prompt := st.chat_input("Escriba su comando o simule un mensaje entrante..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt})
         
         prompt_lower = prompt.lower()
