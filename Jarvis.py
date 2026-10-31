@@ -65,18 +65,6 @@ st.markdown("""
             color: #00d2ff;
             margin-top: 10px;
         }
-        
-        /* Estilo para botón de purga */
-        div.stButton > button {
-            background-color: #1e293b;
-            color: #00d2ff;
-            border: 1px solid #00d2ff;
-            border-radius: 6px;
-        }
-        div.stButton > button:hover {
-            background-color: #00d2ff;
-            color: #05070b;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -91,7 +79,7 @@ st.markdown("""
         </svg>
         <h2 style="margin: 8px 0 0 0; letter-spacing: 2px;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
         <p style="color: #00d2ff; font-family: monospace; font-size: 0.85rem; margin-top: 4px; opacity: 0.8;">
-            [ STARK INDUSTRIES OPERATIONAL NODE // BUIN, CHILE ]
+            [ NODO OPERATIVO STARK INDUSTRIES // BUIN, CHILE ]
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -150,7 +138,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         st.markdown(f"🟢 **Canal:** {modulo_seleccionado}")
         st.markdown("⚡ **Sincronización:** 100% Buin OK")
 
-# --- CONSOLA DINÁMICA DE TELEMETRÍA ---
+# --- CONSOLA DINÁMICA DE TELEMETRÍA (100% ESPAÑOL) ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("⚡ **TERMINAL DE ACCIÓN Y TELEMETRÍA**")
 
@@ -170,13 +158,74 @@ else:
     if st.sidebar.button("🔄 Sincronizar Nodo"):
         st.sidebar.toast("Nodo en Buin sincronizado a máxima velocidad.")
 
+# Consola traducida al español
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; SYS_OK: Node Buin online<br>
-        &gt; ACTIVE: {modulo_seleccionado.split(' ')[1]}<br>
-        &gt; STARK_NET: Encryption AES-256<br>
-        &gt; STATUS: Esperando directivas, jefa...
+        &gt; SISTERMA_OK: Nodo Buin en línea<br>
+        &gt; ACTIVO: {modulo_seleccionado.split(' ')[1]}<br>
+        &gt; RED_STARK: Encriptación AES-256<br>
+        &gt; ESTADO: Esperando directivas, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DASHBOARD PRINCIPAL DE
+# --- RECURACIÓN DE LA SEGUNDA IMAGEN (DASHBOARD PRINCIPAL DE 2 COLUMNAS) ---
+col_izq, col_der = st.columns([1, 1.2])
+
+with col_izq:
+    st.markdown("""
+        <div class="stark-box">
+            <b style="color: #00d2ff;">🌐 NÚCLEO HOLOGRÁFICO CON SATÉLITE EN ÓRBITA</b>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="stark-box" style="text-align: center;">
+            <div class="globe-container">
+                <div class="orbit"></div>
+                <div class="globe"></div>
+            </div>
+            <div style="font-family: monospace; color: #00d2ff; font-size: 0.8rem; margin-top: 10px; border-top: 1px solid #1e293b; padding-top: 5px;">
+                LAT: -33.73° S | LON: -70.73° W — BUIN OK
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_der:
+    col_head1, col_head2 = st.columns([3, 1])
+    with col_head1:
+        st.markdown("### 💬 Chat IA")
+    with col_head2:
+        if st.button("🗑️ Purgar"):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
+            ]
+            st.rerun()
+
+    if "mensajes" not in st.session_state:
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+        ]
+    
+    chat_container = st.container(height=280)
+    with chat_container:
+        for msg in st.session_state.mensajes:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+    
+    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt})
+        
+        prompt_lower = prompt.lower()
+        if "hola" in prompt_lower or "buenas" in prompt_lower:
+            respuesta_jarvis = "Buenas tardes, jefa. Sistemas al 100% y reporte táctico listo en Buin. ¿En qué trabajamos ahora?"
+        elif "despierto" in prompt_lower or "estás ahí" in prompt_lower:
+            respuesta_jarvis = "Para usted, señorita, siempre. El núcleo del reactor está activo y listo."
+        elif "clima" in prompt_lower:
+            respuesta_jarvis = "El sector de Buin registra 22°C con cielos parcialmente despejados, jefa. Sensores operando con normalidad."
+        elif "gracias" in prompt_lower:
+            respuesta_jarvis = "Es un placer servirle, jefa. El taller y los enlaces satelitales siguen bajo su mando."
+        else:
+            respuesta_jarvis = f"Para usted, jefa, siempre. Procesado con órbita Starlink en Buin. Directiva '{prompt}' comprendida y en ejecución."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
+        st.rerun()
