@@ -133,9 +133,16 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
-        api_key = st.secrets.get("ELEVENLABS_API_KEY", "")
-        if api_key:
-            st.success("🔒 API Key cargada automáticamente desde el búnker (Secrets).")
+        
+        api_key_secreta = ""
+        try:
+            api_key_secreta = st.secrets.get("ELEVENLABS_API_KEY", "")
+        except:
+            pass
+            
+        if api_key_secreta:
+            api_key = api_key_secreta
+            st.success("🔒 Clave cargada de forma segura desde el búnker.")
         else:
             api_key = st.text_input("ElevenLabs API Key:", type="password")
             
@@ -144,7 +151,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         
         if st.button("🔊 Generar Audio"):
             if not api_key:
-                st.error("No se detectó ninguna API Key, jefa.")
+                st.error("Por favor, ingrese su API Key o verifique los secretos, jefa.")
             else:
                 try:
                     from elevenlabs import generate, set_api_key
