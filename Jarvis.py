@@ -56,17 +56,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ENCABEZADO TÁCTICO STARK INDUSTRIES (Diseño Arc Reactor puro) ---
+# --- ENCABEZADO TÁCTICO STARK INDUSTRIES ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
         <svg width="65" height="65" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
-            <!-- Marco exterior Arc Reactor -->
             <polygon points="50,5 95,85 5,85" fill="none" stroke="#00d2ff" stroke-width="5" stroke-linejoin="round" />
-            <!-- Biseles internos tecnológicos -->
             <polygon points="50,22 80,78 20,78" fill="rgba(0, 210, 255, 0.12)" stroke="#00d2ff" stroke-width="2" />
-            <!-- Núcleo de energía -->
             <polygon points="50,38 68,70 32,70" fill="#00d2ff" opacity="0.8" />
-            <!-- Línea de corte táctica -->
             <line x1="15" y1="85" x2="85" y2="85" stroke="#ffffff" stroke-width="3" />
         </svg>
         <h2 style="margin: 8px 0 0 0; letter-spacing: 2px;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
@@ -76,105 +72,56 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL: 15 MÓDULOS DEL SISTEMA ---
+# --- BARRA LATERAL: MÓDULOS CON ICONOS Y LOGOS (SIN NÚMEROS) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
-        "01. Ojo de Dios (Osiris Tactical)",
-        "02. Ojos Digitales",
-        "03. Clima de Buin",
-        "04. Buscador Web",
-        "05. Sintetizador de Voz (ElevenLabs)",
-        "06. Escucha Permanente",
-        "07. Memoria Masiva",
-        "08. Telemetría Global",
-        "09. Análisis de Amenazas",
-        "10. Protocolo de Emergencia",
-        "11. Redes Satelitales",
-        "12. Control Financiero (CLP/USD)",
-        "13. Diagnóstico de Núcleo",
-        "14. Encriptación Cuántica",
-        "15. Modo Protocolo Stark"
+        "🛰️ Ojo de Dios (Osiris Tactical)",
+        "👁️ Ojos Digitales",
+        "🌤️ Clima de Buin",
+        "🔍 Buscador Web",
+        "🎙️ Sintetizador de Voz (ElevenLabs)",
+        "🎧 Escucha Permanente",
+        "🧠 Memoria Masiva",
+        "📡 Telemetría Global",
+        "🛡️ Análisis de Amenazas",
+        "🚨 Protocolo de Emergencia",
+        "🌐 Redes Satelitales",
+        "💵 Control Financiero (CLP/USD)",
+        "⚙️ Diagnóstico de Núcleo",
+        "🔐 Encriptación Cuántica",
+        "🦾 Modo Protocolo Stark"
     ]
 )
 
 st.sidebar.markdown("---")
+
+# --- DESPLIEGUE SECRETO / OCULTO EN LA BARRA LATERAL (OPERATIVO) ---
+with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
+    if "Clima" in modulo_seleccionado:
+        st.markdown("🌡️ **Clima Buin:** 22°C | Parcial")
+        st.markdown("💧 **Humedad:** 45% | Viento: 12 km/h")
+    elif "Ojo de Dios" in modulo_seleccionado:
+        osiris_url = (
+            "https://osirisai.live/?"
+            "lat=-33.7320&lon=-70.7300&zoom=10.00&"
+            "layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,"
+            "sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,"
+            "global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,"
+            "wind_controls,rain_controls,gdelt_events"
+        )
+        st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
+    elif "Financiero" in modulo_seleccionado:
+        st.markdown("💵 **USD/CLP:** $945.50")
+        st.markdown("💶 **EUR/CLP:** $1,020.30")
+    else:
+        st.markdown(f"🟢 **Estado:** {modulo_seleccionado} en línea y sincronizado con Buin.")
+
 st.sidebar.markdown("🌍 **Estado Orbital:** Satélites Activos")
-st.sidebar.info("Conexión segura establecida con el nodo central en Buin.")
+st.sidebar.info("Conexión segura establecida con el nodo central.")
 
-# --- LÓGICA DE LOS 15 MÓDULOS ---
-
-if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
-    st.markdown("### 🛰️ Módulo 01: Ojo de Dios (Osiris Tactical)")
-    osiris_url = (
-        "https://osirisai.live/?"
-        "lat=-33.7320&lon=-70.7300&zoom=10.00&"
-        "layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,"
-        "sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,"
-        "global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,"
-        "wind_controls,rain_controls,gdelt_events"
-    )
-    st.link_button("🚀 ABRIR CENTRO DE MANDO OSIRIS EN PANTALLA COMPLETA", osiris_url, use_container_width=True)
-    st.success("Acceso directo a la plataforma de monitoreo global con todas las capas activas para Buin.")
-
-elif modulo_seleccionado == "02. Ojos Digitales":
-    st.subheader("👁️ Módulo 02: Ojos Digitales")
-    st.info("Cámaras de vigilancia y fuentes de video en circuito cerrado listas.")
-
-elif modulo_seleccionado == "03. Clima de Buin":
-    st.subheader("🌤️ Módulo 03: Clima de Buin")
-    st.info("Monitoreo atmosférico y métricas meteorológicas en tiempo real para Buin.")
-
-elif modulo_seleccionado == "04. Buscador Web":
-    st.subheader("🔍 Módulo 04: Buscador Web")
-    st.info("Motores de búsqueda de inteligencia abierta conectados.")
-
-elif modulo_seleccionado == "05. Sintetizador de Voz (ElevenLabs)":
-    st.subheader("🎙️ Módulo 05: Sintetizador de Voz (ElevenLabs)")
-    st.info("Módulo reservado para la API Key y configuración de audio varonil.")
-
-elif modulo_seleccionado == "06. Escucha Permanente":
-    st.subheader("🎧 Módulo 06: Escucha Permanente")
-    st.info("Sensores de audio y comandos de voz en espera.")
-
-elif modulo_seleccionado == "07. Memoria Masiva":
-    st.subheader("🧠 Módulo 07: Memoria Masiva")
-    st.info("Base de datos de contexto y registros históricos activos.")
-
-elif modulo_seleccionado == "08. Telemetría Global":
-    st.subheader("📡 Módulo 08: Telemetría Global")
-    st.info("Estado de constelaciones satelitales y enlaces de baja órbita.")
-
-elif modulo_seleccionado == "09. Análisis de Amenazas":
-    st.subheader("🛡️ Módulo 09: Análisis de Amenazas")
-    st.info("Escáner de seguridad perimetral y defensas de red activas.")
-
-elif modulo_seleccionado == "10. Protocolo de Emergencia":
-    st.subheader("🚨 Módulo 10: Protocolo de Emergencia")
-    st.info("Sistemas de aislamiento y rutas de evacuación digital listos.")
-
-elif modulo_seleccionado == "11. Redes Satelitales":
-    st.subheader("🛰️ Módulo 11: Redes Satelitales")
-    st.info("Enlaces Starlink y pasarelas de comunicación encriptadas.")
-
-elif modulo_seleccionado == "12. Control Financiero (CLP/USD)":
-    st.subheader("💵 Módulo 12: Control Financiero")
-    st.info("Tasas de cambio y conversión de divisas (USD/EUR a CLP) operativas.")
-
-elif modulo_seleccionado == "13. Diagnóstico de Núcleo":
-    st.subheader("⚙️ Módulo 13: Diagnóstico de Núcleo")
-    st.info("Estabilidad del sistema y rendimiento de procesadores al 100%.")
-
-elif modulo_seleccionado == "14. Encriptación Cuántica":
-    st.subheader("🔐 Módulo 14: Encriptación Cuántica")
-    st.info("Claves de cifrado y túneles seguros de transmisión activos.")
-
-elif modulo_seleccionado == "15. Modo Protocolo Stark":
-    st.subheader("🦾 Módulo 15: Modo Protocolo Stark")
-    st.info("Sobrecarga de potencia y autonomía total del sistema autorizada.")
-
-# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS ---
+# --- DASHBOARD PRINCIPAL DE 2 COLUMNAS (INALTERABLE) ---
 col_izq, col_der = st.columns([1, 1.2])
 
 with col_izq:
@@ -201,7 +148,7 @@ with col_der:
     
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": "Buenas tardes, jefa. Constelación activa. Enlace Starlink y módulos operando en modo oculto en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
