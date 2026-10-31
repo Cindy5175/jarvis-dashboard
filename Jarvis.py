@@ -131,7 +131,7 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
         st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
     
-    elif "Sintetizador de Voz" in modulo_seleccionado:
+   elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
         
         api_key_secreta = ""
@@ -154,10 +154,18 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
                 st.error("Por favor, ingrese su API Key o verifique los secretos, jefa.")
             else:
                 try:
-                    from elevenlabs import generate, set_api_key
-                    set_api_key(api_key)
-                    audio = generate(text=texto_voz, voice=voice_id, model="eleven_multilingual_v2")
-                    st.audio(audio, format="audio/mp3")
+                    from elevenlabs.client import ElevenLabs
+                    
+                    client = ElevenLabs(api_key=api_key)
+                    audio_stream = client.text_to_speech.convert(
+                        text=texto_voz,
+                        voice_id=voice_id,
+                        model_id="eleven_multilingual_v2"
+                    )
+                    
+                    # Convertir el flujo de bytes a audio reproducible en Streamlit
+                    audio_bytes = b"".join(audio_stream)
+                    st.audio(audio_bytes, format="audio/mp3")
                     st.success("Audio generado con éxito desde Buin.")
                 except Exception as e:
                     st.error(f"Error en la conexión con ElevenLabs: {e}")
