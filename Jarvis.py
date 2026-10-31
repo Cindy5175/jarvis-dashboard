@@ -28,6 +28,13 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
         margin-bottom: 12px;
     }
+    /* Estilo para fijar la caja del chat abajo en su columna */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        min-height: 400px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -168,14 +175,16 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA (HISTORIAL Y CAJA DE ENTRADA AL FINAL)
+    # COLUMNA DERECHA: CHAT IA (CON CONTENEDOR FLEXIBLE PARA LA CAJA DE COMANDOS ABAJO)
     st.markdown("### 💬 Chat IA")
     
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    chat_container = st.container()
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-    # Caja de entrada de comandos colocada al fondo estricto de la columna derecha
+    # Caja de entrada de comandos situada exactamente al fondo de la columna derecha
     if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
@@ -190,4 +199,3 @@ with col_right:
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"):
             st.markdown(response)
-
