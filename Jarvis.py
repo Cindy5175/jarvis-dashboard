@@ -129,4 +129,177 @@ st.sidebar.link_button("🛰️ Lanzar Ojo de Dios (Osiris)", "https://osirisai.
 
 st.sidebar.markdown("---")
 
-modulo_seleccionado = st.sidebar.
+modulo_seleccionado = st.sidebar.selectbox("Seleccionar Módulo Activo", [
+    "🛡️ Blindaje WhatsApp",
+    "📧 Alertas Gmail",
+    "📋 Tareas & Notas Tácticas",
+    "🎙️ Comandos por Voz",
+    "💱 Conversor de Monedas",
+    "📌 Marcadores Rápidos",
+    "🧠 Memoria Masiva",
+    "📡 Telemetría Global"
+])
+
+st.sidebar.markdown("---")
+
+with st.sidebar.expander("📊 TELEMETRÍA DE NÚCLEO", expanded=True):
+    st.markdown("🛡️ **Familiar Protegido:** 5 Activos")
+    st.markdown("💬 **Respuesta Externa:** Educada & Cordial")
+    st.markdown("⚡ **Reactor Arc:** 99% Operativo")
+    st.markdown("📍 **Nodo:** Buin Centro OK")
+
+st.sidebar.markdown("---")
+st.sidebar.caption("🔋 Potencia Arc")
+st.sidebar.progress(99)
+st.sidebar.caption("📡 Enlace Starlink")
+st.sidebar.progress(95)
+
+st.sidebar.markdown(f"""
+    <div class="tactical-console">
+        &gt; MATRIZ: 5 Módulos Simétricos<br>
+        &gt; NODO_BUIN: En línea<br>
+        &gt; ESTADO: Esperando órdenes, jefa...
+    </div>
+""", unsafe_allow_html=True)
+
+# --- DISPOSICIÓN PRINCIPAL EN DOS COLUMNAS ANCHAS ---
+col_izq, col_der = st.columns([1, 1], gap="medium")
+
+# --- COLUMNA IZQUIERDA: MÓDULOS 1, 2 Y 3 ---
+with col_izq:
+    # MÓDULO 1: ANÁLISIS DE CORREOS (GMAIL)
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 📧 Módulo 1: Alerta & Resumen Gmail")
+    st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
+    
+    col_mail1, col_mail2 = st.columns(2)
+    with col_mail1:
+        st.markdown("**Notificaciones Prioritarias:**")
+        st.info("🏥 UC Christus: Receta médica disponible.")
+    with col_mail2:
+        st.markdown("**Finanzas / Inversiones:**")
+        st.success("🏦 Bci Corredora: Suscripción Moneda Renta CLP.")
+    
+    if st.button("🔄 Escanear Bandeja de Entrada", use_container_width=True):
+        st.toast("Bandeja escaneada: 2 correos prioritarios detectados.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # MÓDULO 2: PANEL DE TAREAS Y NOTAS TÁCTICAS
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 📋 Módulo 2: Protocolo To-Do Táctico")
+    
+    nueva_tarea = st.text_input("Agregar nueva tarea al búnker:", placeholder="Ej: Revisar sensores de Buin...")
+    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+        st.session_state.tareas_todo.append(nueva_tarea)
+        st.success("Tarea guardada en memoria táctica.")
+
+    st.markdown("**Pendientes Activos:**")
+    for idx, t in enumerate(st.session_state.tareas_todo):
+        st.markdown(f"• `{idx+1}.` {t}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # MÓDULO 3: DICTADO Y COMANDO POR VOZ
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 🎙️ Módulo 3: Grabador & Sintetizador de Voz")
+    
+    audio_input = st.audio_input("Dictar comando de voz a J.A.R.V.I.S.")
+    if audio_input:
+        st.success("Audio capturado correctamente. Procesando instrucción por voz, jefa...")
+    
+    col_v1, col_v2 = st.columns(2)
+    with col_v1:
+        voice_id = st.text_input("Voice ID (ElevenLabs):", value="21m00Tcm4TlvDq8ikWAM")
+    with col_v2:
+        api_key = st.secrets.get("ELEVENLABS_API_KEY", "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf")
+        st.text_input("API Key Status:", value="Clave Encriptada", disabled=True)
+        
+    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin.", height=68)
+    if st.button("🔊 Probar Síntesis de Voz", use_container_width=True):
+        try:
+            from elevenlabs.client import ElevenLabs
+            client = ElevenLabs(api_key=api_key)
+            audio_stream = client.text_to_speech.convert(
+                text=texto_a_hablar,
+                voice_id=voice_id,
+                model_id="eleven_multilingual_v2"
+            )
+            audio_bytes = b"".join(audio_stream)
+            st.audio(audio_bytes, format="audio/mp3")
+            st.success("Síntesis generada.")
+        except Exception as e:
+            st.error(f"Error de conexión de voz: {str(e)}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- COLUMNA DERECHA: MÓDULOS 4, 5 Y CHAT DE CONSOLA ---
+with col_der:
+    # MÓDULO 4: CONVERSOR DE MONEDAS EN TIEMPO REAL
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 💱 Módulo 4: Conversor Financiero CLP")
+    
+    c_m1, c_m2, c_m3 = st.columns(3)
+    with c_m1:
+        monto = st.number_input("Monto:", min_value=1.0, value=100.0, step=10.0)
+    with c_m2:
+        moneda_origen = st.selectbox("De:", ["USD", "EUR"])
+    with c_m3:
+        tasa = 945.50 if moneda_origen == "USD" else 1020.30
+        st.metric(label=f"Tasa {moneda_origen}/CLP", value=f"${tasa}")
+
+    total_clp = monto * tasa
+    st.markdown(f"💰 **Resultado:** `{monto:.2f} {moneda_origen}` = **`${total_clp:,.2f} CLP`**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # MÓDULO 5: MARCADORES RÁPIDOS Y NÚCLEO HOLOGRÁFICO
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 📌 Módulo 5: Enlaces Rápidos & Globo Holográfico")
+    
+    col_link1, col_link2 = st.columns(2)
+    with col_link1:
+        st.link_button("🌐 Visor Osiris Global", "https://osirisai.live", use_container_width=True)
+        st.link_button("🏥 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+    with col_link2:
+        st.link_button("🏦 Banco Bci Inversiones", "https://www.bci.cl/inversiones", use_container_width=True)
+        st.link_button("🌦️ Meteorología Chile", "https://www.meteochile.gob.cl", use_container_width=True)
+
+    st.markdown("""
+        <div class="globe-container" style="margin-top: 10px;">
+            <div class="orbit"></div>
+            <div class="globe"></div>
+        </div>
+        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 6px;">
+            BUIN OK — NODO GEOGRÁFICO -33.73° S / -70.73° W
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CONSOLA DE CHAT IA E INTERACCIÓN
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    c_h1, c_h2 = st.columns([3, 1])
+    with c_h1:
+        st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
+    with c_h2:
+        if st.button("🗑️ Purgar", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Consola lista en Buin."}
+            ]
+            st.rerun()
+
+    chat_box = st.container(height=230)
+    with chat_box:
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.write(m["content"])
+
+    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": p})
+        p_low = p.lower()
+        if "despierto" in p_low or "estás ahí" in p_low:
+            resp = "Para usted, señorita, siempre."
+        elif "hola" in p_low or "buenas" in p_low:
+            resp = f"{saludo_tiempo}, jefa. Todos los 5 módulos operan en perfecta armonía."
+        else:
+            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": resp})
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
