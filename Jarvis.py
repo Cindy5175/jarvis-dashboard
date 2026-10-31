@@ -204,15 +204,14 @@ with col_izq:
     
     texto_a_hablar = st.text_area("Texto a reproducir por voz:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin al 100%.", height=68)
     
-    # Botón interactivo con JavaScript nativo para reproducir voz masculina en español
     hablar_script = f"""
     <script>
     function hablarJarvis() {{
         if ('speechSynthesis' in window) {{
             var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
             mensaje.lang = 'es-ES';
-            mensaje.rate = 0.95; // Tono pausado y táctico
-            mensaje.pitch = 0.6; // Tono más grave / varonil
+            mensaje.rate = 0.95;
+            mensaje.pitch = 0.6;
             
             var voces = window.speechSynthesis.getVoices();
             for(var i = 0; i < voces.length; i++) {{
@@ -247,4 +246,63 @@ with col_der:
         moneda_origen = st.selectbox("De:", ["USD", "EUR"])
     with c_m3:
         tasa = 945.50 if moneda_origen == "USD" else 1020.30
-        st.metric(label=f"Tasa {mon
+        st.metric(label=f"Tasa {moneda_origen}/CLP", value=f"${tasa}")
+
+    total_clp = monto * tasa
+    st.markdown(f"💰 **Resultado:** `{monto:.2f} {moneda_origen}` = **`${total_clp:,.2f} CLP`**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # MÓDULO 5: MARCADORES RÁPIDOS Y NÚCLEO HOLOGRÁFICO
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("### 📌 Módulo 5: Enlaces Rápidos & Globo Holográfico")
+    
+    col_link1, col_link2 = st.columns(2)
+    with col_link1:
+        st.link_button("🌐 Visor Osiris Global", "https://osirisai.live", use_container_width=True)
+        st.link_button("🏥 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+    with col_link2:
+        st.link_button("🏦 Banco Bci Inversiones", "https://www.bci.cl/inversiones", use_container_width=True)
+        st.link_button("🌦️ Meteorología Chile", "https://www.meteochile.gob.cl", use_container_width=True)
+
+    st.markdown("""
+        <div class="globe-container" style="margin-top: 10px;">
+            <div class="orbit"></div>
+            <div class="globe"></div>
+        </div>
+        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 6px;">
+            BUIN OK — NODO GEOGRÁFICO -33.73° S / -70.73° W
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CONSOLA DE CHAT IA E INTERACCIÓN
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    c_h1, c_h2 = st.columns([3, 1])
+    with c_h1:
+        st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
+    with c_h2:
+        if st.button("🗑️ Purgar", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Consola lista en Buin."}
+            ]
+            st.rerun()
+
+    chat_box = st.container(height=230)
+    with chat_box:
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.write(m["content"])
+
+    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": p})
+        p_low = p.lower()
+        if "despierto" in p_low or "estás ahí" in p_low:
+            resp = "Para usted, señorita, siempre."
+        elif "hola" in p_low or "buenas" in p_low:
+            resp = f"{saludo_tiempo}, jefa. Todos los 5 módulos operan en perfecta armonía."
+        else:
+            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": resp})
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
