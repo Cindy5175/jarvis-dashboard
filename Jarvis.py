@@ -97,10 +97,9 @@ st.markdown("""
 # --- BARRA LATERAL: MÓDULOS CON ICONOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 
-# Accesos directos web prioritarios para visores 3D
-st.sidebar.markdown("🚀 **Lanzadores Satelitales**")
-st.sidebar.link_button("🚀 Lanzar Osiris Full", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events", use_container_width=True)
-st.sidebar.link_button("🌍 Lanzar God's Eye View", "https://maptheworld.ai/", use_container_width=True)
+# Lanzador exclusivo para Osiris Tactical
+st.sidebar.markdown("🚀 **Visor Satelital Activo**")
+st.sidebar.link_button("🛰️ Lanzar Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events", use_container_width=True)
 st.sidebar.markdown("---")
 
 modulo_seleccionado = st.sidebar.selectbox(
@@ -257,7 +256,7 @@ with col_der:
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. Enlace Starlink y todos los módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. En enlace con Osiris y todos los módulos listos en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
@@ -281,5 +280,4 @@ with col_der:
         else:
             respuesta_jarvis = f"Para usted, jefa, siempre. Procesado con órbita Starlink en Buin. Directiva '{prompt}' comprendida y en ejecución."
         
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
-        st.rerun()
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_
