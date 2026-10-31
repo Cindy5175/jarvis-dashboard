@@ -100,6 +100,7 @@ modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
     [
         "🛰️ Ojo de Dios (Osiris Tactical)",
+        "🌍 Perspectiva de Dios (Pinokio 3D)",
         "👁️ Ojos Digitales",
         "🌤️ Clima de Buin",
         "🔍 Buscador Web",
@@ -130,11 +131,15 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         st.markdown("🛰️ **Estado:** Constelación Global Activa")
         osiris_url = "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events"
         st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
+
+    elif "Perspectiva de Dios" in modulo_seleccionado:
+        st.markdown("🌍 **Motor 3D:** Pinokio / God's Eye View")
+        st.markdown("📌 **Estado:** Listo para lanzar consola local")
+        st.link_button("🌐 Abrir Repositorio / Guía", "https://github.com/bilawalsidhu/gods-eye-view", use_container_width=True)
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
         st.markdown("🎙️ **ElevenLabs:** Configuración de audio")
         
-        # Respaldo blindado: Intenta secrets y usa la clave maestra del búnker si es necesario
         api_key = ""
         try:
             if "ELEVENLABS_API_KEY" in st.secrets:
@@ -144,7 +149,6 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         except Exception:
             pass
             
-        # Respaldo directo inyectado para evitar bloqueos
         if not api_key:
             api_key = "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf"
             
@@ -258,7 +262,7 @@ with col_der:
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. Enlace Starlink y todos los 15 módulos listos en Buin. ¿Qué directiva ejecutamos?"}
+            {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Constelación activa. Enlace Starlink y todos los módulos listos en Buin. ¿Qué directiva ejecutamos?"}
         ]
     
     chat_container = st.container(height=280)
