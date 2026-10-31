@@ -97,12 +97,15 @@ modulo_seleccionado = st.sidebar.selectbox(
 
 st.sidebar.markdown("---")
 
-# --- DESPLIEGUE SECRETO / OCULTO EN LA BARRA LATERAL (OPERATIVO) ---
+# --- DESPLIEGUE ESPECÍFICO PARA CADA MÓDULO EN LA BARRA LATERAL ---
 with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
-    if "Clima" in modulo_seleccionado:
-        st.markdown("🌡️ **Clima Buin:** 22°C | Parcial")
-        st.markdown("💧 **Humedad:** 45% | Viento: 12 km/h")
+    if "Clima de Buin" in modulo_seleccionado:
+        st.markdown("🌡️ **Temperatura:** 22°C | Parcial")
+        st.markdown("💧 **Humedad:** 45% | 💨 **Viento:** 12 km/h")
+        st.markdown("📍 **Sector:** Buin Centro")
+    
     elif "Ojo de Dios" in modulo_seleccionado:
+        st.markdown("🛰️ **Estado:** Constelación Global Activa")
         osiris_url = (
             "https://osirisai.live/?"
             "lat=-33.7320&lon=-70.7300&zoom=10.00&"
@@ -112,11 +115,59 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
             "wind_controls,rain_controls,gdelt_events"
         )
         st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
-    elif "Financiero" in modulo_seleccionado:
+    
+    elif "Control Financiero" in modulo_seleccionado:
         st.markdown("💵 **USD/CLP:** $945.50")
         st.markdown("💶 **EUR/CLP:** $1,020.30")
-    else:
-        st.markdown(f"🟢 **Estado:** {modulo_seleccionado} en línea y sincronizado con Buin.")
+        st.markdown("📈 **Tendencia:** Estable")
+    
+    elif "Ojos Digitales" in modulo_seleccionado:
+        st.markdown("👁️ **Feeds CCTV:** 4 Cámaras activas")
+        st.markdown("🔒 **Seguridad Perimetral:** Sin anomalías")
+    
+    elif "Buscador Web" in modulo_seleccionado:
+        st.markdown("🔍 **Motor de Red:** Conectado")
+        st.markdown("🌐 **IP Node:** Encriptada (Buin)")
+    
+    elif "Sintetizador de Voz" in modulo_seleccionado:
+        st.markdown("🎙️ **Motor:** ElevenLabs API")
+        st.markdown("🔊 **Perfil de Audio:** Jarvis (Varonil)")
+    
+    elif "Escucha Permanente" in modulo_seleccionado:
+        st.markdown("🎧 **Micrófono Táctico:** En escucha")
+        st.markdown("⚡ **Trigger:** 'Jarvis'")
+    
+    elif "Memoria Masiva" in modulo_seleccionado:
+        st.markdown("🧠 **Base de Datos:** Sincronizada")
+        st.markdown("💾 **Registros:** 15 Módulos OK")
+    
+    elif "Telemetría Global" in modulo_seleccionado:
+        st.markdown("📡 **Satélites en Órbitas:** 42 activos")
+        st.markdown("📶 **Enlace Starlink:** 120 Mbps")
+    
+    elif "Análisis de Amenazas" in modulo_seleccionado:
+        st.markdown("🛡️ **Escáner Firewall:** Blindado")
+        st.markdown("⚠️ **Alertas en Sector:** 0 detectadas")
+    
+    elif "Protocolo de Emergencia" in modulo_seleccionado:
+        st.markdown("🚨 **Estado de Alerta:** Código Verde")
+        st.markdown("🔒 **Cierre de Búnker:** Standby")
+    
+    elif "Redes Satelitales" in modulo_seleccionado:
+        st.markdown("🌐 **Enlace Constelación:** Órbita Baja")
+        st.markdown("🛰️ **Latencia:** 18ms (Buin)")
+    
+    elif "Diagnóstico de Núcleo" in modulo_seleccionado:
+        st.markdown("⚙️ **CPU Core:** 14% de uso")
+        st.markdown("🔋 **Reactor Arc:** 99.8% Potencia")
+    
+    elif "Encriptación Cuántica" in modulo_seleccionado:
+        st.markdown("🔐 **Algoritmo:** AES-256 Cuántico")
+        st.markdown("🔑 **Túnel Seguro:** Establecido")
+    
+    elif "Modo Protocolo Stark" in modulo_seleccionado:
+        st.markdown("🦾 **Potencia:** Sobrecarga autorizada")
+        st.markdown("⚡ **Acceso Total:** Jefa (Autorizado)")
 
 st.sidebar.markdown("🌍 **Estado Orbital:** Satélites Activos")
 st.sidebar.info("Conexión segura establecida con el nodo central.")
