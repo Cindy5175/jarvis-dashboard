@@ -168,7 +168,7 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA CON CONTENEDOR Y BOTÓN DE PURGA ABAJO
+    # COLUMNA DERECHA: CHAT IA CON CONTENEDOR Y FORMULARIO DE COMANDOS / PURGA
     st.markdown("### 💬 Chat IA")
     
     chat_container = st.container(height=340)
@@ -177,10 +177,17 @@ with col_right:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Entrada de comandos de chat
-    prompt = st.chat_input("Escriba su comando para J.A.R.V.I.S...", key="chat_input_right")
-    
-    if prompt:
+    # Usamos st.form para agrupar la caja de chat y el botón de purga de forma fluida y sin bloqueos
+    with st.form(key="chat_form", clear_on_submit=True):
+        prompt = st.text_input("Escriba su comando para J.A.R.V.I.S...", placeholder="Escriba aquí...")
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            enviar_btn = st.form_submit_button("⚡ Enviar Directiva")
+        with col_btn2:
+            purgar_btn = st.form_submit_button("🗑️ Purgar Chat")
+
+    if enviar_btn and prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         prompt_lower = prompt.lower().strip()
@@ -192,11 +199,8 @@ with col_right:
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
 
-    # Botón de purga de chat situado justo debajo de la caja del chat en la columna derecha
-    col_purge1, col_purge2 = st.columns([1, 1])
-    with col_purge1:
-        if st.button("🗑️ Purgar Chat"):
-            st.session_state.messages = [
-                {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
-            ]
-            st.rerun()
+    if purgar_btn:
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}
+        ]
+        st.rerun()
