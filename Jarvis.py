@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia)
+# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia) + Soporte de Voz Nativa
 st.markdown("""
     <style>
         .main { background-color: #060911; }
@@ -96,13 +96,13 @@ MENSAJE_AUTO_EXTERNOS = (
 if "tareas_todo" not in st.session_state:
     st.session_state.tareas_todo = [
         "Revisar notificaciones de salud / Bci",
-        "Sincronizar llave de ElevenLabs",
-        "Probar módulo de dictado de voz"
+        "Optimizar sistemas de voz nativa",
+        "Probar módulo de comandos en Buin"
     ]
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos integrados y enlace de voz listos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos integrados y síntesis de voz nativa listos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -132,7 +132,7 @@ modulo_seleccionado = st.sidebar.selectbox("Seleccionar Módulo Activo", [
     "🛡️ Blindaje WhatsApp",
     "📧 Alertas Gmail",
     "📋 Tareas & Notas Tácticas",
-    "🎙️ Comandos por Voz",
+    "🎙️ Sintetizador de Voz Nativo",
     "💱 Conversor de Monedas",
     "📌 Marcadores Rápidos",
     "🧠 Memoria Masiva",
@@ -197,34 +197,41 @@ with col_izq:
         st.markdown(f"• `{idx+1}.` {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 3: DICTADO Y COMANDO POR VOZ
+    # MÓDULO 3: SINTETIZADOR DE VOZ NATIVO (SIN LLAVES EXTERNAS)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 🎙️ Módulo 3: Grabador & Sintetizador de Voz")
+    st.markdown("### 🎙️ Módulo 3: Voz Robótica Nativa (Jarvis)")
+    st.caption("Utiliza el sintetizador de voz integrado del sistema con tono masculino.")
     
-    audio_input = st.audio_input("Dictar comando de voz a J.A.R.V.I.S.")
-    if audio_input:
-        st.success("Audio capturado correctamente. Procesando instrucción por voz, jefa...")
+    texto_a_hablar = st.text_area("Texto a reproducir por voz:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin al 100%.", height=68)
     
-    voice_id = st.text_input("Voice ID (ElevenLabs):", value="21m00Tcm4TlvDq8ikWAM")
-    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Todos los sistemas del búnker operan en Buin.", height=68)
-    
-    if st.button("🔊 Probar Síntesis de Voz", use_container_width=True):
-        try:
-            # LLAVE FIJA INTERNA (Sin pedirla a cada rato ni usar secrets.toml externo)
-            api_key = "sk_0ad6fd3611d02842c77732aa608a1b1b238a6ae8f900d5cf"
+    # Botón interactivo con JavaScript nativo para reproducir voz masculina en español
+    hablar_script = f"""
+    <script>
+    function hablarJarvis() {{
+        if ('speechSynthesis' in window) {{
+            var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
+            mensaje.lang = 'es-ES';
+            mensaje.rate = 0.95; // Tono pausado y táctico
+            mensaje.pitch = 0.6; // Tono más grave / varonil
             
-            from elevenlabs.client import ElevenLabs
-            client = ElevenLabs(api_key=api_key)
-            audio_stream = client.text_to_speech.convert(
-                text=texto_a_hablar,
-                voice_id=voice_id,
-                model_id="eleven_multilingual_v2"
-            )
-            audio_bytes = b"".join(audio_stream)
-            st.audio(audio_bytes, format="audio/mp3")
-            st.success("Síntesis generada.")
-        except Exception as e:
-            st.error(f"Error de conexión de voz: {str(e)}")
+            var voces = window.speechSynthesis.getVoices();
+            for(var i = 0; i < voces.length; i++) {{
+                if(voces[i].lang.includes('es') && (voces[i].name.toLowerCase().includes('male') || voces[i].name.toLowerCase().includes('pablo') || voces[i].name.toLowerCase().includes('carlos') || voces[i].name.toLowerCase().includes('latent') || voces[i].name.toLowerCase().includes('google español'))) {{
+                    mensaje.voice = voces[i];
+                    break;
+                }}
+            }}
+            window.speechSynthesis.speak(mensaje);
+        }} else {{
+            alert("Tu navegador no soporta síntesis de voz nativa.");
+        }}
+    }}
+    </script>
+    <button onclick="hablarJarvis()" style="width: 100%; background-color: #0b1120; color: #00d2ff; border: 1.5px solid #00d2ff; padding: 10px; border-radius: 5px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(0,210,255,0.2);">
+        🔊 Reproducir Voz de J.A.R.V.I.S.
+    </button>
+    """
+    st.markdown(hablar_script, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- COLUMNA DERECHA: MÓDULOS 4, 5 Y CHAT DE CONSOLA ---
@@ -240,63 +247,4 @@ with col_der:
         moneda_origen = st.selectbox("De:", ["USD", "EUR"])
     with c_m3:
         tasa = 945.50 if moneda_origen == "USD" else 1020.30
-        st.metric(label=f"Tasa {moneda_origen}/CLP", value=f"${tasa}")
-
-    total_clp = monto * tasa
-    st.markdown(f"💰 **Resultado:** `{monto:.2f} {moneda_origen}` = **`${total_clp:,.2f} CLP`**")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # MÓDULO 5: MARCADORES RÁPIDOS Y NÚCLEO HOLOGRÁFICO
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("### 📌 Módulo 5: Enlaces Rápidos & Globo Holográfico")
-    
-    col_link1, col_link2 = st.columns(2)
-    with col_link1:
-        st.link_button("🌐 Visor Osiris Global", "https://osirisai.live", use_container_width=True)
-        st.link_button("🏥 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-    with col_link2:
-        st.link_button("🏦 Banco Bci Inversiones", "https://www.bci.cl/inversiones", use_container_width=True)
-        st.link_button("🌦️ Meteorología Chile", "https://www.meteochile.gob.cl", use_container_width=True)
-
-    st.markdown("""
-        <div class="globe-container" style="margin-top: 10px;">
-            <div class="orbit"></div>
-            <div class="globe"></div>
-        </div>
-        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 6px;">
-            BUIN OK — NODO GEOGRÁFICO -33.73° S / -70.73° W
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # CONSOLA DE CHAT IA E INTERACCIÓN
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    c_h1, c_h2 = st.columns([3, 1])
-    with c_h1:
-        st.markdown("### 💬 Consola de Chat J.A.R.V.I.S.")
-    with c_h2:
-        if st.button("🗑️ Purgar", use_container_width=True):
-            st.session_state.mensajes = [
-                {"role": "assistant", "content": f"Memoria de chat purgada, jefa. {saludo_tiempo}. Consola lista en Buin."}
-            ]
-            st.rerun()
-
-    chat_box = st.container(height=230)
-    with chat_box:
-        for m in st.session_state.mensajes:
-            with st.chat_message(m["role"]):
-                st.write(m["content"])
-
-    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-        st.session_state.mensajes.append({"role": "user", "content": p})
-        p_low = p.lower()
-        if "despierto" in p_low or "estás ahí" in p_low:
-            resp = "Para usted, señorita, siempre."
-        elif "hola" in p_low or "buenas" in p_low:
-            resp = f"{saludo_tiempo}, jefa. Todos los 5 módulos operan en perfecta armonía."
-        else:
-            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
-        
-        st.session_state.mensajes.append({"role": "assistant", "content": resp})
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(label=f"Tasa {mon
