@@ -280,4 +280,5 @@ with col_der:
         else:
             respuesta_jarvis = f"Para usted, jefa, siempre. Procesado con órbita Starlink en Buin. Directiva '{prompt}' comprendida y en ejecución."
         
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
+        st.rerun()
