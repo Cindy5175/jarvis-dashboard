@@ -28,13 +28,6 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
         margin-bottom: 12px;
     }
-    /* Estilo para fijar la caja del chat abajo en su columna */
-    .chat-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        min-height: 400px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -175,21 +168,22 @@ with col_left:
     )
 
 with col_right:
-    # COLUMNA DERECHA: CHAT IA (CON CONTENEDOR FLEXIBLE PARA LA CAJA DE COMANDOS ABAJO)
+    # COLUMNA DERECHA: CHAT IA CON CAJA DE COMANDOS FIJA AL FINAL
     st.markdown("### 💬 Chat IA")
     
-    chat_container = st.container()
+    # Contenedor para el historial de mensajes
+    chat_container = st.container(height=380)
     with chat_container:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Caja de entrada de comandos situada exactamente al fondo de la columna derecha
-    if prompt := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+    # Entrada de comandos ubicada inmediatamente debajo del historial en la columna derecha
+    prompt = st.chat_input("Escriba su comando para J.A.R.V.I.S...", key="chat_input_right")
+    
+    if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
+        
         prompt_lower = prompt.lower().strip()
         if "estás despierto" in prompt_lower or "estas despierto" in prompt_lower:
             response = "para Ud señorita siempre"
@@ -197,5 +191,4 @@ with col_right:
             response = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{prompt}' comprendida y ejecutada."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
-        with st.chat_message("assistant"):
-            st.markdown(response)
+        st.rerun()
