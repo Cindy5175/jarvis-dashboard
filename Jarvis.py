@@ -2,38 +2,67 @@ import streamlit as st
 
 # Configuración de página con diseño extendido
 st.set_page_config(
-    page_title="JARVIS Control Center", 
+    page_title="J.A.R.V.I.S IA - Stark Industries", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark Industries (Oscuro y Neón)
+# Estilo visual de alta tecnología (Arc Reactor & Neón)
 st.markdown("""
     <style>
         .main { background-color: #05070b; }
         h1, h2, h3 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label { color: #00d2ff !important; font-weight: bold; }
+        
+        /* Botones de acción táctica */
         div.stButton > button {
             background: linear-gradient(45deg, #0072ff, #00d2ff);
             color: white;
             font-weight: bold;
             border: none;
             border-radius: 8px;
-            padding: 0.75rem 1rem;
+            padding: 0.6rem 1rem;
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            width: 100%;
         }
         div.stButton > button:hover {
             background: linear-gradient(45deg, #00d2ff, #0072ff);
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
         }
+        
+        /* Contenedor estilo panel de chat */
+        .chat-container {
+            background-color: #0f1626;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# --- CABECERA PRINCIPAL ---
-st.title("▲ JARVIS CONTROL CENTER")
-st.caption("Sector: Buin, Chile [-33.7320° S, -70.7300° W] | Estado del Sistema: Óptimo")
+# --- ENCABEZADO TÁCTICO CON LOGO TRIÁNGULO ARC REACTOR ---
+col_logo, col_titulo = st.columns([1, 6])
 
-# --- BARRA LATERAL: 15 MÓDULOS Y GLOBO TÁCTICO ---
+with col_logo:
+    # Representación visual del Arc Reactor triangular
+    st.markdown("""
+        <div style="display: flex; justify-content: center; align-items: center; height: 70px;">
+            <svg width="60" height="60" viewBox="0 0 100 100">
+              <polygon points="50,10 90,90 10,90" fill="none" stroke="#00d2ff" stroke-width="6" style="filter: drop-shadow(0 0 8px #00d2ff);" />
+              <polygon points="50,30 75,80 25,80" fill="rgba(0, 210, 255, 0.2)" stroke="#00d2ff" stroke-width="2" />
+              <circle cx="50" cy="60" r="10" fill="#00d2ff" style="filter: drop-shadow(0 id=0 0 10px #fff);" />
+            </svg>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_titulo:
+    st.markdown("<h1 style='margin: 0; padding-top: 10px;'>J.A.R.V.I.S IA</h1>", unsafe_allow_html=True)
+    st.caption("Sector: Buin, Chile [-33.7320° S, -70.7300° W] | Estado del Sistema: Óptimo")
+
+st.divider()
+
+# --- BARRA LATERAL: 15 MÓDULOS Y ESTACIÓN TÁCTICA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN TÁCTICA")
 modulo_seleccionado = st.sidebar.selectbox(
     "Seleccionar Módulo del Sistema",
@@ -56,18 +85,16 @@ modulo_seleccionado = st.sidebar.selectbox(
     ]
 )
 
-# Indicador visual del globo giratorio en la barra lateral
 st.sidebar.markdown("---")
-st.sidebar.markdown("🌍 **Estado Orbital:** Satélites Activos en Órbita Baja")
+st.sidebar.markdown("🌍 **Estado Orbital:** Satélites Activos")
 st.sidebar.info("Conexión segura establecida con el nodo central en Buin.")
 
 # --- LÓGICA DE MÓDULOS ---
 
 if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
     st.subheader("🛰️ Módulo 01: Ojo de Dios (Centro de Monitoreo Global)")
-    st.write("El servidor externo de Osiris requiere apertura directa para evitar bloqueos de seguridad en contenedores internos.")
+    st.write("Acceso directo a la plataforma táctica global con todas las capas de telemetría activas.")
     
-    # URL definitiva con todas las capas configuradas y centrada en Buin
     osiris_url = (
         "https://osirisai.live/?"
         "lat=-33.7320&lon=-70.7300&zoom=10.00&"
@@ -77,44 +104,55 @@ if modulo_seleccionado == "01. Ojo de Dios (Osiris Tactical)":
         "wind_controls,rain_controls,gdelt_events"
     )
     
-    # Botón de lanzamiento táctico de alta visibilidad
-    st.link_button("🚀 LANZAR CENTRO DE MANDO OSIRIS (Pantalla Completa)", osiris_url, use_container_width=True)
-    st.success("Haga clic en el botón superior para desplegar el mapa global con todas las capas de telemetría militar, marítima y sísmica en una nueva pestaña.")
+    st.link_button("🚀 LANZAR CENTRO DE MANDO OSIRIS (Pantalla Completa)", osiris_url)
+    st.success("Haga clic para desplegar el mapa global en una nueva pestaña sin restricciones de seguridad.")
 
 elif modulo_seleccionado == "02. Ojos Digitales":
     st.subheader("👁️ Módulo 02: Ojos Digitales")
-    st.info("Cámaras de vigilancia y feeds de video activos.")
+    st.info("Cámaras de vigilancia y feeds en línea.")
 
 elif modulo_seleccionado == "03. Clima de Buin":
     st.subheader("🌤️ Módulo 03: Clima de Buin")
-    st.info("Monitoreo atmosférico y métricas meteorológicas locales.")
+    st.info("Monitoreo atmosférico local activo.")
 
 elif modulo_seleccionado == "05. Sintetizador de Voz (ElevenLabs)":
     st.subheader("🎙️ Módulo 05: Sintetizador de Voz")
-    st.info("Configuración de credenciales API para la voz varonil de Jarvis.")
+    st.info("Configuración de credenciales API para la voz varonil.")
 
 else:
     st.subheader(f"⚙️ {modulo_seleccionado}")
-    st.info("Módulo operativo en línea y listo para recibir comandos.")
+    st.info("Módulo operativo en línea.")
 
-# --- CAJA DE CHAT 💬 CON JARVIS ---
+# --- CAJA DE CHAT TÁCTICA ---
 st.divider()
-st.subheader("💬 Interfaz de Conversación Táctica")
+st.markdown("### 💬 Chat IA")
 
-# Historial de chat simple en Streamlit
 if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [{"role": "assistant", "content": "Para usted, jefa, siempre. ¿Qué comandos ejecutamos hoy desde el búnker?"}]
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": "Para usted, jefa, siempre. Sistema de comunicaciones restablecido en Buin."}
+    ]
 
-for msg in st.session_state.mensajes:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+# Contenedor visual del chat
+with st.container():
+    for msg in st.session_state.mensajes:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-if prompt := st.chat_input("Escriba una orden para Jarvis..."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    
-    respuesta_jarvis = f"Para usted, jefa, siempre. Analizando su solicitud sobre '{prompt}' con los sistemas al 100%."
+# Entrada de comandos optimizada con botones de control
+with st.form(key="form_chat", clear_on_submit=True):
+    user_input = st.text_input("Escriba su comando para J.A.R.V.I.S...", placeholder="Escriba aquí...")
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        submit_chat = st.form_submit_button("⚡ Enviar Directiva")
+    with col_btn2:
+        purgar_chat = st.form_submit_button("🗑️ Purgar Chat")
+
+if purgar_chat:
+    st.session_state.mensajes = [{"role": "assistant", "content": "Memoria de chat purgada, jefa. Sistema de comunicaciones restablecido en Buin."}]
+    st.rerun()
+
+if submit_chat and user_input:
+    st.session_state.mensajes.append({"role": "user", "content": user_input})
+    respuesta_jarvis = f"Procesado con órbita Starlink en Buin, jefa. Directiva '{user_input}' comprendida y ejecutada."
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_jarvis})
-    with st.chat_message("assistant"):
-        st.markdown(respuesta_jarvis)
+    st.rerun()
