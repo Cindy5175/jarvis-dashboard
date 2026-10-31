@@ -133,8 +133,8 @@ with st.sidebar.expander("📊 ESTADO OPERATIVO DE MÓDULOS", expanded=True):
         st.link_button("🚀 Lanzar Osiris Full", osiris_url, use_container_width=True)
 
     elif "Perspectiva de Dios" in modulo_seleccionado:
-        st.markdown("🌍 **Motor 3D:** Pinokio / God's Eye[span_0](start_span)[span_0](end_span)")
-        st.markdown("📌 **Acceso:** Repositorio Oficial[span_1](start_span)[span_1](end_span)")
+        st.markdown("🌍 **Motor 3D:** Pinokio / God's Eye")
+        st.markdown("📌 **Acceso:** Repositorio Oficial")
         st.link_button("🌐 Abrir God's Eye View", "https://github.com/bilawalsidhu/gods-eye-view", use_container_width=True)
     
     elif "Sintetizador de Voz" in modulo_seleccionado:
