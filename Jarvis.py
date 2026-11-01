@@ -78,7 +78,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- PERSISTENCIA DE TAREAS (MÓDULO 2) ---
+# --- PERSISTENCIA DE TAREAS ---
 ARCHIVO_TAREAS = "tareas_bunker.json"
 
 def cargar_tareas():
@@ -99,7 +99,7 @@ def guardar_tareas(lista_tareas):
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Cerebro expandido con 4 nuevos núcleos operativos. ¿Qué ordenamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz purgada de numeración y optimizada. ¿Qué ordenamos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -110,7 +110,7 @@ st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
-        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE // EXPANDED CORE ]</p>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
     </div>
 """, unsafe_allow_html=True)
 st.markdown("---")
@@ -122,7 +122,6 @@ with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
     st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
 
-# MÓDULO 2: TAREAS CON PERSISTENCIA
 with st.sidebar.expander("📝 Tareas del Búnker (Persistentes)"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
     if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
@@ -147,26 +146,21 @@ with st.sidebar.expander("🌐 Nodo Global"):
 with st.sidebar.expander("🔋 Telemetría"):
     st.markdown("• **Reactor:** 99.8%\n• **Enlace Starlink:** Estable")
 
-# MÓDULO 1: SENSORES METEOROLÓGICOS REALES (API EN VIVO)
 with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
-    # Simulación o consulta de API meteorológica en tiempo real
-    clima_estado = "Despejado / Estable"
-    temp_actual = "21°C"
-    humedad = "45%"
-    st.markdown(f"• **Condición:** {clima_estado}\n• **Temperatura:** {temp_actual}\n• **Humedad Relativa:** {humedad}")
+    st.markdown("• **Condición:** Despejado / Estable\n• **Temperatura:** 21°C\n• **Humedad Relativa:** 45%")
     if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
         st.success("Telemetría meteorológica sincronizada.")
 
-# --- LOS 6 NÚCLEOS INTERACTIVOS DEL CEREBRO ---
+# --- NÚCLEOS DEL CEREBRO (SIN NÚMEROS) ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
-with st.sidebar.expander("1. Conexión de IA Avanzada"):
+with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
     st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
-with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
+with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
     url_input = st.text_input("URL o término a explorar:")
     if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
         st.info(f"Analizando nodo web: {url_input}...")
@@ -178,24 +172,23 @@ with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
         st.success(f"Consultando registros para: '{uc_query}'...")
     st.link_button("🌐 Abrir Portal Clínico UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
-with st.sidebar.expander("3. Sensores Meteorológicos"):
+with st.sidebar.expander("📡 Sensores Meteorológicos"):
     st.markdown("Red de radares Buin en línea y operativa.")
 
-with st.sidebar.expander("4. Análisis de Documentos"):
+with st.sidebar.expander("📄 Análisis de Documentos"):
     archivo_cargado = st.file_uploader("Cargar documento (PDF/CSV/TXT):", type=["pdf", "csv", "txt"])
     if archivo_cargado:
         st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
 
-with st.sidebar.expander("5. Módulo de Voz IA"):
+with st.sidebar.expander("🎙️ Módulo de Voz IA"):
     voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
     st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
 
-with st.sidebar.expander("6. Automatización Python"):
+with st.sidebar.expander("⚡ Automatización Python"):
     codigo_script = st.text_area("Código Python a ejecutar en vivo:", "print('Núcleo OK')")
     if st.button("⚡ Ejecutar Script", use_container_width=True):
         st.code("Respuesta: Núcleo OK", language="bash")
 
-# MÓDULO 4: CENTRO DE ENLACES RÁPIDOS PERSONALIZADOS
 with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
     st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
     st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
@@ -230,7 +223,7 @@ st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace sa
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- PANEL DE CHAT IA & MÓDULO 3 (ANÁLISIS VISUAL POR IA) ---
+# --- PANEL DE CHAT IA & ANÁLISIS VISUAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -244,7 +237,6 @@ with col_h2:
         ]
         st.rerun()
 
-# MÓDULO 3: ESCANEO Y ANÁLISIS DE ENTORNO POR CÁMARA
 activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
 if activar_camara_directa:
     foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
