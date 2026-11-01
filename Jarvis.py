@@ -308,23 +308,4 @@ with col_centro:
         st.caption("International Space Station ISS Live 24/7 🌍 Earth from Space")
     with tab_aurora:
         st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
-        st.caption("Aurora Across the Night Side 🌌 ISS Views | LIVE 24/7")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial & Transmisión", value=False, key="toggle_cam_central")
-    if activar_camara_directa:
-        st.success("🟢 Transmisión de seguridad activa y enlace con cámaras operando.")
-        foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
-        if foto_camara:
-            st.success("Fotograma capturado con éxito. Análisis completado sin observaciones.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    cc1, cc2 = st.columns([4, 1])
-    with cc1:
-        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
-    with cc2:
-        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
-            h_limp = datetime.datetime.now(tz_chile).hour
-            s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes"
+        st.caption("Aurora Across the
