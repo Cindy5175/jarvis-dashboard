@@ -199,20 +199,27 @@ with col_izq:
 # COLUMNA CENTRAL: OJO DE DIOS, ISS, CÁMARA & CHAT
 # ==========================================
 with col_centro:
-    # Módulo Satelital e ISS
+    # Módulo Satelital & Telemetría ISS con Pestañas
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre, auroras en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
     
-    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Satelital", "🌍 Enlace ISS en Vivo"])
+    tab_ojo, tab_iss, tab_aurora = st.tabs(["🗺️ Mapa Satelital", "🌍 ISS Diurno", "🌌 Auroras ISS"])
+    
     with tab_ojo:
         st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    
     with tab_iss:
         st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
         st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
+        
+    with tab_aurora:
+        st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
+        st.caption("Aurora Across the Night Side 🌌 ISS Views | LIVE 24/7")
+        
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Tarjeta de Control y Activación de Cámaras (El botón que faltaba)
+    # Tarjeta de Control y Activación de Cámaras
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial & Transmisión", value=False, key="toggle_cam_central")
     if activar_camara_directa:
