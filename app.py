@@ -65,18 +65,6 @@ st.markdown("""
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* Consola de telemetría inferior */
-        .tactical-console {
-            font-family: 'Courier New', monospace;
-            background-color: #0b1120;
-            border: 1px solid #00d2ff;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.78rem;
-            color: #00d2ff;
-            margin-top: 10px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -170,38 +158,7 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. SINTETIZADOR DE VOZ NATIVO
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>', unsafe_allow_html=True)
-    st.caption("Emisión de comandos con tono de voz grave y profundo.")
-    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
-    
-    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
-        js_voz = f"""
-        <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            var utterance = new SpeechSynthesisUtterance("{texto_a_hablar}");
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.90;
-            utterance.pitch = 0.1;
-            var voices = window.speechSynthesis.getVoices();
-            for(var i = 0; i < voices.length; i++) {{
-                var name = voices[i].name.toLowerCase();
-                if(voices[i].lang.includes('es') && (name.includes('male') || name.includes('pablo') || name.includes('carlos') || name.includes('alberto') || name.includes('raul') || name.includes('diego'))) {{
-                    utterance.voice = voices[i];
-                    break;
-                }}
-            }}
-            window.speechSynthesis.speak(utterance);
-        }}
-        </script>
-        """
-        st.components.v1.html(js_voz, height=0)
-        st.success("Comando de voz emitido.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 5. CONVERSOR DE MONEDAS
+    # 4. CONVERSOR DE MONEDAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Conversor de Monedas</div>', unsafe_allow_html=True)
     st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
@@ -215,7 +172,7 @@ with col_izq:
     st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 6. TELEMETRÍA GLOBAL Y SENSORES
+    # 5. TELEMETRÍA GLOBAL Y SENSORES
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
     st.caption("Monitoreo de estado de conexiones y satélites.")
