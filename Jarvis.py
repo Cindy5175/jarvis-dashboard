@@ -108,13 +108,17 @@ with chat_box:
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    # Respuestas con fluidez, empatía y toque humano
+    # Respuestas con fluidez, empatía y toque humano corregidas
     p_low = prompt_usuario.lower()
-    if any(palabra in p_low for in ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]):
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada"]
+
+    if any(p in p_low for p in palabras_saludo):
         respuesta = f"¡Hola de nuevo, jefa! Qué gusto leerla. ¿Cómo va todo por ahí?"
-    elif any(palabra in p_low for in ["gracias", "excelente", "buena"]):
+    elif any(p in p_low for p in palabras_gracias):
         respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
-    elif any(palabra in p_low for in ["cansada", "sueño", "agotada"]):
+    elif any(p in p_low for p in palabras_cansancio):
         respuesta = f"Le entiendo perfectamente, jefa. Ha tenido unos días intensos y de alto movimiento. No olvide descansar un poquito cuando pueda."
     else:
         respuesta = f"Entendido perfectamente, jefa. Me pongo con eso de inmediato para dejárselo resuelto."
