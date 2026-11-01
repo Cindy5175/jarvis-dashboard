@@ -11,7 +11,7 @@ import contextlib
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Ocultamos la barra clásica para usar nuestro diseño simétrico
+    initial_sidebar_state="collapsed"
 )
 
 # --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
@@ -93,14 +93,14 @@ def init_db():
     
     c.execute("SELECT COUNT(*) FROM tareas")
     if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Revisar exámenes médicos y electrolitos (Sodio/Potasio)",))
         c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
         conn.commit()
         
     c.execute("SELECT COUNT(*) FROM alertas")
     if c.fetchone()[0] == 0:
         c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK"))
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje de Familia y Zona Médica ACTIVO", "OK"))
         conn.commit()
     conn.close()
 
@@ -138,7 +138,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz simétrica de 3 columnas activada. ¿Qué ordenamos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje médico y familiar. ¿Qué ordenamos hoy?"}
     ]
 
 # --- ENCABEZADO CENTRADO CON REACTOR ARC ---
@@ -151,7 +151,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS (5 MÓDULOS IZQ, CENTRO CHAT, 5 MÓDULOS DER) ---
+# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
 col_izq, col_centro, col_der = st.columns([1.2, 2.2, 1.2])
 
 # ==========================================
@@ -162,8 +162,9 @@ with col_izq:
     
     # Módulo 1
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **WhatsApp:** Activo (Seguro)")
-        st.markdown("• **Gmail:** Sincronizado (UC Christus)")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
     # Módulo 2
     with st.expander("🔔 Alertas del Búnker"):
@@ -250,12 +251,14 @@ with col_centro:
         p_low = prompt_usuario.lower()
         if any(p in p_low for p in ["hola", "saludos", "buenos días", "buenas tardes"]):
             respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%. ¿Qué ordenamos hoy?"
+        elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
+            respuesta = f"Analizando registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L (ambos en rangos normales). Su carpeta médica se encuentra segura y sin alteraciones."
         else:
             respuesta = f"Entendido, jefa. Procesando órdenes en el núcleo central..."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         
-        voz_activa = True  # Mantener activo por defecto en columna central
+        voz_activa = True
         if voz_activa:
             clean_resp = respuesta.replace('"', '').replace("'", "")
             st.markdown(f"""
@@ -284,16 +287,15 @@ with col_der:
 
     # Módulo 7
     with st.expander("📬 Auditoría de Correo IA", expanded=True):
-        st.markdown("Análisis autónomo de bandeja de entrada.")
+        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
         if st.button("🔍 Auditar Correos del Día", use_container_width=True):
             st.success("¡Auditoría táctica completada!")
             st.markdown("**📂 Reportes Destacados:**")
             st.markdown("• **BancoEstado:** Transferencia recibida de $25.000.")
-            st.markdown("• **FamilySearch:** Alerta de registro familiar.")
-            st.markdown("• **Ventusky:** Confirmación de alta.")
+            st.markdown("• **UC Christus:** Cita y resultados médicos resguardados.")
             
-        if st.button("🧹 Limpiar Spam / Basura", use_container_width=True):
-            st.warning("Se han archivado 4 correos de spam.")
+        if st.button("🧹 Limpiar Spam (Bandeja Segura)", use_container_width=True):
+            st.warning("Se han archivado 4 correos de spam comercial. Zona familiar e historial médico intactos.")
 
     # Módulo 8
     with st.expander("🔍 Búsqueda y Web en Vivo"):
@@ -309,15 +311,22 @@ with col_der:
 
     # Módulo 9
     with st.expander("📄 Documentos & Sensores"):
-        archivo_cargado = st.file_uploader("Cargar documento:", type=["pdf", "csv", "txt"])
+        archivo_cargado = st.file_uploader("Cargar documento clínico/examen:", type=["pdf", "csv", "txt"])
         if archivo_cargado:
-            st.success(f"Archivo '{archivo_cargado.name}' listo.")
+            st.success(f"Archivo '{archivo_cargado.name}' integrado a la base médica.")
         st.markdown("Radares Buin operativos.")
 
-    # Módulo 10
-    with st.expander("🔗 Accesos & Cámaras"):
+    # Módulo 10: Estación Cartográfica & Cámaras (Con los 8 visores)
+    with st.expander("🗺️ Estación Cartográfica & Cámaras"):
         camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
         st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
-        st.link_button("📈 Mercado Libre", "https://www.mercadolibre.cl", use_container_width=True)
-        st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
-        st.link_button("🌤️ Ventusky Map", "https://www.ventusky.com", use_container_width=True)
+        st.markdown("---")
+        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
+        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
+        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
+        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
+        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
+        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
