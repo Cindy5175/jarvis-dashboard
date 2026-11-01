@@ -3,9 +3,6 @@ import datetime
 import json
 import os
 import sqlite3
-import sys
-import io
-import contextlib
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -14,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
+# --- ESTILOS VISUALES STARK ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -63,7 +60,6 @@ st.markdown("""
             text-align: left !important;
             color: #00d2ff !important;
         }
-
         .stMarkdown, p, li, span, div, .stChatMessage p {
             color: #00d2ff !important;
         }
@@ -81,7 +77,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
+# --- BASE DE DATOS SQLITE ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -151,8 +147,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS (DEFINICIÓN INICIAL OBLIGATORIA) ---
-col_izq, col_centro, col_der = st.columns([1.2, 2.2, 1.2])
+# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
+col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
 
 # ==========================================
 # COLUMNA IZQUIERDA: 5 MÓDULOS DE CONTROL
@@ -160,32 +156,127 @@ col_izq, col_centro, col_der = st.columns([1.2, 2.2, 1.2])
 with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
-    # Módulo 1
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
-        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+        st.markdown("• **Zona Familia:** Blindada")
+        st.markdown("• **Zona Médica:** Protegida")
+        st.markdown("• **Finanzas:** Exclusivo")
 
-    # Módulo 2
     with st.expander("🔔 Alertas del Búnker"):
         alertas_db = get_db_alertas()
         for msg, nivel in alertas_db:
             icono = "🟢" if nivel == "OK" else "ℹ️"
             st.markdown(f"{icono} {msg}")
-        nueva_alerta = st.text_input("Añadir alerta rápida:", key="inp_alerta")
-        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+        nueva_alerta = st.text_input("Añadir alerta:", key="inp_alerta")
+        if st.button("➕ Emitir", use_container_width=True) and nueva_alerta:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
             conn.commit()
             conn.close()
-            st.success("Alerta emitida.")
             st.rerun()
 
-    # Módulo 3
     with st.expander("📝 Tareas del Búnker"):
-        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
-        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+        nueva_tarea = st.text_input("Nueva tarea:", key="inp_tarea")
+        if st.button("➕ Registrar", use_container_width=True) and nueva_tarea:
             add_db_tarea(nueva_tarea)
-            st.success("¡Registrada!")
-            st.rerun
+            st.rerun()
+        for tid, t in get_db_tareas():
+            ct1, ct2 = st.columns([4, 1])
+            with ct1:
+                st.markdown(f"• {t}")
+            with ct2:
+                if st.button("❌", key=f"del_t_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
+
+    with st.expander("🌐 Telemetría Global", expanded=True):
+        st.markdown(f"• **Reactor:** 100%\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Starlink:** Óptimo")
+
+    with st.expander("🌤️ Clima Local (Buin)", expanded=True):
+        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C")
+
+# ==========================================
+# COLUMNA CENTRAL: OJO DE DIOS, ISS & CHAT
+# ==========================================
+with col_centro:
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre en vivo y enlace satelital.</p>", unsafe_allow_html=True)
+    
+    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Satelital", "🌍 Enlace ISS en Vivo"])
+    with tab_ojo:
+        st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    with tab_iss:
+        st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
+        st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
+    with cc2:
+        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
+            h_limp = datetime.datetime.now(tz_chile).hour
+            s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia."}]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        h_prompt = datetime.datetime.now(tz_chile).hour
+        s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+        p_low = prompt_usuario.lower()
+        
+        if any(p in p_low for p in ["hola", "saludos"]):
+            respuesta = f"{s_prompt}, jefa. Sistemas al 100%."
+        elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
+            respuesta = "Registros clínicos blindados: Sodio 143.9 mEq/L, Potasio 4.1 mEq/L (normales)."
+        else:
+            respuesta = "Entendido, jefa. Procesando órdenes..."
+            
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        st.rerun()
+
+# ==========================================
+# COLUMNA DERECHA: 5 MÓDULOS DE CONTROL
+# ==========================================
+with col_der:
+    st.markdown("### ⚡ SECTOR BETA")
+
+    with st.expander("⚙️ IA Avanzada"):
+        st.selectbox("Modelo:", ["GPT-4o", "Gemini 1.5 Pro"], key="model_select")
+        st.slider("Sarcasmo:", 0, 100, 85)
+
+    with st.expander("📬 Auditoría Correo", expanded=True):
+        st.markdown("Barrido inteligente activo.")
+        if st.button("🔍 Auditar", use_container_width=True):
+            st.success("Auditoría completada.")
+        if st.button("🧹 Limpiar Spam", use_container_width=True):
+            st.warning("Spam archivado. Zona médica y familiar intactas.")
+
+    with st.expander("🔍 Búsqueda Web"):
+        url_input = st.text_input("Término a explorar:", key="inp_url")
+        if st.button("🔍 Escanear", use_container_width=True) and url_input:
+            st.info(f"Analizando: {url_input}")
+        st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+
+    with st.expander("📄 Documentos"):
+        st.file_uploader("Cargar examen:", type=["pdf", "csv", "txt"])
+
+    with st.expander("🗺️ Estación Cartográfica"):
+        st.markdown("**🌐 Arsenal Cartográfico:**")
+        st.link_button("☀️ 01. SunCalc", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
+        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
+        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
+        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
+        st.link_button("🤖 08. Aino (IA)", "https://www.aino.world", use_container_width=True)
