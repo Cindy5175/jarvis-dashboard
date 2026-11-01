@@ -11,7 +11,7 @@ import contextlib
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Ocultamos la barra clásica para usar nuestro diseño simétrico
 )
 
 # --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
@@ -138,7 +138,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas de correo y búnker sincronizados. ¿Qué ordenamos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz simétrica de 3 columnas activada. ¿Qué ordenamos hoy?"}
     ]
 
 # --- ENCABEZADO CENTRADO CON REACTOR ARC ---
@@ -151,175 +151,173 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL ---
-st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS (5 MÓDULOS IZQ, CENTRO CHAT, 5 MÓDULOS DER) ---
+col_izq, col_centro, col_der = st.columns([1.2, 2.2, 1.2])
 
-with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
-    st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
-    st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
+# ==========================================
+# COLUMNA IZQUIERDA: 5 MÓDULOS DE CONTROL
+# ==========================================
+with col_izq:
+    st.markdown("### 🌐 SECTOR ALPHA")
+    
+    # Módulo 1
+    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
+        st.markdown("• **WhatsApp:** Activo (Seguro)")
+        st.markdown("• **Gmail:** Sincronizado (UC Christus)")
 
-with st.sidebar.expander("🔔 Alertas del Búnker"):
-    alertas_db = get_db_alertas()
-    for msg, nivel in alertas_db:
-        icono = "🟢" if nivel == "OK" else "ℹ️"
-        st.markdown(f"{icono} {msg}")
-    nueva_alerta = st.text_input("Añadir alerta rápida:")
-    if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
-        conn.commit()
-        conn.close()
-        st.success("Alerta emitida.")
-        st.rerun()
+    # Módulo 2
+    with st.expander("🔔 Alertas del Búnker"):
+        alertas_db = get_db_alertas()
+        for msg, nivel in alertas_db:
+            icono = "🟢" if nivel == "OK" else "ℹ️"
+            st.markdown(f"{icono} {msg}")
+        nueva_alerta = st.text_input("Añadir alerta rápida:", key="inp_alerta")
+        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+            conn.commit()
+            conn.close()
+            st.success("Alerta emitida.")
+            st.rerun()
 
-with st.sidebar.expander("📝 Tareas del Búnker"):
-    nueva_tarea = st.text_input("Nueva tarea rápida:")
-    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-        add_db_tarea(nueva_tarea)
-        st.success("¡Registrada!")
-        st.rerun()
-    st.markdown("**Pendientes:**")
-    for tid, t in get_db_tareas():
-        col_t1, col_t2 = st.columns([4, 1])
-        with col_t1:
-            st.markdown(f"• {t}")
-        with col_t2:
-            if st.button("❌", key=f"del_t_{tid}"):
-                delete_db_tarea(tid)
-                st.rerun()
+    # Módulo 3
+    with st.expander("📝 Tareas del Búnker"):
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.success("¡Registrada!")
+            st.rerun()
+        st.markdown("**Pendientes:**")
+        for tid, t in get_db_tareas():
+            ct1, ct2 = st.columns([4, 1])
+            with ct1:
+                st.markdown(f"• {t}")
+            with ct2:
+                if st.button("❌", key=f"del_t_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
 
-with st.sidebar.expander("🌐 Telemetría Global", expanded=True):
-    st.markdown(f"• **Reactor:** 100% stable\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Día:** {datetime.datetime.now(tz_chile).strftime('%d/%m')}\n• **Starlink:** Óptimo")
+    # Módulo 4
+    with st.expander("🌐 Telemetría Global", expanded=True):
+        st.markdown(f"• **Reactor:** 100% stable\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Día:** {datetime.datetime.now(tz_chile).strftime('%d/%m')}\n• **Starlink:** Óptimo")
 
-with st.sidebar.expander("🌤️ Clima Local (Buin)", expanded=True):
-    st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
+    # Módulo 5
+    with st.expander("🌤️ Clima Local (Buin)", expanded=True):
+        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
-# --- NÚCLEOS DE CEREBRO STARK (A LA IZQUIERDA) ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
+# ==========================================
+# COLUMNA CENTRAL: OJO DE DIOS, CHAT & NÚCLEO
+# ==========================================
+with col_centro:
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con Buin.</p>", unsafe_allow_html=True)
+    st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
-    st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
-    sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
-    st.caption(f"Nivel de ironía actual: {sarcasmo}%")
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
+    with cc2:
+        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
+            h_limpieza = datetime.datetime.now(tz_chile).hour
+            s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria limpia y lista."}
+            ]
+            st.rerun()
 
-# --- MÓDULO INTELIGENTE: AUDITORÍA Y BARRIDO DE CORREO ---
-with st.sidebar.expander("📬 Auditoría de Correo IA", expanded=True):
-    st.markdown("Análisis autónomo de bandeja de entrada en tiempo real.")
-    if st.button("🔍 Auditar Correos del Día", use_container_width=True):
-        st.success("¡Auditoría táctica completada!")
-        st.markdown("**📂 Reportes Destacados (Importantes):**")
-        st.markdown("• **BancoEstado:** Transferencia recibida de $25.000.")
-        st.markdown("• **FamilySearch:** Alerta de posible registro histórico familiar.")
-        st.markdown("• **Ventusky:** Confirmación de alta en plataforma.")
+    activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
+    if activar_camara_directa:
+        foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+        if foto_camara:
+            st.success("Fotograma capturado con éxito. Análisis completado sin observaciones.")
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         
-    if st.button("🧹 Limpiar Spam / Basura", use_container_width=True):
-        st.warning("Se han archivado 4 correos promocionales y de spam. Bandeja optimizada.")
+        h_prompt = datetime.datetime.now(tz_chile).hour
+        s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
 
-with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
-    url_input = st.text_input("URL o término a explorar:")
-    if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
-        st.info(f"Analizando nodo web: {url_input}...")
-    st.markdown("---")
-    st.markdown("**🏥 Portal UC Christus:**")
-    uc_query = st.text_input("Buscar cita / médico:")
-    if st.button("🩺 Consultar UC", use_container_width=True):
-        st.success(f"Consultando registros: '{uc_query}'...")
-    st.link_button("🌐 Abrir Portal UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
+        p_low = prompt_usuario.lower()
+        if any(p in p_low for p in ["hola", "saludos", "buenos días", "buenas tardes"]):
+            respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%. ¿Qué ordenamos hoy?"
+        else:
+            respuesta = f"Entendido, jefa. Procesando órdenes en el núcleo central..."
 
-with st.sidebar.expander("📡 Sensores Meteorológicos"):
-    st.markdown("Radares Buin operativos.")
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        
+        voz_activa = True  # Mantener activo por defecto en columna central
+        if voz_activa:
+            clean_resp = respuesta.replace('"', '').replace("'", "")
+            st.markdown(f"""
+                <script>
+                    const synth = window.speechSynthesis;
+                    const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                    utterThis.lang = 'es-CL';
+                    utterThis.rate = 1.0;
+                    synth.speak(utterThis);
+                </script>
+            """, unsafe_allow_html=True)
 
-with st.sidebar.expander("📄 Análisis de Documentos"):
-    archivo_cargado = st.file_uploader("Cargar documento:", type=["pdf", "csv", "txt"])
-    if archivo_cargado:
-        st.success(f"Archivo '{archivo_cargado.name}' listo.")
-
-with st.sidebar.expander("🎙️ Módulo de Voz IA"):
-    voz_activa = st.checkbox("Activar respuesta hablada", value=True)
-    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Español)", "Voz Táctica Female"])
-
-with st.sidebar.expander("⚡ Automatización Python"):
-    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo OK')")
-    if st.button("⚡ Ejecutar Script", use_container_width=True):
-        buffer_salida = io.StringIO()
-        try:
-            with contextlib.redirect_stdout(buffer_salida):
-                exec(codigo_script, {})
-            resultado_ejecucion = buffer_salida.getvalue()
-            st.code(resultado_ejecucion if resultado_ejecucion else "Ejecutado correctamente sin salida.", language="python")
-        except Exception as e:
-            st.error(f"Error: {e}")
-
-with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
-    st.link_button("📈 Mercado Libre", "https://www.mercadolibre.cl", use_container_width=True)
-    st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
-    st.link_button("🤖 Google AI Studio", "https://aistudio.google.com", use_container_width=True)
-
-with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
-    camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
-    st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
-
-st.sidebar.markdown("---")
-st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
-
-# --- PANEL PRINCIPAL: OJO DE DIOS & CHAT ---
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
-st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con Buin.</p>", unsafe_allow_html=True)
-st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-col_h1, col_h2 = st.columns([4, 1])
-with col_h1:
-    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
-with col_h2:
-    if st.button("🗑️", use_container_width=True):
-        h_limpieza = datetime.datetime.now(tz_chile).hour
-        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
-        st.session_state.mensajes = [
-            {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria limpia y lista."}
-        ]
         st.rerun()
 
-activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
-if activar_camara_directa:
-    foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
-    if foto_camara:
-        st.success("Fotograma capturado con éxito. Análisis completado sin observaciones.")
+# ==========================================
+# COLUMNA DERECHA: 5 MÓDULOS DE CONTROL
+# ==========================================
+with col_der:
+    st.markdown("### ⚡ SECTOR BETA")
 
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+    # Módulo 6
+    with st.expander("⚙️ Conexión de IA Avanzada"):
+        st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+        sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
+        st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
-st.markdown('</div>', unsafe_allow_html=True)
+    # Módulo 7
+    with st.expander("📬 Auditoría de Correo IA", expanded=True):
+        st.markdown("Análisis autónomo de bandeja de entrada.")
+        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
+            st.success("¡Auditoría táctica completada!")
+            st.markdown("**📂 Reportes Destacados:**")
+            st.markdown("• **BancoEstado:** Transferencia recibida de $25.000.")
+            st.markdown("• **FamilySearch:** Alerta de registro familiar.")
+            st.markdown("• **Ventusky:** Confirmación de alta.")
+            
+        if st.button("🧹 Limpiar Spam / Basura", use_container_width=True):
+            st.warning("Se han archivado 4 correos de spam.")
 
-if prompt_usuario := st.chat_input("Escriba su mensaje..."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    h_prompt = datetime.datetime.now(tz_chile).hour
-    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+    # Módulo 8
+    with st.expander("🔍 Búsqueda y Web en Vivo"):
+        url_input = st.text_input("URL o término a explorar:", key="inp_url")
+        if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+            st.info(f"Analizando nodo web: {url_input}...")
+        st.markdown("---")
+        st.markdown("**🏥 Portal UC Christus:**")
+        uc_query = st.text_input("Buscar cita / médico:", key="inp_uc")
+        if st.button("🩺 Consultar UC", use_container_width=True):
+            st.success(f"Consultando registros: '{uc_query}'...")
+        st.link_button("🌐 Abrir Portal UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
-    p_low = prompt_usuario.lower()
-    if any(p in p_low for p in ["hola", "saludos", "buenos días", "buenas tardes"]):
-        respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%. ¿Qué ordenamos hoy?"
-    else:
-        respuesta = f"Entendido, jefa. Procesando órdenes en el núcleo central..."
+    # Módulo 9
+    with st.expander("📄 Documentos & Sensores"):
+        archivo_cargado = st.file_uploader("Cargar documento:", type=["pdf", "csv", "txt"])
+        if archivo_cargado:
+            st.success(f"Archivo '{archivo_cargado.name}' listo.")
+        st.markdown("Radares Buin operativos.")
 
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    
-    if voz_activa:
-        clean_resp = respuesta.replace('"', '').replace("'", "")
-        st.markdown(f"""
-            <script>
-                const synth = window.speechSynthesis;
-                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
-                utterThis.lang = 'es-CL';
-                utterThis.rate = 1.0;
-                synth.speak(utterThis);
-            </script>
-        """, unsafe_allow_html=True)
-
-    st.rerun()
+    # Módulo 10
+    with st.expander("🔗 Accesos & Cámaras"):
+        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.link_button("📈 Mercado Libre", "https://www.mercadolibre.cl", use_container_width=True)
+        st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
+        st.link_button("🌤️ Ventusky Map", "https://www.ventusky.com", use_container_width=True)
