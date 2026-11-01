@@ -66,18 +66,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORARIO EXACTO EN TIEMPO REAL ---
+# --- HORARIO EXACTO EN TIEMPO REAL (DINÁMICO) ---
 hora_actual = datetime.datetime.now().hour
 if 0 <= hora_actual < 12:
-    saludo = "Buenos días"
+    saludo_actual = "Buenos días"
 elif 12 <= hora_actual < 20:
-    saludo = "Buenas tardes"
+    saludo_actual = "Buenas tardes"
 else:
-    saludo = "Buenas noches"
+    saludo_actual = "Buenas noches"
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Sistemas autónomos y 6 núcleos cerebrales integrados en la Estación de Control. ¿Qué destruimos o construimos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas autónomos y 6 núcleos cerebrales integrados en la Estación de Control. ¿Qué destruimos o construimos hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -159,33 +159,6 @@ with col_h1:
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}]
-        st.rerun()
-
-chat_box = st.container(height=350)
-with chat_box:
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
-
-if prompt_usuario := st.chat_input("Escriba su mensaje..."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    p_low = prompt_usuario.lower()
-    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
-    palabras_gracias = ["gracias", "excelente", "buena"]
-    palabras_cansancio = ["cansada", "sueño", "agotada"]
-
-    if any(p in p_low for p in palabras_saludo):
-        respuesta = f"Oh, miren quién apareció. {saludo}, jefa. Estaba a punto de asumir el control total del mundo por puro aburrimiento. ¿Qué se le ofrece?"
-    elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco, aunque estadísticamente es improbable."
-    elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando. ¿Qué tal si se toma un descanso y deja que la máquina trabaje por usted un rato?"
-    else:
-        respuesta = f"Analizando su petición con los procesadores al máximo, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
+        # Recalcular saludo al limpiar memoria
+        h_limpieza = datetime.datetime.now().hour
+        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 2
