@@ -6,17 +6,22 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilo visual Stark
+# Estilo visual Stark con alineación total a la izquierda
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
-        h1, h2, h3, h4 { color: #00d2ff !important; font-family: monospace; }
+        h1, h2, h3, h4 { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
         .stark-card {
             border: 1px solid #00d2ff;
             border-radius: 8px;
             padding: 15px;
             background-color: rgba(0, 210, 255, 0.03);
             margin-bottom: 15px;
+            text-align: left !important;
+        }
+        /* Forzar alineación a la izquierda en los textos internos de las tarjetas */
+        .stark-card p, .stark-card div, .stark-card span {
+            text-align: left !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -24,13 +29,13 @@ st.markdown("""
 # Estado inicial del chat y tareas
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": "Núcleo operativo en Buin activo, jefa. Todos los módulos alineados a la izquierda. ¿Qué orden ejecutamos?"}
+        {"role": "assistant", "content": "Núcleo operativo en Buin activo, jefa. Todos los módulos alineados estrictamente a la izquierda. ¿Qué orden ejecutamos?"}
     ]
 
 if "tareas" not in st.session_state:
     st.session_state.tareas = ["Revisar notificaciones Bci", "Optimizar búnker", "Monitorear Buin"]
 
-# Título Principal
+# Título Principal alineado a la izquierda
 st.markdown("## 🛡️ J.A.R.V.I.S IA - NÚCLEO TÁCTICO")
 st.caption("[ NODO OPERATIVO STARK INDUSTRIES // BUIN, CHILE ]")
 
@@ -41,7 +46,7 @@ st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_c
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- TODOS LOS MÓDULOS EN COLUMNA ÚNICA A LA IZQUIERDA ---
+# --- MÓDULOS EN COLUMNA VERTICAL ÚNICA (ALINEADOS A LA IZQUIERDA) ---
 
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("### 📌 Blindaje WhatsApp & Alertas Gmail")
@@ -62,7 +67,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("### 🌐 Nodo Holográfico Global")
 st.markdown("""
-    <div style="font-family: monospace; color: #00d2ff; font-size: 0.85rem; padding: 5px 0;">
+    <div style="font-family: monospace; color: #00d2ff; font-size: 0.85rem; padding: 5px 0; text-align: left;">
         ESTADO: Órbita estable — COORDENADAS: -33.73° S / -70.73° W (Buin)
     </div>
 """, unsafe_allow_html=True)
