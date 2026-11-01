@@ -157,17 +157,17 @@ with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada")
-        st.markdown("• **Zona Médica:** Protegida")
-        st.markdown("• **Finanzas:** Exclusivo")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
     with st.expander("🔔 Alertas del Búnker"):
         alertas_db = get_db_alertas()
         for msg, nivel in alertas_db:
             icono = "🟢" if nivel == "OK" else "ℹ️"
             st.markdown(f"{icono} {msg}")
-        nueva_alerta = st.text_input("Añadir alerta:", key="inp_alerta")
-        if st.button("➕ Emitir", use_container_width=True) and nueva_alerta:
+        nueva_alerta = st.text_input("Añadir alerta rápida:", key="inp_alerta")
+        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
@@ -176,8 +176,8 @@ with col_izq:
             st.rerun()
 
     with st.expander("📝 Tareas del Búnker"):
-        nueva_tarea = st.text_input("Nueva tarea:", key="inp_tarea")
-        if st.button("➕ Registrar", use_container_width=True) and nueva_tarea:
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
             add_db_tarea(nueva_tarea)
             st.rerun()
         for tid, t in get_db_tareas():
@@ -190,10 +190,10 @@ with col_izq:
                     st.rerun()
 
     with st.expander("🌐 Telemetría Global", expanded=True):
-        st.markdown(f"• **Reactor:** 100%\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Starlink:** Óptimo")
+        st.markdown(f"• **Reactor:** 100% stable\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Starlink:** Óptimo")
 
     with st.expander("🌤️ Clima Local (Buin)", expanded=True):
-        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C")
+        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
 # ==========================================
 # COLUMNA CENTRAL: OJO DE DIOS, ISS & CHAT
@@ -201,7 +201,7 @@ with col_izq:
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre en vivo y enlace satelital.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
     
     tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Satelital", "🌍 Enlace ISS en Vivo"])
     with tab_ojo:
@@ -214,12 +214,12 @@ with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     cc1, cc2 = st.columns([4, 1])
     with cc1:
-        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
     with cc2:
         if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
             h_limp = datetime.datetime.now(tz_chile).hour
             s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia."}]
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia y lista."}]
             st.rerun()
 
     for m in st.session_state.mensajes:
@@ -235,11 +235,11 @@ with col_centro:
         p_low = prompt_usuario.lower()
         
         if any(p in p_low for p in ["hola", "saludos"]):
-            respuesta = f"{s_prompt}, jefa. Sistemas al 100%."
+            respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%."
         elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
-            respuesta = "Registros clínicos blindados: Sodio 143.9 mEq/L, Potasio 4.1 mEq/L (normales)."
+            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L (normales)."
         else:
-            respuesta = "Entendido, jefa. Procesando órdenes..."
+            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
             
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         st.rerun()
@@ -250,33 +250,36 @@ with col_centro:
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
 
-    with st.expander("⚙️ IA Avanzada"):
-        st.selectbox("Modelo:", ["GPT-4o", "Gemini 1.5 Pro"], key="model_select")
-        st.slider("Sarcasmo:", 0, 100, 85)
+    with st.expander("⚙️ Conexión de IA Avanzada"):
+        st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+        st.slider("Nivel de Sarcasmo:", 0, 100, 85)
 
-    with st.expander("📬 Auditoría Correo", expanded=True):
-        st.markdown("Barrido inteligente activo.")
-        if st.button("🔍 Auditar", use_container_width=True):
-            st.success("Auditoría completada.")
-        if st.button("🧹 Limpiar Spam", use_container_width=True):
-            st.warning("Spam archivado. Zona médica y familiar intactas.")
+    with st.expander("📬 Auditoría de Correo IA", expanded=True):
+        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
+        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
+            st.success("¡Auditoría táctica completada!")
+        if st.button("🧹 Limpiar Spam (Bandeja Segura)", use_container_width=True):
+            st.warning("Spam archivado. Zona familiar y médica intactas.")
 
-    with st.expander("🔍 Búsqueda Web"):
-        url_input = st.text_input("Término a explorar:", key="inp_url")
-        if st.button("🔍 Escanear", use_container_width=True) and url_input:
-            st.info(f"Analizando: {url_input}")
+    with st.expander("🔍 Búsqueda y Web en Vivo"):
+        url_input = st.text_input("URL o término a explorar:", key="inp_url")
+        if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+            st.info(f"Analizando nodo web: {url_input}...")
         st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
-    with st.expander("📄 Documentos"):
-        st.file_uploader("Cargar examen:", type=["pdf", "csv", "txt"])
+    with st.expander("📄 Documentos & Sensores"):
+        st.file_uploader("Cargar documento clínico/examen:", type=["pdf", "csv", "txt"])
 
-    with st.expander("🗺️ Estación Cartográfica"):
-        st.markdown("**🌐 Arsenal Cartográfico:**")
-        st.link_button("☀️ 01. SunCalc", "https://www.suncalc.org", use_container_width=True)
+    with st.expander("🗺️ Estación Cartográfica & Cámaras"):
+        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.markdown("---")
+        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
+        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
         st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
         st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
         st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
         st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
         st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
         st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
-        st.link_button("🤖 08. Aino (IA)", "https://www.aino.world", use_container_width=True)
+        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
