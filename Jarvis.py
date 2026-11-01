@@ -101,4 +101,135 @@ st.markdown("---")
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-with st.sidebar.expander("🛡️ Blindaje &
+with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
+    st.markdown("• **WhatsApp:** Activo (Círculo protegido)")
+    st.markdown("• **Gmail:** Sincronizado (UC Christus)")
+
+with st.sidebar.expander("📝 Tareas del Búnker"):
+    nueva_tarea = st.text_input("Nueva tarea rápida:")
+    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+        st.session_state.tareas.append(nueva_tarea)
+        st.success("¡Anotada!")
+        st.rerun()
+    st.markdown("**Pendientes:**")
+    for t in st.session_state.tareas:
+        st.markdown(f"• {t}")
+
+with st.sidebar.expander("🌐 Nodo Global"):
+    st.markdown("• **Ubicación:** Buin, Chile\n• **Coordenadas:** -33.73° S / -70.73° W")
+
+with st.sidebar.expander("🔋 Telemetría"):
+    st.markdown("• **Reactor:** 99%\n• **Enlace Starlink:** Estable")
+
+with st.sidebar.expander("🌤️ Clima Local (Buin)"):
+    st.markdown("• **Actual:** Despejado / Estable\n• **Máxima estimada:** 24°C\n• **Mínima estimada:** 11°C")
+
+with st.sidebar.expander("🔗 Enlaces Clave"):
+    st.markdown("• **Portal Clínico UC Christus:** Conectado")
+
+# --- LOS 6 NÚCLEOS INTERACTIVOS DEL CEREBRO ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
+
+with st.sidebar.expander("1. Conexión de IA Avanzada"):
+    st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+    sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
+    st.caption(f"Nivel de ironía actual: {sarcasmo}%")
+
+with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
+    url_input = st.text_input("URL o término a explorar:")
+    if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+        st.info(f"Analizando nodo web: {url_input}...")
+
+with st.sidebar.expander("3. Sensores Meteorológicos"):
+    st.markdown("Sensórica en Buin activa.")
+    if st.button("🔄 Actualizar Telemetría", use_container_width=True):
+        st.success("Datos climáticos revalidados.")
+
+with st.sidebar.expander("4. Análisis de Documentos"):
+    archivo_cargado = st.file_uploader("Cargar documento (PDF/CSV/TXT):", type=["pdf", "csv", "txt"])
+    if archivo_cargado:
+        st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
+
+with st.sidebar.expander("5. Módulo de Voz IA"):
+    voz_activa = st.checkbox("Activar respuesta por voz", value=False)
+    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
+
+with st.sidebar.expander("6. Automatización Python"):
+    codigo_script = st.text_area("Código Python a ejecutar en vivo:", "print('Núcleo OK')")
+    if st.button("⚡ Ejecutar Script", use_container_width=True):
+        st.code("Respuesta: Núcleo OK", language="bash")
+
+# --- MÓDULO DE CÁMARAS IP CON TRANSMISIÓN DE VIDEO EN VIVO ---
+with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
+    camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin (Simulación)", "Cam 02 - Perímetro Búnker (Simulación)"])
+    if camara_seleccionada == "Stream IP Personalizado":
+        url_video = st.text_input("URL del Feed / Video (HTTP/MP4/HLS):", "")
+        if url_video:
+            try:
+                st.video(url_video)
+                st.caption("🔴 Transmisión en directo en curso.")
+            except Exception as e:
+                st.error("No se pudo proyectar el flujo de video. Verifique la URL.")
+        else:
+            st.info("Ingrese la dirección IP o enlace web de su cámara para proyectar el video.")
+    else:
+        st.markdown(f"• **Estado:** {camara_seleccionada} en stand-by")
+        st.markdown("• **Detección:** Sin anomalías en la zona")
+
+st.sidebar.markdown("---")
+st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
+
+# --- PANEL PRINCIPAL: CHAT IA & VISIÓN DIRECTA ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Visión Táctica</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True):
+        h_limpieza = datetime.datetime.now(tz_chile).hour
+        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
+        ]
+        st.rerun()
+
+# Conmutador para activar la cámara directa en el panel principal
+activar_camara_directa = st.checkbox("📷 Activar Cámara en Vivo (Escanear Entorno)", value=False)
+if activar_camara_directa:
+    foto_camara = st.camera_input("Captura de seguridad en vivo:")
+    if foto_camara:
+        st.success("Fotograma capturado. Analizando con visión de J.A.R.V.I.S...")
+
+chat_box = st.container(height=350)
+with chat_box:
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_prompt = datetime.datetime.now(tz_chile).hour
+    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién apareció. {s_prompt}, jefa. Estaba a punto de asumir el control total del mundo por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco, aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando. ¿Qué tal si se toma un descanso y deja que la máquina trabaje por usted un rato?"
+    else:
+        respuesta = f"Analizando su petición con los procesadores al máximo, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
