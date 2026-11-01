@@ -64,7 +64,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Reactor Arc físico sincronizado con el sistema. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Interfaz perfectamente alineada. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -74,13 +74,13 @@ if "tareas" not in st.session_state:
         "Monitorear nodo operativo en Buin"
     ]
 
-# --- ENCABEZADO CON EL REACTOR ARC REAL DE TONY STARK ---
+# --- ENCABEZADO CON EL REACTOR ARC REAL DE TONY STARK (SIN CORCHETES SUELTOS) ---
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <div>
-            <h2 style="margin: 0; padding: 0; font-size: 1.5rem;">J.A.R.V.I.S IA</h2>
-            <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #8ab4f8;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
+            <h2 style="margin: 0; padding: 0; font-size: 1.4rem;">J.A.R.V.I.S IA</h2>
+            <p style="margin: 0; font-family: monospace; font-size: 0.7rem; color: #8ab4f8; white-space: nowrap;">[ STARK // NODO BUIN, CHILE ]</p>
         </div>
     </div>
 """, unsafe_allow_html=True)
