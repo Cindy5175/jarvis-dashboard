@@ -113,7 +113,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos limpios en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo optimizado y sintetizador activo en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -132,10 +132,15 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL TÁCTICA ---
+# --- BARRA LATERAL TÁCTICA (CON MARCADORES RÁPIDOS Y ACCESOS) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 st.sidebar.markdown("🚀 **Visor Satelital**")
-st.sidebar.link_button("🛰️ Lanzar Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00&layers=maritime,satellites,sat_comms,sat_military,sat_navigation,sat_earth,sat_science,cctv,cctv_previews,live_news,earthquakes,infrastructure,global_incidents,alert_pins,day_night,cables,sdk_sea,sdk_air,sdk_naval,wind_controls,rain_controls,gdelt_events", use_container_width=True)
+st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+
+st.sidebar.markdown("### 📌 Enlaces Rápidos")
+st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
+st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
 st.sidebar.markdown("---")
 
@@ -153,13 +158,13 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos en Tarjetas Neón<br>
+        &gt; MATRIZ: Módulos a la Izquierda<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: MÓDULOS EN TARJETAS A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
+# --- DISPOSICIÓN PRINCIPAL: MÓDULOS A LA IZQUIERDA / NODO HOLOGRÁFICO Y CHAT A LA DERECHA ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
@@ -195,34 +200,35 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 4: SINTETIZADOR DE VOZ NATIVO
+    # MÓDULO 4: SINTETIZADOR DE VOZ NATIVO (ACTIVO Y FUNCIONAL)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>', unsafe_allow_html=True)
     st.caption("Emisión de comandos con tono de voz grave y profundo.")
     texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
+    
     if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
-        js_code = f"""
+        js_voz = f"""
         <script>
         if ('speechSynthesis' in window) {{
             window.speechSynthesis.cancel();
-            var mensaje = new SpeechSynthesisUtterance("{texto_a_hablar}");
-            mensaje.lang = 'es-ES';
-            mensaje.rate = 0.90;
-            mensaje.pitch = 0.1;
-            var voces = window.speechSynthesis.getVoices();
-            for(var i = 0; i < voces.length; i++) {{
-                var nombre = voces[i].name.toLowerCase();
-                if(voces[i].lang.includes('es') && (nombre.includes('male') || nombre.includes('pablo') || nombre.includes('carlos') || nombre.includes('alberto') || nombre.includes('raul') || nombre.includes('diego'))) {{
-                    mensaje.voice = voces[i];
+            var utterance = new SpeechSynthesisUtterance("{texto_a_hablar}");
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.90;
+            utterance.pitch = 0.1;
+            var voices = window.speechSynthesis.getVoices();
+            for(var i = 0; i < voices.length; i++) {{
+                var name = voices[i].name.toLowerCase();
+                if(voices[i].lang.includes('es') && (name.includes('male') || name.includes('pablo') || name.includes('carlos') || name.includes('alberto') || name.includes('raul') || name.includes('diego'))) {{
+                    utterance.voice = voices[i];
                     break;
                 }}
             }}
-            window.speechSynthesis.speak(mensaje);
+            window.speechSynthesis.speak(utterance);
         }}
         </script>
         """
-        st.components.v1.html(js_code, height=0)
-        st.success("Voz emitida con éxito.")
+        st.components.v1.html(js_voz, height=0)
+        st.success("Comando de voz emitido por los altavoces del búnker.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # MÓDULO 5: CONVERSOR FINANCIERO CLP
@@ -239,20 +245,7 @@ with col_izq:
     st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 6: MARCADORES RÁPIDOS
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Enlaces y Marcadores Rápidos</div>', unsafe_allow_html=True)
-    st.caption("Accesos directos a portales clave.")
-    r1, r2 = st.columns(2)
-    with r1:
-        st.link_button("🌐 Osiris Global", "https://osirisai.live", use_container_width=True)
-        st.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-    with r2:
-        st.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
-        st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # MÓDULO 7: TELEMETRÍA GLOBAL
+    # MÓDULO 6: TELEMETRÍA GLOBAL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
     st.caption("Monitoreo de estado de conexiones y satélites.")
