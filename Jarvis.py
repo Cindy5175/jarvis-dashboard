@@ -228,4 +228,47 @@ col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
 # COLUMNA IZQUIERDA: SECTOR ALPHA
 # ==========================================
 with col_izq:
-    st.
+    st.markdown("### 🌐 SECTOR ALPHA")
+    
+    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+
+    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
+        st.markdown("Registro biométrico de constante vital:")
+        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
+        spo2_input = st.number_input("Oxígeno en Sangre SpO2 (%):", min_value=70, max_value=100, value=98)
+        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
+        
+        if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
+            add_biometria(hr_input, spo2_input, sueno_input)
+            st.success("¡Métrica registrada en el búnker!")
+            hablar_como_jarvis("Datos biométricos guardados correctamente en la base de datos del búnker.")
+            st.rerun()
+            
+        ultimo_registro = get_latest_biometria()
+        if ultimo_registro:
+            st.markdown(f"**Último registro ({ultimo_registro[0]}):**")
+            st.markdown(f"• Pulso: **{ultimo_registro[1]} BPM**")
+            st.markdown(f"• SpO2: **{ultimo_registro[2]}%**")
+            st.markdown(f"• Sueño: {ultimo_registro[3]}")
+
+    with st.expander("🔔 Alertas del Búnker"):
+        alertas_db = get_db_alertas()
+        for msg, nivel in alertas_db:
+            icono = "🟢" if nivel == "OK" else "ℹ️"
+            st.markdown(f"{icono} {msg}")
+        nueva_alerta = st.text_input("Añadir alerta rápida:", key="inp_alerta")
+        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+            conn.commit()
+            conn.close()
+            st.success("Alerta emitida.")
+            st.rerun()
+
+    with st.expander("📝 Tareas del Búnker"):
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
