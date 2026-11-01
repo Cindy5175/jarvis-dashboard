@@ -153,4 +153,48 @@ st.markdown("""
 st.markdown("---")
 
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL ---
-st.sidebar.markdown("### 🌐 EST
+st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+
+with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
+    st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
+    st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
+
+with st.sidebar.expander("🔔 Alertas del Búnker"):
+    alertas_db = get_db_alertas()
+    for msg, nivel in alertas_db:
+        icono = "🟢" if nivel == "OK" else "ℹ️"
+        st.markdown(f"{icono} {msg}")
+    nueva_alerta = st.text_input("Añadir alerta rápida:")
+    if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+        conn.commit()
+        conn.close()
+        st.success("Alerta emitida.")
+        st.rerun()
+
+with st.sidebar.expander("📝 Tareas del Búnker"):
+    nueva_tarea = st.text_input("Nueva tarea rápida:")
+    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+        add_db_tarea(nueva_tarea)
+        st.success("¡Registrada!")
+        st.rerun()
+    st.markdown("**Pendientes:**")
+    for tid, t in get_db_tareas():
+        col_t1, col_t2 = st.columns([4, 1])
+        with col_t1:
+            st.markdown(f"• {t}")
+        with col_t2:
+            if st.button("❌", key=f"del_t_{tid}"):
+                delete_db_tarea(tid)
+                st.rerun()
+
+with st.sidebar.expander("🌐 Telemetría Global", expanded=True):
+    st.markdown(f"• **Reactor:** 100% stable\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Día:** {datetime.datetime.now(tz_chile).strftime('%d/%m')}\n• **Starlink:** Óptimo")
+
+with st.sidebar.expander("🌤️ Clima Local (Buin)", expanded=True):
+    st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
+
+# --- NÚCLEOS DE CEREBRO STARK (A LA IZQUIERDA) ---
+st.sidebar.markdown("---
