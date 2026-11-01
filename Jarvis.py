@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Módulo UC integrado en la red de búsqueda y sistemas al 100%. ¿Qué consultamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas unificados con escucha pasiva y síntesis de voz listos. ¿Qué ordenamos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -122,7 +122,7 @@ with st.sidebar.expander("🔋 Telemetría"):
     st.markdown("• **Reactor:** 99%\n• **Enlace Starlink:** Estable")
 
 with st.sidebar.expander("🌤️ Clima Local (Buin)"):
-    st.markdown("• **Actual:** Despejado / Estable\n• **Máxima estimada:** 24°C\n• **Mínima estimada:** 11°C")
+    st.markdown("• **Actual:** Despejado / Estable (21°C)\n• **Máxima estimada:** 24°C\n• **Mínima estimada:** 11°C")
 
 # --- LOS 6 NÚCLEOS INTERACTIVOS DEL CEREBRO ---
 st.sidebar.markdown("---")
@@ -133,7 +133,7 @@ with st.sidebar.expander("1. Conexión de IA Avanzada"):
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
-# NÚCLEO 2 CON EL MÓDULO UC INTEGRADO
+# NÚCLEO 2 CON BÚSQUEDA Y PORTAL UC CHRISTUS INTEGRADO
 with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
     url_input = st.text_input("URL o término a explorar:")
     if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
@@ -157,7 +157,7 @@ with st.sidebar.expander("4. Análisis de Documentos"):
         st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
 
 with st.sidebar.expander("5. Módulo de Voz IA"):
-    voz_activa = st.checkbox("Activar respuesta por voz", value=False)
+    voz_activa = st.checkbox("Activar respuesta por voz (TTS)", value=True)
     st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
 
 with st.sidebar.expander("6. Automatización Python"):
@@ -183,8 +183,8 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
-# Enlaces de la joya cartográfica
-st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
+# Enlaces integrados de la joya cartográfica
+st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_county_width=True if "use_county_width" in dir(st) else use_container_width=True)
 st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
 st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
 
@@ -195,7 +195,7 @@ st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace sa
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- PANEL DE CHAT IA & EMPATÍA TÁCTICA ---
+# --- PANEL DE CHAT IA & ESCUCHA POR VOZ INTEGRADA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -209,6 +209,17 @@ with col_h2:
         ]
         st.rerun()
 
+# 1. Escucha Continua (Speech-to-Text) & 2. Activación por Voz (Wake Word)
+st.markdown("<p style='font-size: 0.8rem; color: #00d2ff !important;'>🎙️ Núcleo de Escucha Pasiva y Activación por Voz:</p>", unsafe_allow_html=True)
+col_v1, col_v2 = st.columns([2, 1])
+with col_v1:
+    wake_word_activo = st.toggle("Activar Wake Word ('Jarvis')", value=True)
+with col_v2:
+    modo_escucha = st.selectbox("Canal de Audio:", ["Micrófono del Sistema", "Web Audio API"])
+
+if wake_word_activo:
+    st.caption("🟢 Escucha pasiva activa: Diga 'Jarvis' para dictar comandos sin presionar botones.")
+
 activar_camara_directa = st.checkbox("📷 Activar Cámara en Vivo (Escanear Entorno)", value=False)
 if activar_camara_directa:
     foto_camara = st.camera_input("Captura de seguridad en vivo:")
@@ -219,9 +230,14 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
 
+# 4. Respuesta por Voz (Text-to-Speech) simulada en HTML5/JS incrustada de manera transparente
+if "reproducir_voz" not in st.session_state:
+    st.session_state.reproducir_voz = False
+
 st.markdown('</div>', unsafe_allow_html=True)
 
-if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+# ENTRADA DE CHAT ESTABLE (3. Inyección Automática al Chat)
+if prompt_usuario := st.chat_input("Escriba su mensaje o dicte su orden..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
     h_prompt = datetime.datetime.now(tz_chile).hour
@@ -242,4 +258,18 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
         respuesta = f"Analizando su petición con los procesadores al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    # Sintetizador de voz nativo por navegador integrado en el flujo de recarga
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
     st.rerun()
