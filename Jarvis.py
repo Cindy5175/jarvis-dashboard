@@ -77,7 +77,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- BASE DE DATOS SQLITE ---
+# --- BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -85,6 +85,7 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS biometria (id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, hr INTEGER, spo2 INTEGER, sueno TEXT)''')
     conn.commit()
     
     c.execute("SELECT COUNT(*) FROM tareas")
@@ -132,6 +133,22 @@ def get_db_alertas():
     conn.close()
     return rows
 
+def add_biometria(hr, spo2, sueno):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    fecha_hoy = datetime.datetime.now(tz_chile).strftime('%Y-%m-%d %H:%M')
+    c.execute("INSERT INTO biometria (fecha, hr, spo2, sueno) VALUES (?, ?, ?, ?)", (fecha_hoy, hr, spo2, sueno))
+    conn.commit()
+    conn.close()
+
+def get_latest_biometria():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT fecha, hr, spo2, sueno FROM biometria ORDER BY id DESC LIMIT 1")
+    row = c.fetchone()
+    conn.close()
+    return row
+
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje médico y familiar. ¿Qué ordenamos hoy?"}
@@ -151,15 +168,34 @@ st.markdown("---")
 col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
 
 # ==========================================
-# COLUMNA IZQUIERDA: 5 MÓDULOS DE CONTROL
+# COLUMNA IZQUIERDA: CONTROL, TAREAS Y MI BAND
 # ==========================================
 with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)[cite: 1]")
         st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo[cite: 1]")
+
+    # Módulo Funcional de la Xiaomi Mi Band
+    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
+        st.markdown("Registro biométrico de constante vital:")
+        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
+        spo2_input = st.number_input("Oxígeno en Sangre SpO2 (%):", min_value=70, max_value=100, value=98)
+        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
+        
+        if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
+            add_biometria(hr_input, spo2_input, sueno_input)
+            st.success("¡Métrica registrada en el búnker!")
+            st.rerun()
+            
+        ultimo_registro = get_latest_biometria()
+        if ultimo_registro:
+            st.markdown(f"**Último registro ({ultimo_registro[0]}):**")
+            st.markdown(f"• Pulso: **{ultimo_registro[1]} BPM**")
+            st.markdown(f"• SpO2: **{ultimo_registro[2]}%**")
+            st.markdown(f"• Sueño: {ultimo_registro[3]}")
 
     with st.expander("🔔 Alertas del Búnker"):
         alertas_db = get_db_alertas()
@@ -173,6 +209,7 @@ with col_izq:
             c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
             conn.commit()
             conn.close()
+            st.success("Alerta emitida.")
             st.rerun()
 
     with st.expander("📝 Tareas del Búnker"):
@@ -199,27 +236,21 @@ with col_izq:
 # COLUMNA CENTRAL: OJO DE DIOS, ISS, CÁMARA & CHAT
 # ==========================================
 with col_centro:
-    # Módulo Satelital & Telemetría ISS con Pestañas
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre, auroras en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
     
     tab_ojo, tab_iss, tab_aurora = st.tabs(["🗺️ Mapa Satelital", "🌍 ISS Diurno", "🌌 Auroras ISS"])
-    
     with tab_ojo:
         st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-    
     with tab_iss:
         st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
         st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
-        
     with tab_aurora:
         st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
         st.caption("Aurora Across the Night Side 🌌 ISS Views | LIVE 24/7")
-        
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Tarjeta de Control y Activación de Cámaras
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial & Transmisión", value=False, key="toggle_cam_central")
     if activar_camara_directa:
@@ -229,7 +260,6 @@ with col_centro:
             st.success("Fotograma capturado con éxito. Análisis completado sin observaciones.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Tarjeta de Chat IA
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     cc1, cc2 = st.columns([4, 1])
     with cc1:
@@ -287,18 +317,4 @@ with col_der:
         st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
     with st.expander("📄 Documentos & Sensores"):
-        st.file_uploader("Cargar documento clínico/examen:", type=["pdf", "csv", "txt"])
-
-    with st.expander("🗺️ Estación Cartográfica & Cámaras"):
-        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
-        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
-        st.markdown("---")
-        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
-        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
-        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
-        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
-        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
-        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
-        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
+        st
