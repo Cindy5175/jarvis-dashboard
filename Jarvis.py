@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Enlace satelital de órbita y sistemas tácticos sincronizados. ¿Qué región del planeta o tarea analizamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas de enlace satelital reconfigurados. ¿Qué analizamos ahora?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -160,7 +160,7 @@ with st.sidebar.expander("6. Automatización Python"):
     if st.button("⚡ Ejecutar Script", use_container_width=True):
         st.code("Respuesta: Núcleo OK", language="bash")
 
-# --- MÓDULO DE CÁMARAS IP Y TELEMETRÍA SATELITAL ---
+# --- MÓDULO DE CÁMARAS IP ---
 with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
     camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
     if camara_seleccionada == "Stream IP Personalizado":
@@ -182,19 +182,14 @@ st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?l
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: OJO DE DIOS (SATÉLITE EN VIVO) & CHAT IA ---
+# --- PANEL PRINCIPAL: ACCESO DIRECTO AL OJO DE DIOS & CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital en Vivo</h4>", unsafe_allow_html=True)
-st.caption("Conexión activa con órbita terrestre en tiempo real (Nodo Buin centrado).")
-
-# Incrustación de la vista satelital en vivo (Osiris AI)
-st.markdown(
-    '<iframe src="https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=6.00" width="100%" height="450" style="border:1.5px solid #00d2ff; border-radius:8px;"></iframe>',
-    unsafe_allow_html=True
-)
+st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
+st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- PANEL DE CHAT IA & VISIÓN DIRECTA ---
+# --- PANEL DE CHAT IA & VISIÓN TÁCTICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
