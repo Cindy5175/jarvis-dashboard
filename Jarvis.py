@@ -162,4 +162,30 @@ with col_izq:
     
     # Módulo 1
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:**
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+
+    # Módulo 2
+    with st.expander("🔔 Alertas del Búnker"):
+        alertas_db = get_db_alertas()
+        for msg, nivel in alertas_db:
+            icono = "🟢" if nivel == "OK" else "ℹ️"
+            st.markdown(f"{icono} {msg}")
+        nueva_alerta = st.text_input("Añadir alerta rápida:", key="inp_alerta")
+        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+            conn.commit()
+            conn.close()
+            st.success("Alerta emitida.")
+            st.rerun()
+
+    # Módulo 3
+    with st.expander("📝 Tareas del Búnker"):
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.success("¡Registrada!")
+            st.rerun
