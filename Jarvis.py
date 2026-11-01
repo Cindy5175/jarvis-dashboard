@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas de búnker y núcleos de empatía operando sin bucles. ¿Qué ordenamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Directorio cartográfico integrado y sistemas al 100%. ¿Qué coordenadas exploramos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -178,10 +178,13 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
+# Enlaces integrados de la joya cartográfica
+st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
+st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
+st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: ACCESO AL OJO DE DIOS & VISIÓN PANORÁMICA ---
+# --- PANEL PRINCIPAL: OJO DE DIOS & VISIÓN PANORÁMICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
@@ -208,35 +211,13 @@ if activar_camara_directa:
     if foto_camara:
         st.success("Fotograma capturado. Analizando con visión de J.A.R.V.I.S...")
 
-# Mostrar historial de mensajes de forma limpia
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ENTRADA DE CHAT USANDO st.chat_input (ESTRUCTURA CORRECTA PARA EVITAR BUCLES)
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
-    # 1. Añadir mensaje del usuario al estado
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    h_prompt = datetime.datetime.now(tz_chile).hour
-    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
-
-    p_low = prompt_usuario.lower()
-    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
-    palabras_gracias = ["gracias", "excelente", "buena"]
-    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
-
-    if any(p in p_low for p in palabras_saludo):
-        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
-    elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
-    elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
-    else:
-        respuesta = f"Analizando su petición con los procesadores al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
-
-    # 2. Añadir respuesta del asistente al estado y recargar UNA sola vez
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    st.rerun()
+    h_
