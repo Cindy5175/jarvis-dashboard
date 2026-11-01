@@ -1,21 +1,19 @@
 import streamlit as st
 import datetime
 
-# Configuración de página con diseño ancho y estético
+# Configuración de página
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
 
-# Estilo visual estilo Stark (Dark, Neón y Simetría Limpia)
+# Estilo visual Stark
 st.markdown("""
     <style>
         .main { background-color: #060911; }
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label, .stTextInput label, .stTextArea label { color: #00d2ff !important; font-family: 'Courier New', monospace; }
-        
-        /* Cajas de bordes neón independientes */
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 10px;
@@ -24,8 +22,6 @@ st.markdown("""
             margin-bottom: 16px;
             box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
         }
-        
-        /* Títulos de módulos independientes */
         .module-title {
             color: #00d2ff;
             font-family: 'Courier New', monospace;
@@ -35,8 +31,6 @@ st.markdown("""
             border-bottom: 1px solid rgba(0, 210, 255, 0.3);
             padding-bottom: 4px;
         }
-        
-        /* Globo holográfico en rotación */
         .globe-container {
             display: flex;
             justify-content: center;
@@ -68,119 +62,56 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- DETECCIÓN DE HORA PARA EL SALUDO AUTOMÁTICO ---
-hora_actual = datetime.datetime.now().hour
-if 5 <= hora_actual < 12:
-    saludo_tiempo = "Buenos días"
-elif 12 <= hora_actual < 20:
-    saludo_tiempo = "Buenas tardes"
-else:
-    saludo_tiempo = "Buenas noches"
+# Saludo según hora
+hora = datetime.datetime.now().hour
+saludo = "Buenos días" if 5 <= hora < 12 else ("Buenas tardes" if 12 <= hora < 20 else "Buenas noches")
 
-# --- INICIALIZACIÓN DE ESTADOS ---
-if "tareas_todo" not in st.session_state:
-    st.session_state.tareas_todo = [
-        "Revisar notificaciones de salud / Bci",
-        "Optimizar matriz del búnker",
-        "Monitorear nodo activo en Buin"
-    ]
+if "tareas" not in st.session_state:
+    st.session_state.tareas = ["Revisar notificaciones Bci", "Optimizar búnker", "Monitorear Buin"]
 
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo operativo en Buin. ¿Qué directiva iniciamos?"}
-    ]
+if "chat" not in st.session_state:
+    st.session_state.chat = [{"role": "assistant", "content": f"{saludo}, jefa. Núcleo operativo en Buin activo."}]
 
-# --- ENCABEZADO PRINCIPAL ---
+# Encabezado
 st.markdown("""
     <div style="text-align: center; margin-bottom: 20px;">
-        <svg width="55" height="55" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
-            <polygon points="50,5 95,85 5,85" fill="none" stroke="#00d2ff" stroke-width="5" stroke-linejoin="round" />
-            <polygon points="50,22 80,78 20,78" fill="rgba(0, 210, 255, 0.12)" stroke="#00d2ff" stroke-width="2" />
-            <polygon points="50,38 68,70 32,70" fill="#00d2ff" opacity="0.8" />
-            <line x1="15" y1="85" x2="85" y2="85" stroke="#ffffff" stroke-width="3" />
-        </svg>
-        <h2 style="margin: 6px 0 0 0; letter-spacing: 2px;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO REFORZADO</h2>
-        <p style="color: #00d2ff; font-family: monospace; font-size: 0.82rem; margin-top: 2px; opacity: 0.85;">
-            [ NODO OPERATIVO STARK INDUSTRIES // BUIN, CHILE ]
-        </p>
+        <h2 style="color: #00d2ff; letter-spacing: 2px; margin:0;">J.A.R.V.I.S IA - NÚCLEO TÁCTICO</h2>
+        <p style="color: #00d2ff; font-family: monospace; font-size: 0.8rem; opacity: 0.85;">[ BUIN, CHILE ]</p>
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL ---
+# Sidebar
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
-st.sidebar.markdown("🚀 **Visor Satelital**")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-
-st.sidebar.markdown("### 📌 Enlaces Rápidos")
 st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-st.sidebar.markdown("---")
-st.sidebar.caption("🔋 Potencia Arc")
-st.sidebar.progress(99)
-st.sidebar.caption("📡 Enlace Starlink")
-st.sidebar.progress(95)
+# 2 Columnas
+col1, col2 = st.columns(2, gap="medium")
 
-# --- DISPOSICIÓN EN 2 COLUMNAS SIMÉTRICAS ---
-col_izq, col_der = st.columns(2, gap="medium")
-
-with col_izq:
-    # 1. BLINDAJE WHATSAPP
+with col1:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Blindaje WhatsApp</div>', unsafe_allow_html=True)
-    st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
-    st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
+    st.info("Estado: Activo • Círculo Familiar Protegido")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. ALERTAS Y RESUMEN GMAIL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Alertas y Resumen Gmail</div>', unsafe_allow_html=True)
-    st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
-    c_m1, c_m2 = st.columns(2)
-    with c_m1:
-        st.info("🏥 UC Christus: Receta disponible.")
-    with c_m2:
-        st.success("🏦 Bci: Renta CLP.")
-    if st.button("🔄 Escanear Bandeja", use_container_width=True):
-        st.toast("Bandeja escaneada con éxito.")
+    st.markdown('<div class="module-title">Alertas Gmail</div>', unsafe_allow_html=True)
+    st.success("Bandeja sincronizada correctamente.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. TAREAS Y NOTAS TÁCTICAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Tareas y Notas Tácticas</div>', unsafe_allow_html=True)
-    st.caption("Gestión y registro rápido de pendientes en el búnker.")
-    nueva_tarea = st.text_input("Nueva tarea:", placeholder="Ej: Revisar sensores...")
-    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-        st.session_state.tareas_todo.append(nueva_tarea)
-        st.success("Tarea guardada.")
-    for t in st.session_state.tareas_todo:
+    st.markdown('<div class="module-title">Tareas Tácticas</div>', unsafe_allow_html=True)
+    nueva = st.text_input("Nueva tarea:")
+    if st.button("➕ Agregar", use_container_width=True) and nueva:
+        st.session_state.tareas.append(nueva)
+        st.rerun()
+    for t in st.session_state.tareas:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. CONVERSOR DE MONEDAS
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Conversor de Monedas</div>', unsafe_allow_html=True)
-    st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
-    c_f1, c_f2 = st.columns(2)
-    with c_f1:
-        monto = st.number_input("Monto:", value=100.0, step=10.0)
-    with c_f2:
-        moneda = st.selectbox("Moneda:", ["USD", "EUR"])
-    tasa = 945.50 if moneda == "USD" else 1020.30
-    total = monto * tasa
-    st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 5. TELEMETRÍA GLOBAL Y SENSORES
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
-    st.caption("Monitoreo de estado de conexiones y satélites.")
-    st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_der:
-    # 1. NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
+with col2:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -188,41 +119,30 @@ with col_der:
             <div class="orbit"></div>
             <div class="globe"></div>
         </div>
-        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 8px;">
-            BUIN OK — COORDENADAS: -33.73° S / -70.73° W
+        <div style="font-family: monospace; color: #00d2ff; font-size: 0.75rem; text-align: center; margin-top: 8px;">
+            COORDENADAS: -33.73° S / -70.73° W
         </div>
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. CAJA DE CHAT IA BONITA Y LIMPIA (DERECHA ABAJO)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    c_h1, c_h2 = st.columns([3, 1])
-    with c_h1:
+    ch_1, ch_2 = st.columns([3, 1])
+    with ch_1:
         st.markdown('<div class="module-title" style="border:none; margin:0; padding:0;">Chat IA</div>', unsafe_allow_html=True)
-    with c_h2:
-        if st.button("🗑️ Purgar", use_container_width=True):
-            st.session_state.mensajes = [
-                {"role": "assistant", "content": f"Memoria purgada, jefa. {saludo_tiempo}. Chat IA listo en Buin."}
-            ]
+    with ch_2:
+        if st.button("🗑️", use_container_width=True):
+            st.session_state.chat = [{"role": "assistant", "content": "Memoria purgada, jefa."}]
             st.rerun()
 
-    chat_box = st.container(height=350)
-    with chat_box:
-        for m in st.session_state.mensajes:
+    cbox = st.container(height=300)
+    with cbox:
+        for m in st.session_state.chat:
             with st.chat_message(m["role"]):
                 st.write(m["content"])
 
-    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-        st.session_state.mensajes.append({"role": "user", "content": p})
-        p_low = p.lower()
-        if "despierto" in p_low or "estás ahí" in p_low:
-            resp = "Para usted, señorita, siempre."
-        elif "hola" in p_low or "buenas" in p_low:
-            resp = f"{saludo_tiempo}, jefa. Todos los sistemas operan en perfecta armonía."
-        else:
-            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
-        
-        st.session_state.mensajes.append({"role": "assistant", "content": resp})
+    prompt = st.chat_input("Escriba su comando...")
+    if prompt:
+        st.session_state.chat.append({"role": "user", "content": prompt})
+        st.session_state.chat.append({"role": "assistant", "content": f"Comando '{prompt}' procesado, jefa."})
         st.rerun()
-        
     st.markdown('</div>', unsafe_allow_html=True)
