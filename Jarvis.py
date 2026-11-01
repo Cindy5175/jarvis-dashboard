@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Chat optimizado para móvil. Núcleo operativo activo."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Qué gusto verla por el búnker. Todo en orden por Buin, ¿en qué le puedo colaborar hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -70,7 +70,7 @@ st.markdown("### 📝 Tareas del Búnker")
 nueva_tarea = st.text_input("Nueva tarea rápida:")
 if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
     st.session_state.tareas.append(nueva_tarea)
-    st.success("Registrada con éxito.")
+    st.success("¡Listo, tarea anotada en el sistema!")
     st.rerun()
 
 st.markdown("**Pendientes:**")
@@ -89,26 +89,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 4: CHAT IA (ALTURA AJUSTADA PARA MÓVIL) ---
+# --- MÓDULO 4: CHAT IA (RESPUESTAS NATURALES Y HUMANAS) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("### 🤖 Chat IA")
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        st.session_state.mensajes = [{"role": "assistant", "content": "Memoria purgada, jefa."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": "Memoria limpia y fresca, jefa. ¿De qué conversamos ahora?"}]
         st.rerun()
 
-# Contenedor optimizado para que no se pierda al escribir
 chat_box = st.container(height=240)
 with chat_box:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.write(m["content"])
 
-if prompt_usuario := st.chat_input("Escriba su comando..."):
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    st.session_state.mensajes.append({"role": "assistant", "content": f"Para usted, jefa, siempre. Orden: '{prompt_usuario}'."})
+    
+    # Respuestas con fluidez, empatía y toque humano
+    p_low = prompt_usuario.lower()
+    if any(palabra in p_low for in ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]):
+        respuesta = f"¡Hola de nuevo, jefa! Qué gusto leerla. ¿Cómo va todo por ahí?"
+    elif any(palabra in p_low for in ["gracias", "excelente", "buena"]):
+        respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
+    elif any(palabra in p_low for in ["cansada", "sueño", "agotada"]):
+        respuesta = f"Le entiendo perfectamente, jefa. Ha tenido unos días intensos y de alto movimiento. No olvide descansar un poquito cuando pueda."
+    else:
+        respuesta = f"Entendido perfectamente, jefa. Me pongo con eso de inmediato para dejárselo resuelto."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
