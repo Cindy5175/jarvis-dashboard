@@ -68,15 +68,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- INICIALIZACIÓN DE ESTADO PARA LA VOZ ---
+if "ultimo_texto_hablado" not in st.session_state:
+    st.session_state.ultimo_texto_hablado = "Sistemas operativos y listos, jefa."
+
 # --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS) ---
 def hablar_como_jarvis(texto):
+    st.session_state.ultimo_texto_hablado = texto
+    # Verificamos si el interruptor de voz en el Sector Beta está encendido
+    voz_activa = st.session_state.get("toggle_voz_jarvis", True)
+    if not voz_activa:
+        return
+        
     try:
-        # Generar audio con gTTS (idioma español)
         tts = gTTS(text=texto, lang='es', slow=False)
         audio_file = "jarvis_voz.mp3"
         tts.save(audio_file)
         
-        # Reproducir automáticamente en Streamlit
         audio_bytes = open(audio_file, 'rb').read()
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         audio_html = f"""
@@ -222,9 +230,9 @@ with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)[cite: 1]")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
         st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo[cite: 1]")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
     with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         st.markdown("Registro biométrico de constante vital:")
@@ -351,6 +359,13 @@ with col_centro:
 # ==========================================
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
+
+    # MÓDULO DE VOZ J.A.R.V.I.S. CON SU PROPIO BOTÓN Y CONTROL
+    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
+        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
+        if st.button("🔊 Repetir Último Comando", use_container_width=True):
+            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
+            st.success("Emitiendo audio por altavoces del búnker...")
 
     with st.expander("⚙️ Conexión de IA Avanzada"):
         st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
