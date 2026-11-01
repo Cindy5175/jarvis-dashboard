@@ -15,7 +15,7 @@ st.markdown("""
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label, .stTextInput label, .stTextArea label { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         
-        /* Cajas de bordes neón simétricas para los módulos */
+        /* Cajas de bordes neón independientes */
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 10px;
@@ -25,7 +25,7 @@ st.markdown("""
             box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
         }
         
-        /* Títulos de módulos limpios en azul neón */
+        /* Títulos de módulos independientes */
         .module-title {
             color: #00d2ff;
             font-family: 'Courier New', monospace;
@@ -113,7 +113,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Todos los módulos operativos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos independientes operativos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -158,24 +158,24 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos Completos Activos<br>
+        &gt; MATRIZ: Módulos Independientes<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL ---
+# --- DISPOSICIÓN PRINCIPAL: MÓDULOS INDEPENDIENTES A LA IZQUIERDA / DERECHA LIBRE ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
-    # 1. BLINDAJE WHATSAPP
+    # 1. BLINDAJE WHATSAPP (Módulo Independiente)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Blindaje WhatsApp</div>', unsafe_allow_html=True)
     st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
     st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. ALERTAS Y RESUMEN GMAIL
+    # 2. ALERTAS Y RESUMEN GMAIL (Módulo Independiente)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Alertas y Resumen Gmail</div>', unsafe_allow_html=True)
     st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
@@ -188,7 +188,7 @@ with col_izq:
         st.toast("Bandeja escaneada con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. TAREAS Y NOTAS TÁCTICAS
+    # 3. TAREAS Y NOTAS TÁCTICAS (Módulo Independiente)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Tareas y Notas Tácticas</div>', unsafe_allow_html=True)
     st.caption("Gestión y registro rápido de pendientes en el búnker.")
@@ -200,102 +200,6 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. SINTETIZADOR DE VOZ NATIVO (ACTIVO Y FUNCIONAL)
+    # 4. SINTETIZADOR DE VOZ NATIVO (Módulo Independiente)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>', unsafe_allow_html=True)
-    st.caption("Emisión de comandos con tono de voz grave y profundo.")
-    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
-    
-    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
-        js_voz = f"""
-        <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            var utterance = new SpeechSynthesisUtterance("{texto_a_hablar}");
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.90;
-            utterance.pitch = 0.1;
-            var voices = window.speechSynthesis.getVoices();
-            for(var i = 0; i < voices.length; i++) {{
-                var name = voices[i].name.toLowerCase();
-                if(voices[i].lang.includes('es') && (name.includes('male') || name.includes('pablo') || name.includes('carlos') || name.includes('alberto') || name.includes('raul') || name.includes('diego'))) {{
-                    utterance.voice = voices[i];
-                    break;
-                }}
-            }}
-            window.speechSynthesis.speak(utterance);
-        }}
-        </script>
-        """
-        st.components.v1.html(js_voz, height=0)
-        st.success("Comando de voz emitido por los altavoces del búnker.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 5. CONVERSOR DE MONEDAS
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Conversor de Monedas</div>', unsafe_allow_html=True)
-    st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
-    c_f1, c_f2 = st.columns(2)
-    with c_f1:
-        monto = st.number_input("Monto:", value=100.0, step=10.0)
-    with c_f2:
-        moneda = st.selectbox("Moneda:", ["USD", "EUR"])
-    tasa = 945.50 if moneda == "USD" else 1020.30
-    total = monto * tasa
-    st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 6. TELEMETRÍA GLOBAL Y SENSORES
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
-    st.caption("Monitoreo de estado de conexiones y satélites.")
-    st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col_der:
-    # NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="globe-container">
-            <div class="orbit"></div>
-            <div class="globe"></div>
-        </div>
-        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 8px;">
-            BUIN OK — COORDENADAS: -33.73° S / -70.73° W
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # CHAT IA (DERECHA ABAJO)
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    c_h1, c_h2 = st.columns([3, 1])
-    with c_h1:
-        st.markdown('<div class="module-title" style="border:none; margin:0; padding:0;">Chat IA</div>', unsafe_allow_html=True)
-    with c_h2:
-        if st.button("🗑️ Purgar", use_container_width=True):
-            st.session_state.mensajes = [
-                {"role": "assistant", "content": f"Memoria purgada, jefa. {saludo_tiempo}. Chat IA listo en Buin."}
-            ]
-            st.rerun()
-
-    chat_box = st.container(height=350)
-    with chat_box:
-        for m in st.session_state.mensajes:
-            with st.chat_message(m["role"]):
-                st.write(m["content"])
-
-    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
-        st.session_state.mensajes.append({"role": "user", "content": p})
-        p_low = p.lower()
-        if "despierto" in p_low or "estás ahí" in p_low:
-            resp = "Para usted, señorita, siempre."
-        elif "hola" in p_low or "buenas" in p_low:
-            resp = f"{saludo_tiempo}, jefa. Todos los sistemas operan en perfecta armonía."
-        else:
-            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
-        
-        st.session_state.mensajes.append({"role": "assistant", "content": resp})
-        st.rerun()
-        
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>
