@@ -8,11 +8,40 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (NEÓN AZUL & FONDO UNIFICADO) ---
+# --- ESTILOS VISUALES STARK (REACTOR ARC FÍSICO & NEÓN AZUL) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
+        
+        /* Estilo del Reactor Arc Triangular inspirado en la pieza real */
+        .arc-reactor-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .arc-ring {
+            width: 55px;
+            height: 55px;
+            border: 3px solid #3a4454;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
+        }
+        .arc-triangle {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 20px solid #ffffff;
+            filter: drop-shadow(0 0 6px #00d2ff);
+        }
+
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 10px;
@@ -35,7 +64,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Reactor Arc azul neón activado correctamente. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Reactor Arc físico sincronizado con el sistema. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -45,9 +74,16 @@ if "tareas" not in st.session_state:
         "Monitorear nodo operativo en Buin"
     ]
 
-# --- ENCABEZADO PRINCIPAL CON REACTOR ARC AZUL TONY STARK ---
-st.markdown("## 💠 J.A.R.V.I.S IA")
-st.caption("[ STARK INDUSTRIES // NODO OPERATIVO BUIN, CHILE ]")
+# --- ENCABEZADO CON EL REACTOR ARC REAL DE TONY STARK ---
+st.markdown("""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <div>
+            <h2 style="margin: 0; padding: 0; font-size: 1.5rem;">J.A.R.V.I.S IA</h2>
+            <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #8ab4f8;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 st.markdown("---")
 
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL Y MÓDULOS DESPLEGABLES ---
