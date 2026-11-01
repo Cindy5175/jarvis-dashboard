@@ -124,3 +124,4 @@ if prompt_usuario := st.chat_input("Escriba su comando o directiva para J.A.R.V.
     st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
+
