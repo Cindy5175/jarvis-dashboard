@@ -66,8 +66,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORARIO EXACTO EN TIEMPO REAL (CORREGIDO Y AJUSTADO) ---
-hora_actual = datetime.datetime.now().hour
+# --- CÁLCULO DE HORA LOCAL EN CHILE (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+hora_actual = datetime.datetime.now(tz_chile).hour
+
 if 0 <= hora_actual < 12:
     saludo_actual = "Buenos días"
 elif 12 <= hora_actual < 20:
@@ -77,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Reloj sincronizado, sistemas autónomos y 6 núcleos cerebrales operativos. ¿Qué destruimos o construimos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Zona horaria de Chile sincronizada al 100%. Sistemas autónomos operativos. ¿En qué trabajamos hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -170,7 +172,7 @@ with col_h1:
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        h_limpieza = datetime.datetime.now().hour
+        h_limpieza = datetime.datetime.now(tz_chile).hour
         s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
         st.session_state.mensajes = [
             {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
@@ -186,7 +188,7 @@ with chat_box:
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    h_prompt = datetime.datetime.now().hour
+    h_prompt = datetime.datetime.now(tz_chile).hour
     s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
 
     p_low = prompt_usuario.lower()
