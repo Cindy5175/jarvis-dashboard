@@ -8,22 +8,24 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (REACTOR ARC FÍSICO & NEÓN AZUL) ---
+# --- ESTILOS VISUALES STARK (CENTRADOS & NEÓN AZUL) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
         
-        /* Estilo del Reactor Arc Triangular inspirado en la pieza real */
+        /* Contenedor del Encabezado Centrado */
         .arc-reactor-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
         }
         .arc-ring {
-            width: 55px;
-            height: 55px;
+            width: 60px;
+            height: 60px;
             border: 3px solid #3a4454;
             border-radius: 50%;
             position: relative;
@@ -32,6 +34,7 @@ st.markdown("""
             justify-content: center;
             background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
+            margin-bottom: 8px;
         }
         .arc-triangle {
             width: 0;
@@ -64,42 +67,38 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Interfaz perfectamente alineada. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Encabezado centrado, clima actualizado y módulos integrados en la Estación de Control. Núcleo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
     st.session_state.tareas = [
-        "Revisar notificaciones Bci / Inversiones",
         "Validar estado de salud (UC Christus)",
         "Monitorear nodo operativo en Buin"
     ]
 
-# --- ENCABEZADO CON EL REACTOR ARC REAL DE TONY STARK (SIN CORCHETES SUELTOS) ---
+# --- ENCABEZADO CENTRADO CON EL REACTOR ARC DE TONY STARK ---
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <div>
-            <h2 style="margin: 0; padding: 0; font-size: 1.4rem;">J.A.R.V.I.S IA</h2>
-            <p style="margin: 0; font-family: monospace; font-size: 0.7rem; color: #8ab4f8; white-space: nowrap;">[ STARK // NODO BUIN, CHILE ]</p>
-        </div>
+        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important;">J.A.R.V.I.S IA</h2>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #8ab4f8; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
     </div>
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL Y MÓDULOS DESPLEGABLES ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL Y TODOS LOS MÓDULOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 Módulos del Sistema")
 
-# Módulos desplegables en la barra lateral
+# Módulos organizados bajo la estación de control
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
     st.info("WhatsApp: Activo (Círculo protegido)")
-    st.success("Gmail: Sincronizadas (Bci / UC)")
+    st.success("Gmail: Sincronizado (UC Christus)")
 
 with st.sidebar.expander("📝 Tareas del Búnker"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
@@ -117,11 +116,11 @@ with st.sidebar.expander("🌐 Nodo Global"):
 with st.sidebar.expander("🔋 Telemetría"):
     st.markdown("Reactor: 99%\n\nEnlace Starlink: Estable")
 
-with st.sidebar.expander("🌤️ Clima Local"):
-    st.markdown("Buin: Despejado / Estable")
+with st.sidebar.expander("🌤️ Clima Local (Buin)"):
+    st.markdown("🌡️ **Actual:** Despejado / Estable\n📈 **Máxima estimada:** 24°C\n📉 **Mínima estimada:** 11°C")
 
 with st.sidebar.expander("🔗 Enlaces Clave"):
-    st.markdown("Bci Inversiones & UC Christus en línea")
+    st.markdown("🏥 Portal Clínico UC Christus: Conectado")
 
 with st.sidebar.expander("📋 Actividad"):
     st.markdown("Sincronización silenciosa: OK")
