@@ -192,4 +192,7 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     else:
         respuesta = f"Analizando su petición con los procesadores al máximo, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo."
 
-    st.session_state.mensajes.append({"role": "assistant", "content":
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
