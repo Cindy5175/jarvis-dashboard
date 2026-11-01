@@ -72,7 +72,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Módulos e inversión de barra lateral aplicados con éxito. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Barra lateral unificada en un solo bloque de Estación de Control. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -91,9 +91,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: MÓDULOS ARRIBA Y ESTACIÓN DE CONTROL ABAJO ---
-st.sidebar.markdown("### 📊 Módulos del Sistema")
+# --- BARRA LATERAL: BLOQUE ÚNICO UNIFICADO (ESTACIÓN DE CONTROL) ---
+st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
+# Módulos y paneles desplegables integrados en el bloque
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
     st.markdown("• **WhatsApp:** Activo (Círculo protegido)")
     st.markdown("• **Gmail:** Sincronizado (UC Christus)")
@@ -124,12 +125,12 @@ with st.sidebar.expander("📋 Actividad"):
     st.markdown("• **Sincronización silenciosa:** OK")
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+# Accesos rápidos integrados al final del mismo bloque unificado
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA (CON TÍTULO ACHICADO) ---
+# --- PANEL PRINCIPAL: CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
