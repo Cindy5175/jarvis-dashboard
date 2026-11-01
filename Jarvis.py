@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Módulos desplegables integrados en la barra lateral y Tareas del Búnker sincronizadas. ¿Qué orden ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo}, jefa. Logotipo triangular del reactor Arc activado. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -45,8 +45,8 @@ if "tareas" not in st.session_state:
         "Monitorear nodo operativo en Buin"
     ]
 
-# --- ENCABEZADO PRINCIPAL RESTAURADO ---
-st.markdown("## 🛡️ J.A.R.V.I.S IA")
+# --- ENCABEZADO PRINCIPAL CON LOGOTIPO TRIANGULAR TONY STARK ---
+st.markdown("## 🔺 J.A.R.V.I.S IA")
 st.caption("[ STARK INDUSTRIES // NODO OPERATIVO BUIN, CHILE ]")
 st.markdown("---")
 
@@ -60,7 +60,7 @@ st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.g
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 Módulos del Sistema")
 
-# Módulos convertidos en desplegables limpios sin números y con estilo neón
+# Módulos desplegables en la barra lateral
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
     st.info("WhatsApp: Activo (Círculo protegido)")
     st.success("Gmail: Sincronizadas (Bci / UC)")
@@ -90,7 +90,7 @@ with st.sidebar.expander("🔗 Enlaces Clave"):
 with st.sidebar.expander("📋 Actividad"):
     st.markdown("Sincronización silenciosa: OK")
 
-# --- PANEL PRINCIPAL: ÚNICAMENTE EL CHAT IA ---
+# --- PANEL PRINCIPAL: CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -103,27 +103,4 @@ with col_h2:
 chat_box = st.container(height=350)
 with chat_box:
     for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.write(m["content"])
-
-if prompt_usuario := st.chat_input("Escriba su mensaje..."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    p_low = prompt_usuario.lower()
-    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
-    palabras_gracias = ["gracias", "excelente", "buena"]
-    palabras_cansancio = ["cansada", "sueño", "agotada"]
-
-    if any(p in p_low for p in palabras_saludo):
-        respuesta = f"¡Hola de nuevo, jefa! Qué gusto leerla. ¿Cómo va todo por ahí?"
-    elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
-    elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Le entiendo perfectamente, jefa. Ha tenido unos días intensos y de alto movimiento. No olvide descansar un poquito cuando pueda."
-    else:
-        respuesta = f"Entendido perfectamente, jefa. Me pongo con eso de inmediato para dejárselo resuelto."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
+        
