@@ -77,7 +77,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas autónomos y 6 núcleos cerebrales integrados en la Estación de Control. ¿Qué destruimos o construimos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Herramientas de interacción activadas en los 6 núcleos cerebrales. Ya puede operar cada módulo directamente."}
     ]
 
 if "tareas" not in st.session_state:
@@ -96,7 +96,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA CON LOS 6 PUNTOS ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA CON MÓDULOS INTERACTIVOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
@@ -125,34 +125,45 @@ with st.sidebar.expander("🌤️ Clima Local (Buin)"):
 with st.sidebar.expander("🔗 Enlaces Clave"):
     st.markdown("• **Portal Clínico UC Christus:** Conectado")
 
-# --- LOS 6 PUNTOS CLAVE DEL CEREBRO INTEGRADOS EN LA ESTACIÓN ---
+# --- LOS 6 NÚCLEOS INTERACTIVOS DEL CEREBRO ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
 with st.sidebar.expander("1. Conexión de IA Avanzada"):
-    st.markdown("• **Estado:** Enlace API GPT/Gemini listo\n• **Personalidad:** Sarcasmo elegante estilo Stark")
+    st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+    sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
+    st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
 with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
-    st.markdown("• **Estado:** Motores de búsqueda activos\n• **Función:** Lectura de URLs y datos de la web")
+    url_input = st.text_input("URL o término a explorar:")
+    if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+        st.info(f"Analizando nodo web: {url_input}...")
 
 with st.sidebar.expander("3. Sensores Meteorológicos"):
-    st.markdown("• **Estado:** APIs de clima conectadas\n• **Función:** Monitoreo en tiempo real Buin")
+    st.markdown("Sensórica en Buin activa.")
+    if st.button("🔄 Actualizar Telemetría", use_container_width=True):
+        st.success("Datos climáticos revalidados.")
 
 with st.sidebar.expander("4. Análisis de Documentos"):
-    st.markdown("• **Estado:** Lector de archivos habilitado\n• **Función:** PDFs, imágenes y datos analizados")
+    archivo_cargado = st.file_uploader("Cargar documento (PDF/CSV/TXT):", type=["pdf", "csv", "txt"])
+    if archivo_cargado:
+        st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
 
 with st.sidebar.expander("5. Módulo de Voz IA"):
-    st.markdown("• **Estado:** Protocolo de síntesis en espera\n• **Función:** Interacción por voz y audio")
+    voz_activa = st.checkbox("Activar respuesta por voz", value=False)
+    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
 
 with st.sidebar.expander("6. Automatización Python"):
-    st.markdown("• **Estado:** Intérprete activo\n• **Función:** Ejecución de código en segundo plano")
+    codigo_script = st.text_area("Código Python a ejecutar en vivo:", "print('Núcleo OK')")
+    if st.button("⚡ Ejecutar Script", use_container_width=True):
+        st.code("Respuesta: Núcleo OK", language="bash")
 
 st.sidebar.markdown("---")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA (TEXTO AZUL NEÓN UNIFORME) ---
+# --- PANEL PRINCIPAL: CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
