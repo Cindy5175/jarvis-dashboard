@@ -206,34 +206,4 @@ def get_latest_biometria():
     conn.close()
     return row
 
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje médico y familiar. ¿Qué ordenamos hoy?"}
-    ]
-
-# --- ENCABEZADO CENTRADO CON REACTOR ARC ---
-st.markdown("""
-    <div class="arc-reactor-container">
-        <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
-        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
-    </div>
-""", unsafe_allow_html=True)
-st.markdown("---")
-
-# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
-col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
-
-# ==========================================
-# COLUMNA IZQUIERDA: SECTOR ALPHA
-# ==========================================
-with col_izq:
-    st.markdown("### 🌐 SECTOR ALPHA")
-    
-    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada")
-        st.markdown("• **Zona Médica:** Protegida")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo")
-
-    with st.expander("⌚ Mi Band (Telemetría)", expanded=True):
-        hr_input = st.
+if "mensajes" not in st.session
