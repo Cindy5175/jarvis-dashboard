@@ -3,7 +3,7 @@ import datetime
 
 # Configuración de página con diseño ancho y estético
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO INTEGRADO", 
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
@@ -44,8 +44,8 @@ st.markdown("""
             padding: 10px;
         }
         .globe {
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
             border: 2px solid #00d2ff;
             box-shadow: inset 0 0 20px #00d2ff, 0 0 20px #00d2ff;
@@ -55,8 +55,8 @@ st.markdown("""
         }
         .orbit {
             position: absolute;
-            width: 170px;
-            height: 60px;
+            width: 155px;
+            height: 55px;
             border: 1px solid rgba(0, 210, 255, 0.6);
             border-radius: 50%;
             transform: rotate(-20deg);
@@ -99,13 +99,13 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo estable en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo operativo en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO PRINCIPAL ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 20px;">
-        <svg width="60" height="60" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
+        <svg width="55" height="55" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
             <polygon points="50,5 95,85 5,85" fill="none" stroke="#00d2ff" stroke-width="5" stroke-linejoin="round" />
             <polygon points="50,22 80,78 20,78" fill="rgba(0, 210, 255, 0.12)" stroke="#00d2ff" stroke-width="2" />
             <polygon points="50,38 68,70 32,70" fill="#00d2ff" opacity="0.8" />
@@ -134,8 +134,8 @@ st.sidebar.progress(99)
 st.sidebar.caption("📡 Enlace Starlink")
 st.sidebar.progress(95)
 
-# --- DISPOSICIÓN PRINCIPAL ---
-col_izq, col_der = st.columns([1, 1], gap="medium")
+# --- DISPOSICIÓN EN 2 COLUMNAS SIMÉTRICAS ---
+col_izq, col_der = st.columns(2, gap="medium")
 
 with col_izq:
     # 1. BLINDAJE WHATSAPP
@@ -223,7 +223,7 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # NODO HOLOGRÁFICO
+    # 1. NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -237,7 +237,7 @@ with col_der:
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # CHAT IA
+    # 2. CAJA DE CHAT IA BONITA Y LIMPIA (DERECHA ABAJO)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     c_h1, c_h2 = st.columns([3, 1])
     with c_h1:
