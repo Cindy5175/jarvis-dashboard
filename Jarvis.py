@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Interfaz optimizada para móvil. Núcleo operativo activo."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Chat optimizado para móvil. Núcleo operativo activo."}
     ]
 
 if "tareas" not in st.session_state:
@@ -57,7 +57,7 @@ st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_c
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- MÓDULO 1: ESTADO DEL SISTEMA (SEGURIDAD Y ALERTAS JUNTAS) ---
+# --- MÓDULO 1: ESTADO DEL SISTEMA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("### 📌 Estado del Sistema")
 st.info("🛡️ **Blindaje WhatsApp:** Activo (Círculo protegido)")
@@ -89,7 +89,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 4: CHAT IA ---
+# --- MÓDULO 4: CHAT IA (ALTURA AJUSTADA PARA MÓVIL) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -99,7 +99,8 @@ with col_h2:
         st.session_state.mensajes = [{"role": "assistant", "content": "Memoria purgada, jefa."}]
         st.rerun()
 
-chat_box = st.container(height=300)
+# Contenedor optimizado para que no se pierda al escribir
+chat_box = st.container(height=240)
 with chat_box:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
