@@ -168,14 +168,14 @@ st.sidebar.markdown(f"""
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
-    # 1. BLINDAJE WHATSAPP (Módulo Independiente)
+    # 1. BLINDAJE WHATSAPP
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Blindaje WhatsApp</div>', unsafe_allow_html=True)
     st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
     st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. ALERTAS Y RESUMEN GMAIL (Módulo Independiente)
+    # 2. ALERTAS Y RESUMEN GMAIL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Alertas y Resumen Gmail</div>', unsafe_allow_html=True)
     st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
@@ -188,7 +188,7 @@ with col_izq:
         st.toast("Bandeja escaneada con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. TAREAS Y NOTAS TÁCTICAS (Módulo Independiente)
+    # 3. TAREAS Y NOTAS TÁCTICAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Tareas y Notas Tácticas</div>', unsafe_allow_html=True)
     st.caption("Gestión y registro rápido de pendientes en el búnker.")
@@ -200,6 +200,37 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. SINTETIZADOR DE VOZ NATIVO (Módulo Independiente)
+    # 4. SINTETIZADOR DE VOZ NATIVO
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>
+    st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>', unsafe_allow_html=True)
+    st.caption("Emisión de comandos con tono de voz grave y profundo.")
+    texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
+    
+    if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
+        js_voz = f"""
+        <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            var utterance = new SpeechSynthesisUtterance("{texto_a_hablar}");
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.90;
+            utterance.pitch = 0.1;
+            var voices = window.speechSynthesis.getVoices();
+            for(var i = 0; i < voices.length; i++) {{
+                var name = voices[i].name.toLowerCase();
+                if(voices[i].lang.includes('es') && (name.includes('male') || name.includes('pablo') || name.includes('carlos') || name.includes('alberto') || name.includes('raul') || name.includes('diego'))) {{
+                    utterance.voice = voices[i];
+                    break;
+                }}
+            }}
+            window.speechSynthesis.speak(utterance);
+        }}
+        </script>
+        """
+        st.components.v1.html(js_voz, height=0)
+        st.success("Comando de voz emitido por los altavoces del búnker.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 5. CONVERSOR DE MONEDAS
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown('<div class="module-title
