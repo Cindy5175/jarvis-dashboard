@@ -233,4 +233,69 @@ with col_izq:
 
     # 5. CONVERSOR DE MONEDAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown('<div class="module-title
+    st.markdown('<div class="module-title">Conversor de Monedas</div>', unsafe_allow_html=True)
+    st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
+    c_f1, c_f2 = st.columns(2)
+    with c_f1:
+        monto = st.number_input("Monto:", value=100.0, step=10.0)
+    with c_f2:
+        moneda = st.selectbox("Moneda:", ["USD", "EUR"])
+    tasa = 945.50 if moneda == "USD" else 1020.30
+    total = monto * tasa
+    st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 6. TELEMETRÍA GLOBAL Y SENSORES
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
+    st.caption("Monitoreo de estado de conexiones y satélites.")
+    st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_der:
+    # NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div class="globe-container">
+            <div class="orbit"></div>
+            <div class="globe"></div>
+        </div>
+        <div style="font-family: monospace; color: #00d2ff; font-size: 0.78rem; text-align: center; margin-top: 8px;">
+            BUIN OK — COORDENADAS: -33.73° S / -70.73° W
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CHAT IA (DERECHA ABAJO)
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    c_h1, c_h2 = st.columns([3, 1])
+    with c_h1:
+        st.markdown('<div class="module-title" style="border:none; margin:0; padding:0;">Chat IA</div>', unsafe_allow_html=True)
+    with c_h2:
+        if st.button("🗑️ Purgar", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": f"Memoria purgada, jefa. {saludo_tiempo}. Chat IA listo en Buin."}
+            ]
+            st.rerun()
+
+    chat_box = st.container(height=350)
+    with chat_box:
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.write(m["content"])
+
+    if p := st.chat_input("Escriba su comando para J.A.R.V.I.S..."):
+        st.session_state.mensajes.append({"role": "user", "content": p})
+        p_low = p.lower()
+        if "despierto" in p_low or "estás ahí" in p_low:
+            resp = "Para usted, señorita, siempre."
+        elif "hola" in p_low or "buenas" in p_low:
+            resp = f"{saludo_tiempo}, jefa. Todos los sistemas operan en perfecta armonía."
+        else:
+            resp = f"Para usted, jefa, siempre. Comando '{p}' procesado correctamente."
+        
+        st.session_state.mensajes.append({"role": "assistant", "content": resp})
+        st.rerun()
+        
+    st.markdown('</div>', unsafe_allow_html=True)
