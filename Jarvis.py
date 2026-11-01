@@ -206,4 +206,140 @@ def get_latest_biometria():
     conn.close()
     return row
 
-if "mensajes" not in st.session
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje médico y familiar. ¿Qué ordenamos hoy?"}
+    ]
+
+# --- ENCABEZADO CENTRADO CON REACTOR ARC ---
+st.markdown("""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
+    </div>
+""", unsafe_allow_html=True)
+st.markdown("---")
+
+# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
+col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
+
+# ==========================================
+# COLUMNA IZQUIERDA: SECTOR ALPHA
+# ==========================================
+with col_izq:
+    st.markdown("### 🌐 SECTOR ALPHA")
+    
+    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
+        st.markdown("• **Zona Familia:** Blindada")
+        st.markdown("• **Zona Médica:** Protegida")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+
+    with st.expander("⌚ Mi Band (Telemetría)", expanded=True):
+        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
+        spo2_input = st.number_input("SpO2 (%):", min_value=70, max_value=100, value=98)
+        sueno_input = st.text_input("Sueño / Notas:", value="Óptimo - 7.5 hrs")
+        
+        if st.button("💾 Guardar Mi Band", use_container_width=True):
+            add_biometria(hr_input, spo2_input, sueno_input)
+            st.success("¡Registrado!")
+            hablar_como_jarvis("Datos biométricos guardados.")
+            st.rerun()
+
+    with st.expander("🔔 Alertas"):
+        alertas_db = get_db_alertas()
+        for msg, nivel in alertas_db:
+            st.markdown(f"• {msg}")
+
+    with st.expander("📝 Tareas"):
+        nueva_tarea = st.text_input("Nueva tarea:", key="inp_tarea")
+        if st.button("➕ Añadir", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.rerun()
+        for tid, t in get_db_tareas():
+            c1, c2 = st.columns([4, 1])
+            with c1:
+                st.markdown(f"• {t}")
+            with c2:
+                if st.button("❌", key=f"del_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
+
+# ==========================================
+# COLUMNA CENTRAL: CHAT & OJO DE DIOS
+# ==========================================
+with col_centro:
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Enlace</h4>", unsafe_allow_html=True)
+    st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA</h4>", unsafe_allow_html=True)
+    with cc2:
+        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
+            h_limp = datetime.datetime.now(tz_chile).hour
+            s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia."}]
+            hablar_como_jarvis("Memoria limpia.")
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        h_prompt = datetime.datetime.now(tz_chile).hour
+        s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+        p_low = prompt_usuario.lower()
+        
+        if any(p in p_low for p in ["hola", "saludos"]):
+            respuesta = f"{s_prompt}, jefa. Sistemas al 100%."
+        elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
+            respuesta = "Registros clínicos: Sodio 143.9 mEq/L y Potasio 4.1 mEq/L (normales)."
+        else:
+            respuesta = "Entendido, jefa. Procesando órdenes..."
+            
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        hablar_como_jarvis(respuesta)
+        st.rerun()
+
+# ==========================================
+# COLUMNA DERECHA: SECTOR BETA & GNOME
+# ==========================================
+with col_der:
+    st.markdown("### ⚡ SECTOR BETA")
+
+    with st.expander("🎙️ Núcleo de Voz", expanded=True):
+        st.toggle("Activar Voz", value=True, key="toggle_voz_jarvis")
+        if st.button("🔊 Repetir Último", use_container_width=True):
+            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
+            st.success("Emitiendo audio...")
+
+    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
+        tipo_analisis = st.selectbox("Protocolo:", ["Estadística", "Procesar CSV"])
+        if tipo_analisis == "Estadística":
+            val_input = st.text_input("Valores (ej: 10, 20, 30):", "12, 18, 24, 30")
+            if st.button("⚡ Ejecutar GNOME", use_container_width=True):
+                try:
+                    nums = [float(x.strip()) for x in val_input.split(",")]
+                    prom = np.mean(nums)
+                    st.markdown(f"• **Promedio:** `{prom:.2f}`")
+                    hablar_como_jarvis(f"Promedio calculado: {prom:.2f}")
+                except Exception:
+                    st.error("Error en números.")
+        elif tipo_analisis == "Procesar CSV":
+            csv_sub = st.file_uploader("Subir CSV:", type=["csv"])
+            if csv_sub is not None:
+                df = pd.read_csv(csv_sub)
+                st.success(f"Cargado: {df.shape[0]} filas.")
+                st.dataframe(df.head(2))
+
+    with st.expander("🗺️ Cartografía Stark"):
+        st.link_button("☀️ SunCalc", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🌤️ Ventusky", "https://www.ventusky.com", use_container_width=True)
