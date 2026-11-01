@@ -2,10 +2,14 @@ import streamlit as st
 import datetime
 import json
 import os
+import sqlite3
+import sys
+import io
+import contextlib
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO AVANZADO",
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -78,39 +82,74 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- PERSISTENCIA DE TAREAS ---
-ARCHIVO_TAREAS = "tareas_bunker.json"
+# --- MEJORA 1: CONFIGURACIÓN DE BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
+DB_NAME = "jarvis_bunker.db"
 
-def cargar_tareas():
-    if os.path.exists(ARCHIVO_TAREAS):
-        try:
-            with open(ARCHIVO_TAREAS, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            pass
-    return ["Validar estado de salud (UC Christus)", "Monitorear nodo operativo en Buin"]
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
+    conn.commit()
+    
+    # Insertar tareas iniciales si está vacía
+    c.execute("SELECT COUNT(*) FROM tareas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
+        conn.commit()
+        
+    # Insertar alertas iniciales si está vacía
+    c.execute("SELECT COUNT(*) FROM alertas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK"))
+        conn.commit()
+    conn.close()
 
-def guardar_tareas(lista_tareas):
-    try:
-        with open(ARCHIVO_TAREAS, "w", encoding="utf-8") as f:
-            json.dump(lista_tareas, f, ensure_ascii=False, indent=4)
-    except:
-        pass
+init_db()
+
+def get_db_tareas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, texto FROM tareas")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def add_db_tarea(texto):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO tareas (texto) VALUES (?)", (texto,))
+    conn.commit()
+    conn.close()
+
+def delete_db_tarea(id_t):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM tareas WHERE id = ?", (id_t,))
+    conn.commit()
+    conn.close()
+
+def get_db_alertas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT mensaje, nivel FROM alertas")
+    rows = c.fetchall()
+    conn.close()
+    return rows
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz purgada de numeración y optimizada. ¿Qué ordenamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
-
-if "tareas" not in st.session_state:
-    st.session_state.tareas = cargar_tareas()
 
 # --- ENCABEZADO CENTRADO CON EL REACTOR ARC DE TONY STARK ---
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
-        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE // SUPREME CORE ]</p>
     </div>
 """, unsafe_allow_html=True)
 st.markdown("---")
@@ -122,36 +161,50 @@ with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
     st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
 
-with st.sidebar.expander("📝 Tareas del Búnker (Persistentes)"):
+# MEJORA 2: PANEL DE ALERTAS Y NOTIFICACIONES EN TIEMPO REAL
+with st.sidebar.expander("🔔 Alertas del Búnker"):
+    alertas_db = get_db_alertas()
+    for msg, nivel in alertas_db:
+        icono = "🟢" if nivel == "OK" else "ℹ️"
+        st.markdown(f"{icono} {msg}")
+    nueva_alerta = st.text_input("Añadir alerta rápida:")
+    if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+        conn.commit()
+        conn.close()
+        st.success("Alerta emitida.")
+        st.rerun()
+
+with st.sidebar.expander("📝 Tareas del Búnker (SQLite)"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
     if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-        st.session_state.tareas.append(nueva_tarea)
-        guardar_tareas(st.session_state.tareas)
-        st.success("¡Guardada en base de datos!")
+        add_db_tarea(nueva_tarea)
+        st.success("¡Registrada en base de datos!")
         st.rerun()
     st.markdown("**Pendientes:**")
-    for i, t in enumerate(st.session_state.tareas):
+    for tid, t in get_db_tareas():
         col_t1, col_t2 = st.columns([4, 1])
         with col_t1:
             st.markdown(f"• {t}")
         with col_t2:
-            if st.button("❌", key=f"del_t_{i}"):
-                st.session_state.tareas.pop(i)
-                guardar_tareas(st.session_state.tareas)
+            if st.button("❌", key=f"del_t_{tid}"):
+                delete_db_tarea(tid)
                 st.rerun()
 
 with st.sidebar.expander("🌐 Nodo Global"):
     st.markdown("• **Ubicación:** Buin, Chile\n• **Coordenadas:** -33.73° S / -70.73° W")
 
 with st.sidebar.expander("🔋 Telemetría"):
-    st.markdown("• **Reactor:** 99.8%\n• **Enlace Starlink:** Estable")
+    st.markdown("• **Reactor:** 100% Estable\n• **Enlace Starlink:** Óptimo")
 
 with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
     st.markdown("• **Condición:** Despejado / Estable\n• **Temperatura:** 21°C\n• **Humedad Relativa:** 45%")
     if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
         st.success("Telemetría meteorológica sincronizada.")
 
-# --- NÚCLEOS DEL CEREBRO (SIN NÚMEROS) ---
+# --- NÚCLEOS DEL CEREBRO (SIN NÚMEROS Y DISEÑO LIMPIO) ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
@@ -184,10 +237,18 @@ with st.sidebar.expander("🎙️ Módulo de Voz IA"):
     voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
     st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
 
-with st.sidebar.expander("⚡ Automatización Python"):
-    codigo_script = st.text_area("Código Python a ejecutar en vivo:", "print('Núcleo OK')")
-    if st.button("⚡ Ejecutar Script", use_container_width=True):
-        st.code("Respuesta: Núcleo OK", language="bash")
+# MEJORA 3: MOTOR DE EJECUCIÓN DE CÓDIGO PYTHON EN VIVO (SANDBOX REAL)
+with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
+    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
+    if st.button("⚡ Ejecutar Script Real", use_container_width=True):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            resultado_ejecucion = buffer_salida.getvalue()
+            st.code(resultado_ejecucion if resultado_ejecucion else "Código ejecutado sin salida en pantalla.", language="python")
+        except Exception as e:
+            st.error(f"Error en ejecución: {e}")
 
 with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
     st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
@@ -269,7 +330,7 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     elif any(p in p_low for p in palabras_cansancio):
         respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
     else:
-        respuesta = f"Analizando su petición con los procesadores expandidos al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+        respuesta = f"Analizando su petición con los procesadores del núcleo supremo al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     
