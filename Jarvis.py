@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Logotipo triangular del reactor Arc activado. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Error de sintaxis corregido. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -103,4 +103,20 @@ with col_h2:
 chat_box = st.container(height=350)
 with chat_box:
     for m in st.session_state.mensajes:
-        
+        with st.chat_message(m["role"]):
+            st.write(m["content"])
+
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"¡Hola de nuevo, jefa! Qué gusto leerla. ¿Cómo va todo por ahí?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta
