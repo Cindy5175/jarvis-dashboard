@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 
-# --- CONFIGURACIÓN DE PÁGINA (VISIÓN PANORÁMICA) ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO",
     layout="wide",
@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todos los sistemas operativos, núcleos de empatía y telemetría satelital están en línea. ¿Qué asaltamos primero?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas de búnker y núcleos de empatía operando sin bucles. ¿Qué ordenamos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -98,7 +98,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA (CONECTIVIDAD) ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
@@ -208,16 +208,16 @@ if activar_camara_directa:
     if foto_camara:
         st.success("Fotograma capturado. Analizando con visión de J.A.R.V.I.S...")
 
-chat_box = st.container(height=350)
-with chat_box:
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+# Mostrar historial de mensajes de forma limpia
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# LÓGICA CONVERSACIONAL CON SARCASMO, ELOCUENCIA Y EMPATÍA
+# ENTRADA DE CHAT USANDO st.chat_input (ESTRUCTURA CORRECTA PARA EVITAR BUCLES)
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    # 1. Añadir mensaje del usuario al estado
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
     h_prompt = datetime.datetime.now(tz_chile).hour
@@ -237,5 +237,6 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     else:
         respuesta = f"Analizando su petición con los procesadores al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
 
+    # 2. Añadir respuesta del asistente al estado y recargar UNA sola vez
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
