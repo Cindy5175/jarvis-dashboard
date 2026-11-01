@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz optimizada y enlaces unificados. ¿Qué operamos ahora?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todos los sistemas, enlaces satelitales y núcleos de conectividad están en línea y sincronizados al 100%. ¿Qué operamos primero?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -98,12 +98,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA (SIN DUPLICADOS) ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
-    st.markdown("• **WhatsApp:** Activo (Círculo protegido)")
-    st.markdown("• **Gmail:** Sincronizado (UC Christus)")
+    st.markdown("• **WhatsApp:** Activo (Excepciones personales configuradas)")
+    st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
 
 with st.sidebar.expander("📝 Tareas del Búnker"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
@@ -160,7 +160,7 @@ with st.sidebar.expander("6. Automatización Python"):
     if st.button("⚡ Ejecutar Script", use_container_width=True):
         st.code("Respuesta: Núcleo OK", language="bash")
 
-# --- MÓDULO DE CÁMARAS IP ---
+# --- MÓDULO DE CÁMARAS IP Y STREAMING EN VIVO ---
 with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
     camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
     if camara_seleccionada == "Stream IP Personalizado":
@@ -178,11 +178,10 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
-# Enlaces externos limpios en la barra lateral (sin duplicar el Ojo de Dios)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: ACCESO ÚNICO AL OJO DE DIOS & CHAT IA ---
+# --- PANEL PRINCIPAL: ACCESO AL OJO DE DIOS & CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
