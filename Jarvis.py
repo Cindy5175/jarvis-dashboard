@@ -231,12 +231,9 @@ with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
-        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
+        st.markdown("• **Zona Familia:** Blindada")
+        st.markdown("• **Zona Médica:** Protegida")
         st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
-    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
-        st.markdown("Registro biométrico de constante vital:")
-        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
-        spo2_input = st.number_input("Oxígeno en Sangre SpO2 (%):", min_value=70, max_value=100, value=98)
-        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
+    with st.expander("⌚ Mi Band (Telemetría)", expanded=True):
+        hr_input = st.
