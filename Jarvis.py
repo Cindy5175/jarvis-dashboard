@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Directorio cartográfico integrado y sistemas al 100%. ¿Qué coordenadas exploramos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Módulo UC integrado en la red de búsqueda y sistemas al 100%. ¿Qué consultamos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -124,9 +124,6 @@ with st.sidebar.expander("🔋 Telemetría"):
 with st.sidebar.expander("🌤️ Clima Local (Buin)"):
     st.markdown("• **Actual:** Despejado / Estable\n• **Máxima estimada:** 24°C\n• **Mínima estimada:** 11°C")
 
-with st.sidebar.expander("🔗 Enlaces Clave"):
-    st.markdown("• **Portal Clínico UC Christus:** Conectado")
-
 # --- LOS 6 NÚCLEOS INTERACTIVOS DEL CEREBRO ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
@@ -136,10 +133,18 @@ with st.sidebar.expander("1. Conexión de IA Avanzada"):
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
+# NÚCLEO 2 CON EL MÓDULO UC INTEGRADO
 with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
     url_input = st.text_input("URL o término a explorar:")
     if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
         st.info(f"Analizando nodo web: {url_input}...")
+    
+    st.markdown("---")
+    st.markdown("**🏥 Módulo Portal UC Christus:**")
+    uc_query = st.text_input("Buscar cita / médico / especialidad:")
+    if st.button("🩺 Consultar Portal UC", use_container_width=True):
+        st.success(f"Consultando registros para: '{uc_query}'...")
+    st.link_button("🌐 Abrir Portal Clínico UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
 with st.sidebar.expander("3. Sensores Meteorológicos"):
     st.markdown("Sensórica en Buin activa.")
@@ -178,11 +183,10 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
-# Enlaces integrados de la joya cartográfica
+# Enlaces de la joya cartográfica
 st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
 st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
 st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
-st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
 # --- PANEL PRINCIPAL: OJO DE DIOS & VISIÓN PANORÁMICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
@@ -220,4 +224,22 @@ st.markdown('</div>', unsafe_allow_html=True)
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    h_
+    h_prompt = datetime.datetime.now(tz_chile).hour
+    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
+    else:
+        respuesta = f"Analizando su petición con los procesadores al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
