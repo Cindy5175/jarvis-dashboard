@@ -199,9 +199,9 @@ with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)[cite: 1]")
         st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo[cite: 1]")
 
     with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         st.markdown("Registro biométrico de constante vital:")
@@ -262,14 +262,17 @@ with col_izq:
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre, auroras en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre, transmisiones en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
     
-    tab_ojo, tab_iss, tab_aurora = st.tabs(["🗺️ Mapa Satelital", "🌍 ISS Diurno", "🌌 Auroras ISS"])
+    tab_ojo, tab_iss1, tab_iss2, tab_aurora = st.tabs(["🗺️ Mapa Satelital", "🌍 ISS Diurno", "🛰️ Tierra 24/7", "🌌 Auroras ISS"])
     with tab_ojo:
         st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-    with tab_iss:
+    with tab_iss1:
         st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
         st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
+    with tab_iss2:
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+        st.caption("International Space Station ISS Live 24/7 🌍 Earth from Space")
     with tab_aurora:
         st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
         st.caption("Aurora Across the Night Side 🌌 ISS Views | LIVE 24/7")
