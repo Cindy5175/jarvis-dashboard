@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Transmisión de video en vivo configurada para las cámaras del perímetro. ¿En qué trabajamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Enlace satelital de órbita y sistemas tácticos sincronizados. ¿Qué región del planeta o tarea analizamos?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -160,9 +160,9 @@ with st.sidebar.expander("6. Automatización Python"):
     if st.button("⚡ Ejecutar Script", use_container_width=True):
         st.code("Respuesta: Núcleo OK", language="bash")
 
-# --- MÓDULO DE CÁMARAS IP CON TRANSMISIÓN DE VIDEO EN VIVO ---
+# --- MÓDULO DE CÁMARAS IP Y TELEMETRÍA SATELITAL ---
 with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
-    camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin (Simulación)", "Cam 02 - Perímetro Búnker (Simulación)"])
+    camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
     if camara_seleccionada == "Stream IP Personalizado":
         url_video = st.text_input("URL del Feed / Video (HTTP/MP4/HLS):", "")
         if url_video:
@@ -170,19 +170,31 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
                 st.video(url_video)
                 st.caption("🔴 Transmisión en directo en curso.")
             except Exception as e:
-                st.error("No se pudo proyectar el flujo de video. Verifique la URL.")
+                st.error("No se pudo proyectar el flujo de video.")
         else:
-            st.info("Ingrese la dirección IP o enlace web de su cámara para proyectar el video.")
+            st.info("Ingrese la dirección IP o enlace web de su cámara.")
     else:
-        st.markdown(f"• **Estado:** {camara_seleccionada} en stand-by")
-        st.markdown("• **Detección:** Sin anomalías en la zona")
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA & VISIÓN DIRECTA ---
+# --- PANEL PRINCIPAL: OJO DE DIOS (SATÉLITE EN VIVO) & CHAT IA ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital en Vivo</h4>", unsafe_allow_html=True)
+st.caption("Conexión activa con órbita terrestre en tiempo real (Nodo Buin centrado).")
+
+# Incrustación de la vista satelital en vivo (Osiris AI)
+st.markdown(
+    '<iframe src="https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=6.00" width="100%" height="450" style="border:1.5px solid #00d2ff; border-radius:8px;"></iframe>',
+    unsafe_allow_html=True
+)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- PANEL DE CHAT IA & VISIÓN DIRECTA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -196,7 +208,6 @@ with col_h2:
         ]
         st.rerun()
 
-# Conmutador para activar la cámara directa en el panel principal
 activar_camara_directa = st.checkbox("📷 Activar Cámara en Vivo (Escanear Entorno)", value=False)
 if activar_camara_directa:
     foto_camara = st.camera_input("Captura de seguridad en vivo:")
