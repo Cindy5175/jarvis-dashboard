@@ -113,7 +113,7 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo optimizado y sintetizador activo en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Todos los módulos operativos en Buin. ¿Qué directiva iniciamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO PRINCIPAL ---
@@ -132,7 +132,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL TÁCTICA (CON MARCADORES RÁPIDOS Y ACCESOS) ---
+# --- BARRA LATERAL TÁCTICA (ACCESOS Y ENLACES) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 st.sidebar.markdown("🚀 **Visor Satelital**")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
@@ -158,24 +158,24 @@ st.sidebar.progress(95)
 
 st.sidebar.markdown(f"""
     <div class="tactical-console">
-        &gt; MATRIZ: Módulos a la Izquierda<br>
+        &gt; MATRIZ: Módulos Completos Activos<br>
         &gt; NODO_BUIN: En línea<br>
         &gt; ESTADO: Esperando órdenes, jefa...
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: MÓDULOS A LA IZQUIERDA / NODO HOLOGRÁFICO Y CHAT A LA DERECHA ---
+# --- DISPOSICIÓN PRINCIPAL ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
-    # MÓDULO 1: BLINDAJE WHATSAPP
+    # 1. BLINDAJE WHATSAPP
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Blindaje WhatsApp</div>', unsafe_allow_html=True)
     st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
     st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 2: ALERTAS GMAIL
+    # 2. ALERTAS Y RESUMEN GMAIL
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Alertas y Resumen Gmail</div>', unsafe_allow_html=True)
     st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
@@ -188,7 +188,7 @@ with col_izq:
         st.toast("Bandeja escaneada con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 3: PROTOCOLO TO-DO TÁCTICO
+    # 3. TAREAS Y NOTAS TÁCTICAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Tareas y Notas Tácticas</div>', unsafe_allow_html=True)
     st.caption("Gestión y registro rápido de pendientes en el búnker.")
@@ -200,7 +200,7 @@ with col_izq:
         st.markdown(f"• {t}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 4: SINTETIZADOR DE VOZ NATIVO (ACTIVO Y FUNCIONAL)
+    # 4. SINTETIZADOR DE VOZ NATIVO (ACTIVO Y FUNCIONAL)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Sintetizador de Voz Nativa (Varonil)</div>', unsafe_allow_html=True)
     st.caption("Emisión de comandos con tono de voz grave y profundo.")
@@ -231,7 +231,7 @@ with col_izq:
         st.success("Comando de voz emitido por los altavoces del búnker.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 5: CONVERSOR FINANCIERO CLP
+    # 5. CONVERSOR DE MONEDAS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Conversor de Monedas</div>', unsafe_allow_html=True)
     st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
@@ -245,7 +245,7 @@ with col_izq:
     st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # MÓDULO 6: TELEMETRÍA GLOBAL
+    # 6. TELEMETRÍA GLOBAL Y SENSORES
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Telemetría Global y Sensores</div>', unsafe_allow_html=True)
     st.caption("Monitoreo de estado de conexiones y satélites.")
@@ -253,7 +253,7 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # NODO HOLOGRÁFICO GLOBAL EN LA PARTE SUPERIOR DERECHA
+    # NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -267,7 +267,7 @@ with col_der:
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # CHAT IA EN LA PARTE INFERIOR DERECHA
+    # CHAT IA (DERECHA ABAJO)
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     c_h1, c_h2 = st.columns([3, 1])
     with c_h1:
