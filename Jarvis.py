@@ -89,21 +89,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_tiempo = "Buenas noches"
 
-# --- CONFIGURACIÓN DE RESPUESTA Y BLINDAJE DE WHATSAPP ---
-CIRCULO_FAMILIAR_BLINDADO = [
-    "Leonardo Del Transit Carrera Araya",
-    "Leonardo Alberto Carrera Baude",
-    "Paola Carrera Baude",
-    "Silvia Grau",
-    "Karin Grau de Folliot"
-]
-
-MENSAJE_AUTO_EXTERNOS = (
-    "Hola, en este momento no puedo contestar. "
-    "Su mensaje ha sido registrado en el sistema y le será respondido a la brevedad posible, gracias."
-)
-
-# --- INICIALIZACIÓN DE ESTADOS EN SESSION_STATE ---
+# --- INICIALIZACIÓN DE ESTADOS ---
 if "tareas_todo" not in st.session_state:
     st.session_state.tareas_todo = [
         "Revisar notificaciones de salud / Bci",
@@ -113,10 +99,10 @@ if "tareas_todo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Módulos independientes operativos en Buin. ¿Qué directiva iniciamos?"}
+        {"role": "assistant", "content": f"{saludo_tiempo}, jefa. Núcleo estable en Buin. ¿Qué directiva iniciamos?"}
     ]
 
-# --- ENCABEZADO TÁCTICO PRINCIPAL ---
+# --- ENCABEZADO PRINCIPAL ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 20px;">
         <svg width="60" height="60" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00d2ff);">
@@ -132,7 +118,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL TÁCTICA (ACCESOS Y ENLACES) ---
+# --- BARRA LATERAL ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 st.sidebar.markdown("🚀 **Visor Satelital**")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
@@ -143,28 +129,12 @@ st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl"
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
 st.sidebar.markdown("---")
-
-with st.sidebar.expander("📊 TELEMETRÍA DE NÚCLEO", expanded=True):
-    st.markdown("🛡️ **Familiar Protegido:** 5 Activos")
-    st.markdown("💬 **Respuesta Externa:** Educada & Cordial")
-    st.markdown("⚡ **Reactor Arc:** 99% Operativo")
-    st.markdown("📍 **Nodo:** Buin Centro OK")
-
-st.sidebar.markdown("---")
 st.sidebar.caption("🔋 Potencia Arc")
 st.sidebar.progress(99)
 st.sidebar.caption("📡 Enlace Starlink")
 st.sidebar.progress(95)
 
-st.sidebar.markdown(f"""
-    <div class="tactical-console">
-        &gt; MATRIZ: Módulos Independientes<br>
-        &gt; NODO_BUIN: En línea<br>
-        &gt; ESTADO: Esperando órdenes, jefa...
-    </div>
-""", unsafe_allow_html=True)
-
-# --- DISPOSICIÓN PRINCIPAL: MÓDULOS INDEPENDIENTES A LA IZQUIERDA / DERECHA LIBRE ---
+# --- DISPOSICIÓN PRINCIPAL ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
@@ -228,7 +198,7 @@ with col_izq:
         </script>
         """
         st.components.v1.html(js_voz, height=0)
-        st.success("Comando de voz emitido por los altavoces del búnker.")
+        st.success("Comando de voz emitido.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 5. CONVERSOR DE MONEDAS
@@ -253,7 +223,7 @@ with col_izq:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # NODO HOLOGRÁFICO GLOBAL (DERECHA ARRIBA)
+    # NODO HOLOGRÁFICO
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown('<div class="module-title">Nodo Holográfico Global</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -267,7 +237,7 @@ with col_der:
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # CHAT IA (DERECHA ABAJO)
+    # CHAT IA
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     c_h1, c_h2 = st.columns([3, 1])
     with c_h1:
