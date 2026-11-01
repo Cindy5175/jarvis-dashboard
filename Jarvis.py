@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas de enlace satelital reconfigurados. ¿Qué analizamos ahora?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz optimizada y enlaces unificados. ¿Qué operamos ahora?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -98,7 +98,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA (SIN DUPLICADOS) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
@@ -178,11 +178,11 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         st.markdown("• **Detección:** Sin anomalías en el radio")
 
 st.sidebar.markdown("---")
-st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+# Enlaces externos limpios en la barra lateral (sin duplicar el Ojo de Dios)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: ACCESO DIRECTO AL OJO DE DIOS & CHAT IA ---
+# --- PANEL PRINCIPAL: ACCESO ÚNICO AL OJO DE DIOS & CHAT IA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
