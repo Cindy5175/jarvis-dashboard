@@ -77,7 +77,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
+# --- BASE DE DATOS SQLITE ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -168,17 +168,16 @@ st.markdown("---")
 col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
 
 # ==========================================
-# COLUMNA IZQUIERDA: CONTROL, TAREAS Y MI BAND
+# COLUMNA IZQUIERDA: SECTOR ALPHA
 # ==========================================
 with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)[cite: 1]")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
         st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo[cite: 1]")
+        st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
-    # Módulo Funcional de la Xiaomi Mi Band
     with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         st.markdown("Registro biométrico de constante vital:")
         hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
@@ -294,7 +293,7 @@ with col_centro:
         st.rerun()
 
 # ==========================================
-# COLUMNA DERECHA: 5 MÓDULOS DE CONTROL
+# COLUMNA DERECHA: SECTOR BETA
 # ==========================================
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
@@ -317,4 +316,18 @@ with col_der:
         st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
     with st.expander("📄 Documentos & Sensores"):
-        st
+        st.file_uploader("Cargar documento clínico/examen:", type=["pdf", "csv", "txt"])
+
+    with st.expander("🗺️ Estación Cartográfica & Cámaras", expanded=True):
+        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.markdown("---")
+        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
+        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
+        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
+        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
+        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
+        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
