@@ -5,6 +5,8 @@ import os
 import sqlite3
 from gtts import gTTS
 import base64
+import pandas as pd
+import numpy as np
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -75,7 +77,6 @@ if "ultimo_texto_hablado" not in st.session_state:
 # --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS) ---
 def hablar_como_jarvis(texto):
     st.session_state.ultimo_texto_hablado = texto
-    # Verificamos si el interruptor de voz en el Sector Beta está encendido
     voz_activa = st.session_state.get("toggle_voz_jarvis", True)
     if not voz_activa:
         return
@@ -326,79 +327,4 @@ with col_centro:
     with cc2:
         if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
             h_limp = datetime.datetime.now(tz_chile).hour
-            s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia y lista."}]
-            hablar_como_jarvis("Memoria limpia y lista, jefa.")
-            st.rerun()
-
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        h_prompt = datetime.datetime.now(tz_chile).hour
-        s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
-        p_low = prompt_usuario.lower()
-        
-        if any(p in p_low for p in ["hola", "saludos"]):
-            respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%."
-        elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
-            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L (normales)."
-        else:
-            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
-            
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-        hablar_como_jarvis(respuesta)
-        st.rerun()
-
-# ==========================================
-# COLUMNA DERECHA: SECTOR BETA
-# ==========================================
-with col_der:
-    st.markdown("### ⚡ SECTOR BETA")
-
-    # MÓDULO DE VOZ J.A.R.V.I.S. CON SU PROPIO BOTÓN Y CONTROL
-    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
-        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
-        if st.button("🔊 Repetir Último Comando", use_container_width=True):
-            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
-            st.success("Emitiendo audio por altavoces del búnker...")
-
-    with st.expander("⚙️ Conexión de IA Avanzada"):
-        st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
-        st.slider("Nivel de Sarcasmo:", 0, 100, 85)
-
-    with st.expander("📬 Auditoría de Correo IA", expanded=True):
-        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
-        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
-            st.success("¡Auditoría táctica completada!")
-            hablar_como_jarvis("Auditoría de correo completada con éxito. Zonas familiares y médicas protegidas.")
-        if st.button("🧹 Limpiar Spam (Bandeja Segura)", use_container_width=True):
-            st.warning("Spam archivado. Zona familiar y médica intactas.")
-            hablar_como_jarvis("Spam archivado. Las zonas protegidas se mantienen intactas.")
-
-    with st.expander("🔍 Búsqueda y Web en Vivo"):
-        url_input = st.text_input("URL o término a explorar:", key="inp_url")
-        if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
-            st.info(f"Analizando nodo web: {url_input}...")
-        st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-
-    with st.expander("📄 Documentos & Sensores"):
-        st.file_uploader("Cargar documento clínico/examen:", type=["pdf", "csv", "txt"])
-
-    with st.expander("🗺️ Estación Cartográfica & Cámaras", expanded=True):
-        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
-        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
-        st.markdown("---")
-        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
-        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
-        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
-        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
-        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
-        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
-        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
+            s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes"
