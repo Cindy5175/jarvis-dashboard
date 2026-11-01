@@ -66,7 +66,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORARIO EXACTO EN TIEMPO REAL (DINÁMICO) ---
+# --- HORARIO EXACTO EN TIEMPO REAL (CORREGIDO Y AJUSTADO) ---
 hora_actual = datetime.datetime.now().hour
 if 0 <= hora_actual < 12:
     saludo_actual = "Buenos días"
@@ -77,7 +77,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Herramientas de interacción activadas en los 6 núcleos cerebrales. Ya puede operar cada módulo directamente."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Reloj sincronizado, sistemas autónomos y 6 núcleos cerebrales operativos. ¿Qué destruimos o construimos hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -96,7 +96,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA CON MÓDULOS INTERACTIVOS ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA CON LOS 6 PUNTOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
@@ -163,7 +163,7 @@ st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?l
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA ---
+# --- PANEL PRINCIPAL: CHAT IA (TEXTO AZUL NEÓN UNIFORME) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
