@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES STARK PARA MÓVIL ---
+# --- ESTILOS VISUALES STARK (ALINEACIÓN IZQUIERDA TOTAL) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Qué gusto verla por el búnker. Todo en orden por Buin, ¿en qué le puedo colaborar hoy?"}
+        {"role": "assistant", "content": f"{saludo}, jefa. Los 8 módulos tácticos están en línea y ordenados a la izquierda. ¿Qué orden ejecutamos hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -46,60 +46,107 @@ if "tareas" not in st.session_state:
     ]
 
 # --- ENCABEZADO PRINCIPAL ---
-st.markdown("## 🛡️ J.A.R.V.I.S IA")
-st.caption("[ NODO OPERATIVO BUIN, CHILE ]")
+st.markdown("## 🛡️ J.A.R.V.I.S IA - NÚCLEO TÁCTICO")
+st.caption("[ STARK INDUSTRIES // NODO OPERATIVO BUIN, CHILE ]")
 st.markdown("---")
 
-# --- BARRA LATERAL (ESTACIÓN DE CONTROL MÓVIL) ---
+# --- BARRA LATERAL (ESTACIÓN DE CONTROL) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏦 Banco Bci", "https://www.bci.cl/inversiones", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- MÓDULO 1: ESTADO DEL SISTEMA ---
+# --- MÓDULO 1: ESTADO DEL SISTEMA Y BLINDAJE ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("### 📌 Estado del Sistema")
+st.markdown("### 1️⃣ Estado del Sistema y Blindaje")
 st.info("🛡️ **Blindaje WhatsApp:** Activo (Círculo protegido)")
-st.success("📧 **Alertas Gmail:** Sincronizadas (Bci / UC)")
+st.success("📧 **Alertas Gmail:** Sincronizadas (Bci / UC Christus)")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # --- MÓDULO 2: TAREAS DEL BÚNKER ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("### 📝 Tareas del Búnker")
-nueva_tarea = st.text_input("Nueva tarea rápida:")
+st.markdown("### 2️⃣ Tareas del Búnker")
+nueva_tarea = st.text_input("Añadir nueva directiva o nota:")
 if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
     st.session_state.tareas.append(nueva_tarea)
     st.success("¡Listo, tarea anotada en el sistema!")
     st.rerun()
 
-st.markdown("**Pendientes:**")
+st.markdown("**Pendientes operativos:**")
 for t in st.session_state.tareas:
     st.markdown(f"• {t}")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 3: TELEMETRÍA ---
+# --- MÓDULO 3: NODO HOLOGRÁFICO GLOBAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("### 🌐 Nodo Global")
+st.markdown("### 3️⃣ Nodo Holográfico Global")
 st.markdown("""
     <div style="font-family: monospace; font-size: 0.85rem; padding: 2px 0;">
+        ESTADO: Órbita estable<br>
         UBICACIÓN: Buin, Chile<br>
         COORDENADAS: -33.73° S / -70.73° W
     </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 4: CHAT IA (RESPUESTAS NATURALES Y HUMANAS) ---
+# --- MÓDULO 4: TELEMETRÍA Y REACTOR ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("### 4️⃣ Telemetría del Reactor")
+st.markdown("""
+    <div style="font-family: monospace; font-size: 0.85rem; padding: 2px 0;">
+        🔋 Potencia del Núcleo: 99%<br>
+        📡 Enlace Starlink: Estable<br>
+        🛡️ Integridad del Búnker: 100% Óptima
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 5: MONITOREO CLIMÁTICO (BUIN) ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("### 5️⃣ Monitoreo Climático Local")
+st.markdown("""
+    <div style="font-family: monospace; font-size: 0.85rem; padding: 2px 0;">
+        🌤️ Nodo Buin: Cielos despejados / Temperatura estable<br>
+        Sincronizado con estación meteorológica central.
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 6: ACCESOS RÁPIDOS FINANCIEROS Y SALUD ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("### 6️⃣ Enlaces Financieros y Clínicos")
+st.markdown("""
+    <div style="font-family: monospace; font-size: 0.85rem; padding: 2px 0;">
+        🏦 Bci Inversiones: Conectado<br>
+        🏥 Portal Clínico UC Christus: Monitoreado
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 7: REGISTRO DE ACTIVIDAD ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("### 7️⃣ Registro de Actividad")
+st.markdown("""
+    <div style="font-family: monospace; font-size: 0.85rem; padding: 2px 0;">
+        • Sincronización de correos: OK<br>
+        • Verificación de excepciones WhatsApp: OK<br>
+        • Protocolo de seguridad nocturno: Standby
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 8: CHAT IA PRINCIPAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("### 🤖 Chat IA")
+    st.markdown("### 8️⃣ Interfaz de Comando (Chat IA)")
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         st.session_state.mensajes = [{"role": "assistant", "content": "Memoria limpia y fresca, jefa. ¿De qué conversamos ahora?"}]
         st.rerun()
 
-chat_box = st.container(height=240)
+chat_box = st.container(height=260)
 with chat_box:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
@@ -108,7 +155,6 @@ with chat_box:
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    # Respuestas con fluidez, empatía y toque humano corregidas
     p_low = prompt_usuario.lower()
     palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
     palabras_gracias = ["gracias", "excelente", "buena"]
