@@ -15,7 +15,7 @@ st.markdown("""
         h1, h2, h3, h4 { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         .stSelectbox label, .stTextInput label, .stTextArea label { color: #00d2ff !important; font-family: 'Courier New', monospace; }
         
-        /* Forzar color azul neón y tipografía limpia en los títulos de los expandidores */
+        /* Forzar color azul neón y tipografía limpia en los títulos de los expandidores sin interferencias */
         div[data-testid="stExpander"] summary p, div[data-testid="stExpander"] summary span {
             color: #00d2ff !important;
             font-family: 'Courier New', monospace !important;
@@ -156,17 +156,17 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- DISPOSICIÓN PRINCIPAL: MÓDULOS CON VIÑETAS A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
+# --- DISPOSICIÓN PRINCIPAL: MÓDULOS LIMPIOS A LA IZQUIERDA / GLOBO Y CHAT IA A LA DERECHA ---
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
 with col_izq:
     # MÓDULO: BLINDAJE WHATSAPP
-    with st.expander("• Blindaje WhatsApp", expanded=True):
+    with st.expander("Blindaje WhatsApp", expanded=True):
         st.caption("Protocolo de inmunidad y respuesta automática para contactos externos.")
         st.info("Estado: Activo • Círculo Familiar Protegido (5 Activos)")
 
     # MÓDULO: ALERTAS GMAIL
-    with st.expander("• Alertas y Resumen Gmail"):
+    with st.expander("Alertas y Resumen Gmail"):
         st.caption("Filtro prioritario de notificaciones bancarias, de salud e inversiones.")
         c_m1, c_m2 = st.columns(2)
         with c_m1:
@@ -177,7 +177,7 @@ with col_izq:
             st.toast("Bandeja escaneada con éxito.")
 
     # MÓDULO: PROTOCOLO TO-DO TÁCTICO
-    with st.expander("• Tareas y Notas Tácticas"):
+    with st.expander("Tareas y Notas Tácticas"):
         st.caption("Gestión y registro rápido de pendientes en el búnker.")
         nueva_tarea = st.text_input("Nueva tarea:", placeholder="Ej: Revisar sensores...")
         if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
@@ -187,7 +187,7 @@ with col_izq:
             st.markdown(f"• {t}")
 
     # MÓDULO: SINTETIZADOR DE VOZ NATIVO
-    with st.expander("• Sintetizador de Voz Nativa (Varonil)"):
+    with st.expander("Sintetizador de Voz Nativa (Varonil)"):
         st.caption("Emisión de comandos con tono de voz grave y profundo.")
         texto_a_hablar = st.text_area("Texto a reproducir:", value=f"{saludo_tiempo}, jefa. Sistemas de Buin operativos.", height=55)
         if st.button("🔊 Reproducir Voz de J.A.R.V.I.S.", use_container_width=True):
@@ -215,7 +215,7 @@ with col_izq:
             st.success("Voz emitida con éxito.")
 
     # MÓDULO: CONVERSOR FINANCIERO CLP
-    with st.expander("• Conversor de Monedas"):
+    with st.expander("Conversor de Monedas"):
         st.caption("Cálculo en tiempo real USD/EUR a Pesos Chilenos.")
         c_f1, c_f2 = st.columns(2)
         with c_f1:
@@ -227,7 +227,7 @@ with col_izq:
         st.markdown(f"💰 **Total:** `{monto} {moneda}` = **`${total:,.2f} CLP`**")
 
     # MÓDULO: MARCADORES RÁPIDOS
-    with st.expander("• Enlaces y Marcadores Rápidos"):
+    with st.expander("Enlaces y Marcadores Rápidos"):
         st.caption("Accesos directos a portales clave.")
         r1, r2 = st.columns(2)
         with r1:
@@ -238,7 +238,7 @@ with col_izq:
             st.link_button("🌦️ Meteo Chile", "https://www.meteochile.gob.cl", use_container_width=True)
 
     # MÓDULO: TELEMETRÍA GLOBAL
-    with st.expander("• Telemetría Global y Sensores"):
+    with st.expander("Telemetría Global y Sensores"):
         st.caption("Monitoreo de estado de conexiones y satélites.")
         st.success("Enlace Starlink: Estable (95%) • Sensores Buin: OK")
 
