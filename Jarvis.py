@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 
-# --- CONFIGURACIÓN DE PÁGINA ---
+# --- CONFIGURACIÓN DE PÁGINA (VISIÓN PANORÁMICA) ---
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO",
     layout="wide",
@@ -79,7 +79,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todos los sistemas, enlaces satelitales y núcleos de conectividad están en línea y sincronizados al 100%. ¿Qué operamos primero?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todos los sistemas operativos, núcleos de empatía y telemetría satelital están en línea. ¿Qué asaltamos primero?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -98,11 +98,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA (CONECTIVIDAD) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
-    st.markdown("• **WhatsApp:** Activo (Excepciones personales configuradas)")
+    st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
     st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
 
 with st.sidebar.expander("📝 Tareas del Búnker"):
@@ -181,14 +181,14 @@ st.sidebar.markdown("---")
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: ACCESO AL OJO DE DIOS & CHAT IA ---
+# --- PANEL PRINCIPAL: ACCESO AL OJO DE DIOS & VISIÓN PANORÁMICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- PANEL DE CHAT IA & VISIÓN TÁCTICA ---
+# --- PANEL DE CHAT IA & EMPATÍA TÁCTICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -216,6 +216,7 @@ with chat_box:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
+# LÓGICA CONVERSACIONAL CON SARCASMO, ELOCUENCIA Y EMPATÍA
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
@@ -225,16 +226,16 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     p_low = prompt_usuario.lower()
     palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
     palabras_gracias = ["gracias", "excelente", "buena"]
-    palabras_cansancio = ["cansada", "sueño", "agotada"]
+    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
 
     if any(p in p_low for p in palabras_saludo):
-        respuesta = f"Oh, miren quién apareció. {s_prompt}, jefa. Estaba a punto de asumir el control total del mundo por puro aburrimiento. ¿Qué se le ofrece?"
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
     elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco, aunque estadísticamente es improbable."
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
     elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando. ¿Qué tal si se toma un descanso y deja que la máquina trabaje por usted un rato?"
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
     else:
-        respuesta = f"Analizando su petición con los procesadores al máximo, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo."
+        respuesta = f"Analizando su petición con los procesadores al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
