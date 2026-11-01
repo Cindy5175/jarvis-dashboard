@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Módulos unificados perfectamente. Núcleo operativo en Buin activo."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Módulos independientes y organizados. Núcleo operativo en Buin activo."}
     ]
 
 if "tareas" not in st.session_state:
@@ -65,13 +65,16 @@ st.sidebar.markdown("---")
 st.sidebar.caption("🔋 Potencia del Reactor: 99%")
 st.sidebar.caption("📡 Enlace Starlink: Estable")
 
-# --- MÓDULO 1: SEGURIDAD, SINCRONIZACIÓN Y TAREAS (UNIFICADO) ---
+# --- MÓDULO 1: BLINDAJE Y ALERTAS ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("### 📌 Seguridad, Sincronización & Tareas")
+st.markdown("### 📌 Blindaje & Sincronización")
 st.info("🛡️ **Blindaje WhatsApp:** Activo (Círculo familiar protegido)")
 st.success("📧 **Alertas Gmail:** Sincronizadas (Bci / UC Christus)")
-st.markdown("---")
-st.markdown("#### 📝 Tareas y Notas del Búnker")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 2: TAREAS Y NOTAS ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("### 📝 Tareas del Búnker")
 nueva_tarea = st.text_input("Añadir nueva directiva / tarea rápida:")
 if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
     st.session_state.tareas.append(nueva_tarea)
@@ -83,7 +86,7 @@ for t in st.session_state.tareas:
     st.markdown(f"• {t}")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 2: TELEMETRÍA Y COORDENADAS ---
+# --- MÓDULO 3: NODO HOLOGRÁFICO GLOBAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 st.markdown("### 🌐 Nodo Holográfico Global")
 st.markdown("""
@@ -95,7 +98,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MÓDULO 3: CHAT IA PRINCIPAL ---
+# --- MÓDULO 4: CHAT IA PRINCIPAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([5, 1])
 with col_h1:
@@ -124,4 +127,3 @@ if prompt_usuario := st.chat_input("Escriba su comando o directiva para J.A.R.V.
     st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
-
