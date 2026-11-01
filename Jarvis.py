@@ -3,6 +3,8 @@ import datetime
 import json
 import os
 import sqlite3
+from gtts import gTTS
+import base64
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -66,6 +68,26 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS) ---
+def hablar_como_jarvis(texto):
+    try:
+        # Generar audio con gTTS (idioma español)
+        tts = gTTS(text=texto, lang='es', slow=False)
+        audio_file = "jarvis_voz.mp3"
+        tts.save(audio_file)
+        
+        # Reproducir automáticamente en Streamlit
+        audio_bytes = open(audio_file, 'rb').read()
+        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        audio_html = f"""
+            <audio autoplay style="display:none;">
+                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+            </audio>
+        """
+        st.markdown(audio_html, unsafe_allow_html=True)
+    except Exception as e:
+        print(f"Error en síntesis de voz: {e}")
+
 # --- SISTEMA DE AUTENTICACIÓN (CLAVE DE ACCESO) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -86,6 +108,7 @@ if not st.session_state.autenticado:
             if clave_ingresada == "Jarvis":
                 st.session_state.autenticado = True
                 st.success("Acceso concedido. Bienvenida, jefa.")
+                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Todos los sistemas del búnker operativos.")
                 st.rerun()
             else:
                 st.error("Clave incorrecta. Acceso denegado.")
@@ -212,6 +235,7 @@ with col_izq:
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             add_biometria(hr_input, spo2_input, sueno_input)
             st.success("¡Métrica registrada en el búnker!")
+            hablar_como_jarvis("Datos biométricos guardados correctamente en la base de datos del búnker.")
             st.rerun()
             
         ultimo_registro = get_latest_biometria()
@@ -296,6 +320,7 @@ with col_centro:
             h_limp = datetime.datetime.now(tz_chile).hour
             s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
             st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia y lista."}]
+            hablar_como_jarvis("Memoria limpia y lista, jefa.")
             st.rerun()
 
     for m in st.session_state.mensajes:
@@ -318,6 +343,7 @@ with col_centro:
             respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
             
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        hablar_como_jarvis(respuesta)
         st.rerun()
 
 # ==========================================
@@ -334,8 +360,10 @@ with col_der:
         st.markdown("Barrido inteligente (Familia y Médicos blindados).")
         if st.button("🔍 Auditar Correos del Día", use_container_width=True):
             st.success("¡Auditoría táctica completada!")
+            hablar_como_jarvis("Auditoría de correo completada con éxito. Zonas familiares y médicas protegidas.")
         if st.button("🧹 Limpiar Spam (Bandeja Segura)", use_container_width=True):
             st.warning("Spam archivado. Zona familiar y médica intactas.")
+            hablar_como_jarvis("Spam archivado. Las zonas protegidas se mantienen intactas.")
 
     with st.expander("🔍 Búsqueda y Web en Vivo"):
         url_input = st.text_input("URL o término a explorar:", key="inp_url")
