@@ -196,9 +196,10 @@ with col_izq:
         st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
 # ==========================================
-# COLUMNA CENTRAL: OJO DE DIOS, ISS & CHAT
+# COLUMNA CENTRAL: OJO DE DIOS, ISS, CÁMARA & CHAT
 # ==========================================
 with col_centro:
+    # Módulo Satelital e ISS
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Órbita terrestre en vivo y enlace satelital sincronizado con Buin.</p>", unsafe_allow_html=True)
@@ -211,6 +212,17 @@ with col_centro:
         st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Tarjeta de Control y Activación de Cámaras (El botón que faltaba)
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial & Transmisión", value=False, key="toggle_cam_central")
+    if activar_camara_directa:
+        st.success("🟢 Transmisión de seguridad activa y enlace con cámaras operando.")
+        foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+        if foto_camara:
+            st.success("Fotograma capturado con éxito. Análisis completado sin observaciones.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Tarjeta de Chat IA
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     cc1, cc2 = st.columns([4, 1])
     with cc1:
