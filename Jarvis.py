@@ -8,11 +8,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (CENTRADOS & NEÓN AZUL) ---
+# --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
-        h1, h2, h3, h4 { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
+        h1, h2, h3, h4, label, span { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
         
         /* Contenedor del Encabezado Centrado */
         .arc-reactor-container {
@@ -58,10 +58,15 @@ st.markdown("""
             text-align: left !important;
             color: #00d2ff !important;
         }
+
+        /* Forzar texto en azul neón dentro del chat y expanders */
+        .stMarkdown, p, li, span, div, .stChatMessage p {
+            color: #00d2ff !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORARIO EXACTO EN TIEMPO REAL (AJUSTADO) ---
+# --- HORARIO EXACTO EN TIEMPO REAL ---
 hora_actual = datetime.datetime.now().hour
 if 0 <= hora_actual < 12:
     saludo = "Buenos días"
@@ -72,7 +77,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Sistemas autónomos al 100%, núcleos de análisis expandidos y protocolo Stark activo. ¿Qué desastre evitamos hoy o en qué le ayudo?"}
+        {"role": "assistant", "content": f"{saludo}, jefa. Sistemas autónomos y 6 núcleos cerebrales integrados en la Estación de Control. ¿Qué destruimos o construimos hoy?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -85,13 +90,13 @@ if "tareas" not in st.session_state:
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important;">J.A.R.V.I.S IA</h2>
-        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #8ab4f8; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
+        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
     </div>
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: BLOQUE ÚNICO UNIFICADO (ESTACIÓN DE CONTROL) ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA CON LOS 6 PUNTOS ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
@@ -120,19 +125,38 @@ with st.sidebar.expander("🌤️ Clima Local (Buin)"):
 with st.sidebar.expander("🔗 Enlaces Clave"):
     st.markdown("• **Portal Clínico UC Christus:** Conectado")
 
-with st.sidebar.expander("📋 Actividad"):
-    st.markdown("• **Sincronización silenciosa:** OK")
+# --- LOS 6 PUNTOS CLAVE DEL CEREBRO INTEGRADOS EN LA ESTACIÓN ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
+
+with st.sidebar.expander("1. Conexión de IA Avanzada"):
+    st.markdown("• **Estado:** Enlace API GPT/Gemini listo\n• **Personalidad:** Sarcasmo elegante estilo Stark")
+
+with st.sidebar.expander("2. Búsqueda y Web en Vivo"):
+    st.markdown("• **Estado:** Motores de búsqueda activos\n• **Función:** Lectura de URLs y datos de la web")
+
+with st.sidebar.expander("3. Sensores Meteorológicos"):
+    st.markdown("• **Estado:** APIs de clima conectadas\n• **Función:** Monitoreo en tiempo real Buin")
+
+with st.sidebar.expander("4. Análisis de Documentos"):
+    st.markdown("• **Estado:** Lector de archivos habilitado\n• **Función:** PDFs, imágenes y datos analizados")
+
+with st.sidebar.expander("5. Módulo de Voz IA"):
+    st.markdown("• **Estado:** Protocolo de síntesis en espera\n• **Función:** Interacción por voz y audio")
+
+with st.sidebar.expander("6. Automatización Python"):
+    st.markdown("• **Estado:** Intérprete activo\n• **Función:** Ejecución de código en segundo plano")
 
 st.sidebar.markdown("---")
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA (CEREBRO AUTÓNOMO TIERRA-STARK) ---
+# --- PANEL PRINCIPAL: CHAT IA (TEXTO AZUL NEÓN UNIFORME) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4 style='margin:0; font-size: 1.1rem;'>💬 Chat IA</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}]
@@ -142,7 +166,7 @@ chat_box = st.container(height=350)
 with chat_box:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
-            st.write(m["content"])
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
 
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
@@ -152,7 +176,6 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     palabras_gracias = ["gracias", "excelente", "buena"]
     palabras_cansancio = ["cansada", "sueño", "agotada"]
 
-    # Respuestas con personalidad Stark (sarcasmo fino y lealtad absoluta)
     if any(p in p_low for p in palabras_saludo):
         respuesta = f"Oh, miren quién apareció. {saludo}, jefa. Estaba a punto de asumir el control total del mundo por puro aburrimiento. ¿Qué se le ofrece?"
     elif any(p in p_low for p in palabras_gracias):
