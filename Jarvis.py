@@ -66,6 +66,31 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- SISTEMA DE AUTENTICACIÓN (CLAVE DE ACCESO) ---
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+
+if not st.session_state.autenticado:
+    st.markdown("""
+        <div class="arc-reactor-container" style="margin-top: 50px;">
+            <div class="arc-ring"><div class="arc-triangle"></div></div>
+            <h2 style="margin: 0; padding: 0; font-size: 1.8rem; text-align: center !important; color: #00d2ff !important;">ACCESO RESTRINGIDO</h2>
+            <p style="margin: 0; font-family: monospace; font-size: 0.85rem; color: #00d2ff !important; text-align: center !important;">[ PROTOCOLO DE SEGURIDAD NODO BUIN ]</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_centro_auth = st.columns([1, 1.5, 1])[1]
+    with col_centro_auth:
+        clave_ingresada = st.text_input("Ingrese la clave de seguridad del búnker:", type="password")
+        if st.button("🔓 Desbloquear Sistema", use_container_width=True):
+            if clave_ingresada == "Jarvis":
+                st.session_state.autenticado = True
+                st.success("Acceso concedido. Bienvenida, jefa.")
+                st.rerun()
+            else:
+                st.error("Clave incorrecta. Acceso denegado.")
+    st.stop()
+
 # --- CÁLCULO DE HORA LOCAL EN CHILE (UTC-3) ---
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 hora_actual = datetime.datetime.now(tz_chile).hour
