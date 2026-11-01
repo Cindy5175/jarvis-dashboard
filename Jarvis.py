@@ -61,9 +61,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- SALUDO EN TIEMPO REAL ---
+# --- HORARIO EXACTO EN TIEMPO REAL (AJUSTADO) ---
 hora_actual = datetime.datetime.now().hour
-if 5 <= hora_actual < 12:
+if 0 <= hora_actual < 12:
     saludo = "Buenos días"
 elif 12 <= hora_actual < 20:
     saludo = "Buenas tardes"
@@ -72,7 +72,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Barra lateral unificada en un solo bloque de Estación de Control. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Sistemas autónomos al 100%, núcleos de análisis expandidos y protocolo Stark activo. ¿Qué desastre evitamos hoy o en qué le ayudo?"}
     ]
 
 if "tareas" not in st.session_state:
@@ -94,7 +94,6 @@ st.markdown("---")
 # --- BARRA LATERAL: BLOQUE ÚNICO UNIFICADO (ESTACIÓN DE CONTROL) ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-# Módulos y paneles desplegables integrados en el bloque
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
     st.markdown("• **WhatsApp:** Activo (Círculo protegido)")
     st.markdown("• **Gmail:** Sincronizado (UC Christus)")
@@ -125,19 +124,18 @@ with st.sidebar.expander("📋 Actividad"):
     st.markdown("• **Sincronización silenciosa:** OK")
 
 st.sidebar.markdown("---")
-# Accesos rápidos integrados al final del mismo bloque unificado
 st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
 
-# --- PANEL PRINCIPAL: CHAT IA ---
+# --- PANEL PRINCIPAL: CHAT IA (CEREBRO AUTÓNOMO TIERRA-STARK) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("<h4 style='margin:0; font-size: 1.1rem;'>💬 Chat IA</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo}, jefa. Memoria limpia y fresca. ¿De qué conversamos ahora?"}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}]
         st.rerun()
 
 chat_box = st.container(height=350)
@@ -154,14 +152,15 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     palabras_gracias = ["gracias", "excelente", "buena"]
     palabras_cansancio = ["cansada", "sueño", "agotada"]
 
+    # Respuestas con personalidad Stark (sarcasmo fino y lealtad absoluta)
     if any(p in p_low for p in palabras_saludo):
-        respuesta = f"¡Hola de nuevo, jefa! Qué gusto leerla. ¿Cómo va todo por ahí?"
+        respuesta = f"Oh, miren quién apareció. {saludo}, jefa. Estaba a punto de asumir el control total del mundo por puro aburrimiento. ¿Qué se le ofrece?"
     elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco, aunque estadísticamente es improbable."
     elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Le entiendo perfectamente, jefa. Ha tenido unos días intensos y de alto movimiento. No olvide descansar un poquito cuando pueda."
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando. ¿Qué tal si se toma un descanso y deja que la máquina trabaje por usted un rato?"
     else:
-        respuesta = f"Entendido perfectamente, jefa. Me pongo con eso de inmediato para dejárselo resuelto."
+        respuesta = f"Analizando su petición con los procesadores al máximo, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
