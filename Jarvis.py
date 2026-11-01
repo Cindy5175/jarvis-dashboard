@@ -61,13 +61,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DE ESTADOS ---
+# --- SALUDO EN TIEMPO REAL ---
 hora_actual = datetime.datetime.now().hour
-saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= hora_actual < 20 else "Buenas noches")
+if 5 <= hora_actual < 12:
+    saludo = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo = "Buenas tardes"
+else:
+    saludo = "Buenas noches"
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Encabezado centrado, clima actualizado y módulos integrados en la Estación de Control. Núcleo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Módulos e inversión de barra lateral aplicados con éxito. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -86,19 +91,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL Y TODOS LOS MÓDULOS ---
-st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
-st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
-st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
-
-st.sidebar.markdown("---")
+# --- BARRA LATERAL: MÓDULOS ARRIBA Y ESTACIÓN DE CONTROL ABAJO ---
 st.sidebar.markdown("### 📊 Módulos del Sistema")
 
-# Módulos organizados bajo la estación de control
 with st.sidebar.expander("🛡️ Blindaje & Alertas"):
-    st.info("WhatsApp: Activo (Círculo protegido)")
-    st.success("Gmail: Sincronizado (UC Christus)")
+    st.markdown("• **WhatsApp:** Activo (Círculo protegido)")
+    st.markdown("• **Gmail:** Sincronizado (UC Christus)")
 
 with st.sidebar.expander("📝 Tareas del Búnker"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
@@ -111,28 +109,34 @@ with st.sidebar.expander("📝 Tareas del Búnker"):
         st.markdown(f"• {t}")
 
 with st.sidebar.expander("🌐 Nodo Global"):
-    st.markdown("UBICACIÓN: Buin, Chile\n\nCOORDENADAS: -33.73° S / -70.73° W")
+    st.markdown("• **Ubicación:** Buin, Chile\n• **Coordenadas:** -33.73° S / -70.73° W")
 
 with st.sidebar.expander("🔋 Telemetría"):
-    st.markdown("Reactor: 99%\n\nEnlace Starlink: Estable")
+    st.markdown("• **Reactor:** 99%\n• **Enlace Starlink:** Estable")
 
 with st.sidebar.expander("🌤️ Clima Local (Buin)"):
-    st.markdown("🌡️ **Actual:** Despejado / Estable\n📈 **Máxima estimada:** 24°C\n📉 **Mínima estimada:** 11°C")
+    st.markdown("• **Actual:** Despejado / Estable\n• **Máxima estimada:** 24°C\n• **Mínima estimada:** 11°C")
 
 with st.sidebar.expander("🔗 Enlaces Clave"):
-    st.markdown("🏥 Portal Clínico UC Christus: Conectado")
+    st.markdown("• **Portal Clínico UC Christus:** Conectado")
 
 with st.sidebar.expander("📋 Actividad"):
-    st.markdown("Sincronización silenciosa: OK")
+    st.markdown("• **Sincronización silenciosa:** OK")
 
-# --- PANEL PRINCIPAL: CHAT IA ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+st.sidebar.link_button("🛰️ Ojo de Dios (Osiris)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+st.sidebar.link_button("🏥 UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+st.sidebar.link_button("🌦️ Meteo Chile 🇨🇱", "https://www.meteochile.gob.cl", use_container_width=True)
+
+# --- PANEL PRINCIPAL: CHAT IA (CON TÍTULO ACHICADO) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("### 💬 Chat IA")
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem;'>💬 Chat IA</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        st.session_state.mensajes = [{"role": "assistant", "content": "Memoria limpia y fresca, jefa. ¿De qué conversamos ahora?"}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo}, jefa. Memoria limpia y fresca. ¿De qué conversamos ahora?"}]
         st.rerun()
 
 chat_box = st.container(height=350)
