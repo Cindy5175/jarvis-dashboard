@@ -35,7 +35,7 @@ saludo = "Buenos días" if 5 <= hora_actual < 12 else ("Buenas tardes" if 12 <= 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo}, jefa. Error de sintaxis corregido. Núcleo operativo en Buin al 100%."}
+        {"role": "assistant", "content": f"{saludo}, jefa. Reactor Arc azul neón activado correctamente. Núcleo operativo en Buin al 100%."}
     ]
 
 if "tareas" not in st.session_state:
@@ -45,8 +45,8 @@ if "tareas" not in st.session_state:
         "Monitorear nodo operativo en Buin"
     ]
 
-# --- ENCABEZADO PRINCIPAL CON LOGOTIPO TRIANGULAR TONY STARK ---
-st.markdown("## 🔺 J.A.R.V.I.S IA")
+# --- ENCABEZADO PRINCIPAL CON REACTOR ARC AZUL TONY STARK ---
+st.markdown("## 💠 J.A.R.V.I.S IA")
 st.caption("[ STARK INDUSTRIES // NODO OPERATIVO BUIN, CHILE ]")
 st.markdown("---")
 
@@ -119,4 +119,11 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     elif any(p in p_low for p in palabras_gracias):
         respuesta = f"Para eso estamos, jefa. Me alegra mucho que le guste cómo va quedando."
     elif any(p in p_low for p in palabras_cansancio):
-        respuesta
+        respuesta = f"Le entiendo perfectamente, jefa. Ha tenido unos días intensos y de alto movimiento. No olvide descansar un poquito cuando pueda."
+    else:
+        respuesta = f"Entendido perfectamente, jefa. Me pongo con eso de inmediato para dejárselo resuelto."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
