@@ -231,29 +231,29 @@ with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
     
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada")
-        st.markdown("• **Zona Médica:** Protegida")
+        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
+        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
         st.markdown("• **Finanzas:** Monitoreo exclusivo")
 
-    with st.expander("⌚ Mi Band (Telemetría)", expanded=True):
+    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
-        spo2_input = st.number_input("SpO2 (%):", min_value=70, max_value=100, value=98)
-        sueno_input = st.text_input("Sueño / Notas:", value="Óptimo - 7.5 hrs")
+        spo2_input = st.number_input("Oxígeno SpO2 (%):", min_value=70, max_value=100, value=98)
+        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         
-        if st.button("💾 Guardar Mi Band", use_container_width=True):
+        if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             add_biometria(hr_input, spo2_input, sueno_input)
             st.success("¡Registrado!")
-            hablar_como_jarvis("Datos biométricos guardados.")
+            hablar_como_jarvis("Datos biométricos guardados correctamente.")
             st.rerun()
 
-    with st.expander("🔔 Alertas"):
+    with st.expander("🔔 Alertas del Búnker"):
         alertas_db = get_db_alertas()
         for msg, nivel in alertas_db:
             st.markdown(f"• {msg}")
 
-    with st.expander("📝 Tareas"):
-        nueva_tarea = st.text_input("Nueva tarea:", key="inp_tarea")
-        if st.button("➕ Añadir", use_container_width=True) and nueva_tarea:
+    with st.expander("📝 Tareas del Búnker"):
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
             add_db_tarea(nueva_tarea)
             st.rerun()
         for tid, t in get_db_tareas():
@@ -265,25 +265,52 @@ with col_izq:
                     delete_db_tarea(tid)
                     st.rerun()
 
+    with st.expander("🌐 Telemetría Global", expanded=True):
+        st.markdown(f"• **Reactor:** 100% stable\n• **Hora:** {datetime.datetime.now(tz_chile).strftime('%H:%M')}\n• **Starlink:** Óptimo")
+
+    with st.expander("🌤️ Clima Local (Buin)", expanded=True):
+        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
+
 # ==========================================
-# COLUMNA CENTRAL: CHAT & OJO DE DIOS
+# COLUMNA CENTRAL: OJO DE DIOS, ISS, CÁMARA & CHAT
 # ==========================================
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Enlace</h4>", unsafe_allow_html=True)
-    st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
+    
+    tab_ojo, tab_iss1, tab_iss2, tab_aurora = st.tabs(["🗺️ Mapa Satelital", "🌍 ISS Diurno", "🛰️ Tierra 24/7", "🌌 Auroras ISS"])
+    with tab_ojo:
+        st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    with tab_iss1:
+        st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
+        st.caption("Ambient Earth (Real Time) ✨ ISS Remastered")
+    with tab_iss2:
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+        st.caption("International Space Station ISS Live 24/7 🌍 Earth from Space")
+    with tab_aurora:
+        st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
+        st.caption("Aurora Across the Night Side 🌌 ISS Views | LIVE 24/7")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial & Transmisión", value=False, key="toggle_cam_central")
+    if activar_camara_directa:
+        st.success("🟢 Transmisión de seguridad activa y enlace con cámaras operando.")
+        foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+        if foto_camara:
+            st.success("Fotograma capturado con éxito.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     cc1, cc2 = st.columns([4, 1])
     with cc1:
-        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
     with cc2:
         if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
             h_limp = datetime.datetime.now(tz_chile).hour
             s_limp = "Buenos días" if 0 <= h_limp < 12 else ("Buenas tardes" if 12 <= h_limp < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia."}]
-            hablar_como_jarvis("Memoria limpia.")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_limp}, jefa. Memoria limpia y lista."}]
+            hablar_como_jarvis("Memoria limpia y lista, jefa.")
             st.rerun()
 
     for m in st.session_state.mensajes:
@@ -299,11 +326,11 @@ with col_centro:
         p_low = prompt_usuario.lower()
         
         if any(p in p_low for p in ["hola", "saludos"]):
-            respuesta = f"{s_prompt}, jefa. Sistemas al 100%."
+            respuesta = f"{s_prompt}, jefa. Todos los sistemas del búnker operando al 100%."
         elif any(p in p_low for p in ["sodio", "potasio", "examen", "medico", "médico"]):
-            respuesta = "Registros clínicos: Sodio 143.9 mEq/L y Potasio 4.1 mEq/L (normales)."
+            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L (normales)."
         else:
-            respuesta = "Entendido, jefa. Procesando órdenes..."
+            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
             
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         hablar_como_jarvis(respuesta)
@@ -315,31 +342,65 @@ with col_centro:
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
 
-    with st.expander("🎙️ Núcleo de Voz", expanded=True):
-        st.toggle("Activar Voz", value=True, key="toggle_voz_jarvis")
-        if st.button("🔊 Repetir Último", use_container_width=True):
+    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
+        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
+        if st.button("🔊 Repetir Último Comando", use_container_width=True):
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
 
     with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
-        tipo_analisis = st.selectbox("Protocolo:", ["Estadística", "Procesar CSV"])
-        if tipo_analisis == "Estadística":
-            val_input = st.text_input("Valores (ej: 10, 20, 30):", "12, 18, 24, 30")
-            if st.button("⚡ Ejecutar GNOME", use_container_width=True):
+        st.markdown("Procesamiento analítico y optimización de datos reales.")
+        tipo_analisis = st.selectbox("Seleccionar Protocolo:", ["Análisis Estadístico de Variables", "Procesamiento de Archivo CSV"])
+        
+        if tipo_analisis == "Análisis Estadístico de Variables":
+            val_input = st.text_input("Ingrese valores separados por comas:", "12, 18, 24, 30, 45, 50")
+            if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
                 try:
                     nums = [float(x.strip()) for x in val_input.split(",")]
-                    prom = np.mean(nums)
-                    st.markdown(f"• **Promedio:** `{prom:.2f}`")
-                    hablar_como_jarvis(f"Promedio calculado: {prom:.2f}")
+                    promedio = np.mean(nums)
+                    desviacion = np.std(nums)
+                    st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
+                    st.markdown(f"• **Desviación Estándar:** `{desviacion:.2f}`")
+                    hablar_como_jarvis(f"Análisis GNOME completado. Promedio: {promedio:.2f}.")
                 except Exception:
-                    st.error("Error en números.")
-        elif tipo_analisis == "Procesar CSV":
-            csv_sub = st.file_uploader("Subir CSV:", type=["csv"])
-            if csv_sub is not None:
-                df = pd.read_csv(csv_sub)
-                st.success(f"Cargado: {df.shape[0]} filas.")
-                st.dataframe(df.head(2))
+                    st.error("Error en el formato de los datos numéricos.")
+        
+        elif tipo_analisis == "Procesamiento de Archivo CSV":
+            archivo_subido = st.file_uploader("Cargue dataset para análisis GNOME:", type=["csv", "txt"])
+            if archivo_subido is not None:
+                df_gnome = pd.read_csv(archivo_subido)
+                st.success(f"Dataset cargado: {df_gnome.shape[0]} filas, {df_gnome.shape[1]} columnas.")
+                st.dataframe(df_gnome.head(3))
+                if st.button("📊 Generar Resumen Estadístico", use_container_width=True):
+                    st.write(df_gnome.describe())
+                    hablar_como_jarvis("Resumen estadístico generado mediante GNOME.")
 
-    with st.expander("🗺️ Cartografía Stark"):
-        st.link_button("☀️ SunCalc", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🌤️ Ventusky", "https://www.ventusky.com", use_container_width=True)
+    with st.expander("⚙️ Conexión de IA Avanzada"):
+        st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+        st.slider("Nivel de Sarcasmo:", 0, 100, 85)
+
+    with st.expander("📬 Auditoría de Correo IA", expanded=True):
+        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
+        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
+            st.success("¡Auditoría táctica completada!")
+            hablar_como_jarvis("Auditoría de correo completada con éxito.")
+
+    with st.expander("🔍 Búsqueda y Web en Vivo"):
+        url_input = st.text_input("URL o término a explorar:", key="inp_url")
+        if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+            st.info(f"Analizando nodo web: {url_input}...")
+        st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
+
+    with st.expander("🗺️ Estación Cartográfica & Cámaras", expanded=True):
+        camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.markdown("---")
+        st.markdown("**🌐 Arsenal Cartográfico (Stark Maps):**")
+        st.link_button("☀️ 01. SunCalc (Recorrido solar)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🗺️ 02. OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+        st.link_button("🌊 03. Climate Central", "https://coastal.climatecentral.org", use_container_width=True)
+        st.link_button("🛣️ 04. Streetmix", "https://streetmix.net", use_container_width=True)
+        st.link_button("📐 05. CADmapper", "https://cadmapper.com", use_container_width=True)
+        st.link_button("🌤️ 06. Ventusky", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ 07. ShadeMap", "https://shademap.app", use_container_width=True)
+        st.link_button("🤖 08. Aino (IA Espacial)", "https://www.aino.world", use_container_width=True)
