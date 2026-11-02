@@ -1,15 +1,15 @@
 import os
 import streamlit as st
 
-# --- CONFIGURACIÓN DE PÁGINA ---
+# --- CONFIGURACIÓN DE PÁGINA (ANCHO TOTAL) ---
 st.set_page_config(
     page_title="J.A.R.V.I.S. | Búnker Táctico",
     page_icon="🛡️",
-    layout="wide",
+    layout="wide",  # <-- Esto expande la interfaz a todo el ancho de la pantalla
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES (Neón / Modo Oscuro) ---
+# --- ESTILOS VISUALES PARA EVITAR MÁRGENES CENTRALES ---
 st.markdown("""
     <style>
     .stApp {
@@ -19,6 +19,14 @@ st.markdown("""
     h1, h2, h3 {
         color: #00f0ff !important;
         font-family: monospace;
+    }
+    /* Maximizar el uso del ancho en Streamlit */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        padding-left: 3rem;
+        padding-right: 3rem;
+        max-width: 100% !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -35,11 +43,11 @@ def verificar_bandeja_directa(comando):
             return f"Le han llegado {cantidad_nuevos} correos nuevos a su bandeja de entrada, jefa."
     return None
 
-# --- DISTRIBUCIÓN SIMÉTRICA (50% IZQUIERDA / 50% DERECHA) ---
-col_izq, col_der = st.columns([1, 1])
+# --- DISTRIBUCIÓN DE DOS COLUMNAS AMPLIAS (50% / 50%) ---
+col_izq, col_der = st.columns(2)
 
 # ==========================================
-# COLUMNA IZQUIERDA (MÓDULOS 1 AL 3 Y ENLACES)
+# COLUMNA IZQUIERDA
 # ==========================================
 with col_izq:
     st.markdown("### ⚡ NÚCLEOS DE CEREBRO STARK")
@@ -60,7 +68,7 @@ with col_izq:
         st.toast("Actualizando datos meteorológicos...", icon="🌤️")
 
 # ==========================================
-# COLUMNA DERECHA (MÓDULOS 4 AL 6 + OJO DE DIOS + CHAT)
+# COLUMNA DERECHA
 # ==========================================
 with col_der:
     with st.expander("4. 📄 Análisis de Documentos"):
@@ -76,25 +84,25 @@ with col_der:
         st.write("Feeds de video en tiempo real.")
 
     st.markdown("---")
-    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS")
+    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS[cite: 4]")
     
-    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])
+    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])[cite: 4]
     
     with tab_mapa:
-        st.button("🌐 Abrir Visor Satelital (Osiris AI)")
+        st.button("🌐 Abrir Visor Satelital (Osiris AI)")[cite: 4]
         
-    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")
+    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")[cite: 4]
 
     st.markdown("---")
-    st.markdown("### 💬 Chat IA & Análisis Visual")
+    st.markdown("### 💬 Chat IA & Análisis Visual")[cite: 4]
     
     if st.button("🗑️"):
         st.toast("Memoria purgada.", icon="🧹")
         
-    st.info("Buenas noches, jefa. Memoria limpia y lista.")
+    st.info("Buenas noches, jefa. Memoria limpia y lista.")[cite: 4]
     
     # Entrada de comandos tácticos
-    orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
+    orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")[cite: 4]
     
     if orden_usuario:
         respuesta_correo = verificar_bandeja_directa(orden_usuario)
