@@ -226,4 +226,76 @@ with col_centro:
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    activar_camara = st.checkbox("📷
+    activar_camara = st.checkbox("📷 Activar Módulo de Visión Artificial", value=False)
+    if activar_camara:
+        st.success("🟢 Transmisión de seguridad activa.")
+        st.camera_input("Captura óptica en vivo:")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
+    with cc2:
+        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia y purgada con éxito."}]
+            hablar_como_jarvis("Memoria de chat purgada, jefa.")
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        p_low = prompt_usuario.lower()
+        if any(p in p_low for p in ["sodio", "potasio", "examen"]):
+            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L."
+        else:
+            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        hablar_como_jarvis(respuesta)
+        st.rerun()
+
+# ==========================================
+# COLUMNA DERECHA: SECTOR BETA & MÓDULOS
+# ==========================================
+with col_der:
+    st.markdown("### ⚡ SECTOR BETA")
+
+    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
+        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
+        if st.button("🔊 Repetir Último Comando", use_container_width=True):
+            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
+            st.success("Emitiendo audio...")
+
+    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
+        st.markdown("Procesamiento analítico y optimización de datos.")
+        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
+        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
+            try:
+                nums = [float(x.strip()) for x in val_input.split(",")]
+                promedio = np.mean(nums)
+                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
+                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
+            except Exception:
+                st.error("Error en el formato numérico.")
+
+    with st.expander("📬 Auditoría de Correo IA", expanded=True):
+        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
+        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
+            st.success("¡Auditoría táctica completada!")
+            hablar_como_jarvis("Auditoría de correo completada.")
+
+    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
+        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
+        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
+        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
+        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
+
+    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
+        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
