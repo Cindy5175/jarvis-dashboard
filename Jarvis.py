@@ -4,6 +4,7 @@ import sqlite3
 from gtts import gTTS
 import pandas as pd
 import numpy as np
+import streamlit.components.v1 as components
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -269,6 +270,45 @@ with col_der:
         if st.button("🔊 Repetir Último Comando", use_container_width=True):
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
+        
+        # Módulo de Escucha Continua (Hands-Free via Web Speech API)
+        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Escucha Continua (Micrófono):</p>", unsafe_allow_html=True)
+        components.html("""
+            <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
+                <button onclick="startListening()" style="background: #00d2ff; color: #060911; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">🎙️ Iniciar Escucha</button>
+                <p id="status" style="font-size: 0.75rem; color: #00d2ff; margin-top: 6px;">Estado: En espera...</p>
+            </div>
+            <script>
+                function startListening() {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        document.getElementById("status").innerText = "Error: Navegador no soporta voz.";
+                        return;
+                    }
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'es-CL';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+
+                    document.getElementById("status").innerText = "Estado: Escuchando...";
+                    
+                    recognition.onresult = function(event) {
+                        const speechResult = event.results[0][0].transcript;
+                        document.getElementById("status").innerText = "Detectado: " + speechResult;
+                    };
+
+                    recognition.onerror = function(event) {
+                        document.getElementById("status").innerText = "Error de audio.";
+                    };
+
+                    recognition.onend = function() {
+                        document.getElementById("status").innerText = "Estado: En espera...";
+                    };
+
+                    recognition.start();
+                }
+            </script>
+        """, height=110)
 
     with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
         st.markdown("Procesamiento analítico y optimización de datos.")
