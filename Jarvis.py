@@ -5,6 +5,7 @@ from gtts import gTTS
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
+from streamlit_autorefresh import st_autorefresh
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -12,6 +13,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- AUTOREFRESH PARA EL SEGUNDERO (1 SEGUNDO) ---
+st_autorefresh(interval=1000, key="datarefresh")
 
 # --- ESTILOS VISUALES STARK & CAJA DE CHAT ---
 st.markdown("""
@@ -79,10 +83,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORA CHILE ---
+# --- HORA CHILE EN TIEMPO REAL ---
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 ahora_chile = datetime.datetime.now(tz_chile)
 hora_actual = ahora_chile.hour
+fecha_formateada = ahora_chile.strftime("%A, %d de %B de %Y - %H:%M:%S")
 saludo_actual = "Buenos días" if 0 <= hora_actual < 12 else ("Buenas tardes" if 12 <= hora_actual < 20 else "Buenas noches")
 
 # --- ESTADO DE VOZ ---
@@ -174,37 +179,14 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está operativo... aunque alguien tenía que venir a vigilarlo."}
     ]
 
-# --- ENCABEZADO CON RELOJ EN TIEMPO REAL (SEGUNDERO CORRIENDO) ---
-st.markdown("""
+# --- ENCABEZADO CON CRONÓMETRO NATIVO FLUIDO ---
+st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
-        <div id="live-clock" style="margin: 4px 0 0 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important; font-weight: bold;">🕒 Sincronizando cronómetro táctico...</div>
+        <p style="margin: 4px 0 0 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: {fecha_formateada}</p>
     </div>
-    <script>
-        function updateClock() {
-            const options = { 
-                timeZone: 'America/Santiago', 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit',
-                hour12: false 
-            };
-            const now = new Date();
-            const timeString = now.toLocaleString('es-CL', options);
-            const clockElement = document.getElementById('live-clock');
-            if (clockElement) {
-                clockElement.innerText = "🕒 CRONÓMETRO TÁCTICO: " + timeString.charAt(0).toUpperCase() + timeString.slice(1);
-            }
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
 """, unsafe_allow_html=True)
 st.markdown("---")
 
