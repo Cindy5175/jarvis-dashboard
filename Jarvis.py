@@ -76,7 +76,6 @@ tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 ahora_chile = datetime.datetime.now(tz_chile)
 hora_actual = ahora_chile.hour
 
-# Formato de fecha legible (ej: Lunes, 2 de Noviembre de 2026)
 dias_semana = {"Mon": "Lunes", "Tue": "Martes", "Wed": "Miércoles", "Thu": "Jueves", "Fri": "Viernes", "Sat": "Sábado", "Sun": "Domingo"}
 meses_anio = {1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"}
 
@@ -220,4 +219,43 @@ with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
-with st.sidebar.expander("🔍 Búsqueda y Web en Vivo
+with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
+    url_input = st.text_input("URL o término a explorar:")
+    if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+        st.info(f"Analizando nodo web: {url_input}...")
+    
+    st.markdown("---")
+    st.markdown("**🏥 Módulo Portal UC Christus:**")
+    uc_query = st.text_input("Buscar cita / médico / especialidad:")
+    if st.button("🩺 Consultar Portal UC", use_container_width=True):
+        st.success(f"Consultando registros para: '{uc_query}'...")
+    st.link_button("🌐 Abrir Portal Clínico UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
+
+with st.sidebar.expander("📡 Sensores Meteorológicos"):
+    st.markdown("Red de radares Buin en línea y operativa.")
+
+with st.sidebar.expander("📄 Análisis de Documentos"):
+    archivo_cargado = st.file_uploader("Cargar documento (PDF/CSV/TXT):", type=["pdf", "csv", "txt"])
+    if archivo_cargado:
+        st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
+
+with st.sidebar.expander("🎙️ Módulo de Voz IA"):
+    voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
+    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
+
+with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
+    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
+    if st.button("⚡ Ejecutar Script Real", use_container_width=True):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            resultado_ejecucion = buffer_salida.getvalue()
+            st.code(resultado_ejecucion if resultado_ejecucion else "Código ejecutado sin salida en pantalla.", language="python")
+        except Exception as e:
+            st.error(f"Error en ejecución: {e}")
+
+with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
+    st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
+    st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
+    st.link_button("🤖 Google AI Studio", "https://aistudio.google.com", use_container_width
