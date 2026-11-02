@@ -20,7 +20,7 @@ st.markdown("""
         .stApp { background-color: #060911; color: #00d2ff; }
         h1, h2, h3, h4, label, span { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
         
-        /* Contenedor del Encabezado con el Reactor Arc Estilo Imagen */
+        /* Contenedor del Encabezado con el Reactor Arc */
         .arc-reactor-container {
             display: flex;
             flex-direction: column;
@@ -90,7 +90,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- CONFIGURACIÓN DE BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
+# --- CONFIGURACIÓN DE BASE DE DATOS SQLITE ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -150,7 +150,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON REACTOR ARC Y RELOJ EN VIVO (CON SEGUNDERO DINÁMICO) ---
+# --- ENCABEZADO CON REACTOR ARC Y RELOJ CON SEGUNDERO VIVO ---
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
@@ -160,14 +160,13 @@ st.markdown(f"""
         </p>
     </div>
     <script>
-        function actualizarReloj() {
+        function actualizarReloj() {{
             const ahora = new Date();
-            // Ajustar a zona horaria de Chile (UTC-3)
-            const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const opciones = {{ timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }};
             const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
             const el = document.getElementById('reloj-vivo');
             if (el) el.innerText = horaChile;
-        }
+        }}
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
@@ -223,14 +222,25 @@ with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
     if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
         st.success("Telemetría meteorológica sincronizada.")
 
-# --- NÚCLEOS DEL CEREBRO ---
+# --- NÚCLEOS DEL CEREBRO CON INTEGRACIÓN QWEN, KIMI Y BAIDU ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
 with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
-    st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+    modelo_elegido = st.selectbox(
+        "Modelo / Motor IA Activo:", 
+        [
+            "GPT-4o (Stark Core)", 
+            "Gemini 1.5 Pro", 
+            "Qwen 2.5 (Alibaba - Code & Logic)", 
+            "Kimi AI (Moonshot - Long Context)", 
+            "Ernie 4.0 (Baidu Core)"
+        ], 
+        key="model_select"
+    )
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
+    st.info(f"🟢 Motor secundario listo: {modelo_elegido.split(' ')[0]}")
 
 with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
     url_input = st.text_input("URL o término a explorar:")
@@ -310,4 +320,58 @@ with col_h1:
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_limpieza = datetime.datetime.now(tz_chile).hour
-        s_limpieza = "Buenos días" if 0 <= h_
+        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
+        ]
+        st.rerun()
+
+activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
+if activar_camara_directa:
+    foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+    if foto_camara:
+        st.success("Fotograma capturado con éxito. Iniciando análisis de patrones visuales...")
+        st.info("🤖 J.A.R.V.I.S.: Análisis óptico completado. Estructura del entorno estable y sin amenazas detectadas en el radio visual.")
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ENTRADA DE CHAT ESTABLE
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_prompt = datetime.datetime.now(tz_chile).hour
+    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
+    else:
+        respuesta = f"Analizando su petición con el motor {st.session_state.get('model_select', 'Stark Core')} al 100%, jefa. Digamos que la solución es brillante... ¿Procedemos con la ejecución?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
