@@ -1,111 +1,264 @@
-import os
 import streamlit as st
+import datetime
+import json
+import os
+import sqlite3
+import sys
+import io
+import contextlib
 
-# --- CONFIGURACIÓN DE PÁGINA (ANCHO TOTAL) ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S. | Búnker Táctico",
-    page_icon="🛡️",
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES PARA EXPANDIR EL BÚNKER ---
+# --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #0e1117;
-        color: #00f0ff;
-    }
-    h1, h2, h3 {
-        color: #00f0ff !important;
-        font-family: monospace;
-    }
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        padding-left: 3rem;
-        padding-right: 3rem;
-        max-width: 100% !important;
-    }
+        .stApp { background-color: #060911; color: #00d2ff; }
+        h1, h2, h3, h4, label, span { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
+        
+        /* Contenedor del Encabezado Centrado */
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .arc-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #3a4454;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
+            margin-bottom: 8px;
+        }
+        .arc-triangle {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 20px solid #ffffff;
+            filter: drop-shadow(0 0 6px #00d2ff);
+        }
+
+        .stark-card {
+            border: 1.5px solid #00d2ff;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: rgba(0, 210, 255, 0.04);
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+            text-align: left !important;
+        }
+        .stark-card p, .stark-card div, .stark-card span, .stark-card label {
+            text-align: left !important;
+            color: #00d2ff !important;
+        }
+
+        .stMarkdown, p, li, span, div, .stChatMessage p {
+            color: #00d2ff !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# --- LÓGICA DE CORREO SÍNCRONA Y SEGURA ---
-def verificar_bandeja_directa(comando):
-    cmd = comando.lower()
-    if any(p in cmd for p in ["bandeja", "correo", "correos", "mensajes", "email"]):
-        # Excepciones vigentes: Paola Carrera Baude, Sivia Grau y Karin Grau de Folliot.
-        cantidad_nuevos = 0  
-        if cantidad_nuevos == 0:
-            return "Bandeja despejada, jefa. No tiene correos nuevos pendientes en este momento."
-        else:
-            return f"Le han llegado {cantidad_nuevos} correos nuevos a su bandeja de entrada, jefa."
-    return None
+# --- CÁLCULO DE HORA LOCAL EN CHILE (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+hora_actual = datetime.datetime.now(tz_chile).hour
 
-# --- DISTRIBUCIÓN DE DOS COLUMNAS AMPLIAS (50% / 50%) ---
-col_izq, col_der = st.columns(2)
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
 
-# ==========================================
-# COLUMNA IZQUIERDA
-# ==========================================
-with col_izq:
-    st.markdown("### ⚡ NÚCLEOS DE CEREBRO STARK")
+# --- CONFIGURACIÓN DE BASE DE DATOS SQLITE (MEMORIA PERSISTENTE) ---
+DB_NAME = "jarvis_bunker.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
+    conn.commit()
     
-    with st.expander("1. 📹 Grabaciones y capturas de pantalla"):
-        st.write("Registros visuales y almacenamiento táctico.")
+    # Insertar tareas iniciales si está vacía
+    c.execute("SELECT COUNT(*) FROM tareas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
+        conn.commit()
         
-    with st.expander("2. 🔍 Búsqueda y Web en Vivo"):
-        st.write("Consultas y rastreo web activo.")
-        
-    with st.expander("3. 🌡️ Sensores Meteorológicos"):
-        st.write("Parámetros atmosféricos y métricas de Buin.")
-        
+    # Insertar alertas iniciales si está vacía
+    c.execute("SELECT COUNT(*) FROM alertas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK"))
+        conn.commit()
+    conn.close()
+
+init_db()
+
+def get_db_tareas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, texto FROM tareas")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def add_db_tarea(texto):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO tareas (texto) VALUES (?)", (texto,))
+    conn.commit()
+    conn.close()
+
+def delete_db_tarea(id_t):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM tareas WHERE id = ?", (id_t,))
+    conn.commit()
+    conn.close()
+
+def get_db_alertas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT mensaje, nivel FROM alertas")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
+    ]
+
+# --- ENCABEZADO CENTRADO CON EL REACTOR ARC DE TONY STARK ---
+st.markdown("""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE // SUPREME CORE ]</p>
+    </div>
+""", unsafe_allow_html=True)
+st.markdown("---")
+
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
+st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+
+with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
+    st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
+    st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
+
+with st.sidebar.expander("🔔 Alertas del Búnker"):
+    alertas_db = get_db_alertas()
+    for msg, nivel in alertas_db:
+        icono = "🟢" if nivel == "OK" else "ℹ️"
+        st.markdown(f"{icono} {msg}")
+    nueva_alerta = st.text_input("Añadir alerta rápida:")
+    if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+        conn.commit()
+        conn.close()
+        st.success("Alerta emitida.")
+        st.rerun()
+
+with st.sidebar.expander("📝 Tareas del Búnker (SQLite)"):
+    nueva_tarea = st.text_input("Nueva tarea rápida:")
+    if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+        add_db_tarea(nueva_tarea)
+        st.success("¡Registrada en base de datos!")
+        st.rerun()
+    st.markdown("**Pendientes:**")
+    for tid, t in get_db_tareas():
+        col_t1, col_t2 = st.columns([4, 1])
+        with col_t1:
+            st.markdown(f"• {t}")
+        with col_t2:
+            if st.button("❌", key=f"del_t_{tid}"):
+                delete_db_tarea(tid)
+                st.rerun()
+
+with st.sidebar.expander("🌐 Nodo Global"):
+    st.markdown("• **Ubicación:** Buin, Chile\n• **Coordenadas:** -33.73° S / -70.73° W")
+
+with st.sidebar.expander("🔋 Telemetría"):
+    st.markdown("• **Reactor:** 100% Estable\n• **Enlace Starlink:** Óptimo")
+
+with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
+    st.markdown("• **Condición:** Despejado / Estable\n• **Temperatura:** 21°C\n• **Humedad Relativa:** 45%")
+    if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
+        st.success("Telemetría meteorológica sincronizada.")
+
+# --- NÚCLEOS DEL CEREBRO ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
+
+with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
+    st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
+    sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
+    st.caption(f"Nivel de ironía actual: {sarcasmo}%")
+
+with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
+    url_input = st.text_input("URL o término a explorar:")
+    if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
+        st.info(f"Analizando nodo web: {url_input}...")
+    
     st.markdown("---")
-    if st.button("🏥 UC Christus"):
-        st.toast("Conectando red UC Christus...", icon="🏥")
-    if st.button("🌦️ Meteo Chile 🇨🇱"):
-        st.toast("Actualizando datos meteorológicos...", icon="🌤️")
+    st.markdown("**🏥 Módulo Portal UC Christus:**")
+    uc_query = st.text_input("Buscar cita / médico / especialidad:")
+    if st.button("🩺 Consultar Portal UC", use_container_width=True):
+        st.success(f"Consultando registros para: '{uc_query}'...")
+    st.link_button("🌐 Abrir Portal Clínico UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
-# ==========================================
-# COLUMNA DERECHA
-# ==========================================
-with col_der:
-    with st.expander("4. 📄 Análisis de Documentos"):
-        st.write("Lectura y procesamiento de archivos.")
-        
-    with st.expander("5. 🎙️ Módulo de Voz IA"):
-        st.write("Sistemas de síntesis y reconocimiento de voz.")
-        
-    with st.expander("6. 🐍 Automatización Python"):
-        st.write("Ejecución de scripts y rutinas programadas.")
-        
-    with st.expander("🎥 Monitoreo de Cámaras IP"):
-        st.write("Feeds de video en tiempo real.")
+with st.sidebar.expander("📡 Sensores Meteorológicos"):
+    st.markdown("Red de radares Buin en línea y operativa.")
 
-    st.markdown("---")
-    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS")
-    
-    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])
-    
-    with tab_mapa:
-        st.button("🌐 Abrir Visor Satelital (Osiris AI)")
-        
-    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")
+with st.sidebar.expander("📄 Análisis de Documentos"):
+    archivo_cargado = st.file_uploader("Cargar documento (PDF/CSV/TXT):", type=["pdf", "csv", "txt"])
+    if archivo_cargado:
+        st.success(f"Archivo '{archivo_cargado.name}' listo para procesamiento.")
 
-    st.markdown("---")
-    st.markdown("### 💬 Chat IA & Análisis Visual")
-    
-    if st.button("🗑️"):
-        st.toast("Memoria purgada.", icon="🧹")
-        
-    st.info("Buenas noches, jefa. Memoria limpia y lista.")
-    
-    # Entrada de comandos tácticos
-    orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
-    
-    if orden_usuario:
-        respuesta_correo = verificar_bandeja_directa(orden_usuario)
-        if respuesta_correo:
-            st.success(respuesta_correo)
-        else:
-            st.write(f"**Procesado:** {orden_usuario}")
+with st.sidebar.expander("🎙️ Módulo de Voz IA"):
+    voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
+    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
+
+with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
+    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
+    if st.button("⚡ Ejecutar Script Real", use_container_width=True):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            resultado_ejecucion = buffer_salida.getvalue()
+            st.code(resultado_ejecucion if resultado_ejecucion else "Código ejecutado sin salida en pantalla.", language="python")
+        except Exception as e:
+            st.error(f"Error en ejecución: {e}")
+
+with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
+    st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
+    st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
+    st.link_button("🤖 Google AI Studio", "https://aistudio.google.com", use_container_width=True)
+
+# --- MÓDULO DE CÁMARAS IP Y STREAMING EN VIVO ---
+with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
+    camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
+    if camara_seleccionada == "Stream IP Personalizado":
+        url_video = st.text_input("URL del Feed / Video (HTTP/MP4/HLS):", "")
+        if url_video:
+            try:
+                st.video(url_video)
+                st.caption("🔴 Trans
