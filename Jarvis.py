@@ -186,6 +186,7 @@ with col_izq:
     with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
         spo2_input = st.number_input("Oxígeno SpO2 (%):", min_value=70, max_value=100, value=98)
+        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             st.success("¡Registrado con éxito!")
             hablar_como_jarvis("Datos biométricos guardados.")
@@ -208,19 +209,40 @@ with col_izq:
         st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
 # ==========================================
-# COLUMNA CENTRAL: OJO DE DIOS & CHAT
+# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT CON PURGA
 # ==========================================
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Directo"])
+    tab_ojo, tab_iss1, tab_iss2, tab_aurora = st.tabs(["🗺️ Mapa Táctico", "🌍 ISS Diurno", "🛰️ Tierra 24/7", "🌌 Auroras"])
     with tab_ojo:
         st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-    with tab_iss:
+    with tab_iss1:
         st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
+    with tab_iss2:
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+    with tab_aurora:
+        st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    activar_camara = st.checkbox("📷 Activar Módulo de Visión Artificial", value=False)
+    if activar_camara:
+        st.success("🟢 Transmisión de seguridad activa.")
+        st.camera_input("Captura óptica en vivo:")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
+    with cc2:
+        # Botón de purga / limpieza de chat
+        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia y purgada con éxito."}]
+            hablar_como_jarvis("Memoria de chat purgada, jefa.")
+            st.rerun()
+
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
@@ -238,7 +260,7 @@ with col_centro:
         st.rerun()
 
 # ==========================================
-# COLUMNA DERECHA: SECTOR BETA & GNOME
+# COLUMNA DERECHA: SECTOR BETA & MÓDULOS
 # ==========================================
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
@@ -252,23 +274,4 @@ with col_der:
     with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
         st.markdown("Procesamiento analítico y optimización de datos.")
         val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
-        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
-            try:
-                nums = [float(x.strip()) for x in val_input.split(",")]
-                promedio = np.mean(nums)
-                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
-                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
-            except Exception:
-                st.error("Error en el formato numérico.")
-
-    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas:")
-        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
-        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
-        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
-        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
-
-    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
-        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
+        if st.
