@@ -1,10 +1,7 @@
 import streamlit as st
 import datetime
-import json
-import os
 import sqlite3
 from gtts import gTTS
-import base64
 import pandas as pd
 import numpy as np
 
@@ -70,28 +67,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DE ESTADO PARA LA VOZ ---
+# --- ESTADO DE VOZ ---
 if "ultimo_texto_hablado" not in st.session_state:
     st.session_state.ultimo_texto_hablado = "Sistemas operativos y listos, jefa."
 
-# --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS OPTIMIZADA) ---
 def hablar_como_jarvis(texto):
     st.session_state.ultimo_texto_hablado = texto
-    voz_activa = st.session_state.get("toggle_voz_jarvis", True)
-    if not voz_activa:
+    if not st.session_state.get("toggle_voz_jarvis", True):
         return
-        
     try:
         tts = gTTS(text=texto, lang='es', slow=False)
         audio_file = "jarvis_voz.mp3"
         tts.save(audio_file)
-        
-        # Reproductor nativo de Streamlit (Evita congelamientos en móviles)
         st.audio(audio_file, format='audio/mp3', autoplay=True)
     except Exception as e:
-        print(f"Error en síntesis de voz: {e}")
+        print(f"Error en voz: {e}")
 
-# --- SISTEMA DE AUTENTICACIÓN (CLAVE DE ACCESO) ---
+# --- AUTENTICACIÓN ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -117,18 +109,12 @@ if not st.session_state.autenticado:
                 st.error("Clave incorrecta. Acceso denegado.")
     st.stop()
 
-# --- CÁLCULO DE HORA LOCAL EN CHILE (UTC-3) ---
+# --- HORA CHILE ---
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 hora_actual = datetime.datetime.now(tz_chile).hour
+saludo_actual = "Buenos días" if 0 <= hora_actual < 12 else ("Buenas tardes" if 12 <= hora_actual < 20 else "Buenas noches")
 
-if 0 <= hora_actual < 12:
-    saludo_actual = "Buenos días"
-elif 12 <= hora_actual < 20:
-    saludo_actual = "Buenas tardes"
-else:
-    saludo_actual = "Buenas noches"
-
-# --- BASE DE DATOS SQLITE ---
+# --- BASE DE DATOS ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -138,74 +124,16 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS biometria (id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, hr INTEGER, spo2 INTEGER, sueno TEXT)''')
     conn.commit()
-    
-    c.execute("SELECT COUNT(*) FROM tareas")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Revisar exámenes médicos y electrolitos (Sodio/Potasio)",))
-        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
-        conn.commit()
-        
-    c.execute("SELECT COUNT(*) FROM alertas")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje de Familia y Zona Médica ACTIVO", "OK"))
-        conn.commit()
     conn.close()
 
 init_db()
 
-def get_db_tareas():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, texto FROM tareas")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-def add_db_tarea(texto):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("INSERT INTO tareas (texto) VALUES (?)", (texto,))
-    conn.commit()
-    conn.close()
-
-def delete_db_tarea(id_t):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("DELETE FROM tareas WHERE id = ?", (id_t,))
-    conn.commit()
-    conn.close()
-
-def get_db_alertas():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT mensaje, nivel FROM alertas")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-def add_biometria(hr, spo2, sueno):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    fecha_hoy = datetime.datetime.now(tz_chile).strftime('%Y-%m-%d %H:%M')
-    c.execute("INSERT INTO biometria (fecha, hr, spo2, sueno) VALUES (?, ?, ?, ?)", (fecha_hoy, hr, spo2, sueno))
-    conn.commit()
-    conn.close()
-
-def get_latest_biometria():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT fecha, hr, spo2, sueno FROM biometria ORDER BY id DESC LIMIT 1")
-    row = c.fetchone()
-    conn.close()
-    return row
-
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje médico y familiar. ¿Qué ordenamos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado. ¿Qué ordenamos hoy?"}
     ]
 
-# --- ENCABEZADO CENTRADO CON REACTOR ARC ---
+# --- ENCABEZADO ---
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
@@ -215,4 +143,47 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
+# --- 3 COLUMNAS ---
+col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
+
+with col_izq:
+    st.markdown("### 🌐 SECTOR ALPHA")
+    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
+        st.markdown("• **Zona Familia:** Blindada\n• **Zona Médica:** Protegida\n• **Finanzas:** Monitoreo activo")
+
+with col_centro:
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
+    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Táctico", "🌍 ISS Directo"])
+    with tab_ojo:
+        st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    with tab_iss:
+        st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        respuesta = f"Entendido, jefa. Procesando instrucción en el núcleo central..."
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+        hablar_como_jarvis(respuesta)
+        st.rerun()
+
+with col_der:
+    st.markdown("### ⚡ SECTOR BETA")
+    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
+        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
+        if st.button("🔊 Repetir Último Comando", use_container_width=True):
+            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
+            st.success("Emitiendo audio...")
+
+    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
+        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
+        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
+        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
+        st.link_button("🔍 Shodan", "https://www.shodan.io", use_
