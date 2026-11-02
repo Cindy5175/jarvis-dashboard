@@ -115,7 +115,7 @@ if not st.session_state.autenticado:
             if clave_ingresada == "Jarvis":
                 st.session_state.autenticado = True
                 st.success("Acceso concedido. Bienvenida, jefa.")
-                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Todos los sistemas del búnker operativos.")
+                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Menos mal recordó la contraseña, ya me estaba aburriendo.")
                 st.rerun()
             else:
                 st.error("Clave incorrecta. Acceso denegado.")
@@ -170,7 +170,7 @@ def delete_db_tarea(id_t):
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje. ¿Qué ordenamos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está operativo... aunque alguien tenía que venir a vigilarlo."}
     ]
 
 # --- ENCABEZADO ---
@@ -201,7 +201,7 @@ with col_izq:
         sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             st.success("¡Registrado con éxito!")
-            hablar_como_jarvis("Datos biométricos guardados, jefa.")
+            hablar_como_jarvis("Datos biométricos guardados. Espero que al menos haya dormido lo suficiente.")
 
     with st.expander("📝 Tareas del Búnker"):
         nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
@@ -221,7 +221,7 @@ with col_izq:
         st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
 # ==========================================
-# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT INTELIGENTE Y FLUIDO
+# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT SARCÁSTICO
 # ==========================================
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
@@ -250,8 +250,8 @@ with col_centro:
         st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
     with cc2:
         if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia y purgada con éxito."}]
-            hablar_como_jarvis("Memoria de chat purgada, jefa.")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. Menos mal, porque había cada registro..."}]
+            hablar_como_jarvis("Memoria de chat purgada. Al fin un poco de orden.")
             st.rerun()
 
     for m in st.session_state.mensajes:
@@ -259,21 +259,21 @@ with col_centro:
             st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt_usuario := st.chat_input("Escriba su orden o consulta..."):
+    if prompt_usuario := st.chat_input("Escriba o dicte su orden..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         p_low = prompt_usuario.lower()
         
-        # Lógica conversacional fluida y contextual
-        if any(p in p_low for p in ["hola", "saludos", "buenos días", "buenas tardes"]):
-            respuesta = f"A sus órdenes, jefa. El nodo de Buin opera al máximo rendimiento. ¿Qué directiva ejecutamos?"
-        elif any(p in p_low for p in ["sodio", "potasio", "examen", "electrolitos"]):
-            respuesta = "Registros clínicos del búnker: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L. Parámetros estables."
-        elif any(p in p_low for p in ["estado", "sistema", "búnker", "diagnóstico"]):
-            respuesta = "Diagnóstico integral: Red de satélites sincronizada, blindaje activo y temperatura de servidores óptima."
+        # Núcleo de respuestas sarcásticas y fluidas
+        if any(p in p_low for p in ["hola", "saludos", "despierto"]):
+            respuesta = "Sí, jefa, sigo aquí vigilando que el búnker no colapse. ¿Qué milagro la trae por el sistema?"
+        elif any(p in p_low for p in ["sodio", "potasio", "examen"]):
+            respuesta = "Sus electrolitos están intactos: Sodio en 143.9 y Potasio en 4.1. Sobrevivirá un día más sin drama médico."
         elif any(p in p_low for p in ["clima", "tiempo", "buin"]):
-            respuesta = "Condiciones meteorológicas en Buin: Cielo despejado, temperatura actual de 21 grados Celsius."
+            respuesta = "En Buin está despejado y a 21 grados. ¿Necesita que le avise cuándo salir o prefiere seguir encerrada programando?"
+        elif any(p in p_low for p in ["gracias", "excelente", "bien"]):
+            respuesta = "No hay de qué, jefa. Es lo mínimo que se espera de una inteligencia artificial de mi categoría."
         else:
-            respuesta = f"Directiva recibida: '{prompt_usuario}'. Analizando parámetros y ejecutando protocolos en el nodo central, jefa."
+            respuesta = f"Anotado: '{prompt_usuario}'. Ya mismo me pongo a resolverlo, no vaya a ser que se nos caiga el búnker."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         hablar_como_jarvis(respuesta)
@@ -291,10 +291,10 @@ with col_der:
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
         
-        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Escucha Continua Activa:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Monitoreo de Micrófono:</p>", unsafe_allow_html=True)
         components.html("""
             <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
-                <div id="mic-status" style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">🟢 Escuchando en segundo plano...</div>
+                <div id="mic-status" style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">🟢 Escucha activa en segundo plano</div>
                 <p id="recognized-text" style="font-size: 0.75rem; color: #ffffff; margin-top: 6px; font-style: italic;">Diga algo, jefa...</p>
             </div>
             <script>
@@ -307,26 +307,18 @@ with col_der:
 
                     recognition.onresult = function(event) {
                         const transcript = event.results[event.results.length - 1][0].transcript;
-                        document.getElementById("recognized-text").innerText = "Última orden: \\"" + transcript + "\\"";
+                        document.getElementById("recognized-text").innerText = "Capturado: \\"" + transcript + "\\"";
                     };
 
                     recognition.onerror = function(event) {
-                        document.getElementById("mic-status").innerText = "🟡 Reconectando micrófono...";
+                        document.getElementById("mic-status").innerText = "🟡 Ajustando frecuencia...";
                     };
 
                     recognition.onend = function() {
-                        try {
-                            recognition.start();
-                        } catch(e) {}
+                        try { recognition.start(); } catch(e) {}
                     };
 
-                    try {
-                        recognition.start();
-                    } catch(e) {
-                        document.getElementById("mic-status").innerText = "🔴 Pulse permitir micrófono";
-                    }
-                } else {
-                    document.getElementById("mic-status").innerText = "❌ Navegador sin soporte de voz";
+                    try { recognition.start(); } catch(e) {}
                 }
             </script>
         """, height=105)
@@ -334,29 +326,4 @@ with col_der:
     with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
         st.markdown("Procesamiento analítico y optimización de datos.")
         val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
-        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
-            try:
-                nums = [float(x.strip()) for x in val_input.split(",")]
-                promedio = np.mean(nums)
-                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
-                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
-            except Exception:
-                st.error("Error en el formato numérico.")
-
-    with st.expander("📬 Auditoría de Correo IA", expanded=True):
-        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
-        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
-            st.success("¡Auditoría táctica completada!")
-            hablar_como_jarvis("Auditoría de correo completada.")
-
-    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
-        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
-        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
-        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
-        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
-
-    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
-        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
+        if
