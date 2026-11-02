@@ -25,11 +25,11 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .arc-ring {
-            width: 55px;
-            height: 55px;
+            width: 50px;
+            height: 50px;
             border: 3px solid #3a4454;
             border-radius: 50%;
             position: relative;
@@ -38,14 +38,14 @@ st.markdown("""
             justify-content: center;
             background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .arc-triangle {
             width: 0;
             height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 18px solid #ffffff;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 16px solid #ffffff;
             filter: drop-shadow(0 0 6px #00d2ff);
         }
 
@@ -174,13 +174,19 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está operativo... aunque alguien tenía que venir a vigilarlo."}
     ]
 
-# --- ENCABEZADO CON CRONÓMETRO JS PURO ---
+# --- ENCABEZADO CON REACTOR ARC ---
 st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
-        <div id="live-clock" style="margin: 4px 0 0 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: Cargando...</div>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- CRONÓMETRO TÁCTICO EN VIVO (COMPONENTE HTML SEGURO) ---
+components.html("""
+    <div style="background-color: transparent; text-align: center; font-family: monospace; padding: 2px;">
+        <div id="live-clock" style="font-size: 0.75rem; color: #00d2ff; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: Sincronizando...</div>
     </div>
     <script>
         function updateClock() {
@@ -196,16 +202,18 @@ st.markdown("""
                 hour12: false 
             };
             const now = new Date();
-            const timeString = now.toLocaleString('es-CL', options);
+            let timeString = now.toLocaleString('es-CL', options);
+            timeString = timeString.charAt(0).toUpperCase() + timeString.slice(1);
             const clockElement = document.getElementById('live-clock');
             if (clockElement) {
-                clockElement.innerText = "🕒 CRONÓMETRO TÁCTICO: " + timeString.charAt(0).toUpperCase() + timeString.slice(1);
+                clockElement.innerText = "🕒 CRONÓMETRO TÁCTICO: " + timeString;
             }
         }
         setInterval(updateClock, 1000);
         updateClock();
     </script>
-""", unsafe_allow_html=True)
+""", height=30)
+
 st.markdown("---")
 
 # --- 3 COLUMNAS TÁCTICAS ---
