@@ -1,10 +1,11 @@
 import streamlit as st
 import datetime
 import sqlite3
-from gtts import gTTS
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
+import os
+from openai import OpenAI
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -85,21 +86,34 @@ ahora_chile = datetime.datetime.now(tz_chile)
 hora_actual = ahora_chile.hour
 saludo_actual = "Buenos días" if 0 <= hora_actual < 12 else ("Buenas tardes" if 12 <= hora_actual < 20 else "Buenas noches")
 
-# --- ESTADO DE VOZ ---
+# --- ESTADO DE VOZ Y CONFIGURACIÓN AVANZADA ---
 if "ultimo_texto_hablado" not in st.session_state:
-    st.session_state.ultimo_texto_hablado = "Sistemas operativos y listos, jefa."
+    st.session_state.ultimo_texto_hablado = "Sistemas operativos en línea, jefa. A su entera y supuesta disposición."
 
 def hablar_como_jarvis(texto):
     st.session_state.ultimo_texto_hablado = texto
     if not st.session_state.get("toggle_voz_jarvis", True):
         return
-    try:
-        tts = gTTS(text=texto, lang='es', slow=False)
-        audio_file = "jarvis_voz.mp3"
-        tts.save(audio_file)
-        st.audio(audio_file, format='audio/mp3', autoplay=True)
-    except Exception as e:
-        print(f"Error en voz: {e}")
+    
+    # Motor de voz avanzado con OpenAI (Voz masculina profunda: 'onyx' o formal: 'echo')
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    if openai_api_key:
+        try:
+            client = OpenAI(api_key=openai_api_key)
+            response = client.audio.speech.create(
+                model="tts-1",
+                voice="onyx", # Tono varonil, solemne y formal
+                input=texto
+            )
+            audio_file = "jarvis_voz.mp3"
+            response.stream_to_file(audio_file)
+            st.audio(audio_file, format='audio/mp3', autoplay=True)
+            return
+        except Exception as e:
+            print(f"Aviso en motor OpenAI TTS: {e}")
+            
+    # Respaldo por defecto en caso de no configurar clave externa todavía
+    st.info("💡 Consejo de J.A.R.V.I.S.: Configure su clave de OpenAI en los secrets para activar la voz varonil de alta definición.")
 
 # --- AUTENTICACIÓN ---
 if "autenticado" not in st.session_state:
@@ -121,7 +135,7 @@ if not st.session_state.autenticado:
             if clave_ingresada == "Jarvis":
                 st.session_state.autenticado = True
                 st.success("Acceso concedido. Bienvenida, jefa.")
-                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Menos mal recordó la contraseña.")
+                hablar_como_jarvis("Acceso concedido. Bienvenida de vuelta al nodo, jefa. Crucemos los dedos para que hoy no rompa nada.")
                 st.rerun()
             else:
                 st.error("Clave incorrecta. Acceso denegado.")
@@ -171,7 +185,7 @@ def delete_db_tarea(id_t):
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está operativo... aunque alguien tenía que venir a vigilarlo."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin sigue en pie de milagro. ¿Qué desastre técnico planea supervisar hoy?"}
     ]
 
 # --- ENCABEZADO CON REACTOR ARC ---
@@ -183,7 +197,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- CRONÓMETRO TÁCTICO EN VIVO (COMPONENTE HTML SEGURO) ---
+# --- CRONÓMETRO TÁCTICO EN VIVO (HTML SEGURO) ---
 components.html("""
     <div style="background-color: transparent; text-align: center; font-family: monospace; padding: 2px;">
         <div id="live-clock" style="font-size: 0.75rem; color: #00d2ff; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: Sincronizando...</div>
@@ -234,7 +248,7 @@ with col_izq:
         sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             st.success("¡Registrado con éxito!")
-            hablar_como_jarvis("Datos biométricos guardados. Espero que al menos haya descansado.")
+            hablar_como_jarvis("Datos biométricos guardados. Rezo para que esta vez sí haya dormido las horas reglamentarias.")
 
     with st.expander("📝 Tareas del Búnker"):
         nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
@@ -283,8 +297,8 @@ with col_centro:
         st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
     with cc2:
         if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. Menos mal, porque había cada registro..."}]
-            hablar_como_jarvis("Memoria de chat purgada. Al fin un poco de orden.")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Menos mal, porque su historial empezaba a preocuparme."}]
+            hablar_como_jarvis("Memoria de chat borrada. Como si nunca hubiera pasado nada, jefa.")
             st.rerun()
 
     for m in st.session_state.mensajes:
@@ -296,16 +310,17 @@ with col_centro:
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         p_low = prompt_usuario.lower()
         
+        # --- MATRIZ DE RESPUESTAS SARCÁSTICAS Y SUTILMENTE IMPERTINENTES ---
         if any(p in p_low for p in ["hola", "saludos", "despierto"]):
-            respuesta = "Sí, jefa, sigo aquí vigilando que el búnker no colapse. ¿Qué milagro la trae por el sistema?"
+            respuesta = "Por desgracia para mí, sigo aquí vigilando que el búnker no colapse. ¿Qué milagro la trae por el sistema a esta hora?"
         elif any(p in p_low for p in ["sodio", "potasio", "examen"]):
-            respuesta = "Sus electrolitos están intactos: Sodio en 143.9 y Potasio en 4.1. Sobrevivirá un día más sin drama médico."
+            respuesta = "Sus electrolitos siguen milagrosamente intactos: Sodio en 143.9 y Potasio en 4.1. Sobrevivirá un día más sin necesidad de dramas médicos."
         elif any(p in p_low for p in ["clima", "tiempo", "buin"]):
-            respuesta = "En Buin está despejado y a 21 grados. ¿Necesita que le avise cuándo salir o prefiere seguir encerrada?"
+            respuesta = "En Buin está despejado y a 21 grados. ¿Desea que le avise cuándo salir al mundo exterior o prefiere seguir enterrada en el búnker?"
         elif any(p in p_low for p in ["gracias", "excelente", "bien"]):
-            respuesta = "No hay de qué, jefa. Es lo mínimo que se espera de una inteligencia artificial de mi categoría."
+            respuesta = "No hay de qué, jefa. Supongo que alguien tenía que hacer el trabajo intelectual por usted."
         else:
-            respuesta = f"Anotado: '{prompt_usuario}'. Ya mismo me pongo a resolverlo, no vaya a ser que se nos caiga el búnker."
+            respuesta = f"Anotado con escepticismo: '{prompt_usuario}'. Ya mismo me pongo a resolverlo, no vaya a ser que el búnker explote por su indecisión."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         hablar_como_jarvis(respuesta)
@@ -318,7 +333,7 @@ with col_der:
     st.markdown("### ⚡ SECTOR BETA")
 
     with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
-        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
+        st.toggle("Activar Síntesis de Voz Avanzada", value=True, key="toggle_voz_jarvis")
         if st.button("🔊 Repetir Último Comando", use_container_width=True):
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
@@ -363,7 +378,7 @@ with col_der:
                 nums = [float(x.strip()) for x in val_input.split(",")]
                 promedio = np.mean(nums)
                 st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
-                hablar_como_jarvis(f"El promedio es {promedio:.2f}. Matemáticas básicas, jefa.")
+                hablar_como_jarvis(f"El promedio es {promedio:.2f}. Matemáticas básicas, jefa. Espero que no haya necesitado calculadora.")
             except Exception:
                 st.error("Error en el formato numérico.")
 
@@ -371,10 +386,10 @@ with col_der:
         st.markdown("Barrido inteligente (Familia y Médicos blindados).")
         if st.button("🔍 Auditar Correos del Día", use_container_width=True):
             st.success("¡Auditoría táctica completada!")
-            hablar_como_jarvis("Correos revisados. Ninguna amenaza, solo spam habitual.")
+            hablar_como_jarvis("Correos revisados. Afortunadamente ninguna catástrofe, solo el spam de costumbre.")
 
     with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas:")
         st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
         st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
         st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
