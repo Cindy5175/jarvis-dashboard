@@ -115,7 +115,7 @@ if not st.session_state.autenticado:
             if clave_ingresada == "Jarvis":
                 st.session_state.autenticado = True
                 st.success("Acceso concedido. Bienvenida, jefa.")
-                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Menos mal recordó la contraseña, ya me estaba aburriendo.")
+                hablar_como_jarvis("Acceso concedido. Bienvenida, jefa. Menos mal recordó la contraseña.")
                 st.rerun()
             else:
                 st.error("Clave incorrecta. Acceso denegado.")
@@ -201,7 +201,7 @@ with col_izq:
         sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             st.success("¡Registrado con éxito!")
-            hablar_como_jarvis("Datos biométricos guardados. Espero que al menos haya dormido lo suficiente.")
+            hablar_como_jarvis("Datos biométricos guardados. Espero que al menos haya descansado.")
 
     with st.expander("📝 Tareas del Búnker"):
         nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
@@ -232,98 +232,4 @@ with col_centro:
     with tab_iss1:
         st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
     with tab_iss2:
-        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
-    with tab_aurora:
-        st.video("https://www.youtube.com/watch?v=I3sa2kiEpkA")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    activar_camara = st.checkbox("📷 Activar Módulo de Visión Artificial", value=False)
-    if activar_camara:
-        st.success("🟢 Transmisión de seguridad activa.")
-        st.camera_input("Captura óptica en vivo:")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    cc1, cc2 = st.columns([4, 1])
-    with cc1:
-        st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis</h4>", unsafe_allow_html=True)
-    with cc2:
-        if st.button("🗑️", use_container_width=True, key="limpiar_chat"):
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. Menos mal, porque había cada registro..."}]
-            hablar_como_jarvis("Memoria de chat purgada. Al fin un poco de orden.")
-            st.rerun()
-
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if prompt_usuario := st.chat_input("Escriba o dicte su orden..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        p_low = prompt_usuario.lower()
-        
-        # Núcleo de respuestas sarcásticas y fluidas
-        if any(p in p_low for p in ["hola", "saludos", "despierto"]):
-            respuesta = "Sí, jefa, sigo aquí vigilando que el búnker no colapse. ¿Qué milagro la trae por el sistema?"
-        elif any(p in p_low for p in ["sodio", "potasio", "examen"]):
-            respuesta = "Sus electrolitos están intactos: Sodio en 143.9 y Potasio en 4.1. Sobrevivirá un día más sin drama médico."
-        elif any(p in p_low for p in ["clima", "tiempo", "buin"]):
-            respuesta = "En Buin está despejado y a 21 grados. ¿Necesita que le avise cuándo salir o prefiere seguir encerrada programando?"
-        elif any(p in p_low for p in ["gracias", "excelente", "bien"]):
-            respuesta = "No hay de qué, jefa. Es lo mínimo que se espera de una inteligencia artificial de mi categoría."
-        else:
-            respuesta = f"Anotado: '{prompt_usuario}'. Ya mismo me pongo a resolverlo, no vaya a ser que se nos caiga el búnker."
-
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-        hablar_como_jarvis(respuesta)
-        st.rerun()
-
-# ==========================================
-# COLUMNA DERECHA: SECTOR BETA & MÓDULOS
-# ==========================================
-with col_der:
-    st.markdown("### ⚡ SECTOR BETA")
-
-    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
-        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
-        if st.button("🔊 Repetir Último Comando", use_container_width=True):
-            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
-            st.success("Emitiendo audio...")
-        
-        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Monitoreo de Micrófono:</p>", unsafe_allow_html=True)
-        components.html("""
-            <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
-                <div id="mic-status" style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">🟢 Escucha activa en segundo plano</div>
-                <p id="recognized-text" style="font-size: 0.75rem; color: #ffffff; margin-top: 6px; font-style: italic;">Diga algo, jefa...</p>
-            </div>
-            <script>
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (SpeechRecognition) {
-                    const recognition = new SpeechRecognition();
-                    recognition.lang = 'es-CL';
-                    recognition.continuous = true;
-                    recognition.interimResults = false;
-
-                    recognition.onresult = function(event) {
-                        const transcript = event.results[event.results.length - 1][0].transcript;
-                        document.getElementById("recognized-text").innerText = "Capturado: \\"" + transcript + "\\"";
-                    };
-
-                    recognition.onerror = function(event) {
-                        document.getElementById("mic-status").innerText = "🟡 Ajustando frecuencia...";
-                    };
-
-                    recognition.onend = function() {
-                        try { recognition.start(); } catch(e) {}
-                    };
-
-                    try { recognition.start(); } catch(e) {}
-                }
-            </script>
-        """, height=105)
-
-    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
-        st.markdown("Procesamiento analítico y optimización de datos.")
-        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
-        if
+        st.video("
