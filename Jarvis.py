@@ -391,6 +391,14 @@ with col_der:
             st.info(f"Analizando nodo web: {url_input}...")
         st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
+    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas[span_0](start_span)[span_0](end_span):")
+        st.link_button("🌐 01. OSINT Framework (Matriz)", "https://osintframework.com", use_container_width=True)
+        st.link_button("✈️ 02. Flightradar24 (Tráfico Aéreo)", "https://www.flightradar24.com", use_container_width=True)
+        st.link_button("🚢 03. MarineTraffic (Tráfico Marítimo)", "https://www.marinetraffic.com", use_container_width=True)
+        st.link_button("📷 04. Insecam (Directorios CCTVs)", "https://www.insecam.org", use_container_width=True)
+        st.link_button("🔍 05. Shodan (Dispositivos en Red)", "https://www.shodan.io", use_container_width=True)
+
     with st.expander("🗺️ Estación Cartográfica & Cámaras", expanded=True):
         camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker", "Stream IP Personalizado"])
         st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
