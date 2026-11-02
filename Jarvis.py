@@ -271,71 +271,40 @@ with col_der:
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
         
-        # Módulo de Escucha Continua (Hands-Free via Web Speech API)
-        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Escucha Continua (Micrófono):</p>", unsafe_allow_html=True)
+        # Módulo de Escucha Continua Automática (Hands-Free con reconexión)
+        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Escucha Continua Activa:</p>", unsafe_allow_html=True)
         components.html("""
             <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
-                <button onclick="startListening()" style="background: #00d2ff; color: #060911; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">🎙️ Iniciar Escucha</button>
-                <p id="status" style="font-size: 0.75rem; color: #00d2ff; margin-top: 6px;">Estado: En espera...</p>
+                <div id="mic-status" style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">🟢 Escuchando en segundo plano...</div>
+                <p id="recognized-text" style="font-size: 0.75rem; color: #ffffff; margin-top: 6px; font-style: italic;">Diga algo, jefa...</p>
             </div>
             <script>
-                function startListening() {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (!SpeechRecognition) {
-                        document.getElementById("status").innerText = "Error: Navegador no soporta voz.";
-                        return;
-                    }
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
                     const recognition = new SpeechRecognition();
                     recognition.lang = 'es-CL';
+                    recognition.continuous = true;
                     recognition.interimResults = false;
-                    recognition.maxAlternatives = 1;
 
-                    document.getElementById("status").innerText = "Estado: Escuchando...";
-                    
                     recognition.onresult = function(event) {
-                        const speechResult = event.results[0][0].transcript;
-                        document.getElementById("status").innerText = "Detectado: " + speechResult;
+                        const transcript = event.results[event.results.length - 1][0].transcript;
+                        document.getElementById("recognized-text").innerText = "Última orden: \"" + transcript + "\"";
                     };
 
                     recognition.onerror = function(event) {
-                        document.getElementById("status").innerText = "Error de audio.";
+                        document.getElementById("mic-status").innerText = "🟡 Reconectando micrófono...";
                     };
 
                     recognition.onend = function() {
-                        document.getElementById("status").innerText = "Estado: En espera...";
+                        // Reiniciar automáticamente para escucha continua real
+                        try {
+                            recognition.start();
+                        } catch(e) {}
                     };
 
-                    recognition.start();
+                    try {
+                        recognition.start();
+                    } catch(e) {
+                        document.getElementById("mic-status").innerText = "🔴 Pulse permitir micrófono";
+                    }
                 }
-            </script>
-        """, height=110)
-
-    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
-        st.markdown("Procesamiento analítico y optimización de datos.")
-        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
-        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
-            try:
-                nums = [float(x.strip()) for x in val_input.split(",")]
-                promedio = np.mean(nums)
-                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
-                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
-            except Exception:
-                st.error("Error en el formato numérico.")
-
-    with st.expander("📬 Auditoría de Correo IA", expanded=True):
-        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
-        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
-            st.success("¡Auditoría táctica completada!")
-            hablar_como_jarvis("Auditoría de correo completada.")
-
-    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
-        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
-        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
-        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
-        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
-
-    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
-        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
