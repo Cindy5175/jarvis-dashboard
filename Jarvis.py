@@ -74,7 +74,7 @@ st.markdown("""
 if "ultimo_texto_hablado" not in st.session_state:
     st.session_state.ultimo_texto_hablado = "Sistemas operativos y listos, jefa."
 
-# --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS) ---
+# --- FUNCIÓN DE SÍNTESIS DE VOZ (JARVIS TTS OPTIMIZADA) ---
 def hablar_como_jarvis(texto):
     st.session_state.ultimo_texto_hablado = texto
     voz_activa = st.session_state.get("toggle_voz_jarvis", True)
@@ -86,14 +86,8 @@ def hablar_como_jarvis(texto):
         audio_file = "jarvis_voz.mp3"
         tts.save(audio_file)
         
-        audio_bytes = open(audio_file, 'rb').read()
-        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
-        audio_html = f"""
-            <audio autoplay style="display:none;">
-                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-            </audio>
-        """
-        st.markdown(audio_html, unsafe_allow_html=True)
+        # Reproductor nativo de Streamlit (Evita congelamientos en móviles)
+        st.audio(audio_file, format='audio/mp3', autoplay=True)
     except Exception as e:
         print(f"Error en síntesis de voz: {e}")
 
@@ -392,7 +386,7 @@ with col_der:
         st.link_button("🌐 Portal UC Christus", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
     with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[span_0](start_span)[span_0](end_span):")
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas[span_1](start_span)[span_1](end_span):")
         st.link_button("🌐 01. OSINT Framework (Matriz)", "https://osintframework.com", use_container_width=True)
         st.link_button("✈️ 02. Flightradar24 (Tráfico Aéreo)", "https://www.flightradar24.com", use_container_width=True)
         st.link_button("🚢 03. MarineTraffic (Tráfico Marítimo)", "https://www.marinetraffic.com", use_container_width=True)
