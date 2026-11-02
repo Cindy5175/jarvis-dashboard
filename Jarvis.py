@@ -5,11 +5,11 @@ import streamlit as st
 st.set_page_config(
     page_title="J.A.R.V.I.S. | Búnker Táctico",
     page_icon="🛡️",
-    layout="wide",  # <-- Esto expande la interfaz a todo el ancho de la pantalla
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES PARA EVITAR MÁRGENES CENTRALES ---
+# --- ESTILOS VISUALES PARA EXPANDIR EL BÚNKER ---
 st.markdown("""
     <style>
     .stApp {
@@ -20,7 +20,6 @@ st.markdown("""
         color: #00f0ff !important;
         font-family: monospace;
     }
-    /* Maximizar el uso del ancho en Streamlit */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
@@ -84,25 +83,25 @@ with col_der:
         st.write("Feeds de video en tiempo real.")
 
     st.markdown("---")
-    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS[cite: 4]")
+    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS")
     
-    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])[cite: 4]
+    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])
     
     with tab_mapa:
-        st.button("🌐 Abrir Visor Satelital (Osiris AI)")[cite: 4]
+        st.button("🌐 Abrir Visor Satelital (Osiris AI)")
         
-    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")[cite: 4]
+    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")
 
     st.markdown("---")
-    st.markdown("### 💬 Chat IA & Análisis Visual")[cite: 4]
+    st.markdown("### 💬 Chat IA & Análisis Visual")
     
     if st.button("🗑️"):
         st.toast("Memoria purgada.", icon="🧹")
         
-    st.info("Buenas noches, jefa. Memoria limpia y lista.")[cite: 4]
+    st.info("Buenas noches, jefa. Memoria limpia y lista.")
     
     # Entrada de comandos tácticos
-    orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")[cite: 4]
+    orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
     
     if orden_usuario:
         respuesta_correo = verificar_bandeja_directa(orden_usuario)
