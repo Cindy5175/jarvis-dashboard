@@ -27,8 +27,8 @@ st.markdown("""
 def verificar_bandeja_directa(comando):
     cmd = comando.lower()
     if any(p in cmd for p in ["bandeja", "correo", "correos", "mensajes", "email"]):
-        # Excepciones vigentes guardadas: Paola Carrera Baude, Sivia Grau y Karin Grau de Folliot.
-        cantidad_nuevos = 0  # Reemplazar con su lógica de lectura real si lo requiere
+        # Excepciones vigentes: Paola Carrera Baude, Sivia Grau y Karin Grau de Folliot.
+        cantidad_nuevos = 0  
         
         if cantidad_nuevos == 0:
             return "Bandeja despejada, jefa. No tiene correos nuevos pendientes en este momento."
@@ -36,59 +36,59 @@ def verificar_bandeja_directa(comando):
             return f"Le han llegado {cantidad_nuevos} correos nuevos a su bandeja de entrada, jefa."
     return None
 
-# --- DISTRIBUCIÓN DE DOS COLUMNAS (IZQUIERDA Y DERECHA) ---
+# --- DISTRIBUCIÓN EN 2 COLUMNAS ---
 col_izq, col_der = st.columns([1, 1])
 
-# --- COLUMNA IZQUIERDA: MENÚS TÁCTICOS Y NÚCLEOS ---
+# ==========================================
+# COLUMNA IZQUIERDA (PRIMEROS 3 MÓDULOS)
+# ==========================================
 with col_izq:
-    st.markdown("<h3>⚡ NÚCLEOS DE CEREBRO</h3>", unsafe_allow_html=True)
+    st.markdown("### ⚡ NÚCLEOS DE CEREBRO STARK")
     
     with st.expander("1. 📹 Grabaciones y capturas de pantalla"):
-        st.write("Control de registros visuales y capturas del sistema.")
+        st.write("Control de registros visuales y almacenamiento local.")
         
     with st.expander("2. 🔍 Búsqueda y Web en Vivo"):
-        st.write("Motores de rastreo y consultas en red.")
+        st.write("Motores de rastreo y consultas en tiempo real.")
         
     with st.expander("3. 🌡️ Sensores Meteorológicos"):
-        st.write("Monitoreo atmosférico y métricas locales.")
-        
+        st.write("Monitoreo de parámetros y métricas locales.")
+
+# ==========================================
+# COLUMNA DERECHA (TODO EL RESTO DE MÓDULOS Y CHAT)
+# ==========================================
+with col_der:
     with st.expander("4. 📄 Análisis de Documentos"):
-        st.write("Lectura y procesamiento de archivos internos.")
+        st.write("Procesamiento de archivos y lectura sintética.")
         
     with st.expander("5. 🎙️ Módulo de Voz IA"):
-        st.write("Configuración de síntesis y comandos de voz.")
+        st.write("Configuración de entrada/salida de voz.")
         
     with st.expander("6. 🐍 Automatización Python"):
-        st.write("Ejecución de scripts y rutinas programadas.")
+        st.write("Ejecución de rutinas y scripts tácticos.")
         
     with st.expander("🎥 Monitoreo de Cámaras IP"):
-        st.write(" feeds de video en tiempo real.")
-        
-    # Enlaces rápidos inferiores de la columna izquierda
-    st.markdown("---")
-    if st.button("🛰️ Ojo de Dios (Osiris)"):
-        st.toast("Activando satélite Osiris...", icon="🛡️")
-        
-    if st.button("🏥 UC Christus"):
-        st.toast("Conectando con red UC Christus...", icon="🏥")
-        
-    if st.button("🌦️ Meteo Chile 🇨🇱"):
-        st.toast("Sincronizando datos con Meteo Chile...", icon="🌤️")
+        st.write("Transmisiones de video en vivo.")
 
-# --- COLUMNA DERECHA: CHAT IA & VISIÓN TÁCTICA ---
-with col_der:
-    st.markdown("<h3>💬 Chat IA & Visión Táctica</h3>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("### 🛰️ Ojo de Dios & Telemetría ISS")
+    
+    tab_mapa, tab_iss, tab_tierra = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Diurno", "🛰️ Tierra 2"])
+    
+    with tab_mapa:
+        st.button("🌐 Abrir Visor Satelital (Osiris AI)")
+        
+    st.checkbox("📹 Activar Módulo de Visión Artificial & Transmisión")
+
+    st.markdown("---")
+    st.markdown("### 💬 Chat IA & Análisis Visual")
     
     if st.button("🗑️ Limpiar Memoria"):
-        st.toast("Memoria del chat purgada.", icon="🧹")
+        st.toast("Memoria purgada con éxito.", icon="🧹")
         
-    st.checkbox("📷 Activar Cámara en Vivo (Escanear Entorno)")
+    st.info("Buenas noches, jefa. Memoria limpia y lista.")
     
-    # Contenedor de mensajes / Interacción
-    with st.container():
-        st.info("Buenas tardes, jefa. Sistemas sincronizados y listos para operar.")
-        
-    # Barra de entrada de mensajes del chat derecho
+    # Entrada de comandos
     orden_usuario = st.text_input("Escriba su mensaje...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
     
     if orden_usuario:
@@ -96,4 +96,4 @@ with col_der:
         if respuesta_correo:
             st.success(respuesta_correo)
         else:
-            st.write(f"**Comando registrado:** {orden_usuario}")
+            st.write(f"**Procesado:** {orden_usuario}")
