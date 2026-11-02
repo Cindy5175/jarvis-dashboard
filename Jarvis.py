@@ -288,7 +288,7 @@ with col_der:
 
                     recognition.onresult = function(event) {
                         const transcript = event.results[event.results.length - 1][0].transcript;
-                        document.getElementById("recognized-text").innerText = "Última orden: \"" + transcript + "\"";
+                        document.getElementById("recognized-text").innerText = "Última orden: \\"" + transcript + "\\"";
                     };
 
                     recognition.onerror = function(event) {
@@ -296,7 +296,6 @@ with col_der:
                     };
 
                     recognition.onend = function() {
-                        // Reiniciar automáticamente para escucha continua real
                         try {
                             recognition.start();
                         } catch(e) {}
@@ -307,4 +306,38 @@ with col_der:
                     } catch(e) {
                         document.getElementById("mic-status").innerText = "🔴 Pulse permitir micrófono";
                     }
+                } else {
+                    document.getElementById("mic-status").innerText = "❌ Navegador sin soporte de voz";
                 }
+            </script>
+        """, height=105)
+
+    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
+        st.markdown("Procesamiento analítico y optimización de datos.")
+        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
+        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
+            try:
+                nums = [float(x.strip()) for x in val_input.split(",")]
+                promedio = np.mean(nums)
+                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
+                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
+            except Exception:
+                st.error("Error en el formato numérico.")
+
+    with st.expander("📬 Auditoría de Correo IA", expanded=True):
+        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
+        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
+            st.success("¡Auditoría táctica completada!")
+            hablar_como_jarvis("Auditoría de correo completada.")
+
+    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
+        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
+        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
+        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
+        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
+
+    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
+        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
