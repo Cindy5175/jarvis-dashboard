@@ -9,18 +9,18 @@ import contextlib
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    page_title="J.A.R.V.I.S. | NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
+# --- ESTILOS VISUALES STARK (ESTÉTICA REACTOR ARC & AZUL NEÓN) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
         h1, h2, h3, h4, label, span { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
         
-        /* Contenedor del Encabezado Centrado */
+        /* Contenedor del Encabezado con el Reactor Arc Estilo Imagen */
         .arc-reactor-container {
             display: flex;
             flex-direction: column;
@@ -30,25 +30,25 @@ st.markdown("""
             margin-bottom: 20px;
         }
         .arc-ring {
-            width: 60px;
-            height: 60px;
-            border: 3px solid #3a4454;
+            width: 70px;
+            height: 70px;
+            border: 3px solid #00d2ff;
             border-radius: 50%;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
-            margin-bottom: 8px;
+            background: radial-gradient(circle, rgba(0,210,255,0.4) 0%, #060911 80%);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.8), inset 0 0 12px rgba(0, 210, 255, 0.6);
+            margin-bottom: 10px;
         }
         .arc-triangle {
             width: 0;
             height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 20px solid #ffffff;
-            filter: drop-shadow(0 0 6px #00d2ff);
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-bottom: 24px solid #ffffff;
+            filter: drop-shadow(0 0 8px #00d2ff);
         }
 
         .stark-card {
@@ -151,11 +151,11 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
-# --- ENCABEZADO CENTRADO CON EL REACTOR ARC Y RELOJ EN VIVO ---
+# --- ENCABEZADO CON REACTOR ARC (TRIÁNGULO), J.A.R.V.I.S. Y FECHA/HORA LOCAL ---
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
+        <h2 style="margin: 0; padding: 0; font-size: 1.6rem; text-align: center !important; color: #00d2ff !important; letter-spacing: 2px;">J.A.R.V.I.S.</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_formateada} - {hora_formateada} ]</p>
     </div>
 """, unsafe_allow_html=True)
@@ -241,7 +241,7 @@ with st.sidebar.expander("📄 Análisis de Documentos"):
 
 with st.sidebar.expander("🎙️ Módulo de Voz IA"):
     voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
-    st.selectbox("Voz sintética:", ["J.A.R.V.I.S (Inglés/Español)", "Voz Táctica Female"])
+    st.selectbox("Voz sintética:", ["J.A.R.V.I.S. (Inglés/Español)", "Voz Táctica Female"])
 
 with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
     codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
