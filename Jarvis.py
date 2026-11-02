@@ -216,19 +216,3 @@ st.markdown("""
 st.markdown("---")
 
 # --- DISTRIBUCIÓN TÁCTICA DE 3 COLUMNAS ---
-col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
-
-# ==========================================
-# COLUMNA IZQUIERDA: SECTOR ALPHA
-# ==========================================
-with col_izq:
-    st.markdown("### 🌐 SECTOR ALPHA")
-    
-    with st.expander("🛡️ Blindaje & Alertas", expanded=True):
-        st.markdown("• **Zona Familia:** Blindada (Paola Carrera, etc.)")
-        st.markdown("• **Zona Médica:** Protegida (Sodio/Potasio)")
-        st.markdown("• **Finanzas:** Monitoreo exclusivo")
-
-    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
-        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
-        spo2_input = st.number_input("Oxígeno Sp
