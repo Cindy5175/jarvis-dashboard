@@ -66,7 +66,6 @@ st.markdown("""
             color: #00d2ff !important;
         }
 
-        /* Optimización y Estilizado de la Caja de Chat */
         .stChatInputContainer {
             border: 1.5px solid #00d2ff !important;
             border-radius: 10px !important;
@@ -202,7 +201,7 @@ with col_izq:
         sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
         if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
             st.success("¡Registrado con éxito!")
-            hablar_como_jarvis("Datos biométricos guardados.")
+            hablar_como_jarvis("Datos biométricos guardados, jefa.")
 
     with st.expander("📝 Tareas del Búnker"):
         nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
@@ -222,7 +221,7 @@ with col_izq:
         st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
 
 # ==========================================
-# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT CON PURGA
+# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT INTELIGENTE Y FLUIDO
 # ==========================================
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
@@ -260,13 +259,22 @@ with col_centro:
             st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    if prompt_usuario := st.chat_input("Escriba su orden o consulta..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         p_low = prompt_usuario.lower()
-        if any(p in p_low for p in ["sodio", "potasio", "examen"]):
-            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L."
+        
+        # Lógica conversacional fluida y contextual
+        if any(p in p_low for p in ["hola", "saludos", "buenos días", "buenas tardes"]):
+            respuesta = f"A sus órdenes, jefa. El nodo de Buin opera al máximo rendimiento. ¿Qué directiva ejecutamos?"
+        elif any(p in p_low for p in ["sodio", "potasio", "examen", "electrolitos"]):
+            respuesta = "Registros clínicos del búnker: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L. Parámetros estables."
+        elif any(p in p_low for p in ["estado", "sistema", "búnker", "diagnóstico"]):
+            respuesta = "Diagnóstico integral: Red de satélites sincronizada, blindaje activo y temperatura de servidores óptima."
+        elif any(p in p_low for p in ["clima", "tiempo", "buin"]):
+            respuesta = "Condiciones meteorológicas en Buin: Cielo despejado, temperatura actual de 21 grados Celsius."
         else:
-            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
+            respuesta = f"Directiva recibida: '{prompt_usuario}'. Analizando parámetros y ejecutando protocolos en el nodo central, jefa."
+
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         hablar_como_jarvis(respuesta)
         st.rerun()
@@ -283,7 +291,6 @@ with col_der:
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
         
-        # Módulo de Escucha Continua Automática (Hands-Free con reconexión)
         st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Escucha Continua Activa:</p>", unsafe_allow_html=True)
         components.html("""
             <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
