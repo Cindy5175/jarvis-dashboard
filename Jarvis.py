@@ -183,7 +183,8 @@ with col_der:
             st.success("Emitiendo audio...")
 
     with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
         st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
         st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
         st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
-        st.link_button("🔍 Shodan", "https://www.shodan.io", use_
+        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
