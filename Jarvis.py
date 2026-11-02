@@ -197,39 +197,4 @@ with col_izq:
 
     with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
         hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
-        spo2_input = st.number_input("Oxígeno SpO2 (%):", min_value=70, max_value=100, value=98)
-        sueno_input = st.text_input("Calidad de Sueño / Notas:", value="Óptimo - 7.5 hrs")
-        if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
-            st.success("¡Registrado con éxito!")
-            hablar_como_jarvis("Datos biométricos guardados. Espero que al menos haya descansado.")
-
-    with st.expander("📝 Tareas del Búnker"):
-        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
-        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-            add_db_tarea(nueva_tarea)
-            st.rerun()
-        for tid, t in get_db_tareas():
-            c1, c2 = st.columns([4, 1])
-            with c1:
-                st.markdown(f"• {t}")
-            with c2:
-                if st.button("❌", key=f"del_{tid}"):
-                    delete_db_tarea(tid)
-                    st.rerun()
-
-    with st.expander("🌤️ Clima Local (Buin)", expanded=True):
-        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
-
-# ==========================================
-# COLUMNA CENTRAL: OJO DE DIOS, CÁMARA & CHAT SARCÁSTICO
-# ==========================================
-with col_centro:
-    st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    tab_ojo, tab_iss1, tab_iss2, tab_aurora = st.tabs(["🗺️ Mapa Táctico", "🌍 ISS Diurno", "🛰️ Tierra 24/7", "🌌 Auroras"])
-    with tab_ojo:
-        st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-    with tab_iss1:
-        st.video("https://www.youtube.com/watch?v=alJMoaKpV_E")
-    with tab_iss2:
-        st.video("
+        spo2_input = st.number_input("Oxígeno SpO2 (%):", min_value=70, max_value=100, value=9
