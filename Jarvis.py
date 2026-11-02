@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES STARK ---
+# --- ESTILOS VISUALES STARK & CAJA DE CHAT ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -64,6 +64,18 @@ st.markdown("""
         }
         .stMarkdown, p, li, span, div, .stChatMessage p {
             color: #00d2ff !important;
+        }
+
+        /* Optimización y Estilizado de la Caja de Chat */
+        .stChatInputContainer {
+            border: 1.5px solid #00d2ff !important;
+            border-radius: 10px !important;
+            background-color: rgba(0, 210, 255, 0.05) !important;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.15) !important;
+        }
+        .stChatInputContainer textarea {
+            color: #00d2ff !important;
+            font-family: monospace !important;
         }
     </style>
 """, unsafe_allow_html=True)
