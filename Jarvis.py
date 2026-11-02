@@ -150,23 +150,23 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON REACTOR ARC Y RELOJ CON SEGUNDERO VIVO ---
+# --- ENCABEZADO CON REACTOR ARC Y RELOJ CON SEGUNDERO VIVO (CORREGIDO) ---
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.6rem; text-align: center !important; color: #00d2ff !important; letter-spacing: 2px;">J.A.R.V.I.S.</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_formateada} - <span id="reloj-vivo">--:--:--</span> ]
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_formateada} - <span id="reloj-vivo">Cargando...</span> ]
         </p>
     </div>
     <script>
-        function actualizarReloj() {{
+        const actualizarReloj = () => {{
             const ahora = new Date();
             const opciones = {{ timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }};
             const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
             const el = document.getElementById('reloj-vivo');
             if (el) el.innerText = horaChile;
-        }}
+        }};
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
@@ -222,7 +222,7 @@ with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
     if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
         st.success("Telemetría meteorológica sincronizada.")
 
-# --- NÚCLEOS DEL CEREBRO CON INTEGRACIÓN QWEN, KIMI Y BAIDU ---
+# --- NÚCLEOS DEL CEREBRO CON QWEN, KIMI Y BAIDU ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
