@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 
-# --- CONFIGURACIÓN DE PÁGINA ANCHA ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S. | Búnker Táctico",
     page_icon="🛡️",
@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- ESTILOS VISUALES ---
+# --- ESTILOS VISUALES (Neón / Modo Oscuro) ---
 st.markdown("""
     <style>
     .stApp {
@@ -35,11 +35,11 @@ def verificar_bandeja_directa(comando):
             return f"Le han llegado {cantidad_nuevos} correos nuevos a su bandeja de entrada, jefa."
     return None
 
-# --- ESTRUCTURA DE 2 COLUMNAS (50% / 50%) ---
+# --- DISTRIBUCIÓN SIMÉTRICA (50% IZQUIERDA / 50% DERECHA) ---
 col_izq, col_der = st.columns([1, 1])
 
 # ==========================================
-# COLUMNA IZQUIERDA (3 PRIMEROS MÓDULOS Y ENLACES)
+# COLUMNA IZQUIERDA (MÓDULOS 1 AL 3 Y ENLACES)
 # ==========================================
 with col_izq:
     st.markdown("### ⚡ NÚCLEOS DE CEREBRO STARK")
@@ -60,7 +60,7 @@ with col_izq:
         st.toast("Actualizando datos meteorológicos...", icon="🌤️")
 
 # ==========================================
-# COLUMNA DERECHA (EL BLOQUE COMPLETO SOLICITADO)
+# COLUMNA DERECHA (MÓDULOS 4 AL 6 + OJO DE DIOS + CHAT)
 # ==========================================
 with col_der:
     with st.expander("4. 📄 Análisis de Documentos"):
