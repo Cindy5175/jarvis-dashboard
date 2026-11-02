@@ -82,6 +82,7 @@ meses_anio = {1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "J
 nombre_dia = dias_semana.get(ahora_chile.strftime("%a"), "Día")
 nombre_mes = meses_anio.get(ahora_chile.month, "Mes")
 fecha_formateada = f"{nombre_dia}, {ahora_chile.day} de {nombre_mes} de {ahora_chile.year}"
+hora_inicial_chile = ahora_chile.strftime("%H:%M:%S")
 
 if 0 <= hora_actual < 12:
     saludo_actual = "Buenos días"
@@ -150,13 +151,13 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON REACTOR ARC Y RELOJ CON SEGUNDERO VIVO ---
+# --- ENCABEZADO CON REACTOR ARC Y RELOJ EN VIVO (ACTUALIZACIÓN DIRECTA) ---
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.6rem; text-align: center !important; color: #00d2ff !important; letter-spacing: 2px;">J.A.R.V.I.S.</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_formateada} - <span id="reloj-vivo">Cargando...</span> ]
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_formateada} - <span id="reloj-vivo">{hora_inicial_chile}</span> ]
         </p>
     </div>
     <script>
@@ -168,7 +169,6 @@ st.markdown(f"""
             if (el) el.innerText = horaChile;
         }};
         setInterval(actualizarReloj, 1000);
-        actualizarReloj();
     </script>
 """, unsafe_allow_html=True)
 st.markdown("---")
