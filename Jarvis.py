@@ -79,11 +79,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- HORA CHILE INICIAL ---
+# --- HORA CHILE ---
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 ahora_chile = datetime.datetime.now(tz_chile)
 hora_actual = ahora_chile.hour
-fecha_inicial = ahora_chile.strftime("%A, %d de %B de %Y - %H:%M:%S").capitalize()
 saludo_actual = "Buenos días" if 0 <= hora_actual < 12 else ("Buenas tardes" if 12 <= hora_actual < 20 else "Buenas noches")
 
 # --- ESTADO DE VOZ ---
@@ -175,17 +174,17 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está operativo... aunque alguien tenía que venir a vigilarlo."}
     ]
 
-# --- ENCABEZADO CON CRONÓMETRO INMEDIATO Y SEGUNDERO ACTIVO ---
-st.markdown(f"""
+# --- ENCABEZADO CON CRONÓMETRO JS PURO ---
+st.markdown("""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
-        <div id="live-clock" style="margin: 4px 0 0 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: {fecha_inicial}</div>
+        <div id="live-clock" style="margin: 4px 0 0 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important; font-weight: bold;">🕒 CRONÓMETRO TÁCTICO: Cargando...</div>
     </div>
     <script>
         function updateClock() {
-            const options = {{ 
+            const options = { 
                 timeZone: 'America/Santiago', 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -195,7 +194,7 @@ st.markdown(f"""
                 minute: '2-digit', 
                 second: '2-digit',
                 hour12: false 
-            }};
+            };
             const now = new Date();
             const timeString = now.toLocaleString('es-CL', options);
             const clockElement = document.getElementById('live-clock');
@@ -204,6 +203,7 @@ st.markdown(f"""
             }
         }
         setInterval(updateClock, 1000);
+        updateClock();
     </script>
 """, unsafe_allow_html=True)
 st.markdown("---")
@@ -288,91 +288,4 @@ with col_centro:
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         p_low = prompt_usuario.lower()
         
-        if any(p in p_low for p in ["hola", "saludos", "despierto"]):
-            respuesta = "Sí, jefa, sigo aquí vigilando que el búnker no colapse. ¿Qué milagro la trae por el sistema?"
-        elif any(p in p_low for p in ["sodio", "potasio", "examen"]):
-            respuesta = "Sus electrolitos están intactos: Sodio en 143.9 y Potasio en 4.1. Sobrevivirá un día más sin drama médico."
-        elif any(p in p_low for p in ["clima", "tiempo", "buin"]):
-            respuesta = "En Buin está despejado y a 21 grados. ¿Necesita que le avise cuándo salir o prefiere seguir encerrada?"
-        elif any(p in p_low for p in ["gracias", "excelente", "bien"]):
-            respuesta = "No hay de qué, jefa. Es lo mínimo que se espera de una inteligencia artificial de mi categoría."
-        else:
-            respuesta = f"Anotado: '{prompt_usuario}'. Ya mismo me pongo a resolverlo, no vaya a ser que se nos caiga el búnker."
-
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-        hablar_como_jarvis(respuesta)
-        st.rerun()
-
-# ==========================================
-# COLUMNA DERECHA: SECTOR BETA & MÓDULOS
-# ==========================================
-with col_der:
-    st.markdown("### ⚡ SECTOR BETA")
-
-    with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
-        st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
-        if st.button("🔊 Repetir Último Comando", use_container_width=True):
-            hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
-            st.success("Emitiendo audio...")
-        
-        st.markdown("<p style='font-size:0.8rem; color:#00d2ff;'>Monitoreo de Micrófono:</p>", unsafe_allow_html=True)
-        components.html("""
-            <div style="background-color: rgba(0,210,255,0.05); border: 1px solid #00d2ff; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace;">
-                <div id="mic-status" style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">🟢 Escucha activa en segundo plano</div>
-                <p id="recognized-text" style="font-size: 0.75rem; color: #ffffff; margin-top: 6px; font-style: italic;">Diga algo, jefa...</p>
-            </div>
-            <script>
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (SpeechRecognition) {
-                    const recognition = new SpeechRecognition();
-                    recognition.lang = 'es-CL';
-                    recognition.continuous = true;
-                    recognition.interimResults = false;
-
-                    recognition.onresult = function(event) {
-                        const transcript = event.results[event.results.length - 1][0].transcript;
-                        document.getElementById("recognized-text").innerText = "Capturado: \\"" + transcript + "\\"";
-                    };
-
-                    recognition.onerror = function(event) {
-                        document.getElementById("mic-status").innerText = "🟡 Ajustando frecuencia...";
-                    };
-
-                    recognition.onend = function() {
-                        try { recognition.start(); } catch(e) {}
-                    };
-
-                    try { recognition.start(); } catch(e) {}
-                }
-            </script>
-        """, height=105)
-
-    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
-        st.markdown("Procesamiento analítico y optimización de datos.")
-        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
-        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
-            try:
-                nums = [float(x.strip()) for x in val_input.split(",")]
-                promedio = np.mean(nums)
-                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
-                hablar_como_jarvis(f"El promedio es {promedio:.2f}. Matemáticas básicas, jefa.")
-            except Exception:
-                st.error("Error en el formato numérico.")
-
-    with st.expander("📬 Auditoría de Correo IA", expanded=True):
-        st.markdown("Barrido inteligente (Familia y Médicos blindados).")
-        if st.button("🔍 Auditar Correos del Día", use_container_width=True):
-            st.success("¡Auditoría táctica completada!")
-            hablar_como_jarvis("Correos revisados. Ninguna amenaza, solo spam habitual.")
-
-    with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
-        st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
-        st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
-        st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
-        st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
-
-    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
-        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
-        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
-        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
+        if any(p in p_low
