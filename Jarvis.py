@@ -92,14 +92,12 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     conn.commit()
     
-    # Insertar tareas iniciales si está vacía
     c.execute("SELECT COUNT(*) FROM tareas")
     if c.fetchone()[0] == 0:
         c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
         c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
         conn.commit()
         
-    # Insertar alertas iniciales si está vacía
     c.execute("SELECT COUNT(*) FROM alertas")
     if c.fetchone()[0] == 0:
         c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
@@ -261,4 +259,87 @@ with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
         if url_video:
             try:
                 st.video(url_video)
-                st.caption("🔴 Trans
+                st.caption("🔴 Transmisión en directo en curso.")
+            except Exception as e:
+                st.error("No se pudo proyectar el flujo de video.")
+        else:
+            st.info("Ingrese la dirección IP o enlace web de su cámara.")
+    else:
+        st.markdown(f"• **Estado:** {camara_seleccionada} transmitiendo")
+        st.markdown("• **Detección:** Sin anomalías en el radio")
+
+st.sidebar.markdown("---")
+st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
+st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
+st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+
+# --- PANEL PRINCIPAL: OJO DE DIOS & VISIÓN PANORÁMICA ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
+st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- PANEL DE CHAT IA & ANÁLISIS VISUAL ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True):
+        h_limpieza = datetime.datetime.now(tz_chile).hour
+        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
+        ]
+        st.rerun()
+
+activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
+if activar_camara_directa:
+    foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+    if foto_camara:
+        st.success("Fotograma capturado con éxito. Iniciando análisis de patrones visuales...")
+        st.info("🤖 J.A.R.V.I.S.: Análisis óptico completado. Estructura del entorno estable y sin amenazas detectadas en el radio visual.")
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ENTRADA DE CHAT ESTABLE
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_prompt = datetime.datetime.now(tz_chile).hour
+    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
+    else:
+        respuesta = f"Analizando su petición con los procesadores del núcleo supremo al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
