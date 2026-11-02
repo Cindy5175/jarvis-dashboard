@@ -124,13 +124,41 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS biometria (id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, hr INTEGER, spo2 INTEGER, sueno TEXT)''')
     conn.commit()
+    
+    c.execute("SELECT COUNT(*) FROM tareas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Revisar exámenes médicos y electrolitos",))
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
+        conn.commit()
     conn.close()
 
 init_db()
 
+def get_db_tareas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, texto FROM tareas")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def add_db_tarea(texto):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO tareas (texto) VALUES (?)", (texto,))
+    conn.commit()
+    conn.close()
+
+def delete_db_tarea(id_t):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM tareas WHERE id = ?", (id_t,))
+    conn.commit()
+    conn.close()
+
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado. ¿Qué ordenamos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo búnker sincronizado con protocolos de blindaje. ¿Qué ordenamos hoy?"}
     ]
 
 # --- ENCABEZADO ---
@@ -143,18 +171,49 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# --- 3 COLUMNAS ---
+# --- 3 COLUMNAS TÁCTICAS ---
 col_izq, col_centro, col_der = st.columns([1, 2.2, 1])
 
+# ==========================================
+# COLUMNA IZQUIERDA: SECTOR ALPHA
+# ==========================================
 with col_izq:
     st.markdown("### 🌐 SECTOR ALPHA")
+    
     with st.expander("🛡️ Blindaje & Alertas", expanded=True):
         st.markdown("• **Zona Familia:** Blindada\n• **Zona Médica:** Protegida\n• **Finanzas:** Monitoreo activo")
 
+    with st.expander("⌚ Mi Band (Telemetría Médica)", expanded=True):
+        hr_input = st.number_input("Frecuencia Cardíaca (BPM):", min_value=40, max_value=200, value=72)
+        spo2_input = st.number_input("Oxígeno SpO2 (%):", min_value=70, max_value=100, value=98)
+        if st.button("💾 Guardar Datos Mi Band", use_container_width=True):
+            st.success("¡Registrado con éxito!")
+            hablar_como_jarvis("Datos biométricos guardados.")
+
+    with st.expander("📝 Tareas del Búnker"):
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="inp_tarea")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.rerun()
+        for tid, t in get_db_tareas():
+            c1, c2 = st.columns([4, 1])
+            with c1:
+                st.markdown(f"• {t}")
+            with c2:
+                if st.button("❌", key=f"del_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
+
+    with st.expander("🌤️ Clima Local (Buin)", expanded=True):
+        st.markdown("• **Condición:** Despejado\n• **Temperatura:** 21°C\n• **Humedad:** 45%")
+
+# ==========================================
+# COLUMNA CENTRAL: OJO DE DIOS & CHAT
+# ==========================================
 with col_centro:
     st.markdown('<div class="stark-card">', unsafe_allow_html=True)
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios & Telemetría ISS</h4>", unsafe_allow_html=True)
-    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Táctico", "🌍 ISS Directo"])
+    tab_ojo, tab_iss = st.tabs(["🗺️ Mapa Táctico Satelital", "🌍 ISS Directo"])
     with tab_ojo:
         st.link_button("🌐 Abrir Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
     with tab_iss:
@@ -169,22 +228,47 @@ with col_centro:
 
     if prompt_usuario := st.chat_input("Escriba su mensaje..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        respuesta = f"Entendido, jefa. Procesando instrucción en el núcleo central..."
+        p_low = prompt_usuario.lower()
+        if any(p in p_low for p in ["sodio", "potasio", "examen"]):
+            respuesta = "Registros clínicos blindados: Sodio en 143.9 mEq/L y Potasio en 4.1 mEq/L."
+        else:
+            respuesta = "Entendido, jefa. Procesando órdenes en el núcleo central..."
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
         hablar_como_jarvis(respuesta)
         st.rerun()
 
+# ==========================================
+# COLUMNA DERECHA: SECTOR BETA & GNOME
+# ==========================================
 with col_der:
     st.markdown("### ⚡ SECTOR BETA")
+
     with st.expander("🎙️ Núcleo de Voz J.A.R.V.I.S.", expanded=True):
         st.toggle("Activar Síntesis de Voz Varonil", value=True, key="toggle_voz_jarvis")
         if st.button("🔊 Repetir Último Comando", use_container_width=True):
             hablar_como_jarvis(st.session_state.ultimo_texto_hablado)
             st.success("Emitiendo audio...")
 
+    with st.expander("🧬 Núcleo Científico GNOME", expanded=True):
+        st.markdown("Procesamiento analítico y optimización de datos.")
+        val_input = st.text_input("Valores (separados por comas):", "12, 18, 24, 30, 45, 50")
+        if st.button("⚡ Ejecutar Motor GNOME", use_container_width=True):
+            try:
+                nums = [float(x.strip()) for x in val_input.split(",")]
+                promedio = np.mean(nums)
+                st.markdown(f"• **Promedio Analítico:** `{promedio:.2f}`")
+                hablar_como_jarvis(f"Promedio calculado: {promedio:.2f}.")
+            except Exception:
+                st.error("Error en el formato numérico.")
+
     with st.expander("🕵️‍♂️ Módulo OSINT & Monitoreo Global", expanded=True):
-        st.markdown("Recopilación y análisis táctico de fuentes abiertas[cite: 1]:")
+        st.markdown("Recopilación y análisis táctico de fuentes abiertas:")
         st.link_button("🌐 OSINT Framework", "https://osintframework.com", use_container_width=True)
         st.link_button("✈️ Flightradar24", "https://www.flightradar24.com", use_container_width=True)
         st.link_button("🚢 MarineTraffic", "https://www.marinetraffic.com", use_container_width=True)
         st.link_button("🔍 Shodan", "https://www.shodan.io", use_container_width=True)
+
+    with st.expander("🗺️ Estación Cartográfica (Stark Maps)", expanded=True):
+        st.link_button("☀️ SunCalc (Sol)", "https://www.suncalc.org", use_container_width=True)
+        st.link_button("🌤️ Ventusky (Clima)", "https://www.ventusky.com", use_container_width=True)
+        st.link_button("🏙️ ShadeMap", "https://shademap.app", use_container_width=True)
