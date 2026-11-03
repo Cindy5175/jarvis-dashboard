@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (LETRAS OPTIMIZADAS Y SIMETRÍA) ---
+# --- ESTILOS VISUALES STARK (ESTÉTICA NEÓN AZUL, SIMETRÍA Y LETRAS OPTIMIZADAS) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -87,7 +87,7 @@ CLAVE_MAESTRA = "stark123"
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
 
-# --- PANTALLA DE BLOQUEO ÚNICA ---
+# --- PANTALLA DE BLOQUEO ÚNICA Y OPTIMIZADA ---
 if not st.session_state.bunker_desbloqueado:
     st.markdown("""
         <div class="arc-reactor-container" style="margin-top: 20px;">
@@ -118,7 +118,7 @@ if not st.session_state.bunker_desbloqueado:
     st.stop()
 
 # =========================================================================
-# BÚNKER DESBLOQUEADO - SISTEMA OPERATIVO COMPLETO
+# BÚNKER DESBLOQUEADO - SISTEMA OPERATIVO TOTALMENTE INTEGRADO
 # =========================================================================
 
 DB_NAME = "jarvis_bunker.db"
@@ -177,7 +177,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y finanzas en vivo conectados al 100%. ¿Qué ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todos los sistemas del búnker, base de datos SQLite, finanzas en vivo y módulos de análisis OSINT están conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
 # --- ENCABEZADO CENTRADO CON RELOJ DINÁMICO EN VIVO (CON SEGUNDERO) ---
@@ -214,20 +214,21 @@ with st.sidebar:
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-# MÓDULO DE FINANZAS EN VIVO (BANCO ESTADO & FINTUAL REAL)
+# 1. MÓDULO DE FINANZAS EN VIVO (BANCO ESTADO & FINTUAL REAL)
 with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
     st.markdown("• **Banco Estado (Bolsa de Santiago):**")
     st.markdown("  - **Acciones Vapores (SUD):** 42 unidades [Pendiente datos]")
     st.markdown("• **Fintual (Portafolio Global):**")
-    st.markdown("  - **Total:** US $77,76 (-8,41%)[cite: 3]")
-    st.markdown("  - VOO: US $21,19 | NVDA: US $12,93[cite: 3]")
-    st.markdown("  - O: US $11,21 | XLE: US $7,03[cite: 3]")
-    st.markdown("  - SNDK: $4,97 | IAU: $4,67 | MU: $3,62[cite: 3]")
-    st.markdown("  - VICR: $3,13 | EWT: $2,87 | EWY: $2,58[cite: 3]")
-    st.markdown("  - PLTR: $2,54 | OKTA: $1,02[cite: 3]")
+    st.markdown("  - **Total:** US $77,76 (-8,41%)")
+    st.markdown("  - VOO: US $21,19 | NVDA: US $12,93")
+    st.markdown("  - O: US $11,21 | XLE: US $7,03")
+    st.markdown("  - SNDK: $4,97 | IAU: $4,67 | MU: $3,62")
+    st.markdown("  - VICR: $3,13 | EWT: $2,87 | EWY: $2,58")
+    st.markdown("  - PLTR: $2,54 | OKTA: $1,02")
     if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
         st.success("Mercados y posiciones actualizados.")
 
+# 2. BLINDAJE Y ALERTAS
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
     st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
@@ -247,6 +248,7 @@ with st.sidebar.expander("🔔 Alertas del Búnker"):
         st.success("Alerta emitida.")
         st.rerun()
 
+# 3. TAREAS SQLITE
 with st.sidebar.expander("📝 Tareas del Búnker (SQLite)"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
     if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
@@ -274,7 +276,7 @@ with st.sidebar.expander("🌤️ Clima Local (Buin - En Vivo)", expanded=True):
     if st.button("🔄 Actualizar Satélite Meteo", use_container_width=True):
         st.success("Telemetría meteorológica sincronizada.")
 
-# --- NÚCLEOS DEL CEREBRO (SIN NÚMEROS Y CON ESPACIADO LIMPIO) ---
+# --- NÚCLEOS DEL CEREBRO ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 
@@ -283,10 +285,10 @@ with st.sidebar.expander("⚙️ Conexión de IA Avanzada"):
     sarcasmo = st.slider("Nivel de Sarcasmo:", 0, 100, 85)
     st.caption(f"Nivel de ironía actual: {sarcasmo}%")
 
-with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
+with st.sidebar.expander("🔍 Búsqueda y Web en Vivo (OSINT)"):
     url_input = st.text_input("URL o término a explorar:")
     if st.button("🔍 Escanear Web", use_container_width=True) and url_input:
-        st.info(f"Analizando nodo web: {url_input}...")
+        st.info(f"Analizando nodo web y fuentes abiertas: {url_input}...")
     
     st.markdown("---")
     st.markdown("**🏥 Módulo Portal UC Christus:**")
@@ -324,6 +326,7 @@ with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
     st.link_button("📈 Fintual (Portafolio)", "https://fintual.cl", use_container_width=True)
     st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
     st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
+    st.link_button("🤖 Google AI Studio", "https://aistudio.google.com", use_container_width=True)
 
 with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
     camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
@@ -348,7 +351,7 @@ st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org",
 
 # --- PANEL PRINCIPAL: OJO DE DIOS & VISIÓN PANORÁMICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital & OSINT</h4>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 0.8rem !important; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -392,27 +395,4 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     palabras_gracias = ["gracias", "excelente", "buena"]
     palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
 
-    if any(p in p_low for p in palabras_saludo):
-        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
-    elif any(p in p_low for p in palabras_gracias):
-        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
-    elif any(p in p_low for p in palabras_cansancio):
-        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
-    else:
-        respuesta = f"Analizando su petición con los procesadores del núcleo supremo al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    
-    if voz_activa:
-        clean_resp = respuesta.replace('"', '').replace("'", "")
-        st.markdown(f"""
-            <script>
-                const synth = window.speechSynthesis;
-                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
-                utterThis.lang = 'es-CL';
-                utterThis.rate = 1.0;
-                synth.speak(utterThis);
-            </script>
-        """, unsafe_allow_html=True)
-
-    st.rerun()
+    if any
