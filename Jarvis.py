@@ -1,17 +1,23 @@
 import streamlit as st
 import datetime
 
-# --- BLOQUE DINÁMICO: RELOJ Y SEGUNDERO EN VIVO ---
+# --- RELOJ DINÁMICO DEL NÓDULO (SEGUNDERO EN VIVO) ---
 @st.fragment(run_every=1)
-def render_live_clock():
-    # Obtiene la hora exacta con segundos
-    now = datetime.datetime.now().strftime("%H:%M:%S")
+def render_jarvis_clock():
+    # Obtiene la fecha y hora actual con formato exacto
+    now = datetime.datetime.now()
+    fecha_formateada = now.strftime("%A, %d de %B de %Y") # O ajustado a su preferencia
+    hora_segundos = now.strftime("%H:%M:%S")
     
-    # Muestra el reloj con el estilo neón turquesa del búnker
+    # Texto de estado estilo Stark Industries
     st.markdown(
-        f"<h1 style='color: #00FFFF; font-family: monospace; text-align: left;'>⏱️ {now}</h1>", 
+        f"""
+        <div style='text-align: center; font-family: monospace; color: #00FFFF;'>
+            <p style='font-size: 0.9rem; margin-bottom: 2px;'>[ STARK INDUSTRIES // NODO BUIN, CHILE // {hora_segundos} ]</p>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-# Llamada para renderizar el reloj en movimiento
-render_live_clock()
+# Llamada para desplegar el reloj dinámico en la interfaz
+render_jarvis_clock()
