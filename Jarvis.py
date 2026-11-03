@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (ESTÉTICA SIMÉTRICA Y COMPACTA) ---
+# --- ESTILOS VISUALES STARK (TÍTULOS PRINCIPALES MÁS PEQUEÑOS) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -372,4 +372,20 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         else:
             respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está bajo control absoluto."
     else:
-        respuesta = "Comando recibido
+        respuesta = "Comando recibido y procesado por la red orbital, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
