@@ -217,13 +217,10 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 st.markdown("---")
 
 # =========================================================================
-# DISTRIBUCIÓN VERTICAL EN BLOQUES (IZQUIERDA, CENTRO, DERECHA)
+# DISTRIBUCIÓN VERTICAL EN BLOQUES
 # =========================================================================
 
-# -------------------------------------------------------------------------
-# BLOQUE 1: MÓDULOS DE LA IZQUIERDA (5 MÓDULOS EN VERTICAL)
-# -------------------------------------------------------------------------
-st.markdown("### 🌐 MÓDULOS DE CONTROL - SECTOR IZQUIERDO")
+st.markdown("### 🌐 MÓDULOS DE CONTROL - SECTOR SUPERIOR")
 
 with st.expander("🛰️ Módulo E.D.I.T.H."):
     st.markdown("- Control óptico y satelital")
@@ -244,4 +241,113 @@ with st.expander("🐧 Fundamentos y Bases"):
     st.markdown("- Aprende lo básico: Linux, Redes, Python")
     if st.button("🐧 Núcleo Linux", use_container_width=True, key="v_lin"): st.info("Linux activo.")
     if st.button("🌐 Redes", use_container_width=True, key="v_net"): st.info("Redes activas.")
-    if st.button("🐍 Python", use_
+    if st.button("🐍 Python", use_container_width=True, key="v_py"): st.info("Python operativo.")
+
+with st.expander("👁️ Exploración y Práctica"):
+    st.markdown("- Práctica activa: Nmap, Wireshark, Burp")
+    if st.button("👁️ Nmap", use_container_width=True, key="v_nmap"): st.info("Nmap desplegado.")
+    if st.button("🦈 Wireshark", use_container_width=True, key="v_wire"): st.info("Wireshark en curso.")
+    if st.button("⚡ Burp Suite", use_container_width=True, key="v_burp"): st.info("Burp conectado.")
+
+with st.expander("🛡️ Laboratorio Explotación"):
+    st.markdown("- Romper y Explotar: Metasploit, Sqlmap, John")
+    if st.button("🛡️ Metasploit", use_container_width=True, key="v_meta"): st.info("Metasploit listo.")
+    if st.button("🐉 Sqlmap", use_container_width=True, key="v_sql"): st.info("Sqlmap activo.")
+    if st.button("🎩 John Ripper", use_container_width=True, key="v_john"): st.info("John iniciado.")
+
+with st.expander("🔍 Investigación y Defensa"):
+    st.markdown("- Investigar y Defender: OSINT, SIEM, CTF")
+    if st.button("🔍 OSINT", use_container_width=True, key="v_osint"): st.info("OSINT activo.")
+    if st.button("🖥️ SIEM", use_container_width=True, key="v_siem"): st.info("SIEM en vivo.")
+    if st.button("🚩 CTF", use_container_width=True, key="v_ctf"): st.info("CTF cargado.")
+
+st.markdown("---")
+
+# -------------------------------------------------------------------------
+# CENTRO DESPEJADO CON EL CHAT IA
+# -------------------------------------------------------------------------
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat_v"):
+        h_l = datetime.datetime.now(tz_chile).hour
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_p = datetime.datetime.now(tz_chile).hour
+    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+    p_low = prompt_usuario.lower()
+
+    if "hola" in p_low:
+        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
+    elif any(w in p_low for w in ["gracias", "excelente"]):
+        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
+    else:
+        respuesta = f"Comando recibido y procesado por la red orbital, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
+
+st.markdown("---")
+
+# -------------------------------------------------------------------------
+# MÓDULOS DEL SECTOR INFERIOR
+# -------------------------------------------------------------------------
+st.markdown("### 🌐 SISTEMAS OPERATIVOS - SECTOR INFERIOR")
+
+with st.expander("🐉 Ciberseguridad Pro"):
+    st.markdown("- Asegurar, Construir y Liderar")
+    if st.button("🐉 Equipo Rojo", use_container_width=True, key="v_red"): st.success("Equipo Rojo activo.")
+    if st.button("🛡️ Equipo Azul", use_container_width=True, key="v_blue"): st.success("Equipo Azul activo.")
+    if st.button("🧠 Investigación IA", use_container_width=True, key="v_res"): st.success("Red neuronal al 100%.")
+
+with st.expander("📈 Finanzas y Portafolio"):
+    st.markdown("- Banco Estado: 42 Acciones Vapores\n- Fintual Global: US $77,76")
+    if st.button("🔄 Sincronizar Mercados", use_container_width=True, key="v_fin"):
+        st.success("Portafolio actualizado.")
+
+with st.expander("🛡️ Blindaje y Alertas"):
+    st.markdown("- WhatsApp / Gmail: Operativos")
+    for msg, nivel in get_db_alertas():
+        st.markdown(f"- {'🟢' if nivel == 'OK' else 'ℹ️'} {msg}")
+
+with st.expander("🌤️ Clima y Tareas SQLite"):
+    st.markdown("- Buin: 21°C | Humedad: 45%")
+    nueva_tarea = st.text_input("Nueva tarea:", key="input_tarea_v")
+    if st.button("➕ Añadir Tarea", use_container_width=True, key="btn_add_t_v"):
+        if nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.rerun()
+    for tid, t in get_db_tareas():
+        col_t1, col_t2 = st.columns([3, 1])
+        with col_t1:
+            st.markdown(f"• {t}")
+        with col_t2:
+            if st.button("❌", key=f"del_td_v_{tid}"):
+                delete_db_tarea(tid)
+                st.rerun()
+
+with st.expander("⚡ Automatización & Enlaces"):
+    codigo_script = st.text_area("Script Python:", "print('Núcleo al 100%')", key="script_py_v")
+    if st.button("⚡ Ejecutar Script", use_container_width=True, key="btn_exec_py_v"):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            res = buffer_salida.getvalue()
+            st.code(res if res else "Sin salida.", language="python")
+        except Exception as e:
+            st.error(f"Error: {e}")
+    st.markdown("---")
+    st.link_button("🌤️ Ventusky", "https://www.ventusky.com", use_container_width=True)
+    st.link_button("☀️ SunCalc", "https://www.suncalc.org", use_container_width=True)
+    st.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
