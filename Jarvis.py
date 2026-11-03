@@ -151,7 +151,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON REACTOR ARC Y RELOJ EN VIVO (ACTUALIZACIÓN DIRECTA) ---
+# --- ENCABEZADO CON REACTOR ARC Y RELOJ EN VIVO (BLINDADO CON JS DINÁMICO) ---
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
@@ -161,14 +161,20 @@ st.markdown(f"""
         </p>
     </div>
     <script>
-        const actualizarReloj = () => {{
-            const ahora = new Date();
-            const opciones = {{ timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }};
-            const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
-            const el = document.getElementById('reloj-vivo');
-            if (el) el.innerText = horaChile;
-        }};
-        setInterval(actualizarReloj, 1000);
+        (function() {{
+            const actualizarReloj = () => {{
+                const ahora = new Date();
+                const opciones = {{ timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }};
+                const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
+                const el = document.getElementById('reloj-vivo');
+                if (el) {{
+                    el.innerText = horaChile;
+                }}
+            }};
+            if (window.jarvisTimer) clearInterval(window.jarvisTimer);
+            window.jarvisTimer = setInterval(actualizarReloj, 1000);
+            actualizarReloj();
+        }})();
     </script>
 """, unsafe_allow_html=True)
 st.markdown("---")
