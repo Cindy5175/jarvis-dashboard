@@ -395,4 +395,27 @@ if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     palabras_gracias = ["gracias", "excelente", "buena"]
     palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
 
-    if any
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
+    else:
+        respuesta = f"Analizando su petición con los procesadores del núcleo supremo al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
