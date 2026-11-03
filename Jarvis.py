@@ -1,23 +1,56 @@
 import streamlit as st
 import datetime
 
-# --- RELOJ DINÁMICO DEL NÓDULO (SEGUNDERO EN VIVO) ---
+# --- CONFIGURACIÓN DE LA PÁGINA ---
+st.set_page_config(page_title="Jarvis - Nodo Buin", layout="wide")
+
+# --- ENCABEZADO TÁCTICO & RELOJ DINÁMICO EN VIVO ---
 @st.fragment(run_every=1)
-def render_jarvis_clock():
-    # Obtiene la fecha y hora actual con formato exacto
+def render_jarvis_header():
     now = datetime.datetime.now()
-    fecha_formateada = now.strftime("%A, %d de %B de %Y") # O ajustado a su preferencia
+    fecha_str = now.strftime("%A, %d de %B de %Y")
     hora_segundos = now.strftime("%H:%M:%S")
     
-    # Texto de estado estilo Stark Industries
     st.markdown(
         f"""
         <div style='text-align: center; font-family: monospace; color: #00FFFF;'>
-            <p style='font-size: 0.9rem; margin-bottom: 2px;'>[ STARK INDUSTRIES // NODO BUIN, CHILE // {hora_segundos} ]</p>
+            <h2 style='margin-bottom: 0px;'>J.A.R.V.I.S.</h2>
+            <p style='font-size: 0.9rem; margin-top: 5px;'>
+                [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
+            </p>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-# Llamada para desplegar el reloj dinámico en la interfaz
-render_jarvis_clock()
+# Renderiza el núcleo superior
+render_jarvis_header()
+st.markdown("---")
+
+# --- MENÚ LATERAL / NÚCLEOS DE CEREBRO ---
+with st.sidebar:
+    st.subheader("🧠 Núcleos de Cerebro")
+    opcion = st.radio(
+        "Seleccione módulo:",
+        [
+            "1. Grabaciones y capturas",
+            "2. Búsqueda y Web en Vivo",
+            "3. Sensores Meteorológicos",
+            "4. Análisis de Documentos",
+            "5. Módulo de Voz IA",
+            "6. Automatización Python"
+        ]
+    )
+
+# --- SECTOR TÁCTICO PRINCIPAL ---
+st.subheader("🛰️ Ojo de Dios – Telemetría Satelital")
+st.write("Enlace satelital de órbita terrestre sincronizado con el nodo Buin.")
+
+if st.button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)"):
+    st.info("Conectando con la red satelital Osiris...")
+
+# Caja de interacción estilo chat inferior
+st.markdown("---")
+user_input = st.text_input("Escriba su orden...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
+if user_input:
+    st.success(f"Orden registrada en el sistema: {user_input}")
