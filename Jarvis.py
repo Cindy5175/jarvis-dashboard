@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (TARJETAS Y CUADRÍCULAS TÁCTICAS) ---
+# --- ESTILOS VISUALES STARK (BLOQUES Y TARJETAS TÁCTICAS) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -238,121 +238,52 @@ st.sidebar.link_button("☀️ SunCalc", "https://www.suncalc.org", use_containe
 
 
 # =========================================================================
-# PANEL PRINCIPAL: MÓDULOS TÁCTICOS EN FUNCIONAMIENTO (ESTILO CIBERSEGURIDAD)
+# PANEL PRINCIPAL: MÓDULOS TÁCTICOS ORGANIZADOS EN BLOQUES (EXPANDERS)
 # =========================================================================
 
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4>🛰️ E.D.I.T.H. // Equipo Digital de Intervención Táctica y Hacking</h4>", unsafe_allow_html=True)
-st.markdown("<p>Control óptico, satelital y ciberinteligencia orbital activa.</p>", unsafe_allow_html=True)
+# 1. BLOQUE E.D.I.T.H.
+with st.expander("🛰️ Módulo E.D.I.T.H. (Equipo Digital de Intervención Táctica y Hacking)", expanded=True):
+    st.markdown("<p>Control óptico, satelital y ciberinteligencia orbital activa.</p>", unsafe_allow_html=True)
+    col_e1, col_e2 = st.columns(2)
+    with col_e1:
+        usar_camara_edith = st.checkbox("📷 Cámara Óptica E.D.I.T.H.", value=False)
+        if usar_camara_edith:
+            foto_edith = st.camera_input("Captura orbital:")
+            if foto_edith:
+                st.success("Fotograma analizado por servidores orbitales.")
+    with col_e2:
+        edith_query = st.text_input("Consulta a E.D.I.T.H. (Objetivo):")
+        if st.button("🕶️ Escaneo Orbital", use_container_width=True):
+            if edith_query.strip():
+                st.success(f"Objetivo '{edith_query}' rastreado con éxito.")
+            else:
+                st.warning("Ingrese un objetivo.")
+    st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-col_e1, col_e2 = st.columns(2)
-with col_e1:
-    usar_camara_edith = st.checkbox("📷 Cámara Óptica E.D.I.T.H.", value=False)
-    if usar_camara_edith:
-        foto_edith = st.camera_input("Captura orbital:")
-        if foto_edith:
-            st.success("Fotograma analizado por servidores orbitales.")
-with col_e2:
-    edith_query = st.text_input("Consulta a E.D.I.T.H. (Objetivo):")
-    if st.button("🕶️ Escaneo Orbital", use_container_width=True):
-        if edith_query.strip():
-            st.success(f"Objetivo '{edith_query}' rastreado con éxito.")
-        else:
-            st.warning("Ingrese un objetivo.")
+# 2. BLOQUE LABORATORIO TÁCTICO DE CIBERSEGURIDAD
+with st.expander("💻 Laboratorio Táctico de Ciberseguridad (Fases 01 - 05)", expanded=True):
+    fase_sel = st.selectbox("Seleccionar Fase de Entrenamiento / Operación:", [
+        "01. Just Starting (Linux / Networking / Python)",
+        "02. Building Skills (Nmap / Wireshark / Burp Suite)",
+        "03. Security Lab (Metasploit / Sqlmap / John)",
+        "04. Real-World Practice (OSINT / Web Security / SIEM)",
+        "05. Cybersecurity Pro (Red Team / Blue Team / Research)"
+    ])
 
-st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-
-# --- CUADRÍCULAS ESTILO CYBRAINIUM (LABORATORIOS DE SEGURIDAD) ---
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4>💻 LABORATORIO TÁCTICO DE CIBERSEGURIDAD (FASES 01 - 05)</h4>", unsafe_allow_html=True)
-
-fase_sel = st.selectbox("Seleccionar Fase de Entrenamiento / Operación:", [
-    "01. Just Starting (Linux / Networking / Python)",
-    "02. Building Skills (Nmap / Wireshark / Burp Suite)",
-    "03. Security Lab (Metasploit / Sqlmap / John)",
-    "04. Real-World Practice (OSINT / Web Security / SIEM)",
-    "05. Cybersecurity Pro (Red Team / Blue Team / Research)"
-])
-
-if "01" in fase_sel:
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        if st.button("🐧 Linux Core", use_container_width=True): st.info("Subsistema Linux activo.")
-    with col_b:
-        if st.button("🌐 Networking", use_container_width=True): st.info("Monitoreo de red activo.")
-    with col_c:
-        if st.button("🐍 Python Script", use_container_width=True): st.info("Motor Python operativo.")
-elif "02" in fase_sel:
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        if st.button("👁️ Nmap Scan", use_container_width=True): st.info("Escaneo de puertos desplegado.")
-    with col_b:
-        if st.button("🦈 Wireshark", use_container_width=True): st.info("Captura de paquetes en curso.")
-    with col_c:
-        if st.button("⚡ Burp Suite", use_container_width=True): st.info("Proxy web conectado.")
-elif "03" in fase_sel:
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        if st.button("🛡️ Metasploit", use_container_width=True): st.info("Framework de explotación listo.")
-    with col_b:
-        if st.button("🐉 Sqlmap", use_container_width=True): st.info("Auditoría SQL activa.")
-    with col_c:
-        if st.button("🎩 John Ripper", use_container_width=True): st.info("Análisis de hashes iniciado.")
-elif "04" in fase_sel:
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        if st.button("🔍 OSINT Engine", use_container_width=True): st.info("Búsqueda de inteligencia abierta activa.")
-    with col_b:
-        if st.button("🌐 Web Security", use_container_width=True): st.info("Escudo web operativo.")
-    with col_c:
-        if st.button("🖥️ SIEM Dashboard", use_container_width=True): st.info("Monitoreo de eventos en vivo.")
-else:
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        if st.button("🐉 Red Team", use_container_width=True): st.success("Protocolo Ofensivo Activo.")
-    with col_b:
-        if st.button("🛡️ Blue Team", use_container_width=True): st.success("Protocolo Defensivo Activo.")
-    with col_c:
-        if st.button("🧠 AI Research", use_container_width=True): st.success("Red neuronal al 100%.")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-
-# --- PANEL DE CHAT INTELIGENTE STARK ---
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-col_h1, col_h2 = st.columns([4, 1])
-with col_h1:
-    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
-with col_h2:
-    if st.button("🗑️", use_container_width=True):
-        h_l = datetime.datetime.now(tz_chile).hour
-        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ENTRADA DE CHAT DINÁMICA
-if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    h_p = datetime.datetime.now(tz_chile).hour
-    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
-    p_low = prompt_usuario.lower()
-
-    if "hola" in p_low:
-        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
-    elif any(w in p_low for w in ["gracias", "excelente"]):
-        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
-    else:
-        respuesta = f"Comando recibido y procesado por la red orbital, jefa."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    
-    st.rerun()
+    if "01" in fase_sel:
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            if st.button("🐧 Linux Core", use_container_width=True): st.info("Subsistema Linux activo.")
+        with col_b:
+            if st.button("🌐 Networking", use_container_width=True): st.info("Monitoreo de red activo.")
+        with col_c:
+            if st.button("🐍 Python Script", use_container_width=True): st.info("Motor Python operativo.")
+    elif "02" in fase_sel:
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            if st.button("👁️ Nmap Scan", use_container_width=True): st.info("Escaneo de puertos desplegado.")
+        with col_b:
+            if st.button("🦈 Wireshark", use_container_width=True): st.info("Captura de paquetes en curso.")
+        with col_c:
+            if st.button("⚡ Burp Suite", use_container_width=True): st.info("Proxy web conectado.")
+    elif "0
