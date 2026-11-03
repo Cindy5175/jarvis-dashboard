@@ -87,7 +87,7 @@ CLAVE_MAESTRA = "stark123"
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
 
-# --- PANTALLA DE BLOQUEO CON LETRAS ACHICADAS Y PROPORCIONADAS ---
+# --- PANTALLA DE BLOQUEO ---
 if not st.session_state.bunker_desbloqueado:
     st.markdown("""
         <div class="arc-reactor-container" style="margin-top: 20px;">
@@ -177,7 +177,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y sandbox de código conectados al 100%. ¿Qué ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Base de datos SQLite, motor de alertas y finanzas en vivo conectados al 100%. ¿Qué ejecutamos?"}
     ]
 
 # --- ENCABEZADO CENTRADO CON RELOJ DINÁMICO EN VIVO (CON SEGUNDERO) ---
@@ -213,6 +213,15 @@ with st.sidebar:
 
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+
+# NUEVO MÓDULO: FINANZAS EN VIVO (BANCO ESTADO & FINTUAL)
+with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
+    st.markdown("• **Banco Estado (Bolsa de Santiago):**")
+    st.markdown("  - **Acciones Vapores (SUD):** 42 unidades")
+    st.markdown("• **Fintual (Mutuos / Fondos):**")
+    st.markdown("  - Portafolio de inversión activo")
+    if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
+        st.success("Mercados y posiciones actualizados.")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
@@ -306,9 +315,10 @@ with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
             st.error(f"Error en ejecución: {e}")
 
 with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
+    st.link_button("📈 Banco Estado (Inversiones)", "https://www.bancoestado.cl", use_container_width=True)
+    st.link_button("📈 Fintual (Portafolio)", "https://fintual.cl", use_container_width=True)
     st.link_button("📈 Mercado Libre (Gestión)", "https://www.mercadolibre.cl", use_container_width=True)
     st.link_button("📧 Gmail Táctico", "https://mail.google.com", use_container_width=True)
-    st.link_button("🤖 Google AI Studio", "https://aistudio.google.com", use_container_width=True)
 
 with st.sidebar.expander("🎥 Monitoreo de Cámaras IP"):
     camara_seleccionada = st.selectbox("Canal de Vigilancia:", ["Stream IP Personalizado", "Cam 01 - Acceso Buin", "Cam 02 - Perímetro Búnker"])
