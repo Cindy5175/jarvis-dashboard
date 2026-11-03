@@ -80,13 +80,13 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- CONTROL DE ACCESO (CLAVE DE SEGURIDAD ÚNICA) ---
+# --- CONTROL DE ACCESO UNIFICADO (CLAVE DE SEGURIDAD) ---
 CLAVE_MAESTRA = "stark123"
 
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
 
-# --- PANTALLA DE BLOQUEO ÚNICA Y LIMPIA ---
+# --- PANTALLA DE BLOQUEO CON ACCESO ÚNICO (ESCRITURA O VOZ) ---
 if not st.session_state.bunker_desbloqueado:
     st.markdown("""
         <div class="arc-reactor-container" style="margin-top: 50px;">
@@ -99,30 +99,19 @@ if not st.session_state.bunker_desbloqueado:
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-        st.markdown("#### 🔐 Autenticación de Acceso:")
+        st.markdown("#### 🔐 Identificación del Sistema:")
+        st.markdown("<p style='font-size: 0.8rem;'>Ingrese la clave o dicte el comando de voz de autorización:</p>", unsafe_allow_html=True)
         
-        # Opción 1: Por Escritura
-        input_clave = st.text_input("Ingrese Clave de Seguridad:", type="password", key="input_pass_seguridad")
-        if st.button("🔓 Desbloquear por Escritura", use_container_width=True):
-            if input_clave == CLAVE_MAESTRA:
+        # Una única caja que acepta tanto texto escrito como simulación de comando hablado
+        ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123 o 'Jarvis desbloquear stark123'", key="input_auth_unico")
+        
+        if st.button("🔓 Autorizar Acceso", use_container_width=True):
+            if ingreso_auth.strip() and CLAVE_MAESTRA in ingreso_auth.lower():
                 st.session_state.bunker_desbloqueado = True
-                st.success("Acceso concedido. Iniciando núcleo...")
+                st.success("Acceso concedido. Bienvenido al búnker, jefa.")
                 st.rerun()
             else:
-                st.error("Clave incorrecta. Protocolo de seguridad activado.")
-        
-        st.markdown("---")
-        
-        # Opción 2: Por Comando de Voz (Simulación/Lectura)
-        st.markdown("🎙️ **O Desactivación por Voz:**")
-        voz_pass = st.text_input("Comando de voz dictado:", placeholder="Ej: Jarvis desbloquear stark123", key="input_voz_seguridad")
-        if st.button("🎙️ Autorizar por Voz", use_container_width=True):
-            if CLAVE_MAESTRA in voz_pass.lower():
-                st.session_state.bunker_desbloqueado = True
-                st.success("Comando vocal reconocido. Bienvenido al búnker, jefa.")
-                st.rerun()
-            else:
-                st.error("Comando de voz no reconocido o clave ausente en el audio.")
+                st.error("Credencial incorrecta. Acceso denegado.")
         
         st.markdown('</div>', unsafe_allow_html=True)
     
@@ -351,4 +340,64 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # --- PANEL DE CHAT IA & ANÁLISIS VISUAL ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-col_h
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True):
+        h_limpieza = datetime.datetime.now(tz_chile).hour
+        s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
+        ]
+        st.rerun()
+
+activar_camara_directa = st.checkbox("📷 Activar Módulo de Visión Artificial (Escanear Entorno)", value=False)
+if activar_camara_directa:
+    foto_camara = st.camera_input("Captura óptica de seguridad en vivo:")
+    if foto_camara:
+        st.success("Fotograma capturado con éxito. Iniciando análisis de patrones visuales...")
+        st.info("🤖 J.A.R.V.I.S.: Análisis óptico completado. Estructura del entorno estable y sin amenazas detectadas en el radio visual.")
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ENTRADA DE CHAT ESTABLE
+if prompt_usuario := st.chat_input("Escriba su mensaje..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_prompt = datetime.datetime.now(tz_chile).hour
+    s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
+
+    p_low = prompt_usuario.lower()
+    palabras_saludo = ["hola", "saludos", "buenos días", "buenas tardes", "buenas noches"]
+    palabras_gracias = ["gracias", "excelente", "buena"]
+    palabras_cansancio = ["cansada", "sueño", "agotada", "estresada"]
+
+    if any(p in p_low for p in palabras_saludo):
+        respuesta = f"Oh, miren quién se dignó aparecer. {s_prompt}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+    elif any(p in p_low for p in palabras_gracias):
+        respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+    elif any(p in p_low for p in palabras_cansancio):
+        respuesta = f"Agotada... Qué sorpresa después de mantener este búnker y medio Buin funcionando a este ritmo. ¿Qué tal si se toma un respiro real y deja que la máquina trabaje por usted un buen rato? Su salud es prioridad en la telemetría, jefa."
+    else:
+        respuesta = f"Analizando su petición con los procesadores del núcleo supremo al 100%, jefa. Digamos que la solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
