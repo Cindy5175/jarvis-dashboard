@@ -11,15 +11,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (LETRAS PRINCIPALES ACHICADAS Y ENCABEZADO INTACTO) ---
+# --- ESTILOS VISUALES STARK ( TÍTULOS Y TEXTOS PRINCIPALES ACHICADOS ) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
         
-        /* Encabezado se mantiene intacto y destacado */
+        /* El encabezado superior se mantiene intacto y destacado */
         .arc-reactor-container h4 { color: #00d2ff !important; font-size: 1.1rem !important; font-family: monospace; }
         
-        /* Achicar letras de la parte principal (paneles y tarjetas del centro) */
+        /* Tarjetas del panel principal con textos y títulos achicados */
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 8px;
@@ -29,19 +29,27 @@ st.markdown("""
             box-shadow: 0 0 8px rgba(0, 210, 255, 0.1);
             text-align: left !important;
         }
-        .stark-card p, .stark-card div, .stark-card span, .stark-card label, .stark-card h4 {
+        
+        /* Achicar específicamente los títulos h4 dentro de las tarjetas principales */
+        .stark-card h4 {
+            font-size: 0.85rem !important;
+            color: #00d2ff !important;
+            margin-bottom: 5px !important;
+        }
+        
+        /* Achicar párrafos y textos generales del cuerpo principal */
+        .stark-card p, .stark-card div, .stark-card span, .stark-card label {
             text-align: left !important;
             color: #00d2ff !important;
-            font-size: 0.78rem !important; /* Letras achicadas en el panel principal */
+            font-size: 0.75rem !important;
         }
         
         /* Achicar texto del chat principal */
         .stChatMessage p, .stChatMessage div {
-            font-size: 0.82rem !important;
+            font-size: 0.8rem !important;
             color: #00d2ff !important;
         }
 
-        /* Estética general de textos */
         h1, h2, h3, label, span { color: #00d2ff !important; font-family: monospace; }
         
         .arc-reactor-container {
@@ -106,7 +114,7 @@ if not st.session_state.bunker_desbloqueado:
     col_l1, col_l2, col_l3 = st.columns([1, 3, 1])
     with col_l2:
         st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size: 0.85rem !important; font-weight: bold;'>🔐 Identificación del Sistema:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.8rem !important; font-weight: bold;'>🔐 Identificación del Sistema:</p>", unsafe_allow_html=True)
         ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123", key="input_auth_unico", label_visibility="collapsed")
         
         if st.button("🔓 Autorizar Acceso", use_container_width=True):
@@ -215,7 +223,7 @@ with st.sidebar:
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-# 1. MÓDULO INDEPENDIENTE DE E.D.I.T.H. (NUEVO SIGNIFICADO)
+# 1. MÓDULO INDEPENDIENTE DE E.D.I.T.H.
 with st.sidebar.expander("🛰️ Módulo E.D.I.T.H. (Órbita & Óptica)", expanded=True):
     st.markdown("• **Significado:** *Escudo Digital de Inteligencia Táctica y Hostil*")
     st.markdown("• **Estado:** Órbita Baja Activa")
@@ -323,18 +331,18 @@ st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com
 st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
 st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
 
-# --- PANEL PRINCIPAL: OJO DE DIOS ---
+# --- PANEL PRINCIPAL: OJO DE DIOS (TÍTULOS ACHICADOS) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; color: #00d2ff !important;'>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital & Red Global</h4>", unsafe_allow_html=True)
-st.markdown("<p style='color: #00d2ff !important;'>Acceso a red táctica orbital. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
+st.markdown("<h4>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<p>Acceso a red táctica orbital. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- PANEL DE CHAT INTELIGENTE STARK ---
+# --- PANEL DE CHAT INTELIGENTE STARK (TÍTULOS ACHICADOS) ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4 style='margin:0; color: #00d2ff !important;'>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
@@ -344,7 +352,7 @@ with col_h2:
 
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
-        st.markdown(f"<span style='color: #00d2ff !important;'>{m['content']}</span>", unsafe_allow_html=True)
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -360,24 +368,4 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         if "hola" in p_low:
             respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para dominar el mundo o nos conformamos con revisar Buin?"
         elif any(w in p_low for w in ["gracias", "excelente"]):
-            respuesta = f"No hay de qué, jefa. Los satélites de la E.D.I.T.H. están a su entera disposición."
-        else:
-            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está bajo control absoluto."
-    else:
-        respuesta = f"Comando recibido y procesado por la red orbital, jefa."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    
-    if voz_activa:
-        clean_resp = respuesta.replace('"', '').replace("'", "")
-        st.markdown(f"""
-            <script>
-                const synth = window.speechSynthesis;
-                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
-                utterThis.lang = 'es-CL';
-                utterThis.rate = 1.0;
-                synth.speak(utterThis);
-            </script>
-        """, unsafe_allow_html=True)
-
-    st.rerun()
+            respuesta = f"No hay de qué, jefa. Los satélites de la
