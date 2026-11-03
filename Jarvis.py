@@ -11,11 +11,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (ESTÉTICA NEÓN AZUL Y SIMETRÍA) ---
+# --- ESTILOS VISUALES STARK (LETRAS PRINCIPALES ACHICADAS Y ENCABEZADO INTACTO) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
-        h1, h2, h3, h4, label, span { color: #00d2ff !important; font-family: monospace; text-align: left !important; }
+        
+        /* Encabezado se mantiene intacto y destacado */
+        .arc-reactor-container h4 { color: #00d2ff !important; font-size: 1.1rem !important; font-family: monospace; }
+        
+        /* Achicar letras de la parte principal (paneles y tarjetas del centro) */
+        .stark-card {
+            border: 1.5px solid #00d2ff;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: rgba(0, 210, 255, 0.04);
+            margin-bottom: 10px;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.1);
+            text-align: left !important;
+        }
+        .stark-card p, .stark-card div, .stark-card span, .stark-card label, .stark-card h4 {
+            text-align: left !important;
+            color: #00d2ff !important;
+            font-size: 0.78rem !important; /* Letras achicadas en el panel principal */
+        }
+        
+        /* Achicar texto del chat principal */
+        .stChatMessage p, .stChatMessage div {
+            font-size: 0.82rem !important;
+            color: #00d2ff !important;
+        }
+
+        /* Estética general de textos */
+        h1, h2, h3, label, span { color: #00d2ff !important; font-family: monospace; }
         
         .arc-reactor-container {
             display: flex;
@@ -45,25 +72,6 @@ st.markdown("""
             border-right: 8px solid transparent;
             border-bottom: 14px solid #ffffff;
             filter: drop-shadow(0 0 5px #00d2ff);
-        }
-
-        .stark-card {
-            border: 1.5px solid #00d2ff;
-            border-radius: 8px;
-            padding: 12px;
-            background-color: rgba(0, 210, 255, 0.04);
-            margin-bottom: 12px;
-            box-shadow: 0 0 8px rgba(0, 210, 255, 0.1);
-            text-align: left !important;
-        }
-        .stark-card p, .stark-card div, .stark-card span, .stark-card label {
-            text-align: left !important;
-            color: #00d2ff !important;
-            font-size: 0.9rem !important;
-        }
-
-        .stMarkdown, p, li, span, div, .stChatMessage p {
-            color: #00d2ff !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -171,10 +179,10 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y Protocolo E.D.I.T.H. sincronizados. Cámara y sensores estables. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y Módulo E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO ---
+# --- ENCABEZADO CON RELOJ EN VIVO (INTACTO Y DESTACADO) ---
 @st.fragment(run_every=1)
 def render_live_header():
     now = datetime.datetime.now(tz_chile)
@@ -189,7 +197,7 @@ def render_live_header():
     st.markdown(f"""
         <div class="arc-reactor-container">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. PROTOCOL</h4>
+            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
             <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
                 [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
             </p>
@@ -204,44 +212,45 @@ with st.sidebar:
         st.session_state.bunker_desbloqueado = False
         st.rerun()
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK & E.D.I.T.H. CON CÁMARA INTEGRADA ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-with st.sidebar.expander("🛰️ E.D.I.T.H. (Control Óptico y Satelital)", expanded=True):
+# 1. MÓDULO INDEPENDIENTE DE E.D.I.T.H. (NUEVO SIGNIFICADO)
+with st.sidebar.expander("🛰️ Módulo E.D.I.T.H. (Órbita & Óptica)", expanded=True):
+    st.markdown("• **Significado:** *Escudo Digital de Inteligencia Táctica y Hostil*")
     st.markdown("• **Estado:** Órbita Baja Activa")
-    usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
     
+    usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
     if usar_camara_edith:
         foto_edith = st.camera_input("Captura de seguridad E.D.I.T.H.:")
         if foto_edith:
             st.success("E.D.I.T.H.: Fotograma analizado con éxito por los servidores orbitales.")
 
-    edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Peter Parker / Datos):")
+    edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Datos / Objetivo):")
     if st.button("🕶️ Ejecutar Escaneo E.D.I.T.H.", use_container_width=True):
         if edith_query.strip():
             st.success(f"E.D.I.T.H.: Registros cruzados para '{edith_query}'. Datos recuperados sin interrupciones.")
         else:
             st.warning("Ingrese un parámetro de búsqueda.")
 
+# 2. FINANZAS
 with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
     st.markdown("• **Banco Estado (Bolsa de Santiago):**")
-    st.markdown("  - **Acciones Vapores (SUD):** 42 unidades [Pendiente datos]")
+    st.markdown("  - **Acciones Vapores (SUD):** 42 unidades")
     st.markdown("• **Fintual (Portafolio Global):**")
     st.markdown("  - **Total:** US $77,76 (-8,41%)")
-    st.markdown("  - VOO: US $21,19 | NVDA: US $12,93")
-    st.markdown("  - O: US $11,21 | XLE: US $7,03")
-    st.markdown("  - SNDK: $4,97 | IAU: $4,67 | MU: $3,62")
-    st.markdown("  - VICR: $3,13 | EWT: $2,87 | EWY: $2,58")
-    st.markdown("  - PLTR: $2,54 | OKTA: $1,02")
+    st.markdown("  - VOO: US $21,19 | NVDA: US $12,93 | O: US $11,21")
     if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
         st.success("Mercados y posiciones actualizados.")
 
+# 3. OSINT TÁCTICO
 with st.sidebar.expander("🕵️ Módulo OSINT Táctico", expanded=True):
     osint_modo = st.selectbox("Seleccionar Protocolo:", ["1. Auditoría de Ciberseguridad", "2. Verificación Periodística", "3. Rastreo Criminológico", "4. Due Diligence Corporativo"])
     target_osint = st.text_input("Objetivo o Dominio a Analizar:", placeholder="Ej: objetivo.cl")
     if st.button("🚀 Ejecutar Protocolo OSINT", use_container_width=True) and target_osint.strip():
         st.success(f"Analizando [{osint_modo}] sobre '{target_osint}': Nodo seguro.")
 
+# 4. BLINDAJE Y ALERTAS
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
     st.markdown("• **Gmail:** Sincronizado (Portal UC Christus)")
@@ -258,6 +267,7 @@ with st.sidebar.expander("🔔 Alertas del Búnker"):
         conn.close()
         st.rerun()
 
+# 5. TAREAS SQLITE
 with st.sidebar.expander("📝 Tareas del Búnker (SQLite)"):
     nueva_tarea = st.text_input("Nueva tarea rápida:")
     if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
@@ -313,10 +323,10 @@ st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com
 st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
 st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
 
-# --- PANEL PRINCIPAL: OJO DE DIOS & E.D.I.T.H. ---
+# --- PANEL PRINCIPAL: OJO DE DIOS ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital & Red Global</h4>", unsafe_allow_html=True)
-st.markdown("<p style='font-size: 0.8rem !important; color: #00d2ff !important;'>Acceso a red táctica orbital de Industrias Stark. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; color: #00d2ff !important;'>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital & Red Global</h4>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00d2ff !important;'>Acceso a red táctica orbital. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -324,7 +334,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; color: #00d2ff !important;'>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
@@ -338,7 +348,7 @@ for m in st.session_state.mensajes:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ENTRADA DE CHAT DINÁMICA CON SARCASMO Y EDITH
+# ENTRADA DE CHAT DINÁMICA
 if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
@@ -350,9 +360,9 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         if "hola" in p_low:
             respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para dominar el mundo o nos conformamos con revisar Buin?"
         elif any(w in p_low for w in ["gracias", "excelente"]):
-            respuesta = f"No hay de qué, jefa. Las gafas y los satélites están a su entera disposición."
+            respuesta = f"No hay de qué, jefa. Los satélites de la E.D.I.T.H. están a su entera disposición."
         else:
-            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está clara y bajo control absoluto."
+            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está bajo control absoluto."
     else:
         respuesta = f"Comando recibido y procesado por la red orbital, jefa."
 
