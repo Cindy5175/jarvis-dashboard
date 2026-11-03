@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK ( TÍTULOS Y TEXTOS PRINCIPALES ACHICADOS ) ---
+# --- ESTILOS VISUALES STARK (TÍTULOS Y TEXTOS PRINCIPALES ACHICADOS) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -368,4 +368,24 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         if "hola" in p_low:
             respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para dominar el mundo o nos conformamos con revisar Buin?"
         elif any(w in p_low for w in ["gracias", "excelente"]):
-            respuesta = f"No hay de qué, jefa. Los satélites de la
+            respuesta = "No hay de qué, jefa. Los satélites de la E.D.I.T.H. están a su entera disposición."
+        else:
+            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está bajo control absoluto."
+    else:
+        respuesta = "Comando recibido y procesado por la red orbital, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
