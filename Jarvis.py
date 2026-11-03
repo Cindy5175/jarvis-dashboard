@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (LETRAS OPTIMIZADAS Y MÁS PEQUEÑAS) ---
+# --- ESTILOS VISUALES STARK (LETRAS OPTIMIZADAS Y SIMETRÍA) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -87,7 +87,7 @@ CLAVE_MAESTRA = "stark123"
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
 
-# --- PANTALLA DE BLOQUEO ---
+# --- PANTALLA DE BLOQUEO ÚNICA ---
 if not st.session_state.bunker_desbloqueado:
     st.markdown("""
         <div class="arc-reactor-container" style="margin-top: 20px;">
@@ -214,12 +214,17 @@ with st.sidebar:
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL UNIFICADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-# NUEVO MÓDULO: FINANZAS EN VIVO (BANCO ESTADO & FINTUAL)
+# MÓDULO DE FINANZAS EN VIVO (BANCO ESTADO & FINTUAL REAL)
 with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
     st.markdown("• **Banco Estado (Bolsa de Santiago):**")
-    st.markdown("  - **Acciones Vapores (SUD):** 42 unidades")
-    st.markdown("• **Fintual (Mutuos / Fondos):**")
-    st.markdown("  - Portafolio de inversión activo")
+    st.markdown("  - **Acciones Vapores (SUD):** 42 unidades [Pendiente datos]")
+    st.markdown("• **Fintual (Portafolio Global):**")
+    st.markdown("  - **Total:** US $77,76 (-8,41%)[cite: 3]")
+    st.markdown("  - VOO: US $21,19 | NVDA: US $12,93[cite: 3]")
+    st.markdown("  - O: US $11,21 | XLE: US $7,03[cite: 3]")
+    st.markdown("  - SNDK: $4,97 | IAU: $4,67 | MU: $3,62[cite: 3]")
+    st.markdown("  - VICR: $3,13 | EWT: $2,87 | EWY: $2,58[cite: 3]")
+    st.markdown("  - PLTR: $2,54 | OKTA: $1,02[cite: 3]")
     if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
         st.success("Mercados y posiciones actualizados.")
 
