@@ -1,6 +1,5 @@
 import streamlit as st
 import datetime
-import pytz
 import sqlite3
 import io
 import contextlib
@@ -69,9 +68,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ZONA HORARIA CHILENA ---
-zona_chile = pytz.timezone("America/Santiago")
-now_chile = datetime.datetime.now(zona_chile)
+# --- ZONA HORARIA CHILENA NATIVA (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
 
 if 0 <= hora_actual < 12:
@@ -144,7 +143,7 @@ if "mensajes" not in st.session_state:
 # --- ENCABEZADO CENTRADO CON RELOJ DINÁMICO EN VIVO (CON SEGUNDERO) ---
 @st.fragment(run_every=1)
 def render_live_header():
-    now = datetime.datetime.now(zona_chile)
+    now = datetime.datetime.now(tz_chile)
     dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
     
@@ -300,7 +299,7 @@ with col_h1:
     st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        h_limpieza = datetime.datetime.now(zona_chile).hour
+        h_limpieza = datetime.datetime.now(tz_chile).hour
         s_limpieza = "Buenos días" if 0 <= h_limpieza < 12 else ("Buenas tardes" if 12 <= h_limpieza < 20 else "Buenas noches")
         st.session_state.mensajes = [
             {"role": "assistant", "content": f"{s_limpieza}, jefa. Memoria purgada. Empezamos de cero, a menos que quiera que finja que no pasó nada."}
@@ -324,7 +323,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 if prompt_usuario := st.chat_input("Escriba su mensaje..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    h_prompt = datetime.datetime.now(zona_chile).hour
+    h_prompt = datetime.datetime.now(tz_chile).hour
     s_prompt = "Buenos días" if 0 <= h_prompt < 12 else ("Buenas tardes" if 12 <= h_prompt < 20 else "Buenas noches")
 
     p_low = prompt_usuario.lower()
