@@ -171,7 +171,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y Protocolo E.D.I.T.H. en línea. Red satelital vinculada. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y Protocolo E.D.I.T.H. sincronizados. Cámara y sensores estables. ¿Qué órdenes ejecutamos?"}
     ]
 
 # --- ENCABEZADO CON RELOJ EN VIVO ---
@@ -204,18 +204,24 @@ with st.sidebar:
         st.session_state.bunker_desbloqueado = False
         st.rerun()
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK & E.D.I.T.H. ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK & E.D.I.T.H. CON CÁMARA INTEGRADA ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-with st.sidebar.expander("🛰️ E.D.I.T.H. (Control Satelital)", expanded=True):
+with st.sidebar.expander("🛰️ E.D.I.T.H. (Control Óptico y Satelital)", expanded=True):
     st.markdown("• **Estado:** Órbita Baja Activa")
-    st.markdown("• **Acceso a Redes:** Global / Sin Restricciones")
+    usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
+    
+    if usar_camara_edith:
+        foto_edith = st.camera_input("Captura de seguridad E.D.I.T.H.:")
+        if foto_edith:
+            st.success("E.D.I.T.H.: Fotograma analizado con éxito por los servidores orbitales.")
+
     edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Peter Parker / Datos):")
     if st.button("🕶️ Ejecutar Escaneo E.D.I.T.H.", use_container_width=True):
         if edith_query.strip():
-            st.success(f"E.D.I.T.H.: Registros cruzados para '{edith_query}'. Archivos recuperados con éxito desde el servidor orbital de Malibú.")
+            st.success(f"E.D.I.T.H.: Registros cruzados para '{edith_query}'. Datos recuperados sin interrupciones.")
         else:
-            st.warning("Ingrese un parámetro de búsqueda para E.D.I.T.H.")
+            st.warning("Ingrese un parámetro de búsqueda.")
 
 with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
     st.markdown("• **Banco Estado (Bolsa de Santiago):**")
@@ -234,7 +240,7 @@ with st.sidebar.expander("🕵️ Módulo OSINT Táctico", expanded=True):
     osint_modo = st.selectbox("Seleccionar Protocolo:", ["1. Auditoría de Ciberseguridad", "2. Verificación Periodística", "3. Rastreo Criminológico", "4. Due Diligence Corporativo"])
     target_osint = st.text_input("Objetivo o Dominio a Analizar:", placeholder="Ej: objetivo.cl")
     if st.button("🚀 Ejecutar Protocolo OSINT", use_container_width=True) and target_osint.strip():
-        st.success(f"Analizando [{osint_modo}] sobre '{target_osint}': Nodo seguro y sin brechas críticas.")
+        st.success(f"Analizando [{osint_modo}] sobre '{target_osint}': Nodo seguro.")
 
 with st.sidebar.expander("🛡️ Blindaje & Alertas", expanded=True):
     st.markdown("• **WhatsApp:** Activo (Excepciones personales seguras)")
@@ -275,7 +281,6 @@ st.sidebar.markdown("### 🧠 NÚCLEOS DE CEREBRO STARK")
 with st.sidebar.expander("⚙️ Conexión de IA Avanzada", expanded=True):
     st.selectbox("Modelo en uso:", ["GPT-4o (Stark Core)", "Gemini 1.5 Pro"], key="model_select")
     sarcasmo = st.slider("Nivel de Sarcasmo / Ironía:", 0, 100, 85)
-    st.caption(f"Protocolo irónico actual al {sarcasmo}%")
 
 with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
     url_input = st.text_input("URL o término a explorar:")
@@ -285,7 +290,6 @@ with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
 
 with st.sidebar.expander("🎙️ Módulo de Voz IA (Manos Libres)"):
     voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
-    st.markdown("💡 *Para dictar comandos por voz, use el botón de micrófono integrado.*")
 
 with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
     codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
@@ -344,7 +348,7 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
 
     if sarcasmo > 70:
         if "hola" in p_low:
-            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada dominar el mundo o nos conformamos con revisar Buin?"
+            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para dominar el mundo o nos conformamos con revisar Buin?"
         elif any(w in p_low for w in ["gracias", "excelente"]):
             respuesta = f"No hay de qué, jefa. Las gafas y los satélites están a su entera disposición."
         else:
