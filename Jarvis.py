@@ -32,7 +32,7 @@ st.markdown("""
         
         /* Achicar drásticamente los títulos h4 dentro de las tarjetas principales */
         .stark-card h4 {
-            font-size: 0.7rem !important;
+            font-size: 0.65rem !important;
             color: #00d2ff !important;
             margin-bottom: 4px !important;
         }
@@ -223,7 +223,7 @@ with st.sidebar:
 # --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-# 1. MÓDULO E.D.I.T.H. (EQUIPO DIGITAL DE INTERVENCIÓN TÁCTICA Y HACKING)
+# 1. MÓDULO E.D.I.T.H.
 with st.sidebar.expander("🛰️ Módulo E.D.I.T.H. (Órbita & Óptica)", expanded=True):
     st.markdown("• **Significado:** *Equipo Digital de Intervención Táctica y Hacking*")
     st.markdown("• **Estado:** Órbita Baja Activa")
@@ -306,4 +306,86 @@ with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
         st.info(f"Analizando nodo web: {url_input}...")
     st.link_button("🌐 Abrir Portal Clínico UC", "https://portalclinico.ucchristus.cl", use_container_width=True)
 
-with st.sidebar.expander("🎙️ Módulo de Voz IA
+with st.sidebar.expander("🎙️ Módulo de Voz IA (Manos Libres)"):
+    voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
+
+with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
+    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
+    if st.button("⚡ Ejecutar Script Real", use_container_width=True):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            res = buffer_salida.getvalue()
+            st.code(res if res else "Código ejecutado sin salida.", language="python")
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+with st.sidebar.expander("🔗 Accesos Rápidos Búnker"):
+    st.link_button("📈 Banco Estado", "https://www.bancoestado.cl", use_container_width=True)
+    st.link_button("📈 Fintual", "https://fintual.cl", use_container_width=True)
+    st.link_button("📧 Gmail", "https://mail.google.com", use_container_width=True)
+
+st.sidebar.markdown("---")
+st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com", use_container_width=True)
+st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
+st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
+
+# --- PANEL PRINCIPAL: OJO DE DIOS (TÍTULOS ACHICADOS) ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+st.markdown("<h4>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<p>Acceso a red táctica orbital. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
+st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- PANEL DE CHAT INTELIGENTE STARK (TÍTULOS ACHICADOS) ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True):
+        h_l = datetime.datetime.now(tz_chile).hour
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ENTRADA DE CHAT DINÁMICA
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_p = datetime.datetime.now(tz_chile).hour
+    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+    p_low = prompt_usuario.lower()
+
+    if sarcasmo > 70:
+        if "hola" in p_low:
+            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para dominar el mundo o nos conformamos con revisar Buin?"
+        elif any(w in p_low for w in ["gracias", "excelente"]):
+            respuesta = "No hay de qué, jefa. Los satélites de la E.D.I.T.H. están a su entera disposición."
+        else:
+            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está bajo control absoluto."
+    else:
+        respuesta = "Comando recibido y procesado por la red orbital, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    if voz_activa:
+        clean_resp = respuesta.replace('"', '').replace("'", "")
+        st.markdown(f"""
+            <script>
+                const synth = window.speechSynthesis;
+                const utterThis = new SpeechSynthesisUtterance("{clean_resp}");
+                utterThis.lang = 'es-CL';
+                utterThis.rate = 1.0;
+                synth.speak(utterThis);
+            </script>
+        """, unsafe_allow_html=True)
+
+    st.rerun()
