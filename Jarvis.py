@@ -11,13 +11,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (ESTÉTICA DE BÚNKER) ---
+# --- ESTILOS VISUALES STARK (ESTÉTICA DE BÚNKER LIMPIA) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
         
         .arc-reactor-container h4 { color: #00d2ff !important; font-size: 1.1rem !important; font-family: monospace; }
         
+        /* Tarjetas exclusivas para los módulos de la barra lateral o elementos puntuales */
         .stark-card {
             border: 1.5px solid #00d2ff;
             border-radius: 8px;
@@ -220,21 +221,21 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    # INICIO DE APRENDIZAJE
+    # FASE 01
     with st.expander("🐧 Fundamentos y Bases"):
         st.markdown("• **Aprende lo básico:** Linux, Redes, Python")
         if st.button("🐧 Activar Núcleo Linux", use_container_width=True): st.info("Subsistema Linux activo.")
         if st.button("🌐 Activar Redes", use_container_width=True): st.info("Monitoreo de red activo.")
         if st.button("🐍 Activar Script Python", use_container_width=True): st.info("Motor Python operativo.")
 
-    # CONSTRUCCIÓN DE HABILIDADES
+    # FASE 02
     with st.expander("👁️ Exploración y Práctica"):
         st.markdown("• **Práctica activa:** Nmap, Wireshark, Burp Suite")
         if st.button("👁️ Escaneo Nmap", use_container_width=True): st.info("Escaneo de puertos desplegado.")
         if st.button("🦈 Captura Wireshark", use_container_width=True): st.info("Captura de paquetes en curso.")
         if st.button("⚡ Proxy Burp Suite", use_container_width=True): st.info("Proxy web conectado.")
 
-    # LABORATORIO DE SEGURIDAD
+    # FASE 03
     with st.expander("🛡️ Laboratorio de Explotación"):
         st.markdown("• **Romper y Explotar:** Metasploit, Sqlmap, John, Hashcat")
         if st.button("🛡️ Framework Metasploit", use_container_width=True): st.info("Framework de explotación listo.")
@@ -242,7 +243,7 @@ with st.sidebar:
         if st.button("🎩 John the Ripper", use_container_width=True): st.info("Análisis de hashes iniciado.")
         if st.button("🏺 Descifrador Hashcat", use_container_width=True): st.info("Desencriptación de hashes lista.")
 
-    # PRÁCTICA EN EL MUNDO REAL
+    # FASE 04
     with st.expander("🔍 Investigación y Defensa"):
         st.markdown("• **Investigar y Defender:** OSINT, Seguridad Web, SIEM, CTF")
         if st.button("🔍 Motor OSINT", use_container_width=True): st.info("Búsqueda de inteligencia abierta activa.")
@@ -250,7 +251,7 @@ with st.sidebar:
         if st.button("🖥️ Panel SIEM", use_container_width=True): st.info("Monitoreo de eventos en vivo.")
         if st.button("🚩 Centro de Retos CTF", use_container_width=True): st.info("Plataforma CTF cargada.")
 
-    # CIBERSEGURIDAD AVANZADA / PROFESIONAL
+    # FASE 05
     with st.expander("🐉 Ciberseguridad Profesional"):
         st.markdown("• **Asegurar, Construir y Liderar:** Equipo Rojo, Equipo Azul, Investigación, Defensa")
         if st.button("🐉 Protocolo Equipo Rojo", use_container_width=True): st.success("Protocolo Ofensivo Activo.")
@@ -258,7 +259,7 @@ with st.sidebar:
         if st.button("🧠 Investigación de IA", use_container_width=True): st.success("Red neuronal al 100%.")
         if st.button("🔒 Matriz de Defensa", use_container_width=True): st.success("Blindaje total activado.")
 
-    # MÓDULOS DE GESTIÓN Y FINANZAS
+    # MÓDULOS FINANCIEROS Y DE GESTIÓN
     with st.expander("📈 Finanzas y Portafolio"):
         st.markdown("• **Banco Estado:** 42 Acciones Vapores")
         st.markdown("• **Fintual Global:** US $77,76 (-8,41%)")
@@ -306,11 +307,10 @@ with st.sidebar:
 
 
 # =========================================================================
-# PANEL CENTRAL: E.D.I.T.H. Y CHAT INTELIGENTE STARK
+# PANEL CENTRAL: E.D.I.T.H. Y CHAT LIMPIO (SIN TARJETAS EXTERNAS)
 # =========================================================================
 
-# Módulo E.D.I.T.H. Central
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+# Módulo E.D.I.T.H. Central Limpio
 st.markdown("<h4>🛰️ E.D.I.T.H. // Equipo Digital de Intervención Táctica y Hacking</h4>", unsafe_allow_html=True)
 st.markdown("<p>Control óptico, satelital y ciberinteligencia orbital activa.</p>", unsafe_allow_html=True)
 
@@ -330,10 +330,9 @@ with col_e2:
             st.warning("Ingrese un objetivo.")
 
 st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
 
-# Panel de Chat Inteligente Stark al Centro
-st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+# Panel de Chat Inteligente Stark Limpio (Sin recuadros)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
@@ -347,8 +346,6 @@ with col_h2:
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
 
 # Entrada de Chat Dinámica
 if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
