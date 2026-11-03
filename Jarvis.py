@@ -211,7 +211,7 @@ render_live_header()
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (DERECHA): TODOS LOS MÓDULOS DE CIBERSEGURIDAD Y CONTROL EN BLOQUES OCULTOS (EXPANDERS)
+# BARRA LATERAL (DERECHA): TODOS LOS MÓDULOS EN ESPAÑOL Y SIN NÚMEROS
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -220,52 +220,52 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    # FASE 01: JUST STARTING
-    with st.expander("01. 🐧 Just Starting (Basics)"):
-        st.markdown("• **Learn the Basics:** Linux, Networking, Python")
-        if st.button("🐧 Activar Linux Core", use_container_width=True): st.info("Subsistema Linux activo.")
-        if st.button("🌐 Activar Networking", use_container_width=True): st.info("Monitoreo de red activo.")
-        if st.button("🐍 Activar Python Script", use_container_width=True): st.info("Motor Python operativo.")
+    # INICIO DE APRENDIZAJE
+    with st.expander("🐧 Fundamentos y Bases"):
+        st.markdown("• **Aprende lo básico:** Linux, Redes, Python")
+        if st.button("🐧 Activar Núcleo Linux", use_container_width=True): st.info("Subsistema Linux activo.")
+        if st.button("🌐 Activar Redes", use_container_width=True): st.info("Monitoreo de red activo.")
+        if st.button("🐍 Activar Script Python", use_container_width=True): st.info("Motor Python operativo.")
 
-    # FASE 02: BUILDING SKILLS
-    with st.expander("02. 👁️ Building Skills (Practice)"):
-        st.markdown("• **Explore & Practice:** Nmap, Wireshark, Burp Suite")
-        if st.button("👁️ Nmap Scan", use_container_width=True): st.info("Escaneo de puertos desplegado.")
-        if st.button("🦈 Wireshark Capture", use_container_width=True): st.info("Captura de paquetes en curso.")
-        if st.button("⚡ Burp Suite Proxy", use_container_width=True): st.info("Proxy web conectado.")
+    # CONSTRUCCIÓN DE HABILIDADES
+    with st.expander("👁️ Exploración y Práctica"):
+        st.markdown("• **Práctica activa:** Nmap, Wireshark, Burp Suite")
+        if st.button("👁️ Escaneo Nmap", use_container_width=True): st.info("Escaneo de puertos desplegado.")
+        if st.button("🦈 Captura Wireshark", use_container_width=True): st.info("Captura de paquetes en curso.")
+        if st.button("⚡ Proxy Burp Suite", use_container_width=True): st.info("Proxy web conectado.")
 
-    # FASE 03: SECURITY LAB
-    with st.expander("03. 🛡️ Security Lab (Exploit)"):
-        st.markdown("• **Break & Exploit:** Metasploit, Sqlmap, John, Hashcat")
-        if st.button("🛡️ Metasploit Framework", use_container_width=True): st.info("Framework de explotación listo.")
-        if st.button("🐉 Sqlmap Auditor", use_container_width=True): st.info("Auditoría SQL activa.")
+    # LABORATORIO DE SEGURIDAD
+    with st.expander("🛡️ Laboratorio de Explotación"):
+        st.markdown("• **Romper y Explotar:** Metasploit, Sqlmap, John, Hashcat")
+        if st.button("🛡️ Framework Metasploit", use_container_width=True): st.info("Framework de explotación listo.")
+        if st.button("🐉 Auditor Sqlmap", use_container_width=True): st.info("Auditoría SQL activa.")
         if st.button("🎩 John the Ripper", use_container_width=True): st.info("Análisis de hashes iniciado.")
-        if st.button("🏺 Hashcat Cracker", use_container_width=True): st.info("Desencriptación de hashes lista.")
+        if st.button("🏺 Descifrador Hashcat", use_container_width=True): st.info("Desencriptación de hashes lista.")
 
-    # FASE 04: REAL-WORLD PRACTICE
-    with st.expander("04. 🔍 Real-World Practice (Defend)"):
-        st.markdown("• **Investigate & Defend:** OSINT, Web Security, SIEM, CTF")
-        if st.button("🔍 OSINT Engine", use_container_width=True): st.info("Búsqueda de inteligencia abierta activa.")
-        if st.button("🌐 Web Security Shield", use_container_width=True): st.info("Escudo web operativo.")
-        if st.button("🖥️ SIEM Dashboard", use_container_width=True): st.info("Monitoreo de eventos en vivo.")
-        if st.button("🚩 CTF Challenge Hub", use_container_width=True): st.info("Plataforma CTF cargada.")
+    # PRÁCTICA EN EL MUNDO REAL
+    with st.expander("🔍 Investigación y Defensa"):
+        st.markdown("• **Investigar y Defender:** OSINT, Seguridad Web, SIEM, CTF")
+        if st.button("🔍 Motor OSINT", use_container_width=True): st.info("Búsqueda de inteligencia abierta activa.")
+        if st.button("🌐 Escudo de Seguridad Web", use_container_width=True): st.info("Escudo web operativo.")
+        if st.button("🖥️ Panel SIEM", use_container_width=True): st.info("Monitoreo de eventos en vivo.")
+        if st.button("🚩 Centro de Retos CTF", use_container_width=True): st.info("Plataforma CTF cargada.")
 
-    # FASE 05: CYBERSECURITY PRO
-    with st.expander("05. 🐉 Cybersecurity Pro (Lead)"):
-        st.markdown("• **Secure, Build & Lead:** Red Team, Blue Team, Research, Defense")
-        if st.button("🐉 Red Team Protocol", use_container_width=True): st.success("Protocolo Ofensivo Activo.")
-        if st.button("🛡️ Blue Team Defense", use_container_width=True): st.success("Protocolo Defensivo Activo.")
-        if st.button("🧠 AI Security Research", use_container_width=True): st.success("Red neuronal al 100%.")
-        if st.button("🔒 Defense Matrix", use_container_width=True): st.success("Blindaje total activado.")
+    # CIBERSEGURIDAD AVANZADA / PROFESIONAL
+    with st.expander("🐉 Ciberseguridad Profesional"):
+        st.markdown("• **Asegurar, Construir y Liderar:** Equipo Rojo, Equipo Azul, Investigación, Defensa")
+        if st.button("🐉 Protocolo Equipo Rojo", use_container_width=True): st.success("Protocolo Ofensivo Activo.")
+        if st.button("🛡️ Defensa Equipo Azul", use_container_width=True): st.success("Protocolo Defensivo Activo.")
+        if st.button("🧠 Investigación de IA", use_container_width=True): st.success("Red neuronal al 100%.")
+        if st.button("🔒 Matriz de Defensa", use_container_width=True): st.success("Blindaje total activado.")
 
     # MÓDULOS DE GESTIÓN Y FINANZAS
-    with st.expander("📈 Finanzas & Portafolio"):
+    with st.expander("📈 Finanzas y Portafolio"):
         st.markdown("• **Banco Estado:** 42 Acciones Vapores")
         st.markdown("• **Fintual Global:** US $77,76 (-8,41%)")
         if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
             st.success("Mercados actualizados.")
 
-    with st.expander("🛡️ Blindaje & Alertas"):
+    with st.expander("🛡️ Blindaje y Alertas"):
         st.markdown("• **WhatsApp / Gmail:** Operativos")
         for msg, nivel in get_db_alertas():
             st.markdown(f"{'🟢' if nivel == 'OK' else 'ℹ️'} {msg}")
