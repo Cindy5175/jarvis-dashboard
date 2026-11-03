@@ -211,7 +211,7 @@ render_live_header()
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA): TODOS LOS MÓDULOS DE CYBRAINIUM + FINANZAS Y HERRAMIENTAS
+# BARRA LATERAL (IZQUIERDA): E.D.I.T.H. + MÓDULOS CYBRAINIUM + FINANZAS Y HERRAMIENTAS
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -219,6 +219,23 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
+
+    # MÓDULO E.D.I.T.H. INTEGRADO A LA IZQUIERDA
+    with st.expander("🛰️ E.D.I.T.H. (Órbita & Óptica)", expanded=True):
+        st.markdown("• **Significado:** Equipo Digital de Intervención Táctica y Hostil")
+        st.markdown("• **Estado:** Órbita Baja Activa")
+        usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
+        if usar_camara_edith:
+            foto_edith = st.camera_input("Captura orbital:")
+            if foto_edith:
+                st.success("Fotograma analizado por servidores orbitales.")
+        edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Datos / Objetivo):")
+        if st.button("🕶️ Ejecutar Escaneo E.D.I.T.H.", use_container_width=True):
+            if edith_query.strip():
+                st.success(f"Objetivo '{edith_query}' rastreado con éxito.")
+            else:
+                st.warning("Ingrese un objetivo.")
+        st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
     # FASE 01: Fundamentos y Bases
     with st.expander("🐧 Fundamentos y Bases"):
@@ -306,32 +323,10 @@ with st.sidebar:
 
 
 # =========================================================================
-# PANEL CENTRAL: E.D.I.T.H. Y CHAT INTELIGENTE (100% DESPEJADO)
+# PANEL CENTRAL: CHAT INTELIGENTE (100% DESPEJADO)
 # =========================================================================
 
-# Módulo E.D.I.T.H. Central Limpio
-st.markdown("<h4>🛰️ E.D.I.T.H. // Equipo Digital de Intervención Táctica y Hacking</h4>", unsafe_allow_html=True)
-st.markdown("<p>Control óptico, satelital y ciberinteligencia orbital activa.</p>", unsafe_allow_html=True)
-
-col_e1, col_e2 = st.columns(2)
-with col_e1:
-    usar_camara_edith = st.checkbox("📷 Cámara Óptica E.D.I.T.H.", value=False)
-    if usar_camara_edith:
-        foto_edith = st.camera_input("Captura orbital:")
-        if foto_edith:
-            st.success("Fotograma analizado por servidores orbitales.")
-with col_e2:
-    edith_query = st.text_input("Consulta a E.D.I.T.H. (Objetivo):")
-    if st.button("🕶️ Escaneo Orbital", use_container_width=True):
-        if edith_query.strip():
-            st.success(f"Objetivo '{edith_query}' rastreado con éxito.")
-        else:
-            st.warning("Ingrese un objetivo.")
-
-st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-st.markdown("---")
-
-# Panel de Chat Inteligente Stark Limpio (Sin recuadros molestos)
+# Panel de Chat Inteligente Stark Limpio y Exclusivo al Centro
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
