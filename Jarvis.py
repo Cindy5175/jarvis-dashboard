@@ -4,12 +4,13 @@ import datetime
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="Jarvis - Nodo Buin", layout="wide")
 
-# --- 1. RELOJ DINÁMICO EN VIVO (Con segundero corriendo) ---
+# --- ENCABEZADO TÁCTICO & RELOJ DINÁMICO EN VIVO ---
 @st.fragment(run_every=1)
-def render_live_clock():
+def render_jarvis_header():
     now = datetime.datetime.now()
     fecha_str = now.strftime("%A, %d de %B de %Y")
     hora_segundos = now.strftime("%H:%M:%S")
+    
     st.markdown(
         f"""
         <div style='text-align: center; font-family: monospace; color: #00FFFF;'>
@@ -22,57 +23,14 @@ def render_live_clock():
         unsafe_allow_html=True
     )
 
-# --- 2. FUNCIONES DE CADA MÓDULO (NÚCLEOS DE CEREBRO) ---
-
-def modulo_grabaciones():
-    st.subheader("📁 1. Grabaciones y Capturas")
-    st.write("Gestión y almacenamiento de registros multimedia y capturas del sistema.")
-    # Agregue aquí sus componentes específicos para grabaciones
-
-def modulo_busqueda():
-    st.subheader("🌐 2. Búsqueda y Web en Vivo")
-    st.write("Módulo de consulta de información y enlaces en tiempo real.")
-    query = st.text_input("Término de búsqueda web:")
-    if query:
-        st.success(f"Buscando: {query}...")
-
-def modulo_sensores():
-    st.subheader("🌤️ 3. Sensores Meteorológicos")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="Temperatura Nodo Buin", value="22°C", delta="+1°C")
-    with col2:
-        st.metric(label="Humedad Relativa", value="45%", delta="-2%")
-    st.write("Monitoreo de variables atmosféricas y estado del entorno.")
-
-def modulo_documentos():
-    st.subheader("📄 4. Análisis de Documentos")
-    st.write("Lector y procesador inteligente de archivos locales y Drive.")
-    st.file_uploader("Subir documento para análisis:")
-
-def modulo_voz():
-    st.subheader("🎙️ 5. Módulo de Voz IA")
-    st.toggle("Activar Síntesis de Voz Avanzada", value=True)
-    if st.button("🔊 Repetir Último Comando"):
-        st.info("Reproduciendo último comando de voz...")
-
-def modulo_python():
-    st.subheader("⚙️ 6. Automatización Python")
-    st.write("Ejecución de scripts de control y rutinas programadas.")
-    if st.button("▶️ Ejecutar Diagnóstico del Sistema"):
-        st.success("Diagnóstico completado sin anomalías.")
-
-
-# --- 3. RENDERIZADO DE LA INTERFAZ PRINCIPAL Y MENÚ ---
-
-# Reloj dinámico superior
-render_live_clock()
+# Renderiza el núcleo superior
+render_jarvis_header()
 st.markdown("---")
 
-# Menú lateral para la selección de núcleos (visto en su captura)
+# --- MENÚ LATERAL / NÚCLEOS DE CEREBRO ---
 with st.sidebar:
-    st.markdown("### 🧠 Núcleos de Cerebro")
-    seleccion = st.radio(
+    st.subheader("🧠 Núcleos de Cerebro")
+    opcion = st.radio(
         "Seleccione módulo:",
         [
             "1. Grabaciones y capturas",
@@ -81,20 +39,18 @@ with st.sidebar:
             "4. Análisis de Documentos",
             "5. Módulo de Voz IA",
             "6. Automatización Python"
-        ],
-        label_visibility="collapsed"
+        ]
     )
 
-# --- 4. ENRUTADOR DE MÓDULOS ---
-if seleccion == "1. Grabaciones y capturas":
-    modulo_grabaciones()
-elif seleccion == "2. Búsqueda y Web en Vivo":
-    modulo_busqueda()
-elif seleccion == "3. Sensores Meteorológicos":
-    modulo_sensores()
-elif seleccion == "4. Análisis de Documentos":
-    modulo_documentos()
-elif seleccion == "5. Módulo de Voz IA":
-    modulo_voz()
-elif seleccion == "6. Automatización Python":
-    modulo_python()
+# --- SECTOR TÁCTICO PRINCIPAL ---
+st.subheader("🛰️ Ojo de Dios – Telemetría Satelital")
+st.write("Enlace satelital de órbita terrestre sincronizado con el nodo Buin.")
+
+if st.button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)"):
+    st.info("Conectando con la red satelital Osiris...")
+
+# Caja de interacción estilo chat inferior
+st.markdown("---")
+user_input = st.text_input("Escriba su orden...", placeholder="Ej: Jarvis, ¿cómo está mi bandeja de correos?")
+if user_input:
+    st.success(f"Orden registrada en el sistema: {user_input}")
