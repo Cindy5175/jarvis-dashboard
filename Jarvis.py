@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS VISUALES STARK (AZUL NEÓN UNIFORME & SIMETRÍA) ---
+# --- ESTILOS VISUALES STARK (LETRAS OPTIMIZADAS Y MÁS PEQUEÑAS) ---
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
@@ -24,42 +24,43 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .arc-ring {
-            width: 55px;
-            height: 55px;
-            border: 3px solid #3a4454;
+            width: 45px;
+            height: 45px;
+            border: 2.5px solid #3a4454;
             border-radius: 50%;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             background: radial-gradient(circle, #00d2ff 0%, #060911 70%);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.4);
-            margin-bottom: 6px;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.6), inset 0 0 8px rgba(0, 210, 255, 0.4);
+            margin-bottom: 5px;
         }
         .arc-triangle {
             width: 0;
             height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 18px solid #ffffff;
-            filter: drop-shadow(0 0 6px #00d2ff);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #ffffff;
+            filter: drop-shadow(0 0 5px #00d2ff);
         }
 
         .stark-card {
             border: 1.5px solid #00d2ff;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 8px;
+            padding: 12px;
             background-color: rgba(0, 210, 255, 0.04);
-            margin-bottom: 15px;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+            margin-bottom: 12px;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.1);
             text-align: left !important;
         }
         .stark-card p, .stark-card div, .stark-card span, .stark-card label {
             text-align: left !important;
             color: #00d2ff !important;
+            font-size: 0.9rem !important;
         }
 
         .stMarkdown, p, li, span, div, .stChatMessage p {
@@ -86,24 +87,23 @@ CLAVE_MAESTRA = "stark123"
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
 
-# --- PANTALLA DE BLOQUEO CON ACCESO ÚNICO (ESCRITURA O VOZ) ---
+# --- PANTALLA DE BLOQUEO CON LETRAS ACHICADAS Y PROPORCIONADAS ---
 if not st.session_state.bunker_desbloqueado:
     st.markdown("""
-        <div class="arc-reactor-container" style="margin-top: 50px;">
+        <div class="arc-reactor-container" style="margin-top: 20px;">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h2 style="margin: 0; color: #00d2ff !important;">ACCESO RESTRINGIDO - NODO BUIN</h2>
-            <p style="font-family: monospace; color: #00d2ff !important;">[ PROTOCOLO DE SEGURIDAD STARK ACTIVO ]</p>
+            <h4 style="margin: 0; color: #00d2ff !important; font-size: 1.1rem !important; text-align: center !important;">ACCESO RESTRINGIDO - NODO BUIN</h4>
+            <p style="font-family: monospace; color: #00d2ff !important; font-size: 0.75rem !important; margin-top: 4px;">[ PROTOCOLO DE SEGURIDAD STARK ACTIVO ]</p>
         </div>
     """, unsafe_allow_html=True)
     
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    col_l1, col_l2, col_l3 = st.columns([1, 3, 1])
     with col_l2:
         st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-        st.markdown("#### 🔐 Identificación del Sistema:")
-        st.markdown("<p style='font-size: 0.8rem;'>Ingrese la clave o dicte el comando de voz de autorización:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.85rem !important; font-weight: bold;'>🔐 Identificación del Sistema:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem !important;'>Ingrese clave o dicte el comando de voz:</p>", unsafe_allow_html=True)
         
-        # Una única caja que acepta tanto texto escrito como simulación de comando hablado
-        ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123 o 'Jarvis desbloquear stark123'", key="input_auth_unico")
+        ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123", key="input_auth_unico", label_visibility="collapsed")
         
         if st.button("🔓 Autorizar Acceso", use_container_width=True):
             if ingreso_auth.strip() and CLAVE_MAESTRA in ingreso_auth.lower():
@@ -195,8 +195,8 @@ def render_live_header():
     st.markdown(f"""
         <div class="arc-reactor-container">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h2 style="margin: 0; padding: 0; font-size: 1.5rem; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h2>
-            <p style="margin: 0; font-family: monospace; font-size: 0.75rem; color: #00d2ff !important; text-align: center !important;">
+            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h4>
+            <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
                 [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
             </p>
         </div>
@@ -333,8 +333,8 @@ st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org",
 
 # --- PANEL PRINCIPAL: OJO DE DIOS & VISIÓN PANORÁMICA ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
-st.markdown("<p style='font-size: 0.85rem; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital</h4>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 0.8rem !important; color: #00d2ff !important;'>Enlace satelital de órbita terrestre sincronizado con el nodo Buin.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -342,7 +342,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4 style='margin:0; font-size: 1.1rem; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>💬 Chat IA & Análisis Visual</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_limpieza = datetime.datetime.now(tz_chile).hour
