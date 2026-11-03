@@ -286,4 +286,107 @@ with st.expander("💻 Laboratorio Táctico de Ciberseguridad (Fases 01 - 05)", 
             if st.button("🦈 Wireshark", use_container_width=True): st.info("Captura de paquetes en curso.")
         with col_c:
             if st.button("⚡ Burp Suite", use_container_width=True): st.info("Proxy web conectado.")
-    elif "0
+    elif "03" in fase_sel:
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            if st.button("🛡️ Metasploit", use_container_width=True): st.info("Framework de explotación listo.")
+        with col_b:
+            if st.button("🐉 Sqlmap", use_container_width=True): st.info("Auditoría SQL activa.")
+        with col_c:
+            if st.button("🎩 John Ripper", use_container_width=True): st.info("Análisis de hashes iniciado.")
+    elif "04" in fase_sel:
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            if st.button("🔍 OSINT Engine", use_container_width=True): st.info("Búsqueda de inteligencia abierta activa.")
+        with col_b:
+            if st.button("🌐 Web Security", use_container_width=True): st.info("Escudo web operativo.")
+        with col_c:
+            if st.button("🖥️ SIEM Dashboard", use_container_width=True): st.info("Monitoreo de eventos en vivo.")
+    else:
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            if st.button("🐉 Red Team", use_container_width=True): st.success("Protocolo Ofensivo Activo.")
+        with col_b:
+            if st.button("🛡️ Blue Team", use_container_width=True): st.success("Protocolo Defensivo Activo.")
+        with col_c:
+            if st.button("🧠 AI Research", use_container_width=True): st.success("Red neuronal al 100%.")
+
+# 3. BLOQUE DE TAREAS Y ALERTAS (SQLite)
+with st.expander("📝 Tareas & Alertas del Búnker (SQLite)", expanded=False):
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        st.markdown("**Tareas Operativas:**")
+        nueva_tarea = st.text_input("Nueva tarea rápida:", key="input_tarea_main")
+        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea)
+            st.rerun()
+        for tid, t in get_db_tareas():
+            col_sub1, col_sub2 = st.columns([4, 1])
+            with col_sub1:
+                st.markdown(f"• {t}")
+            with col_sub2:
+                if st.button("❌", key=f"del_t_main_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
+    with col_t2:
+        st.markdown("**Alertas del Sistema:**")
+        for msg, nivel in get_db_alertas():
+            st.markdown(f"{'🟢' if nivel == 'OK' else 'ℹ️'} {msg}")
+        nueva_alerta = st.text_input("Añadir alerta rápida:", key="input_alerta_main")
+        if st.button("➕ Emitir Alerta", use_container_width=True) and nueva_alerta:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta, "INFO"))
+            conn.commit()
+            conn.close()
+            st.rerun()
+
+# 4. BLOQUE DE HERRAMIENTAS Y PYTHON SANDBOX
+with st.expander("⚡ Automatización Python & Sandbox", expanded=False):
+    codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
+    if st.button("⚡ Ejecutar Script Real", use_container_width=True):
+        buffer_salida = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buffer_salida):
+                exec(codigo_script, {})
+            res = buffer_salida.getvalue()
+            st.code(res if res else "Código ejecutado sin salida.", language="python")
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+# --- PANEL DE CHAT INTELIGENTE STARK ---
+st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️", use_container_width=True):
+        h_l = datetime.datetime.now(tz_chile).hour
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ENTRADA DE CHAT DINÁMICA
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_p = datetime.datetime.now(tz_chile).hour
+    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+    p_low = prompt_usuario.lower()
+
+    if "hola" in p_low:
+        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
+    elif any(w in p_low for w in ["gracias", "excelente"]):
+        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
+    else:
+        respuesta = f"Comando recibido y procesado por la red orbital, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    
+    st.rerun()
