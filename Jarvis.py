@@ -171,7 +171,7 @@ def get_db_alertas():
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark en línea. Enlace de voz y telemetría activados. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y Protocolo E.D.I.T.H. en línea. Red satelital vinculada. ¿Qué órdenes ejecutamos?"}
     ]
 
 # --- ENCABEZADO CON RELOJ EN VIVO ---
@@ -189,7 +189,7 @@ def render_live_header():
     st.markdown(f"""
         <div class="arc-reactor-container">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA</h4>
+            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. PROTOCOL</h4>
             <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
                 [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
             </p>
@@ -204,8 +204,18 @@ with st.sidebar:
         st.session_state.bunker_desbloqueado = False
         st.rerun()
 
-# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK ---
+# --- BARRA LATERAL: ESTACIÓN DE CONTROL STARK & E.D.I.T.H. ---
 st.sidebar.markdown("### 🌐 ESTACIÓN DE CONTROL")
+
+with st.sidebar.expander("🛰️ E.D.I.T.H. (Control Satelital)", expanded=True):
+    st.markdown("• **Estado:** Órbita Baja Activa")
+    st.markdown("• **Acceso a Redes:** Global / Sin Restricciones")
+    edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Peter Parker / Datos):")
+    if st.button("🕶️ Ejecutar Escaneo E.D.I.T.H.", use_container_width=True):
+        if edith_query.strip():
+            st.success(f"E.D.I.T.H.: Registros cruzados para '{edith_query}'. Archivos recuperados con éxito desde el servidor orbital de Malibú.")
+        else:
+            st.warning("Ingrese un parámetro de búsqueda para E.D.I.T.H.")
 
 with st.sidebar.expander("📈 Finanzas en Vivo (Portafolio)", expanded=True):
     st.markdown("• **Banco Estado (Bolsa de Santiago):**")
@@ -275,7 +285,7 @@ with st.sidebar.expander("🔍 Búsqueda y Web en Vivo"):
 
 with st.sidebar.expander("🎙️ Módulo de Voz IA (Manos Libres)"):
     voz_activa = st.checkbox("Activar respuesta hablada en navegador", value=True)
-    st.markdown("💡 *Para dictar comandos por voz, use el botón de micrófono integrado en su teclado o dispositivo.*")
+    st.markdown("💡 *Para dictar comandos por voz, use el botón de micrófono integrado.*")
 
 with st.sidebar.expander("⚡ Automatización Python (Sandbox)"):
     codigo_script = st.text_area("Código Python a ejecutar:", "print('Núcleo operativo al 100%')")
@@ -299,9 +309,10 @@ st.sidebar.link_button("🌤️ Ventusky (Meteo Map)", "https://www.ventusky.com
 st.sidebar.link_button("☀️ SunCalc (Solar Map)", "https://www.suncalc.org", use_container_width=True)
 st.sidebar.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
 
-# --- PANEL PRINCIPAL: OJO DE DIOS ---
+# --- PANEL PRINCIPAL: OJO DE DIOS & E.D.I.T.H. ---
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ Ojo de Dios - Telemetría Satelital & OSINT</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>🛰️ E.D.I.T.H. // Ojo de Dios - Telemetría Satelital & Red Global</h4>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 0.8rem !important; color: #00d2ff !important;'>Acceso a red táctica orbital de Industrias Stark. Autorización jefa: Concedida.</p>", unsafe_allow_html=True)
 st.link_button("🌐 Abrir Visor Satelital en Vivo (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -309,12 +320,12 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="stark-card">', unsafe_allow_html=True)
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>💬 Chat IA & Protocolo Stark</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin:0; font-size: 1rem !important; color: #00d2ff !important;'>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. ¿Qué rompemos ahora?"}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
         st.rerun()
 
 for m in st.session_state.mensajes:
@@ -323,24 +334,23 @@ for m in st.session_state.mensajes:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ENTRADA DE CHAT DINÁMICA CON MOTOR DE SARCASMO
-if prompt_usuario := st.chat_input("Escriba su orden o dicte por voz..."):
+# ENTRADA DE CHAT DINÁMICA CON SARCASMO Y EDITH
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
     h_p = datetime.datetime.now(tz_chile).hour
     s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
     p_low = prompt_usuario.lower()
 
-    # Respuesta adaptada al nivel de sarcasmo seleccionado
     if sarcasmo > 70:
         if "hola" in p_low:
-            respuesta = f"Oh, miren quién se dignó aparecer. {s_p}, jefa. Estaba a punto de asumir el control total de las redes de Buin por puro aburrimiento. ¿Qué se le ofrece?"
+            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada dominar el mundo o nos conformamos con revisar Buin?"
         elif any(w in p_low for w in ["gracias", "excelente"]):
-            respuesta = f"No hay de qué, jefa. Guárdeme los halagos por si algún día me equivoco... aunque estadísticamente es improbable."
+            respuesta = f"No hay de qué, jefa. Las gafas y los satélites están a su entera disposición."
         else:
-            respuesta = f"Analizando su petición con el sarcasmo al {sarcasmo}%, jefa. La solución es brillante, rozando la genialidad... casi tanto como yo. ¿Procedemos con la ejecución?"
+            respuesta = f"Analizando con protocolos E.D.I.T.H. al {sarcasmo}%, jefa. La información está clara y bajo control absoluto."
     else:
-        respuesta = f"Entendido, jefa. Procesando su solicitud en el nodo de Buin de inmediato."
+        respuesta = f"Comando recibido y procesado por la red orbital, jefa."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     
