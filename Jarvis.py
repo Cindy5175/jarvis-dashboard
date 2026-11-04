@@ -328,6 +328,13 @@ with st.sidebar:
                 st.success("Fotograma analizado.")
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
+    # --- MÓDULO 1: ESTACIÓN ORBITAL / MAPA TÁCTICO SATELITAL ---
+    with st.expander("🛰️ Estación Orbital y Mapa Táctico"):
+        st.markdown("• **Telemetría aeroespacial en vivo**")
+        st.markdown("• *Nodo Buin / Órbitas Activas*")
+        st.link_button("🌐 Abrir Visor Satelital", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+
+    # --- MÓDULO 2: AGENTE AUTÓNOMO EN PARALELO ---
     with st.expander("🤖 Agente Autónomo (Paralelo)"):
         st.markdown("• **Ejecución simultánea de subtareas**")
         nueva_tarea = st.text_input("Nueva tarea para agente:", key="input_tarea_side")
@@ -350,6 +357,7 @@ with st.sidebar:
                     delete_db_tarea(tid)
                     st.rerun()
 
+    # --- MÓDULO 3: DOJO DE CIBERSEGURIDAD ---
     with st.expander("🛡️ Dojo Ciberseguridad"):
         st.markdown("• **Entrenamiento Ofensivo & Defensivo**")
         if st.button("💻 Simular Auditoría de Nodos", use_container_width=True):
@@ -464,4 +472,3 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
-
