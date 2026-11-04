@@ -190,12 +190,12 @@ st.markdown("---")
 col_izq, col_cen, col_der = st.columns([1.2, 2.2, 1.2])
 
 # -------------------------------------------------------------------------
-# COLUMNA IZQUIERDA (5 MÓDULOS + CÁMARA EN VIVO SOLICITADA)
+# COLUMNA IZQUIERDA (CÁMARA EN VIVO / OJO DE DIOS + MÓDULOS)
 # -------------------------------------------------------------------------
 with col_izq:
     st.markdown("### 🌐 CONTROL (IZQ)")
 
-    # Módulo de Cámara en Vivo / Ojo de Dios
+    # Módulo de Cámara en Vivo / Ojo de Dios con la ISS en directo
     with st.expander("📷 Cámaras en Vivo (Ojo de Dios)", expanded=True):
         st.markdown("- Transmisión orbital en directo")
         st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
@@ -246,4 +246,35 @@ with col_cen:
             st.rerun()
 
     for m in st.session_state.mensajes:
-        with
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+        
+        respuesta_ia = f"Orden recibida, jefa: '{prompt_usuario}'. Núcleo local procesando directiva en Buin."
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        with st.chat_message("assistant"):
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+
+
+# -------------------------------------------------------------------------
+# COLUMNA DERECHA (MAPA TÁCTICO Y OPERACIONES)
+# -------------------------------------------------------------------------
+with col_der:
+    st.markdown("### 🌍 TÁCTICO (DER)")
+    
+    with st.expander("🗺️ Mapa Táctico Satelital", expanded=True):
+        st.write("Vigilancia activa en Buin, Chile.")
+        map_data = [{"lat": -33.7333, "lon": -70.7167}]
+        st.map(map_data, zoom=10)
+
+    with st.expander("⚙️ Registro de Tareas"):
+        if st.button("➕ Registrar Tarea", use_container_width=True):
+            st.success("Tarea registrada correctamente en el sistema.")
+        st.info("Sistema de tareas secundarias sincronizado.")
+
+    with st.expander("🎙️ Escucha Continua (Hands-Free)"):
+        st.info("El manos libres opera localmente en tu ordenador para máxima velocidad y seguridad.")
