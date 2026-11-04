@@ -230,7 +230,6 @@ st.markdown("""
     <script>
         function actualizarReloj() {
             const ahora = new Date();
-            // Formatear hora local del dispositivo en formato HH:MM:SS
             const h = String(ahora.getHours()).padStart(2, '0');
             const m = String(ahora.getMinutes()).padStart(2, '0');
             const s = String(ahora.getSeconds()).padStart(2, '0');
@@ -432,4 +431,27 @@ with col_h1:
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
-        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_p = datetime.datetime.now(tz_chile).hour
+    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+    p_low = prompt_usuario.lower()
+
+    if "hola" in p_low:
+        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
+    elif any(w in p_low for w in ["gracias", "excelente"]):
+        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
+    else:
+        respuesta = f"Comando recibido y procesado por el núcleo real, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
