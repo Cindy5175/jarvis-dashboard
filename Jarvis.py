@@ -142,12 +142,11 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
     
-    # Migración automática segura por si la tabla ya existía sin la columna 'estado'
     try:
         c.execute("ALTER TABLE tareas ADD COLUMN estado TEXT DEFAULT 'Pendiente'")
         conn.commit()
     except sqlite3.OperationalError:
-        pass # La columna ya existe, no hay problema
+        pass
 
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     conn.commit()
@@ -209,7 +208,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO (SEPARADO HTML Y JS) ---
+# --- ENCABEZADO CON RELOJ EN VIVO CORREGIDO ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -222,7 +221,7 @@ st.markdown(f"""
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
         <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">--:--:--</span> ]
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -231,11 +230,11 @@ st.markdown("""
     <script>
         function actualizarReloj() {
             const ahora = new Date();
-            const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
-            const chileTime = new Date(utc - (3 * 3600000));
-            const h = String(chileTime.getHours()).padStart(2, '0');
-            const m = String(chileTime.getMinutes()).padStart(2, '0');
-            const s = String(chileTime.getSeconds()).padStart(2, '0');
+            // Formatear hora local del dispositivo en formato HH:MM:SS
+            const h = String(ahora.getHours()).padStart(2, '0');
+            const m = String(ahora.getMinutes()).padStart(2, '0');
+            const s = String(ahora.getSeconds()).padStart(2, '0');
+            
             const elemento = document.getElementById('reloj-vivo');
             if (elemento) {
                 elemento.innerText = h + ":" + m + ":" + s;
@@ -412,7 +411,7 @@ with st.sidebar:
             try:
                 with contextlib.redirect_stdout(buffer_salida):
                     exec(codigo_script, {})
-                res = buffer_salidaz = buffer_salida.getvalue()
+                res = buffer_salida.getvalue()
                 st.code(res if res else "Código ejecutado sin salida.", language="python")
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -433,27 +432,4 @@ with col_h1:
 with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
-        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    h_p = datetime.datetime.now(tz_chile).hour
-    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
-    p_low = prompt_usuario.lower()
-
-    if "hola" in p_low:
-        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
-    elif any(w in p_low for w in ["gracias", "excelente"]):
-        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
-    else:
-        respuesta = f"Comando recibido y procesado por el núcleo real, jefa."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    st.rerun()
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12
