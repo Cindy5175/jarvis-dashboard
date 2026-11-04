@@ -225,7 +225,7 @@ components.html(f"""
         <h4 style="margin: 0; padding: 0; font-size: 0.95rem; color: #00d2ff;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
         <p style="margin: 2px 0; font-size: 0.6rem; color: #00d2ff;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
         <p style="margin: 2px 0; font-size: 0.6rem; color: #00d2ff;">[ {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]</p>
-        <p style="margin: 2px 0 0 0; font-size: 0.55rem; color: #00a8cc;">[ 🛰️ ÓRBITA SATELITAL ACTIVA // MAPA TÁCTICO ]</p>
+        <p style="margin: 2px 0 0 0; font-size: 0.55rem; color: #00a8cc;">[ 🛰️ ÓRBITA ISS EN VIVO // MAPA TÁCTICO ]</p>
     </div>
     
     <script>
@@ -326,13 +326,14 @@ with st.sidebar:
             foto_edith = st.camera_input("Captura orbital:")
             if foto_edith:
                 st.success("Fotograma analizado.")
-        st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-    # --- MÓDULO 1: ESTACIÓN ORBITAL / MAPA TÁCTICO SATELITAL ---
-    with st.expander("🛰️ Estación Orbital y Mapa Táctico"):
-        st.markdown("• **Telemetría aeroespacial en vivo**")
-        st.markdown("• *Nodo Buin / Órbitas Activas*")
-        st.link_button("🌐 Abrir Visor Satelital", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+    # --- MÓDULO 1: ESTACIÓN ORBITAL & TRANSMISIÓN ISS EN VIVO (YouTube 24/7) ---
+    with st.expander("🛰️ Estación Orbital & ISS en Vivo", expanded=True):
+        st.markdown("• **Transmisión en directo desde el espacio**")
+        components.html("""
+            <iframe width="100%" height="160" src="https://www.youtube.com/embed/4QJEibrt9B8?autoplay=1&mute=1" title="ISS Live" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 6px; border: 1px solid #00d2ff;"></iframe>
+        """, height=170)
+        st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
     # --- MÓDULO 2: AGENTE AUTÓNOMO EN PARALELO ---
     with st.expander("🤖 Agente Autónomo (Paralelo)"):
