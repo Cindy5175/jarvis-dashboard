@@ -5,6 +5,7 @@ import io
 import contextlib
 import os
 import requests
+import streamlit.components.v1 as components
 
 # Importación segura de psutil
 try:
@@ -208,7 +209,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO BLINDADO ---
+# --- ENCABEZADO CON RELOJ EN VIVO BLINDADO (COMPONENTS.HTML) ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -216,38 +217,33 @@ dia_str = dias[now_inicial.weekday()]
 mes_str = meses[now_inicial.month]
 fecha_completa = f"{dia_str}, {now_inicial.day:02d} de {mes_str} de {now_inicial.year}"
 
-st.markdown(f"""
-    <div class="arc-reactor-container">
-        <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
-        <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">Cargando...</span> ]
+components.html(f"""
+    <div style="background-color: #060911; font-family: monospace; text-align: center; color: #00d2ff; padding: 5px;">
+        <div style="width: 45px; height: 45px; border: 2.5px solid #3a4454; border-radius: 50%; margin: 0 auto 5px auto; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00d2ff 0%, #060911 70%); box-shadow: 0 0 12px rgba(0, 210, 255, 0.6);">
+            <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #ffffff; filter: drop-shadow(0 0 5px #00d2ff);"></div>
+        </div>
+        <h4 style="margin: 0; padding: 0; font-size: 1.1rem; color: #00d2ff;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
+        <p style="margin: 4px 0 0 0; font-size: 0.7rem; color: #00d2ff;">
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
         </p>
     </div>
     
     <script>
-        function iniciarRelojSeguro() {
-            function actualizar() {
-                const ahora = new Date();
-                const h = String(ahora.getHours()).padStart(2, '0');
-                const m = String(ahora.getMinutes()).padStart(2, '0');
-                const s = String(ahora.getSeconds()).padStart(2, '0');
-                
-                const elemento = document.getElementById('reloj-vivo');
-                if (elemento) {
-                    elemento.innerText = h + ":" + m + ":" + s;
-                }
+        function actualizarReloj() {
+            const ahora = new Date();
+            const h = String(ahora.getHours()).padStart(2, '0');
+            const m = String(ahora.getMinutes()).padStart(2, '0');
+            const s = String(ahora.getSeconds()).padStart(2, '0');
+            
+            const elemento = document.getElementById('reloj-vivo');
+            if (elemento) {
+                elemento.innerText = h + ":" + m + ":" + s;
             }
-            actualizar();
-            setInterval(actualizar, 1000);
         }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', iniciarRelojSeguro);
-        } else {
-            iniciarRelojSeguro();
-        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
     </script>
-""", unsafe_allow_html=True)
+""", height=110)
 
 st.markdown("---")
 
@@ -264,8 +260,8 @@ with st.sidebar:
     with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)", expanded=True):
         st.markdown("• **Escucha Continua del Navegador**")
         
-        st.markdown("""
-            <div style="text-align: center; padding: 5px;">
+        components.html("""
+            <div style="text-align: center; font-family: monospace; background-color: rgba(0, 210, 255, 0.04); padding: 5px;">
                 <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
                 <p id="estado-voz" style="font-size: 0.65rem; color: #00d2ff; margin-top: 6px;">[ Micrófono en espera ]</p>
             </div>
@@ -307,7 +303,7 @@ with st.sidebar:
                     recognition.start();
                 }
             </script>
-        """, unsafe_allow_html=True)
+        """, height=100)
 
         st.markdown("---")
         texto_voz = st.text_input("Texto manual para voz:", "Núcleo operativo al cien por ciento, jefa.")
