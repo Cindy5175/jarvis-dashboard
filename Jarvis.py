@@ -3,9 +3,15 @@ import datetime
 import sqlite3
 import io
 import contextlib
-import psutil
-import requests
 import os
+import requests
+
+# Importación segura de psutil
+try:
+    import psutil
+    PSUTIL_DISPONIBLE = True
+except ImportError:
+    PSUTIL_DISPONIBLE = False
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -188,7 +194,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO (INTACTO Y DESTACADO) ---
+# --- ENCABEZADO CON RELOJ EN VIVO ---
 @st.fragment(run_every=1)
 def render_live_header():
     now = datetime.datetime.now(tz_chile)
@@ -214,7 +220,7 @@ render_live_header()
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA): MÓDULOS CON FUNCIONES REALES INTEGRADAS
+# BARRA LATERAL (IZQUIERDA) - CON MÓDULO HANDS-FREE DE VOZ
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -223,11 +229,29 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    # MÓDULO 1: VOZ REAL E.D.I.T.H. (Text-to-Speech real con gTTS)
-    with st.expander("🛰️ E.D.I.T.H. & Síntesis de Voz", expanded=True):
-        st.markdown("• **Módulo de voz real (gTTS)**")
-        texto_voz = st.text_input("Texto para sintetizar voz:", "Núcleo operativo al cien por ciento, jefa.")
-        if st.button("🗣️ Reproducir Voz JARVIS", use_container_width=True):
+    with st.expander("🎙️ E.D.I.T.H. & Hands-Free Audio", expanded=True):
+        st.markdown("• **Dictado por Micrófono (Hands-Free)**")
+        audio_grabado = st.audio_input("🎤 Hablar con JARVIS:")
+        if audio_grabado is not None:
+            st.success("Audio capturado por el búnker. Procesando orden...")
+            # Simulamos respuesta hablada automática al recibir audio
+            try:
+                from gtts import gTTS
+                import base64
+                respuesta_voz = "Orden recibida por micrófono, jefa. Sistemas al cien por ciento."
+                tts = gTTS(text=respuesta_voz, lang='es')
+                audio_bytes = io.BytesIO()
+                tts.write_to_fp(audio_bytes)
+                audio_bytes.seek(0)
+                b64 = base64.b64encode(audio_bytes.read()).decode()
+                st.markdown(f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>', unsafe_allow_html=True)
+                st.info(f"JARVIS: \"{respuesta_voz}\"")
+            except Exception as e:
+                st.warning("Error al sintetizar la respuesta de voz.")
+
+        st.markdown("---")
+        texto_voz = st.text_input("Texto manual para voz:", "Núcleo operativo al cien por ciento, jefa.")
+        if st.button("🗣️ Reproducir Voz Manual", use_container_width=True):
             try:
                 from gtts import gTTS
                 import base64
@@ -236,11 +260,10 @@ with st.sidebar:
                 tts.write_to_fp(audio_bytes)
                 audio_bytes.seek(0)
                 b64 = base64.b64encode(audio_bytes.read()).decode()
-                audio_html = f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>'
-                st.markdown(audio_html, unsafe_allow_html=True)
-                st.success("Audio generado y reproducido con éxito.")
-            except Exception as e:
-                st.warning("Instale 'gtts' para habilitar la voz real.")
+                st.markdown(f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>', unsafe_allow_html=True)
+                st.success("Audio reproducido.")
+            except:
+                st.warning("gTTS no disponible.")
 
         usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
         if usar_camara_edith:
@@ -249,7 +272,6 @@ with st.sidebar:
                 st.success("Fotograma analizado.")
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-    # FASE 01: Fundamentos y Redes (Con red real)
     with st.expander("🐧 Fundamentos y Redes"):
         st.markdown("• **Diagnóstico de Red Real**")
         if st.button("💻 Ejecutar ipconfig real", use_container_width=True):
@@ -262,114 +284,22 @@ with st.sidebar:
         if st.button("🐧 Núcleo Linux", use_container_width=True): st.info("Linux activo.")
         if st.button("🐍 Python", use_container_width=True): st.info("Python operativo.")
 
-    # FASE 02: Exploración y Práctica
     with st.expander("👁️ Exploración y Tracert"):
         st.markdown("• **Monitoreo de saltos de red**")
         if st.button("🛤️ Test ping / traceroute real", use_container_width=True):
             st.code("Respuesta de 8.8.8.8: bytes=32 tiempo=14ms TTL=115", language="bash")
         if st.button("👁️ Nmap", use_container_width=True): st.info("Nmap desplegado.")
 
-    # MÓDULO 2: HARDWARE REAL CON PSUTIL (CPU Y RAM DE TU EQUIPO)
     with st.expander("💻 Hardware Real (psutil)"):
-        cpu_uso = psutil.cpu_percent(interval=0.5)
-        memoria = psutil.virtual_memory()
-        st.markdown(f"• **CPU en uso:** `{cpu_uso}%`")
-        st.markdown(f"• **RAM total:** `{round(memoria.total / (1024**3), 2)} GB`")
-        st.markdown(f"• **RAM usada:** `{memoria.percent}%`")
+        if PSUTIL_DISPONIBLE:
+            cpu_uso = psutil.cpu_percent(interval=0.5)
+            memoria = psutil.virtual_memory()
+            st.markdown(f"• **CPU en uso:** `{cpu_uso}%`")
+            st.markdown(f"• **RAM total:** `{round(memoria.total / (1024**3), 2)} GB`")
+            st.markdown(f"• **RAM usada:** `{memoria.percent}%`")
+        else:
+            st.warning("Paquete `psutil` no instalado.")
         if st.button("🔄 Actualizar Hardware", use_container_width=True):
             st.rerun()
 
-    # MÓDULO 3: CLIMA REAL CON API PUBLICA
-    with st.expander("🌤️ Clima Real (Buin)"):
-        try:
-            url_clima = "https://wttr.in/Buin?format=j1"
-            resp_clima = requests.get(url_clima, timeout=3).json()
-            condicion = resp_clima['current_condition'][0]
-            temp_c = condicion['temp_C']
-            humedad = condicion['humidity']
-            st.markdown(f"• **Temperatura Actual:** `{temp_c}°C`")
-            st.markdown(f"• **Humedad Relativa:** `{humedad}%`")
-            st.markdown("• *Fuente: Estación meteorológica en vivo*")
-        except:
-            st.markdown("• **Temperatura:** 21°C | **Humedad:** 45% *(Modo respaldo)*")
-
-    # MÓDULO 4: GMAIL Y ALERTAS REALES
-    with st.expander("🛡️ Gmail y Alertas en Vivo"):
-        st.markdown("• **Estado:** Conectado a Bandeja de Entrada")
-        if st.button("📥 Revisar Correo Reciente", use_container_width=True):
-            st.info("Bandeja sincronizada: Sin nuevas alertas críticas de Gmail.")
-        for msg, nivel in get_db_alertas():
-            st.markdown(f"• {'🟢' if nivel == 'OK' else 'ℹ️'} {msg}")
-
-    # GESTIÓN Y FINANZAS
-    with st.expander("📈 Finanzas y Portafolio"):
-        st.markdown("• **Banco Estado:** 42 Acciones Vapores\n• **Fintual Global:** US $77,76")
-        if st.button("🔄 Sincronizar Mercados", use_container_width=True):
-            st.success("Portafolio actualizado.")
-
-    with st.expander("📝 Tareas del Búnker (SQLite)"):
-        nueva_tarea = st.text_input("Nueva tarea rápida:", key="input_tarea_side")
-        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-            add_db_tarea(nueva_tarea)
-            st.rerun()
-        for tid, t in get_db_tareas():
-            col_sub1, col_sub2 = st.columns([4, 1])
-            with col_sub1:
-                st.markdown(f"• {t}")
-            with col_sub2:
-                if st.button("❌", key=f"del_t_side_{tid}"):
-                    delete_db_tarea(tid)
-                    st.rerun()
-
-    with st.expander("⚡ Automatización Python"):
-        codigo_script = st.text_area("Script a ejecutar:", "print('Núcleo operativo al 100%')")
-        if st.button("⚡ Ejecutar Script", use_container_width=True):
-            buffer_salida = io.StringIO()
-            try:
-                with contextlib.redirect_stdout(buffer_salida):
-                    exec(codigo_script, {})
-                res = buffer_salida.getvalue()
-                st.code(res if res else "Código ejecutado sin salida.", language="python")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-    st.markdown("---")
-    st.link_button("🌤️ Ventusky (Meteo)", "https://www.ventusky.com", use_container_width=True)
-    st.link_button("☀️ SunCalc", "https://www.suncalc.org", use_container_width=True)
-    st.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
-
-
-# =========================================================================
-# PANEL CENTRAL: CHAT INTELIGENTE (100% DESPEJADO)
-# =========================================================================
-
-col_h1, col_h2 = st.columns([4, 1])
-with col_h1:
-    st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
-with col_h2:
-    if st.button("🗑️", use_container_width=True):
-        h_l = datetime.datetime.now(tz_chile).hour
-        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    
-    h_p = datetime.datetime.now(tz_chile).hour
-    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
-    p_low = prompt_usuario.lower()
-
-    if "hola" in p_low:
-        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
-    elif any(w in p_low for w in ["gracias", "excelente"]):
-        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
-    else:
-        respuesta = f"Comando recibido y procesado por el núcleo real, jefa."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    st.rerun()
+    with st.expander("🌤️ Clima Real (Buin)
