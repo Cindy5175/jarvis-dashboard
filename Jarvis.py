@@ -211,7 +211,7 @@ render_live_header()
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA): E.D.I.T.H. + MÓDULOS CYBRAINIUM + FINANZAS Y HERRAMIENTAS
+# BARRA LATERAL (IZQUIERDA): MÓDULOS EXPANDIDOS CON REDES Y OSINT
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -220,67 +220,77 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    # MÓDULO E.D.I.T.H. INTEGRADO A LA IZQUIERDA
-    with st.expander("🛰️ E.D.I.T.H. (Órbita & Óptica)", expanded=True):
-        st.markdown("• **Significado:** Equipo Digital de Intervención Táctica y Hostil")
-        st.markdown("• **Estado:** Órbita Baja Activa")
+    # MÓDULO E.D.I.T.H. & CÁMARAS ABIERTAS (Inspiración WebCamXP 5)
+    with st.expander("🛰️ E.D.I.T.H. & feeds OSINT", expanded=True):
+        st.markdown("• **Equipo Digital de Intervención Táctica**")
         usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
         if usar_camara_edith:
             foto_edith = st.camera_input("Captura orbital:")
             if foto_edith:
-                st.success("Fotograma analizado por servidores orbitales.")
-        edith_query = st.text_input("Consulta a E.D.I.T.H. (Ej: Datos / Objetivo):")
-        if st.button("🕶️ Ejecutar Escaneo E.D.I.T.H.", use_container_width=True):
+                st.success("Fotograma analizado.")
+        edith_query = st.text_input("Objetivo / IP / Host:")
+        if st.button("🕶️ Escaneo Orbital", use_container_width=True):
             if edith_query.strip():
-                st.success(f"Objetivo '{edith_query}' rastreado con éxito.")
+                st.success(f"Rastreo sobre '{edith_query}' ejecutado.")
             else:
                 st.warning("Ingrese un objetivo.")
+        st.markdown("---")
+        st.markdown("• **Monitoreo WebCam / Feeds abiertos:**")
+        ip_cam = st.text_input("IP de cámara (Ej: 109.233.191.130)", value="109.233.191.130")
+        if st.button("👁️ Conectar Feed IP", use_container_width=True):
+            st.info(f"Conectando al puerto 8080 en {ip_cam}...")
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-    # FASE 01: Fundamentos y Bases
-    with st.expander("🐧 Fundamentos y Bases"):
-        st.markdown("• **Aprende lo básico:** Linux, Redes, Python")
+    # FASE 01: Fundamentos y Bases (Redes y Comandos de Diagnóstico)
+    with st.expander("🐧 Fundamentos y Redes"):
+        st.markdown("• **Diagnóstico rápido:** `ipconfig`, `nslookup`, `ping`")
+        if st.button("💻 Ejecutar ipconfig", use_container_width=True):
+            st.code("Configuración IP de Windows\nAdaptador Ethernet:\n   Dirección IPv4. . . . . : 192.168.1.45\n   Puerta de enlace . . . : 192.168.1.1", language="bash")
+        if st.button("🔍 Ejecutar nslookup", use_container_width=True):
+            st.code("Servidor:  8.8.8.8\nAddress:  8.8.8.8#53\nNombre:    tiktok.com\nAddress: 157.240.227.29", language="bash")
         if st.button("🐧 Núcleo Linux", use_container_width=True): st.info("Linux activo.")
-        if st.button("🌐 Redes", use_container_width=True): st.info("Redes activas.")
         if st.button("🐍 Python", use_container_width=True): st.info("Python operativo.")
 
-    # FASE 02: Exploración y Práctica
-    with st.expander("👁️ Exploración y Práctica"):
-        st.markdown("• **Práctica activa:** Nmap, Wireshark, Burp Suite")
-        if st.button("👁️ Escaneo Nmap", use_container_width=True): st.info("Nmap desplegado.")
-        if st.button("🦈 Captura Wireshark", use_container_width=True): st.info("Wireshark en curso.")
-        if st.button("⚡ Proxy Burp Suite", use_container_width=True): st.info("Burp Suite conectado.")
+    # FASE 02: Exploración y Práctica (Traceroute y Netstat)
+    with st.expander("👁️ Exploración y Tracert / Netstat"):
+        st.markdown("• **Seguimiento de rutas y conexiones**")
+        if st.button("🛤️ Ejecutar Traceroute (tracert)", use_container_width=True):
+            st.code("Traza a google.com [142.250.190.46]\nsobre un máximo de 30 saltos:\n  1    <1 ms    <1 ms    <1 ms  192.168.1.1\n  2     4 ms     3 ms     3 ms  router.buin.cl\n  3    12 ms    11 ms    12 ms  google.com [142.250.190.46]", language="bash")
+        if st.button("📊 Ejecutar Netstat (-an)", use_container_width=True):
+            st.code("Proto  Dirección local       Dirección remota     Estado\nTCP    192.168.1.45:51204    142.250.190.46:443   ESTABLISHED\nTCP    192.168.1.45:51210    157.240.227.29:443   ESTABLISHED", language="bash")
+        if st.button("👁️ Nmap", use_container_width=True): st.info("Nmap desplegado.")
+        if st.button("🦈 Wireshark", use_container_width=True): st.info("Wireshark en curso.")
 
     # FASE 03: Laboratorio de Explotación
     with st.expander("🛡️ Laboratorio de Explotación"):
-        st.markdown("• **Romper y Explotar:** Metasploit, Sqlmap, John, Hashcat")
+        st.markdown("• **Romper y Explotar:** Metasploit, Sqlmap, John")
         if st.button("🛡️ Metasploit Framework", use_container_width=True): st.info("Metasploit listo.")
         if st.button("🐉 Auditor Sqlmap", use_container_width=True): st.info("Sqlmap activo.")
-        if st.button("🎩 John the Ripper", use_container_width=True): st.info("John the Ripper iniciado.")
-        if st.button("🏺 Descifrador Hashcat", use_container_width=True): st.info("Hashcat listo.")
+        if st.button("🎩 John the Ripper", use_container_width=True): st.info("John iniciado.")
 
-    # FASE 04: Investigación y Defensa
-    with st.expander("🔍 Investigación y Defensa"):
-        st.markdown("• **Investigar y Defender:** OSINT, Seguridad Web, SIEM, CTF")
-        if st.button("🔍 Motor OSINT", use_container_width=True): st.info("OSINT activo.")
-        if st.button("🌐 Seguridad Web", use_container_width=True): st.info("Escudo web operativo.")
+    # FASE 04: Investigación y Defensa (OSINT y Ciberinteligencia)
+    with st.expander("🔍 Investigación & OSINT"):
+        st.markdown("• **Búsqueda de huellas e inteligencia de fuentes abiertas**")
+        query_osint = st.text_input("Objetivo OSINT / Dominio:")
+        if st.button("🔍 RASTREO OSINT", use_container_width=True):
+            if query_osint.strip():
+                st.success(f"Analizando metadatos y registros para: {query_osint}")
+            else:
+                st.warning("Ingrese un objetivo.")
         if st.button("🖥️ Panel SIEM", use_container_width=True): st.info("SIEM en vivo.")
         if st.button("🚩 Centro CTF", use_container_width=True): st.info("CTF cargado.")
 
     # FASE 05: Ciberseguridad Profesional
     with st.expander("🐉 Ciberseguridad Profesional"):
-        st.markdown("• **Asegurar, Construir y Liderar:** Equipo Rojo, Equipo Azul, Investigación, Defensa")
+        st.markdown("• **Asegurar, Construir y Liderar**")
         if st.button("🐉 Protocolo Equipo Rojo", use_container_width=True): st.success("Equipo Rojo activo.")
         if st.button("🛡️ Defensa Equipo Azul", use_container_width=True): st.success("Equipo Azul activo.")
-        if st.button("🧠 Investigación de IA", use_container_width=True): st.success("Red neuronal al 100%.")
-        if st.button("🔒 Matriz de Defensa", use_container_width=True): st.success("Blindaje total activado.")
 
-    # MÓDULOS DE GESTIÓN Y FINANZAS
+    # GESTIÓN Y FINANZAS
     with st.expander("📈 Finanzas y Portafolio"):
-        st.markdown("• **Banco Estado:** 42 Acciones Vapores")
-        st.markdown("• **Fintual Global:** US $77,76 (-8,41%)")
-        if st.button("🔄 Sincronizar Portafolio", use_container_width=True):
-            st.success("Mercados actualizados.")
+        st.markdown("• **Banco Estado:** 42 Acciones Vapores\n• **Fintual Global:** US $77,76")
+        if st.button("🔄 Sincronizar Mercados", use_container_width=True):
+            st.success("Portafolio actualizado.")
 
     with st.expander("🛡️ Blindaje y Alertas"):
         st.markdown("• **WhatsApp / Gmail:** Operativos")
@@ -326,7 +336,6 @@ with st.sidebar:
 # PANEL CENTRAL: CHAT INTELIGENTE (100% DESPEJADO)
 # =========================================================================
 
-# Panel de Chat Inteligente Stark Limpio y Exclusivo al Centro
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
@@ -341,7 +350,6 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-# Entrada de Chat Dinámica
 if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
@@ -357,5 +365,4 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         respuesta = f"Comando recibido y procesado por la red orbital, jefa."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    
     st.rerun()
