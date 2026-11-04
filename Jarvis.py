@@ -246,12 +246,4 @@ with col_cen:
             st.rerun()
 
     for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-    if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        with st.chat_message("user"):
-            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
-        
-        respuesta_ia = f"Orden recibida, jefa: '{prompt_usuario}'. Nú
+        with
