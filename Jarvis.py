@@ -141,6 +141,14 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
+    
+    # Migración automática segura por si la tabla ya existía sin la columna 'estado'
+    try:
+        c.execute("ALTER TABLE tareas ADD COLUMN estado TEXT DEFAULT 'Pendiente'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass # La columna ya existe, no hay problema
+
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     conn.commit()
     
@@ -404,7 +412,7 @@ with st.sidebar:
             try:
                 with contextlib.redirect_stdout(buffer_salida):
                     exec(codigo_script, {})
-                res = buffer_salida.getvalue()
+                res = buffer_salidaz = buffer_salida.getvalue()
                 st.code(res if res else "Código ejecutado sin salida.", language="python")
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -449,4 +457,3 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
-
