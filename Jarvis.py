@@ -185,23 +185,42 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 st.markdown("---")
 
 # =========================================================================
-# DISEÑO DE 3 COLUMNAS: [ 5 MÓDULOS IZQ ] | [ CENTRO: CHAT ] | [ MAPAS / DERECHA ]
+# DISEÑO OPTIMIZADO: COLUMNA IZQUIERDA (CONTROLES Y MÓDULOS) Y CENTRO (CHAT)
 # =========================================================================
-col_izq, col_cen, col_der = st.columns([1.2, 2.2, 1.2])
+col_izq, col_cen = st.columns([1.2, 2.8])
 
 # -------------------------------------------------------------------------
-# COLUMNA IZQUIERDA (CÁMARA EN VIVO / OJO DE DIOS + MÓDULOS)
+# COLUMNA IZQUIERDA (TODOS LOS MÓDULOS Y PANeles EN MODO OCULTO/EXPANDER)
 # -------------------------------------------------------------------------
 with col_izq:
-    st.markdown("### 🌐 CONTROL (IZQ)")
+    st.markdown("### 🌐 NÚCLEO DE CONTROL")
 
-    # Módulo de Cámara en Vivo / Ojo de Dios con la ISS en directo
-    with st.expander("📷 Cámaras en Vivo (Ojo de Dios)", expanded=True):
-        st.markdown("- Transmisión orbital en directo")
+    # Módulo de Cámara en Vivo / Ojo de Dios
+    with st.expander("📷 Cámaras en Vivo (Ojo de Dios)", expanded=False):
+        st.markdown("- Transmisión orbital en directo (ISS)")
         st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
 
+    # Módulo de Mapa Táctico Satelital (Movido a la izquierda)
+    with st.expander("🗺️ Mapa Táctico Satelital", expanded=False):
+        st.markdown("- Vigilancia activa de sector")
+        st.write("Ubicación: Buin, Chile.")
+        map_data = [{"lat": -33.7333, "lon": -70.7167}]
+        st.map(map_data, zoom=10)
+
+    # Módulo de Registro de Tareas (Movido a la izquierda)
+    with st.expander("⚙️ Registro de Tareas", expanded=False):
+        st.markdown("- Gestión de protocolos operativos")
+        if st.button("➕ Registrar Tarea", use_container_width=True):
+            st.success("Tarea registrada correctamente en el sistema.")
+        st.info("Sistema de tareas secundarias sincronizado.")
+
+    # Módulo de Escucha Continua (Movido a la izquierda)
+    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
+        st.markdown("- Control de audio local")
+        st.info("El manos libres opera localmente en tu ordenador para máxima velocidad y seguridad.")
+
     # Módulo 1: E.D.I.T.H.
-    with st.expander("🛰️ Módulo E.D.I.T.H."):
+    with st.expander("🛰️ Módulo E.D.I.T.H.", expanded=False):
         st.markdown("- Control óptico y satelital")
         usar_camara_edith = st.checkbox("📷 Cámara Óptica", value=False, key="cam_edith")
         if usar_camara_edith:
@@ -217,14 +236,14 @@ with col_izq:
         st.link_button("🌐 Visor Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
     # Módulo 2: Fundamentos y Bases
-    with st.expander("🐧 Fundamentos y Bases"):
+    with st.expander("🐧 Fundamentos y Bases", expanded=False):
         st.markdown("- Aprende lo básico: Linux, Redes, Python")
         if st.button("🐧 Núcleo Linux", use_container_width=True, key="b_lin"): st.info("Linux activo.")
         if st.button("🌐 Redes", use_container_width=True, key="b_net"): st.info("Redes activas.")
         if st.button("🐍 Python", use_container_width=True, key="b_py"): st.info("Python operativo.")
 
     # Módulo 3: Exploración y Práctica
-    with st.expander("👁️ Exploración y Práctica"):
+    with st.expander("👁️ Exploración y Práctica", expanded=False):
         st.markdown("- Práctica activa: Nmap, Wireshark, Burp")
         if st.button("👁️ Nmap", use_container_width=True, key="b_nmap"): st.info("Nmap desplegado.")
         if st.button("🦈 Wireshark", use_container_width=True, key="b_wire"): st.info("Wireshark en curso.")
@@ -232,7 +251,7 @@ with col_izq:
 
 
 # -------------------------------------------------------------------------
-# COLUMNA CENTRAL (CHAT IA)
+# COLUMNA CENTRAL (CHAT IA AMPLIADO Y DESPEJADO)
 # -------------------------------------------------------------------------
 with col_cen:
     col_h1, col_h2 = st.columns([4, 1])
@@ -258,23 +277,3 @@ with col_cen:
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         with st.chat_message("assistant"):
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-
-
-# -------------------------------------------------------------------------
-# COLUMNA DERECHA (MAPA TÁCTICO Y OPERACIONES)
-# -------------------------------------------------------------------------
-with col_der:
-    st.markdown("### 🌍 TÁCTICO (DER)")
-    
-    with st.expander("🗺️ Mapa Táctico Satelital", expanded=True):
-        st.write("Vigilancia activa en Buin, Chile.")
-        map_data = [{"lat": -33.7333, "lon": -70.7167}]
-        st.map(map_data, zoom=10)
-
-    with st.expander("⚙️ Registro de Tareas"):
-        if st.button("➕ Registrar Tarea", use_container_width=True):
-            st.success("Tarea registrada correctamente en el sistema.")
-        st.info("Sistema de tareas secundarias sincronizado.")
-
-    with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-        st.info("El manos libres opera localmente en tu ordenador para máxima velocidad y seguridad.")
