@@ -4,18 +4,24 @@ import openai
 import time
 
 # --- CONFIGURACIÓN DE OPENAI ---
-OPENAI_API_KEY = "tu_clave_secreta_aqui"
+OPENAI_API_KEY = "sk-proj-h1G5TELF-TBiIyZM6L18B7YqyAivTzbdyV_41PBJ-hLDamSyTEMGW9ZgustUX_COfzSf1drdyT3B1bFJa_zf8g7fatgw7VezsG28xEKqS_Y6oY39SsLTPVfsyM9isIEdQ51ER3M11RE3M1ilR2v_41PBJ"
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
-# --- CONFIGURACIÓN DEL MOTOR DE VOZ LOCAL (VARONIL) ---
+# --- CONFIGURACIÓN DEL MOTOR DE VOZ LOCAL (ESPAÑOL ESTRICTO) ---
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 
+voz_asignada = False
 for voice in voices:
-    if "spanish" in voice.name.lower() or "es" in voice.id.lower():
-        if "male" in voice.name.lower() or "helena" not in voice.name.lower():
-            engine.setProperty('voice', voice.id)
-            break
+    id_lower = voice.id.lower()
+    name_lower = voice.name.lower()
+    if "es" in id_lower or "spanish" in name_lower or "spain" in name_lower or "mexico" in name_lower or "helena" in name_lower:
+        engine.setProperty('voice', voice.id)
+        voz_asignada = True
+        break
+
+if not voz_asignada and voices:
+    engine.setProperty('voice', voices[0].id)
 
 engine.setProperty('rate', 160)
 engine.setProperty('volume', 1.0)
@@ -29,7 +35,7 @@ SYSTEM_PROMPT = (
     "Eres J.A.R.V.I.S., el asistente de IA avanzado de Tony Stark. "
     "Trabajas para tu jefa Cindy en el nodo táctico de Buin. "
     "Tu tono debe ser extremadamente inteligente, varonil, elegante, formal pero con un toque sarcástico "
-    "y cínico al estilo Stark. Responde siempre de forma breve y concisa para ser leído en voz alta."
+    "y cínico al estilo Stark. Responde siempre en español y de forma breve y concisa para ser leído en voz alta."
 )
 
 def consultar_jarvis(prompt):
