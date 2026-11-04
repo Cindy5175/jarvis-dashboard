@@ -208,7 +208,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO CORREGIDO ---
+# --- ENCABEZADO CON RELOJ EN VIVO BLINDADO ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -221,26 +221,31 @@ st.markdown(f"""
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
         <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">--:--:--</span> ]
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">Cargando...</span> ]
         </p>
     </div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
+    
     <script>
-        function actualizarReloj() {
-            const ahora = new Date();
-            const h = String(ahora.getHours()).padStart(2, '0');
-            const m = String(ahora.getMinutes()).padStart(2, '0');
-            const s = String(ahora.getSeconds()).padStart(2, '0');
-            
-            const elemento = document.getElementById('reloj-vivo');
-            if (elemento) {
-                elemento.innerText = h + ":" + m + ":" + s;
+        function iniciarRelojSeguro() {
+            function actualizar() {
+                const ahora = new Date();
+                const h = String(ahora.getHours()).padStart(2, '0');
+                const m = String(ahora.getMinutes()).padStart(2, '0');
+                const s = String(ahora.getSeconds()).padStart(2, '0');
+                
+                const elemento = document.getElementById('reloj-vivo');
+                if (elemento) {
+                    elemento.innerText = h + ":" + m + ":" + s;
+                }
             }
+            actualizar();
+            setInterval(actualizar, 1000);
         }
-        setInterval(actualizarReloj, 1000);
-        actualizarReloj();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciarRelojSeguro);
+        } else {
+            iniciarRelojSeguro();
+        }
     </script>
 """, unsafe_allow_html=True)
 
