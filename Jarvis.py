@@ -194,33 +194,45 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO ---
-@st.fragment(run_every=1)
-def render_live_header():
-    now = datetime.datetime.now(tz_chile)
-    dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-    meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-    
-    dia_str = dias[now.weekday()]
-    mes_str = meses[now.month]
-    fecha_str = f"{dia_str}, {now.day:02d} de {mes_str} de {now.year}"
-    hora_segundos = now.strftime("%H:%M:%S")
-    
-    st.markdown(f"""
-        <div class="arc-reactor-container">
-            <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
-            <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
-                [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
+# --- ENCABEZADO CON RELOJ EN VIVO EN JAVASCRIPT ---
+now_inicial = datetime.datetime.now(tz_chile)
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+dia_str = dias[now_inicial.weekday()]
+mes_str = meses[now_inicial.month]
+fecha_completa = f"{dia_str}, {now_inicial.day:02d} de {mes_str} de {now_inicial.year}"
 
-render_live_header()
+st.markdown(f"""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
+        <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
+        </p>
+    </div>
+    
+    <script>
+        function actualizarReloj() {
+            const ahora = new Date();
+            const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+            const chileTime = new Date(utc - (3 * 3600000));
+            const h = String(chileTime.getHours()).padStart(2, '0');
+            const m = String(chileTime.getMinutes()).padStart(2, '0');
+            const s = String(chileTime.getSeconds()).padStart(2, '0');
+            const elemento = document.getElementById('reloj-vivo');
+            if (elemento) {
+                elemento.innerText = h + ":" + m + ":" + s;
+            }
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+    </script>
+""", unsafe_allow_html=True)
+
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA) - CON MÓDULO HANDS-FREE DE VOZ
+# BARRA LATERAL (IZQUIERDA) - CON RECONOCIMIENTO DE VOZ REAL (WEB SPEECH API)
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -229,24 +241,56 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    with st.expander("🎙️ E.D.I.T.H. & Hands-Free Audio", expanded=True):
-        st.markdown("• **Dictado por Micrófono (Hands-Free)**")
-        audio_grabado = st.audio_input("🎤 Hablar con JARVIS:")
-        if audio_grabado is not None:
-            st.success("Audio capturado por el búnker. Procesando orden...")
-            try:
-                from gtts import gTTS
-                import base64
-                respuesta_voz = "Orden recibida por micrófono, jefa. Sistemas al cien por ciento."
-                tts = gTTS(text=respuesta_voz, lang='es')
-                audio_bytes = io.BytesIO()
-                tts.write_to_fp(audio_bytes)
-                audio_bytes.seek(0)
-                b64 = base64.b64encode(audio_bytes.read()).decode()
-                st.markdown(f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>', unsafe_allow_html=True)
-                st.info(f"JARVIS: \"{respuesta_voz}\"")
-            except Exception as e:
-                st.warning("Error al sintetizar la respuesta de voz.")
+    with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)", expanded=True):
+        st.markdown("• **Escucha Continua del Navegador**")
+        
+        # Componente HTML con reconocimiento de voz nativo en JavaScript (Web Speech API)
+        st.markdown("""
+            <div style="text-align: center; padding: 5px;">
+                <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
+                <p id="estado-voz" style="font-size: 0.65rem; color: #00d2ff; margin-top: 6px;">[ Micrófono en espera ]</p>
+            </div>
+            
+            <script>
+                function iniciarEscucha() {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        alert("Tu navegador no soporta reconocimiento de voz directo. Usa Google Chrome.");
+                        return;
+                    }
+                    
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'es-CL';
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    
+                    const estado = document.getElementById('estado-voz');
+                    estado.innerText = "[ Escuchando a la jefa... Hable ahora ]";
+                    
+                    recognition.onresult = function(event) {
+                        const textoDictado = event.results[0][0].transcript;
+                        estado.innerText = "[ Comando capturado: " + textoDictado + " ]";
+                        
+                        // Sintetizar voz de respuesta automática
+                        const utterance = new SpeechSynthesisUtterance("Orden recibida, jefa: " + textoDictado);
+                        utterance.lang = 'es-CL';
+                        window.speechSynthesis.speak(utterance);
+                    };
+                    
+                    recognition.onerror = function(event) {
+                        estado.innerText = "[ Error de audio o permiso denegado ]";
+                    };
+                    
+                    recognition.onend = function() {
+                        setTimeout(() => {
+                            estado.innerText = "[ Micrófono en espera ]";
+                        }, 3000);
+                    };
+                    
+                    recognition.start();
+                }
+            </script>
+        """, unsafe_allow_html=True)
 
         st.markdown("---")
         texto_voz = st.text_input("Texto manual para voz:", "Núcleo operativo al cien por ciento, jefa.")
