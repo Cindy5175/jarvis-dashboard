@@ -229,17 +229,17 @@ components.html(f"""
     </div>
     
     <script>
-        function actualizarReloj() {
+        function actualizarReloj() {{
             const ahora = new Date();
             const h = String(ahora.getHours()).padStart(2, '0');
             const m = String(ahora.getMinutes()).padStart(2, '0');
             const s = String(ahora.getSeconds()).padStart(2, '0');
             
             const elemento = document.getElementById('reloj-vivo');
-            if (elemento) {
+            if (elemento) {{
                 elemento.innerText = h + ":" + m + ":" + s;
-            }
-        }
+            }}
+        }}
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
@@ -456,4 +456,3 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
-
