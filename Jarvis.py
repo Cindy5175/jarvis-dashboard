@@ -140,14 +140,14 @@ DB_NAME = "jarvis_bunker.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
     conn.commit()
     
     c.execute("SELECT COUNT(*) FROM tareas")
     if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
-        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
+        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Validar estado de salud (UC Christus)", "Completado"))
+        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Monitorear nodo operativo en Buin", "Ejecutando"))
         conn.commit()
         
     c.execute("SELECT COUNT(*) FROM alertas")
@@ -162,15 +162,22 @@ init_db()
 def get_db_tareas():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT id, texto FROM tareas")
+    c.execute("SELECT id, texto, estado FROM tareas")
     rows = c.fetchall()
     conn.close()
     return rows
 
-def add_db_tarea(texto):
+def add_db_tarea(texto, estado="Pendiente"):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO tareas (texto) VALUES (?)", (texto,))
+    c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", (texto, estado))
+    conn.commit()
+    conn.close()
+
+def update_db_tarea_estado(id_t, nuevo_estado):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE tareas SET estado = ? WHERE id = ?", (nuevo_estado, id_t))
     conn.commit()
     conn.close()
 
@@ -194,7 +201,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO (SEPARADO HTML Y JS) ---
+# --- ENCABEZADO CON RELOJ EN VIVO EN JAVASCRIPT ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -210,9 +217,7 @@ st.markdown(f"""
             [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
         </p>
     </div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
+    
     <script>
         function actualizarReloj() {
             const ahora = new Date();
@@ -234,7 +239,7 @@ st.markdown("""
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA) - CON RECONOCIMIENTO DE VOZ REAL (WEB SPEECH API)
+# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL Y AGENTE DE TAREAS
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -245,7 +250,6 @@ with st.sidebar:
 
     with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)", expanded=True):
         st.markdown("• **Escucha Continua del Navegador**")
-        
         st.markdown("""
             <div style="text-align: center; padding: 5px;">
                 <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
@@ -259,34 +263,25 @@ with st.sidebar:
                         alert("Tu navegador no soporta reconocimiento de voz directo. Usa Google Chrome.");
                         return;
                     }
-                    
                     const recognition = new SpeechRecognition();
                     recognition.lang = 'es-CL';
                     recognition.continuous = false;
                     recognition.interimResults = false;
-                    
                     const estado = document.getElementById('estado-voz');
                     estado.innerText = "[ Escuchando a la jefa... Hable ahora ]";
-                    
                     recognition.onresult = function(event) {
                         const textoDictado = event.results[0][0].transcript;
                         estado.innerText = "[ Comando capturado: " + textoDictado + " ]";
-                        
                         const utterance = new SpeechSynthesisUtterance("Orden recibida, jefa: " + textoDictado);
                         utterance.lang = 'es-CL';
                         window.speechSynthesis.speak(utterance);
                     };
-                    
                     recognition.onerror = function(event) {
                         estado.innerText = "[ Error de audio o permiso denegado ]";
                     };
-                    
                     recognition.onend = function() {
-                        setTimeout(() => {
-                            estado.innerText = "[ Micrófono en espera ]";
-                        }, 3000);
+                        setTimeout(() => { estado.innerText = "[ Micrófono en espera ]"; }, 3000);
                     };
-                    
                     recognition.start();
                 }
             </script>
@@ -370,17 +365,24 @@ with st.sidebar:
         if st.button("🔄 Sincronizar Mercados", use_container_width=True):
             st.success("Portafolio actualizado.")
 
-    with st.expander("📝 Tareas del Búnker (SQLite)"):
-        nueva_tarea = st.text_input("Nueva tarea rápida:", key="input_tarea_side")
-        if st.button("➕ Registrar Tarea", use_container_width=True) and nueva_tarea:
-            add_db_tarea(nueva_tarea)
+    with st.expander("🤖 Agente de Tareas Autónomas"):
+        nueva_tarea = st.text_input("Nueva tarea para el agente:", key="input_tarea_side")
+        estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
+        if st.button("➕ Registrar Tarea Automática", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea, estado_inicial)
             st.rerun()
-        for tid, t in get_db_tareas():
-            col_sub1, col_sub2 = st.columns([4, 1])
-            with col_sub1:
-                st.markdown(f"• {t}")
-            with col_sub2:
-                if st.button("❌", key=f"del_t_side_{tid}"):
+        
+        st.markdown("---")
+        for tid, t, est in get_db_tareas():
+            color_est = "🟡" if est == "Pendiente" else ("🔵" if est == "Ejecutando" else "🟢")
+            st.markdown(f"{color_est} **{t}** *({est})*")
+            col_a1, col_a2 = st.columns(2)
+            with col_a1:
+                if st.button("▶️ Ejecutar", key=f"run_t_{tid}"):
+                    update_db_tarea_estado(tid, "Ejecutando")
+                    st.rerun()
+            with col_a2:
+                if st.button("❌ Borrar", key=f"del_t_{tid}"):
                     delete_db_tarea(tid)
                     st.rerun()
 
@@ -403,7 +405,7 @@ with st.sidebar:
 
 
 # =========================================================================
-# PANEL CENTRAL: CHAT INTELIGENTE (100% DESPEJADO)
+# PANEL CENTRAL: CHAT INTELIGENTE & GESTOR VISUAL DE TAREAS AUTÓNOMAS
 # =========================================================================
 
 col_h1, col_h2 = st.columns([4, 1])
@@ -413,4 +415,26 @@ with col_h2:
     if st.button("🗑️", use_container_width=True):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    h_p = datetime.datetime.now(tz_chile).hour
+    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+    p_low = prompt_usuario.lower()
+
+    if "hola" in p_low:
+        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
+    elif any(w in p_low for w in ["gracias", "excelente"]):
+        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
+    else:
+        respuesta = f"Comando recibido y procesado por el núcleo real, jefa."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    st.rerun()
