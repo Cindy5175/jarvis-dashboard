@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 import sqlite3
-import random
+import openai
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -9,6 +9,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- CONEXIÓN CON EL CEREBRO DE OPENAI ---
+# Asegúrate de tener tu clave configurada en st.secrets["OPENAI_API_KEY"] o reemplázala aquí
+try:
+    openai_client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    CEREBRO_ACTIVO = True
+except Exception:
+    CEREBRO_ACTIVO = False
 
 # --- ESTILOS VISUALES STARK (ESTÉTICA DE BÚNKER) ---
 st.markdown("""
@@ -150,7 +158,7 @@ def init_db():
 
     c.execute("SELECT COUNT(*) FROM chat_history")
     if c.fetchone()[0] == 0:
-        msg_inicial = f"{saludo_actual}, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"
+        msg_inicial = f"{saludo_actual}, jefa. El núcleo de OpenAI y el nodo de Buin están sincronizados. ¿Qué inteligencia desplegamos hoy?"
         c.execute("INSERT INTO chat_history (role, content) VALUES (?, ?)", ("assistant", msg_inicial))
         conn.commit()
 
@@ -201,4 +209,175 @@ def render_live_header():
     st.markdown(f"""
         <div class="arc-reactor-container">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h
+            <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00d2ff !important;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
+            <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00d2ff !important; text-align: center !important;">
+                [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+render_live_header()
+st.markdown("---")
+
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.session_state.bunker_desbloqueado = False
+    st.rerun()
+
+st.markdown("---")
+
+# =========================================================================
+# DISEÑO OPTIMIZADO DE 2 COLUMNAS (IZQ: MÓDULOS | CEN: CHAT)
+# =========================================================================
+col_izq, col_cen = st.columns([1.2, 2.8])
+
+# -------------------------------------------------------------------------
+# COLUMNA IZQUIERDA (MÓDULOS EXPANDIBLES E ICONOS)
+# -------------------------------------------------------------------------
+with col_izq:
+    st.markdown("### 🌐 NÚCLEO DE CONTROL")
+
+    # Módulo de Cámara en Vivo / Ojo de Dios
+    with st.expander("📷 Cámaras en Vivo (Ojo de Dios)", expanded=False):
+        st.markdown("- Transmisión orbital en directo (ISS)")
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+
+    # Módulo Clima en Vivo
+    with st.expander("🌤️ Clima en Vivo (Buin)", expanded=True):
+        st.markdown("- **Estación Meteorológica Local**")
+        st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
+        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
+
+    # Módulo Coordenadas Tácticas Satelitales
+    with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
+        st.markdown("- **Posición del Nodo Central**")
+        st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
+        st.caption("Usa el visor Osiris AI en E.D.I.T.H. para escaneo visual detallado.")
+
+    # Módulo Bitácora de Alertas Tácticas
+    with st.expander("🚨 Bitácora de Alertas Tácticas", expanded=False):
+        st.markdown("- **Alertas Activas del Sistema**")
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT mensaje, nivel FROM alertas ORDER BY id DESC LIMIT 5")
+        alertas_list = c.fetchall()
+        for msg_a, niv_a in alertas_list:
+            if niv_a == "OK":
+                st.success(f"🟢 {msg_a}")
+            else:
+                st.info(f"🔵 {msg_a}")
+        
+        nueva_alerta_txt = st.text_input("Nueva alerta:", key="inp_alert_nueva", placeholder="Ej: Nodo Buin en mantenimiento")
+        if st.button("➕ Agregar Alerta", use_container_width=True, key="btn_add_alert"):
+            if nueva_alerta_txt.strip():
+                c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", (nueva_alerta_txt.strip(), "INFO"))
+                conn.commit()
+                st.success("Alerta registrada.")
+                st.rerun()
+        conn.close()
+
+    # Módulo Notas Rápidas / Recordatorios
+    with st.expander("📝 Notas Rápidas & Pendientes", expanded=False):
+        st.markdown("- **Apuntes del Nodo Buin**")
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT id, nota FROM notas ORDER BY id DESC")
+        notas_list = c.fetchall()
+        for id_n, txt_n in notas_list:
+            st.code(f"• {txt_n}")
+        
+        nueva_nota_txt = st.text_input("Añadir nota rápida:", key="inp_nota_nueva", placeholder="Ej: Revisar clave API OpenAI")
+        if st.button("📌 Guardar Nota", use_container_width=True, key="btn_add_nota"):
+            if nueva_nota_txt.strip():
+                c.execute("INSERT INTO notas (nota) VALUES (?)", (nueva_nota_txt.strip(),))
+                conn.commit()
+                st.success("Nota guardada.")
+                st.rerun()
+        conn.close()
+
+    # Módulo de Escucha Continua
+    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
+        st.markdown("- **Control de Audio Local**")
+        
+        estado_toggle = st.toggle("Activar Escucha Continua", value=st.session_state.manos_libres_activo, key="toggle_handsfree")
+        st.session_state.manos_libres_activo = estado_toggle
+        
+        if st.session_state.manos_libres_activo:
+            st.markdown("🟢 **ESTADO: ESCUCHANDO EN VIVO** (El script local en tu PC está atento a tu voz)")
+        else:
+            st.markdown("🔴 **ESTADO: EN ESPERA / MANUAL** (Micrófono inactivo)")
+            
+        st.info("El manos libres opera localmente en tu ordenador para máxima velocidad y seguridad.")
+
+    # Módulo de Registro de Tareas
+    with st.expander("⚙️ Registro de Tareas", expanded=False):
+        st.markdown("- **Gestión de Protocolos**")
+        if st.button("➕ Registrar Tarea", use_container_width=True):
+            st.success("Tarea registrada correctamente en el sistema.")
+        st.info("Sistema de tareas secundarias sincronizado.")
+
+    # Módulo 1: E.D.I.T.H.
+    with st.expander("🛰️ Módulo E.D.I.T.H.", expanded=False):
+        st.markdown("- **Control Óptico y Satelital**")
+        usar_camara_edith = st.checkbox("📷 Cámara Óptica", value=False, key="cam_edith")
+        if usar_camara_edith:
+            foto_edith = st.camera_input("Captura orbital:")
+            if foto_edith:
+                st.success("Fotograma analizado.")
+        edith_query = st.text_input("Objetivo:", key="obj_edith")
+        if st.button("🕶️ Escaneo", use_container_width=True, key="btn_edith"):
+            if edith_query.strip():
+                st.success(f"Rastreado: {edith_query}")
+            else:
+                st.warning("Ingrese un objetivo.")
+        st.link_button("🌐 Visor Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+
+    # Módulo 2: Fundamentos y Bases
+    with st.expander("🐧 Fundamentos y Bases", expanded=False):
+        st.markdown("- **Aprende lo básico: Linux, Redes, Python**")
+        if st.button("🐧 Núcleo Linux", use_container_width=True, key="b_lin"): st.info("Linux activo.")
+        if st.button("🌐 Redes", use_container_width=True, key="b_net"): st.info("Redes activas.")
+        if st.button("🐍 Python", use_container_width=True, key="b_py"): st.info("Python operativo.")
+
+    # Módulo 3: Exploración y Práctica
+    with st.expander("👁️ Exploración y Práctica", expanded=False):
+        st.markdown("- **Práctica activa: Nmap, Wireshark, Burp**")
+        if st.button("👁️ Nmap", use_container_width=True, key="b_nmap"): st.info("Nmap desplegado.")
+        if st.button("🦈 Wireshark", use_container_width=True, key="b_wire"): st.info("Wireshark en curso.")
+        if st.button("⚡ Burp Suite", use_container_width=True, key="b_burp"): st.info("Burp conectado.")
+
+
+# -------------------------------------------------------------------------
+# COLUMNA CENTRAL (CEREBRO REAL OPENAI + PERSISTENCIA SQLITE)
+# -------------------------------------------------------------------------
+with col_cen:
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat"):
+            purgar_historial_chat()
+            h_l = datetime.datetime.now(tz_chile).hour
+            s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+            msg_reset = f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué directiva ejecutamos ahora?"
+            guardar_mensaje_chat("assistant", msg_reset)
+            st.session_state.mensajes = obtener_historial_chat()
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    if prompt_usuario := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
+        guardar_mensaje_chat("user", prompt_usuario)
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+        
+        # PROCESAMIENTO CON EL CEREBRO REAL DE OPENAI (CON PERSONALIDAD TONY STARK)
+        if CEREBRO_ACTIVO:
+            with st.spinner("Jarvis procesando directiva en el nodo Buin..."):
+                try:
+                    # System prompt para definir la personalidad sarcástica, formal y varonil estilo Tony Stark
+                    system_prompt = (
+                        "Eres J.A.R.V.I.S., el asistente de inteligencia artificial avanzado de Tony Stark. "
+                        "Trabajas para
