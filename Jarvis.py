@@ -204,73 +204,7 @@ with col_izq:
         st.markdown("- Transmisión orbital en directo (ISS)")
         st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
 
-    # Módulo Clima en Vivo (Nuevo)
+    # Módulo Clima en Vivo
     with st.expander("🌤️ Clima en Vivo (Buin)", expanded=True):
         st.markdown("- **Estación Meteorológica Local**")
-        st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
-        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
-
-    # Módulo Coordenadas Tácticas Satelitales (Sustituye al mapa)
-    with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
-        st.markdown("- **Posición del Nodo Central**")
-        st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
-        st.caption("Usa el visor Osiris AI en E.D.I.T.H. para escaneo visual detallado.")
-
-    # Módulo de Escucha Continua (Con indicador visual de estado)
-    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
-        st.markdown("- **Control de Audio Local**")
-        
-        # Interruptor de estado de escucha
-        estado_toggle = st.toggle("Activar Escucha Continua", value=st.session_state.manos_libres_activo, key="toggle_handsfree")
-        st.session_state.manos_libres_activo = estado_toggle
-        
-        if st.session_state.manos_libres_activo:
-            st.markdown("🟢 **ESTADO: ESCUCHANDO EN VIVO** (El script local en tu PC está atento a tu voz)")
-        else:
-            st.markdown("🔴 **ESTADO: EN ESPERA / MANUAL** (Micrófono inactivo)")
-            
-        st.info("El manos libres corre de forma local en tu ordenador para evitar bloqueos en Streamlit Cloud.")
-
-    # Módulo de Registro de Tareas
-    with st.expander("⚙️ Registro de Tareas", expanded=False):
-        st.markdown("- **Gestión de Protocolos**")
-        if st.button("➕ Registrar Tarea", use_container_width=True):
-            st.success("Tarea registrada correctamente en el sistema.")
-        st.info("Sistema de tareas secundarias sincronizado.")
-
-    # Módulo 1: E.D.I.T.H.
-    with st.expander("🛰️ Módulo E.D.I.T.H.", expanded=False):
-        st.markdown("- **Control Óptico y Satelital**")
-        usar_camara_edith = st.checkbox("📷 Cámara Óptica", value=False, key="cam_edith")
-        if usar_camara_edith:
-            foto_edith = st.camera_input("Captura orbital:")
-            if foto_edith:
-                st.success("Fotograma analizado.")
-        edith_query = st.text_input("Objetivo:", key="obj_edith")
-        if st.button("🕶️ Escaneo", use_container_width=True, key="btn_edith"):
-            if edith_query.strip():
-                st.success(f"Rastreado: {edith_query}")
-            else:
-                st.warning("Ingrese un objetivo.")
-        st.link_button("🌐 Visor Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-
-    # Módulo 2: Fundamentos y Bases
-    with st.expander("🐧 Fundamentos y Bases", expanded=False):
-        st.markdown("- **Aprende lo básico: Linux, Redes, Python**")
-        if st.button("🐧 Núcleo Linux", use_container_width=True, key="b_lin"): st.info("Linux activo.")
-        if st.button("🌐 Redes", use_container_width=True, key="b_net"): st.info("Redes activas.")
-        if st.button("🐍 Python", use_container_width=True, key="b_py"): st.info("Python operativo.")
-
-    # Módulo 3: Exploración y Práctica
-    with st.expander("👁️ Exploración y Práctica", expanded=False):
-        st.markdown("- **Práctica activa: Nmap, Wireshark, Burp**")
-        if st.button("👁️ Nmap", use_container_width=True, key="b_nmap"): st.info("Nmap desplegado.")
-        if st.button("🦈 Wireshark", use_container_width=True, key="b_wire"): st.info("Wireshark en curso.")
-        if st.button("⚡ Burp Suite", use_container_width=True, key="b_burp"): st.info("Burp conectado.")
-
-
-# -------------------------------------------------------------------------
-# COLUMNA CENTRAL (CHAT IA AMPLIADO Y DESPEJADO)
-# -------------------------------------------------------------------------
-with col_cen:
-    col_h1, col
+        st.success("🌡️ Temperatura:
