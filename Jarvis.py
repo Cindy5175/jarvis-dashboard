@@ -209,7 +209,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO BLINDADO (COMPONENTS.HTML) ---
+# --- ENCABEZADO CON RELOJ EN VIVO Y MAPA TÁCTICO SATELITAL RESTAURADO ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -218,13 +218,16 @@ mes_str = meses[now_inicial.month]
 fecha_completa = f"{dia_str}, {now_inicial.day:02d} de {mes_str} de {now_inicial.year}"
 
 components.html(f"""
-    <div style="background-color: #060911; font-family: monospace; text-align: center; color: #00d2ff; padding: 5px;">
-        <div style="width: 45px; height: 45px; border: 2.5px solid #3a4454; border-radius: 50%; margin: 0 auto 5px auto; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00d2ff 0%, #060911 70%); box-shadow: 0 0 12px rgba(0, 210, 255, 0.6);">
-            <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #ffffff; filter: drop-shadow(0 0 5px #00d2ff);"></div>
+    <div style="background-color: #060911; font-family: monospace; text-align: center; color: #00d2ff; padding: 2px;">
+        <div style="width: 40px; height: 40px; border: 2.5px solid #3a4454; border-radius: 50%; margin: 0 auto 3px auto; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00d2ff 0%, #060911 70%); box-shadow: 0 0 12px rgba(0, 210, 255, 0.6);">
+            <div style="width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid #ffffff; filter: drop-shadow(0 0 4px #00d2ff);"></div>
         </div>
-        <h4 style="margin: 0; padding: 0; font-size: 1.1rem; color: #00d2ff;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
-        <p style="margin: 4px 0 0 0; font-size: 0.7rem; color: #00d2ff;">
+        <h4 style="margin: 0; padding: 0; font-size: 1rem; color: #00d2ff;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
+        <p style="margin: 3px 0 0 0; font-size: 0.65rem; color: #00d2ff;">
             [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
+        </p>
+        <p style="margin: 2px 0 0 0; font-size: 0.6rem; color: #00a8cc;">
+            [ 🗺️ MAPA TÁCTICO SATELITAL // ÓRBITA ACTIVA ]
         </p>
     </div>
     
@@ -243,7 +246,7 @@ components.html(f"""
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
-""", height=110)
+""", height=105)
 
 st.markdown("---")
 
