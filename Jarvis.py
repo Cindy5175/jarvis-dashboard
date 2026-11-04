@@ -201,7 +201,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO EN JAVASCRIPT ---
+# --- ENCABEZADO CON RELOJ EN VIVO (SEPARADO HTML Y JS) ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -217,7 +217,9 @@ st.markdown(f"""
             [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
         </p>
     </div>
-    
+""", unsafe_allow_html=True)
+
+st.markdown("""
     <script>
         function actualizarReloj() {
             const ahora = new Date();
@@ -250,6 +252,7 @@ with st.sidebar:
 
     with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)", expanded=True):
         st.markdown("• **Escucha Continua del Navegador**")
+        
         st.markdown("""
             <div style="text-align: center; padding: 5px;">
                 <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
@@ -267,21 +270,29 @@ with st.sidebar:
                     recognition.lang = 'es-CL';
                     recognition.continuous = false;
                     recognition.interimResults = false;
+                    
                     const estado = document.getElementById('estado-voz');
                     estado.innerText = "[ Escuchando a la jefa... Hable ahora ]";
+                    
                     recognition.onresult = function(event) {
                         const textoDictado = event.results[0][0].transcript;
                         estado.innerText = "[ Comando capturado: " + textoDictado + " ]";
+                        
                         const utterance = new SpeechSynthesisUtterance("Orden recibida, jefa: " + textoDictado);
                         utterance.lang = 'es-CL';
                         window.speechSynthesis.speak(utterance);
                     };
+                    
                     recognition.onerror = function(event) {
                         estado.innerText = "[ Error de audio o permiso denegado ]";
                     };
+                    
                     recognition.onend = function() {
-                        setTimeout(() => { estado.innerText = "[ Micrófono en espera ]"; }, 3000);
+                        setTimeout(() => {
+                            estado.innerText = "[ Micrófono en espera ]";
+                        }, 3000);
                     };
+                    
                     recognition.start();
                 }
             </script>
