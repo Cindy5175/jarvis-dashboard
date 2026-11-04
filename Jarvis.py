@@ -153,6 +153,10 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
+# Inicializar estado del manos libres si no existe
+if "manos_libres_activo" not in st.session_state:
+    st.session_state.manos_libres_activo = False
+
 # --- ENCABEZADO CON RELOJ EN VIVO ---
 @st.fragment(run_every=1)
 def render_live_header():
@@ -185,12 +189,12 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 st.markdown("---")
 
 # =========================================================================
-# DISEÑO OPTIMIZADO: COLUMNA IZQUIERDA (CONTROLES Y MÓDULOS) Y CENTRO (CHAT)
+# DISEÑO OPTIMIZADO: COLUMNA IZQUIERDA (MÓDULOS) Y CENTRO (CHAT)
 # =========================================================================
 col_izq, col_cen = st.columns([1.2, 2.8])
 
 # -------------------------------------------------------------------------
-# COLUMNA IZQUIERDA (TODOS LOS MÓDULOS Y PANeles EN MODO OCULTO/EXPANDER)
+# COLUMNA IZQUIERDA (MÓDULOS EXPANDIBLES E ICONOS)
 # -------------------------------------------------------------------------
 with col_izq:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
@@ -200,28 +204,43 @@ with col_izq:
         st.markdown("- Transmisión orbital en directo (ISS)")
         st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
 
-    # Módulo de Mapa Táctico Satelital (Movido a la izquierda)
-    with st.expander("🗺️ Mapa Táctico Satelital", expanded=False):
-        st.markdown("- Vigilancia activa de sector")
-        st.write("Ubicación: Buin, Chile.")
-        map_data = [{"lat": -33.7333, "lon": -70.7167}]
-        st.map(map_data, zoom=10)
+    # Módulo Clima en Vivo (Nuevo)
+    with st.expander("🌤️ Clima en Vivo (Buin)", expanded=True):
+        st.markdown("- **Estación Meteorológica Local**")
+        st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
+        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
 
-    # Módulo de Registro de Tareas (Movido a la izquierda)
+    # Módulo Coordenadas Tácticas Satelitales (Sustituye al mapa)
+    with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
+        st.markdown("- **Posición del Nodo Central**")
+        st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
+        st.caption("Usa el visor Osiris AI en E.D.I.T.H. para escaneo visual detallado.")
+
+    # Módulo de Escucha Continua (Con indicador visual de estado)
+    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
+        st.markdown("- **Control de Audio Local**")
+        
+        # Interruptor de estado de escucha
+        estado_toggle = st.toggle("Activar Escucha Continua", value=st.session_state.manos_libres_activo, key="toggle_handsfree")
+        st.session_state.manos_libres_activo = estado_toggle
+        
+        if st.session_state.manos_libres_activo:
+            st.markdown("🟢 **ESTADO: ESCUCHANDO EN VIVO** (El script local en tu PC está atento a tu voz)")
+        else:
+            st.markdown("🔴 **ESTADO: EN ESPERA / MANUAL** (Micrófono inactivo)")
+            
+        st.info("El manos libres corre de forma local en tu ordenador para evitar bloqueos en Streamlit Cloud.")
+
+    # Módulo de Registro de Tareas
     with st.expander("⚙️ Registro de Tareas", expanded=False):
-        st.markdown("- Gestión de protocolos operativos")
+        st.markdown("- **Gestión de Protocolos**")
         if st.button("➕ Registrar Tarea", use_container_width=True):
             st.success("Tarea registrada correctamente en el sistema.")
         st.info("Sistema de tareas secundarias sincronizado.")
 
-    # Módulo de Escucha Continua (Movido a la izquierda)
-    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
-        st.markdown("- Control de audio local")
-        st.info("El manos libres opera localmente en tu ordenador para máxima velocidad y seguridad.")
-
     # Módulo 1: E.D.I.T.H.
     with st.expander("🛰️ Módulo E.D.I.T.H.", expanded=False):
-        st.markdown("- Control óptico y satelital")
+        st.markdown("- **Control Óptico y Satelital**")
         usar_camara_edith = st.checkbox("📷 Cámara Óptica", value=False, key="cam_edith")
         if usar_camara_edith:
             foto_edith = st.camera_input("Captura orbital:")
@@ -237,14 +256,14 @@ with col_izq:
 
     # Módulo 2: Fundamentos y Bases
     with st.expander("🐧 Fundamentos y Bases", expanded=False):
-        st.markdown("- Aprende lo básico: Linux, Redes, Python")
+        st.markdown("- **Aprende lo básico: Linux, Redes, Python**")
         if st.button("🐧 Núcleo Linux", use_container_width=True, key="b_lin"): st.info("Linux activo.")
         if st.button("🌐 Redes", use_container_width=True, key="b_net"): st.info("Redes activas.")
         if st.button("🐍 Python", use_container_width=True, key="b_py"): st.info("Python operativo.")
 
     # Módulo 3: Exploración y Práctica
     with st.expander("👁️ Exploración y Práctica", expanded=False):
-        st.markdown("- Práctica activa: Nmap, Wireshark, Burp")
+        st.markdown("- **Práctica activa: Nmap, Wireshark, Burp**")
         if st.button("👁️ Nmap", use_container_width=True, key="b_nmap"): st.info("Nmap desplegado.")
         if st.button("🦈 Wireshark", use_container_width=True, key="b_wire"): st.info("Wireshark en curso.")
         if st.button("⚡ Burp Suite", use_container_width=True, key="b_burp"): st.info("Burp conectado.")
@@ -254,26 +273,4 @@ with col_izq:
 # COLUMNA CENTRAL (CHAT IA AMPLIADO Y DESPEJADO)
 # -------------------------------------------------------------------------
 with col_cen:
-    col_h1, col_h2 = st.columns([4, 1])
-    with col_h1:
-        st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
-    with col_h2:
-        if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat"):
-            h_l = datetime.datetime.now(tz_chile).hour
-            s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
-            st.rerun()
-
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-    if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        with st.chat_message("user"):
-            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
-        
-        respuesta_ia = f"Orden recibida, jefa: '{prompt_usuario}'. Núcleo local procesando directiva en Buin."
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-        with st.chat_message("assistant"):
-            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+    col_h1, col
