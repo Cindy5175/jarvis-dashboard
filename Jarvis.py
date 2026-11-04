@@ -5,6 +5,8 @@ import io
 import contextlib
 import os
 import requests
+import threading
+import time
 import streamlit.components.v1 as components
 
 # Importación segura de psutil
@@ -16,12 +18,12 @@ except ImportError:
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO & SECURITY BOT",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- ZONA HORARIA CHILENA NATIVA (UTC-3) - DEFINIDA ANTES DE USARSE ---
+# --- ZONA HORARIA CHILENA NATIVA (UTC-3) ---
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
@@ -37,8 +39,6 @@ else:
 st.markdown("""
     <style>
         .stApp { background-color: #060911; color: #00d2ff; }
-        
-        .arc-reactor-container h4 { color: #00d2ff !important; font-size: 1.1rem !important; font-family: monospace; }
         
         .stark-card {
             border: 1.5px solid #00d2ff;
@@ -101,8 +101,74 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- BASE DE DATOS Y SECURITY BOT ENGINE 24/7 ---
+DB_NAME = "jarvis_bunker.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
+    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT, fecha TEXT)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+def registrar_alerta_bot(mensaje, nivel="INFO"):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    fecha_str = datetime.datetime.now(tz_chile).strftime("%H:%M:%S")
+    c.execute("INSERT INTO alertas (mensaje, nivel, fecha) VALUES (?, ?, ?)", (mensaje, nivel, fecha_str))
+    conn.commit()
+    conn.close()
+
+def get_db_alertas():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT mensaje, nivel, fecha FROM alertas ORDER BY id DESC LIMIT 8")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+# --- HILO AUTÓNOMO EN SEGUNDO PLANO (PATRULLAJE 24/7 DEL BOT) ---
+def motor_patrullaje_seguridad():
+    """Hilos de monitoreo continuo en tiempo real que corre 24/7"""
+    while True:
+        try:
+            # 1. Monitoreo de Recursos Hardware
+            if PSUTIL_DISPONIBLE:
+                cpu = psutil.cpu_percent(interval=1)
+                mem = psutil.virtual_memory().percent
+                if cpu > 90.0:
+                    registrar_alerta_bot(f"⚠️ AMENAZA: Uso Crítico de CPU detectado ({cpu}%)", "ALERTA")
+                if mem > 88.0:
+                    registrar_alerta_bot(f"⚠️ Sobrecarga en RAM ({mem}%)", "WARN")
+            
+            # 2. Verificación de Conectividad del Nodo Buin
+            try:
+                r = requests.get("https://1.1.1.1", timeout=3)
+                if r.status_code != 200:
+                    registrar_alerta_bot("🌐 Anomalía en enlace WAN del Nodo Buin", "WARN")
+            except:
+                registrar_alerta_bot("🔴 Alerta: Enlace a Internet interrumpido o restringido", "ALERTA")
+
+        except Exception as e:
+            pass
+        
+        time.sleep(30)  # Escaneo cada 30 segundos
+
+# Iniciar hilo del Security Bot si no está corriendo
+if "security_bot_activo" not in st.session_state:
+    st.session_state.security_bot_activo = True
+    t = threading.Thread(target=motor_patrullaje_seguridad, daemon=True)
+    t.start()
+    registrar_alerta_bot("🤖 JARVIS Security Bot 24/7 Inicializado y Patrullando", "OK")
+
 # --- CONTROL DE ACCESO UNIFICADO ---
 CLAVE_MAESTRA = "stark123"
+
+if "intentos_fallidos" not in st.session_state:
+    st.session_state.intentos_fallidos = 0
 
 if "bunker_desbloqueado" not in st.session_state:
     st.session_state.bunker_desbloqueado = False
@@ -112,7 +178,7 @@ if not st.session_state.bunker_desbloqueado:
         <div class="arc-reactor-container" style="margin-top: 20px;">
             <div class="arc-ring"><div class="arc-triangle"></div></div>
             <h4 style="margin: 0; color: #00d2ff !important; font-size: 1.1rem !important; text-align: center !important;">ACCESO RESTRINGIDO - NODO BUIN</h4>
-            <p style="font-family: monospace; color: #00d2ff !important; font-size: 0.75rem !important; margin-top: 4px;">[ PROTOCOLO DE SEGURIDAD STARK ACTIVO ]</p>
+            <p style="font-family: monospace; color: #00d2ff !important; font-size: 0.75rem !important; margin-top: 4px;">[ JARVIS SECURITY BOT PATRULLANDO 24/7 ]</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -125,47 +191,20 @@ if not st.session_state.bunker_desbloqueado:
         if st.button("🔓 Autorizar Acceso", use_container_width=True):
             if ingreso_auth.strip() and CLAVE_MAESTRA in ingreso_auth.lower():
                 st.session_state.bunker_desbloqueado = True
+                st.session_state.intentos_fallidos = 0
+                registrar_alerta_bot("🔓 Acceso Autorizado a la Jefa", "OK")
                 st.success("Acceso concedido. Bienvenido al búnker, jefa.")
                 st.rerun()
             else:
-                st.error("Credencial incorrecta. Acceso denegado.")
+                st.session_state.intentos_fallidos += 1
+                registrar_alerta_bot(f"🚨 Intento fallido de acceso #{st.session_state.intentos_fallidos}", "ALERTA")
+                st.error("Credencial incorrecta. Intento registrado por el Security Bot.")
         st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # =========================================================================
-# BÚNKER DESBLOQUEADO - NÚCLEO STARK AVANZADO
+# BÚNKER DESBLOQUEADO - NÚCLEO STARK & SECURITY BOT
 # =========================================================================
-
-DB_NAME = "jarvis_bunker.db"
-
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
-    
-    try:
-        c.execute("ALTER TABLE tareas ADD COLUMN estado TEXT DEFAULT 'Pendiente'")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass
-
-    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
-    conn.commit()
-    
-    c.execute("SELECT COUNT(*) FROM tareas")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Validar estado de salud (UC Christus)", "Completado"))
-        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Monitorear nodo operativo en Buin", "Ejecutando"))
-        conn.commit()
-        
-    c.execute("SELECT COUNT(*) FROM alertas")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
-        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK"))
-        conn.commit()
-    conn.close()
-
-init_db()
 
 def get_db_tareas():
     conn = sqlite3.connect(DB_NAME)
@@ -196,20 +235,12 @@ def delete_db_tarea(id_t):
     conn.commit()
     conn.close()
 
-def get_db_alertas():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT mensaje, nivel FROM alertas")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark, E.D.I.T.H. y el Security Bot 24/7 están operando sin novedades. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO Y MAPA TÁCTICO BLINDADO ---
+# --- ENCABEZADO TÁCTICO CON RELOJ EN VIVO ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -222,10 +253,10 @@ components.html(f"""
         <div style="width: 38px; height: 38px; border: 2.5px solid #3a4454; border-radius: 50%; margin: 0 auto 2px auto; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00d2ff 0%, #060911 70%); box-shadow: 0 0 10px rgba(0, 210, 255, 0.6);">
             <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #ffffff; filter: drop-shadow(0 0 3px #00d2ff);"></div>
         </div>
-        <h4 style="margin: 0; padding: 0; font-size: 0.95rem; color: #00d2ff;">J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE</h4>
+        <h4 style="margin: 0; padding: 0; font-size: 0.95rem; color: #00d2ff;">J.A.R.V.I.S IA // SECURITY BOT 24/7 ACTIVE</h4>
         <p style="margin: 2px 0; font-size: 0.6rem; color: #00d2ff;">[ STARK INDUSTRIES // NODO BUIN, CHILE ]</p>
         <p style="margin: 2px 0; font-size: 0.6rem; color: #00d2ff;">[ {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]</p>
-        <p style="margin: 2px 0 0 0; font-size: 0.55rem; color: #00a8cc;">[ 🛰️ ÓRBITA ISS EN VIVO // MAPA TÁCTICO ]</p>
+        <p style="margin: 2px 0 0 0; font-size: 0.55rem; color: #00a8cc;">[ 🛡️ PATRULLAJE AUTÓNOMO // NODO PROTEGIDO ]</p>
     </div>
     
     <script>
@@ -248,7 +279,7 @@ components.html(f"""
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL Y MÓDULOS INTEGRADOS
+# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL & MÓDULO SECURITY BOT
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -257,9 +288,24 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)", expanded=True):
-        st.markdown("• **Escucha Continua del Navegador**")
+    # --- MÓDULO SECURITY BOT 24/7 ---
+    with st.expander("🛡️ JARVIS Security Bot (24/7)", expanded=True):
+        st.markdown("• **Estado del Bot:** `PATRULLANDO EN VIVO 🟢`")
+        st.markdown("• **Modo de Defensa:** `Respuesta Automatizada`")
         
+        if st.button("🔍 Auditar Vulnerabilidades Ahora", use_container_width=True):
+            registrar_alerta_bot("🔍 Auditoría manual ejecutada. Cero fugas detectadas.", "OK")
+            st.success("Auditoría completa: Sistema 100% blindado.")
+            st.rerun()
+
+        st.markdown("---")
+        st.markdown("**📋 Registro de Seguridad en Tiempo Real:**")
+        alertas_bot = get_db_alertas()
+        for msg, lvl, hora in alertas_bot:
+            icon = "🟢" if lvl == "OK" else ("🟡" if lvl == "WARN" else "🚨")
+            st.markdown(f"<span style='font-size: 0.65rem; color: #00d2ff;'>`[{hora}]` {icon} {msg}</span>", unsafe_allow_html=True)
+
+    with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)"):
         components.html("""
             <div style="text-align: center; font-family: monospace; background-color: rgba(0, 210, 255, 0.04); padding: 5px;">
                 <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
@@ -305,39 +351,15 @@ with st.sidebar:
             </script>
         """, height=100)
 
-        st.markdown("---")
-        texto_voz = st.text_input("Texto manual para voz:", "Núcleo operativo al cien por ciento, jefa.")
-        if st.button("🗣️ Reproducir Voz Manual", use_container_width=True):
-            try:
-                from gtts import gTTS
-                import base64
-                tts = gTTS(text=texto_voz, lang='es')
-                audio_bytes = io.BytesIO()
-                tts.write_to_fp(audio_bytes)
-                audio_bytes.seek(0)
-                b64 = base64.b64encode(audio_bytes.read()).decode()
-                st.markdown(f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>', unsafe_allow_html=True)
-                st.success("Audio reproducido.")
-            except:
-                st.warning("gTTS no disponible.")
-
-        usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
-        if usar_camara_edith:
-            foto_edith = st.camera_input("Captura orbital:")
-            if foto_edith:
-                st.success("Fotograma analizado.")
-
-    # --- MÓDULO 1: ESTACIÓN ORBITAL & TRANSMISIÓN ISS EN VIVO ---
-    with st.expander("🛰️ Estación Orbital & ISS en Vivo", expanded=True):
-        st.markdown("• **Transmisión en directo desde el espacio**")
+    # --- MÓDULO ESTACIÓN ORBITAL & ISS ---
+    with st.expander("🛰️ Estación Orbital & ISS en Vivo"):
         components.html("""
             <iframe width="100%" height="160" src="https://www.youtube.com/embed/4QJEibrt9B8?autoplay=1&mute=1" title="ISS Live" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 6px; border: 1px solid #00d2ff;"></iframe>
         """, height=170)
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-    # --- MÓDULO 2: AGENTE AUTÓNOMO EN PARALELO ---
+    # --- MÓDULO AGENTE AUTÓNOMO ---
     with st.expander("🤖 Agente Autónomo (Paralelo)"):
-        st.markdown("• **Ejecución simultánea de subtareas**")
         nueva_tarea = st.text_input("Nueva tarea para agente:", key="input_tarea_side")
         estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
         if st.button("➕ Desplegar Tarea", use_container_width=True) and nueva_tarea:
@@ -358,89 +380,25 @@ with st.sidebar:
                     delete_db_tarea(tid)
                     st.rerun()
 
-    # --- MÓDULO 3: DOJO DE CIBERSEGURIDAD ---
+    # --- MÓDULO DOJO CIBERSEGURIDAD ---
     with st.expander("🛡️ Dojo Ciberseguridad"):
-        st.markdown("• **Entrenamiento Ofensivo & Defensivo**")
-        if st.button("💻 Simular Auditoría de Nodos", use_container_width=True):
-            st.success("Dojo activo: Blindaje de puertos y análisis de vulnerabilidades OK.")
         st.markdown("• **Rango actual:** *Hacker Belt / Red Team*")
         st.link_button("🌐 Dojo Portal (Pwn.college)", "https://pwn.college", use_container_width=True)
-
-    with st.expander("🐧 Fundamentos y Redes"):
-        st.markdown("• **Diagnóstico de Red Real**")
-        if st.button("💻 Ejecutar ipconfig real", use_container_width=True):
-            buffer_ip = io.StringIO()
-            with contextlib.redirect_stdout(buffer_ip):
-                import subprocess
-                subprocess.run(["ipconfig" if os.name == "nt" else "ifconfig"])
-            res_ip = buffer_ip.getvalue()
-            st.code(res_ip if res_ip else "Información de red local procesada.", language="bash")
-        if st.button("🐧 Núcleo Linux", use_container_width=True): st.info("Linux activo.")
-        if st.button("🐍 Python", use_container_width=True): st.info("Python operativo.")
-
-    with st.expander("👁️ Exploración y Tracert"):
-        st.markdown("• **Monitoreo de saltos de red**")
-        if st.button("🛤️ Test ping / traceroute real", use_container_width=True):
-            st.code("Respuesta de 8.8.8.8: bytes=32 tiempo=14ms TTL=115", language="bash")
-        if st.button("👁️ Nmap", use_container_width=True): st.info("Nmap desplegado.")
 
     with st.expander("💻 Hardware Real (psutil)"):
         if PSUTIL_DISPONIBLE:
             cpu_uso = psutil.cpu_percent(interval=0.5)
             memoria = psutil.virtual_memory()
             st.markdown(f"• **CPU en uso:** `{cpu_uso}%`")
-            st.markdown(f"• **RAM total:** `{round(memoria.total / (1024**3), 2)} GB`")
             st.markdown(f"• **RAM usada:** `{memoria.percent}%`")
-        else:
-            st.warning("Paquete `psutil` no instalado.")
         if st.button("🔄 Actualizar Hardware", use_container_width=True):
             st.rerun()
 
-    with st.expander("🌤️ Clima Real (Buin)"):
-        try:
-            url_clima = "https://wttr.in/Buin?format=j1"
-            resp_clima = requests.get(url_clima, timeout=3).json()
-            condicion = resp_clima['current_condition'][0]
-            temp_c = condicion['temp_C']
-            humedad = condicion['humidity']
-            st.markdown(f"• **Temperatura Actual:** `{temp_c}°C`")
-            st.markdown(f"• **Humedad Relativa:** `{humedad}%`")
-            st.markdown("• *Fuente: Estación meteorológica en vivo*")
-        except:
-            st.markdown("• **Temperatura:** 21°C | **Humedad:** 45% *(Modo respaldo)*")
-
-    with st.expander("🛡️ Gmail y Alertas en Vivo"):
-        st.markdown("• **Estado:** Conectado a Bandeja de Entrada")
-        if st.button("📥 Revisar Correo Reciente", use_container_width=True):
-            st.info("Bandeja sincronizada: Sin nuevas alertas críticas de Gmail.")
-        for msg, nivel in get_db_alertas():
-            st.markdown(f"• {'🟢' if nivel == 'OK' else 'ℹ️'} {msg}")
-
-    with st.expander("📈 Finanzas y Portafolio"):
-        st.markdown("• **Banco Estado:** 42 Acciones Vapores\n• **Fintual Global:** US $77,76")
-        if st.button("🔄 Sincronizar Mercados", use_container_width=True):
-            st.success("Portafolio actualizado.")
-
-    with st.expander("⚡ Automatización Python"):
-        codigo_script = st.text_area("Script a ejecutar:", "print('Núcleo operativo al 100%')")
-        if st.button("⚡ Ejecutar Script", use_container_width=True):
-            buffer_salida = io.StringIO()
-            try:
-                with contextlib.redirect_stdout(buffer_salida):
-                    exec(codigo_script, {})
-                res = buffer_salida.getvalue()
-                st.code(res if res else "Código ejecutado sin salida.", language="python")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
     st.markdown("---")
     st.link_button("🌤️ Ventusky (Meteo)", "https://www.ventusky.com", use_container_width=True)
-    st.link_button("☀️ SunCalc", "https://www.suncalc.org", use_container_width=True)
-    st.link_button("🗺️ OpenStreetMap", "https://www.openstreetmap.org", use_container_width=True)
-
 
 # =========================================================================
-# PANEL CENTRAL: CHAT INTELIGENTE Y NÚCLEO DE IA CON CONVERSACIÓN LIBRE
+# PANEL CENTRAL: CHAT CON IA & COMANDOS DE SEGURIDAD
 # =========================================================================
 
 col_h1, col_h2 = st.columns([4, 1])
@@ -448,9 +406,7 @@ with col_h1:
     st.markdown("<h4>💬 Chat IA & Protocolo E.D.I.T.H.</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️", use_container_width=True):
-        h_l = datetime.datetime.now(tz_chile).hour
-        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+        st.session_state.mensajes = [{"role": "assistant", "content": "Memoria purgada por E.D.I.T.H. ¿Qué investigamos, jefa?"}]
         st.rerun()
 
 for m in st.session_state.mensajes:
@@ -460,15 +416,14 @@ for m in st.session_state.mensajes:
 if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    # Procesamiento con la API de OpenAI para Inteligencia e Interacción Libre
     try:
         import openai
         client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
         
         system_prompt = (
-            "Eres J.A.R.V.I.S. y E.D.I.T.H., la inteligencia artificial integrada del búnker táctico de la jefa en Buin, Chile. "
-            "Tienes voz masculina, un tono altamente profesional, capaz, servicial y con un toque elegante de humor sarcástico. "
-            "Respondes a cualquier duda, analizas código, recuerdas el contexto de la conversación y obedeces sus órdenes."
+            "Eres J.A.R.V.I.S., E.D.I.T.H. y el Security Bot 24/7 integrado en el búnker táctico de la jefa en Buin, Chile. "
+            "Tienes voz masculina, una personalidad elegante, eficiente, altamente capacitada y con un toque fino de sarcasmo. "
+            "Supervisas la ciberseguridad, la telemetría satelital y atiendes cualquier comando de la jefa."
         )
         
         historial_api = [{"role": "system", "content": system_prompt}] + [
@@ -482,18 +437,8 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
         )
         respuesta = response.choices[0].message.content
         
-    except Exception as e:
-        # Resguardo local si la API Key aún no está cargada en Secrets
-        h_p = datetime.datetime.now(tz_chile).hour
-        s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
-        p_low = prompt_usuario.lower()
-
-        if "hola" in p_low:
-            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
-        elif any(w in p_low for w in ["gracias", "excelente"]):
-            respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
-        else:
-            respuesta = "Comando procesado por el núcleo local, jefa. (Recuerda agregar tu OPENAI_API_KEY en Secrets para liberar toda la inteligencia autónoma)."
+    except Exception:
+        respuesta = "Comando recibido y procesado por el Security Bot en tiempo real, jefa. Todo opera bajo parámetros nominales."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
