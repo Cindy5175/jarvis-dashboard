@@ -122,7 +122,7 @@ if not st.session_state.bunker_desbloqueado:
     st.stop()
 
 # =========================================================================
-# BASE DE DATOS SQLITE Y MEMORIA PERSISTENTE (PUNTO 1 Y 2)
+# BASE DE DATOS SQLITE Y MEMORIA PERSISTENTE
 # =========================================================================
 
 DB_NAME = "jarvis_bunker.db"
@@ -131,4 +131,74 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)
+    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS chat_history (id INTEGER PRIMARY KEY AUTOINCREMENT, role TEXT, content TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS notas (id INTEGER PRIMARY KEY AUTOINCREMENT, nota TEXT)''')
+    conn.commit()
+    
+    c.execute("SELECT COUNT(*) FROM tareas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Validar estado de salud (UC Christus)",))
+        c.execute("INSERT INTO tareas (texto) VALUES (?)", ("Monitorear nodo operativo en Buin",))
+        conn.commit()
+        
+    c.execute("SELECT COUNT(*) FROM alertas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Temperatura Buin óptima (21°C)", "INFO"))
+        c.execute("INSERT INTO alertas (mensaje, nivel) VALUES (?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK"))
+        conn.commit()
+
+    c.execute("SELECT COUNT(*) FROM chat_history")
+    if c.fetchone()[0] == 0:
+        msg_inicial = f"{saludo_actual}, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"
+        c.execute("INSERT INTO chat_history (role, content) VALUES (?, ?)", ("assistant", msg_inicial))
+        conn.commit()
+
+    conn.close()
+
+init_db()
+
+def obtener_historial_chat():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT role, content FROM chat_history ORDER BY id ASC")
+    filas = c.fetchall()
+    conn.close()
+    return [{"role": r[0], "content": r[1]} for r in filas]
+
+def guardar_mensaje_chat(role, content):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO chat_history (role, content) VALUES (?, ?)", (role, content))
+    conn.commit()
+    conn.close()
+
+def purgar_historial_chat():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM chat_history")
+    conn.commit()
+    conn.close()
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = obtener_historial_chat()
+
+if "manos_libres_activo" not in st.session_state:
+    st.session_state.manos_libres_activo = False
+
+# --- ENCABEZADO CON RELOJ EN VIVO ---
+@st.fragment(run_every=1)
+def render_live_header():
+    now = datetime.datetime.now(tz_chile)
+    dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+    
+    dia_str = dias[now.weekday()]
+    mes_str = meses[now.month]
+    fecha_str = f"{dia_str}, {now.day:02d} de {mes_str} de {now.year}"
+    hora_segundos = now.strftime("%H:%M:%S")
+    
+    st.markdown(f"""
+        <div class="arc-reactor-container">
+            <div class="arc-ring"><div class="arc-triangle"></div></div>
+            <h
