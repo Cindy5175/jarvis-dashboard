@@ -327,7 +327,7 @@ with st.sidebar:
             if foto_edith:
                 st.success("Fotograma analizado.")
 
-    # --- MÓDULO 1: ESTACIÓN ORBITAL & TRANSMISIÓN ISS EN VIVO (YouTube 24/7) ---
+    # --- MÓDULO 1: ESTACIÓN ORBITAL & TRANSMISIÓN ISS EN VIVO ---
     with st.expander("🛰️ Estación Orbital & ISS en Vivo", expanded=True):
         st.markdown("• **Transmisión en directo desde el espacio**")
         components.html("""
@@ -440,7 +440,7 @@ with st.sidebar:
 
 
 # =========================================================================
-# PANEL CENTRAL: CHAT INTELIGENTE & GESTOR DE NÚCLEO
+# PANEL CENTRAL: CHAT INTELIGENTE Y NÚCLEO DE IA CON CONVERSACIÓN LIBRE
 # =========================================================================
 
 col_h1, col_h2 = st.columns([4, 1])
@@ -460,16 +460,40 @@ for m in st.session_state.mensajes:
 if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    h_p = datetime.datetime.now(tz_chile).hour
-    s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
-    p_low = prompt_usuario.lower()
+    # Procesamiento con la API de OpenAI para Inteligencia e Interacción Libre
+    try:
+        import openai
+        client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        
+        system_prompt = (
+            "Eres J.A.R.V.I.S. y E.D.I.T.H., la inteligencia artificial integrada del búnker táctico de la jefa en Buin, Chile. "
+            "Tienes voz masculina, un tono altamente profesional, capaz, servicial y con un toque elegante de humor sarcástico. "
+            "Respondes a cualquier duda, analizas código, recuerdas el contexto de la conversación y obedeces sus órdenes."
+        )
+        
+        historial_api = [{"role": "system", "content": system_prompt}] + [
+            {"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes
+        ]
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=historial_api,
+            temperature=0.7
+        )
+        respuesta = response.choices[0].message.content
+        
+    except Exception as e:
+        # Resguardo local si la API Key aún no está cargada en Secrets
+        h_p = datetime.datetime.now(tz_chile).hour
+        s_p = "Buenos días" if 0 <= h_p < 12 else ("Buenas tardes" if 12 <= h_p < 20 else "Buenas noches")
+        p_low = prompt_usuario.lower()
 
-    if "hola" in p_low:
-        respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
-    elif any(w in p_low for w in ["gracias", "excelente"]):
-        respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
-    else:
-        respuesta = "Comando recibido y procesado por el núcleo real, jefa."
+        if "hola" in p_low:
+            respuesta = f"E.D.I.T.H. y yo le saludamos. {s_p}, jefa. ¿Preparada para auditar nodos o nos conformamos con revisar Buin?"
+        elif any(w in p_low for w in ["gracias", "excelente"]):
+            respuesta = "No hay de qué, jefa. Los servidores de E.D.I.T.H. están a su entera disposición."
+        else:
+            respuesta = "Comando procesado por el núcleo local, jefa. (Recuerda agregar tu OPENAI_API_KEY en Secrets para liberar toda la inteligencia autónoma)."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
