@@ -150,7 +150,7 @@ init_db()
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"}
     ]
 
 # Inicializar estado del manos libres si no existe
@@ -210,7 +210,7 @@ with col_izq:
         st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
         st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
 
-    # Módulo Coordenadas Tácticas Satelitales (Sustituye al mapa)
+    # Módulo Coordenadas Tácticas Satelitales
     with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
         st.markdown("- **Posición del Nodo Central**")
         st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
@@ -269,7 +269,7 @@ with col_izq:
 
 
 # -------------------------------------------------------------------------
-# COLUMNA CENTRAL (CHAT IA AMPLIADO Y DESPEJADO)
+# COLUMNA CENTRAL (CHAT IA AMPLIADO Y PROTOCOLO JARVIS MEJORADO)
 # -------------------------------------------------------------------------
 with col_cen:
     col_h1, col_h2 = st.columns([4, 1])
@@ -279,19 +279,30 @@ with col_cen:
         if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat"):
             h_l = datetime.datetime.now(tz_chile).hour
             s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué investigamos?"}]
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada por E.D.I.T.H. ¿Qué directiva suicida o genial ejecutamos ahora?"}]
             st.rerun()
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
+    # Caja de chat optimizada y amplia
+    if prompt_usuario := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         with st.chat_message("user"):
             st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
         
-        respuesta_ia = f"Orden recibida, jefa: '{prompt_usuario}'. Núcleo local procesando directiva en Buin."
+        # Inteligencia Stark con tono sarcástico, humano y natural
+        texto_lower = prompt_usuario.lower()
+        if "hola" in texto_lower or "saludos" in texto_lower:
+            respuesta_ia = "Hola, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"
+        elif "estado" in texto_lower or "sistema" in texto_lower:
+            respuesta_ia = "Todo verde y funcionando a la perfección, jefa. El reactor Arc no brama, pero el servidor sufre en silencio. ¿Alguna otra crisis que deba ignorar con elegancia?"
+        elif "clima" in texto_lower:
+            respuesta_ia = "21°C en Buin, un clima tan tranquilo que casi da sospechas. ¿Quieres que mueva las nubes o prefieres lidiar con la realidad tú misma?"
+        else:
+            respuesta_ia = f"Orden procesada: '{prompt_usuario}'. Suéltala y déjamelo a mí, jefa. Aunque entre tú y yo, a veces tus ideas suenan a que quieres volar por los aires otra vez."
+
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         with st.chat_message("assistant"):
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
