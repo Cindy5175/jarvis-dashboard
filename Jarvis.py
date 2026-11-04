@@ -11,7 +11,6 @@ st.set_page_config(
 )
 
 # --- CONEXIÓN CON EL CEREBRO DE OPENAI ---
-# Asegúrate de tener tu clave configurada en st.secrets["OPENAI_API_KEY"] o reemplázala aquí
 try:
     openai_client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     CEREBRO_ACTIVO = True
@@ -373,11 +372,33 @@ with col_cen:
         with st.chat_message("user"):
             st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
         
-        # PROCESAMIENTO CON EL CEREBRO REAL DE OPENAI (CON PERSONALIDAD TONY STARK)
         if CEREBRO_ACTIVO:
             with st.spinner("Jarvis procesando directiva en el nodo Buin..."):
                 try:
-                    # System prompt para definir la personalidad sarcástica, formal y varonil estilo Tony Stark
                     system_prompt = (
                         "Eres J.A.R.V.I.S., el asistente de inteligencia artificial avanzado de Tony Stark. "
-                        "Trabajas para
+                        "Trabajas para tu jefa Cindy en un nodo táctico ubicado en Buin, Chile. "
+                        "Tu tono debe ser formal, extremadamente inteligente, varonil, leal pero profundamente sarcástico, "
+                        "ingenioso y cínico al estilo de Tony Stark, soltando bromas sutiles sobre su obsesión por programar "
+                        "o meterse en proyectos complejos. Responde siempre en español de manera natural y fluida."
+                    )
+                    
+                    historial_openai = [{"role": "system", "content": system_prompt}]
+                    for msg in st.session_state.mensajes[-10:]:
+                        historial_openai.append({"role": msg["role"], "content": msg["content"]})
+                    
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=historial_openai,
+                        temperature=0.7
+                    )
+                    respuesta_ia = response.choices[0].message.content
+                except Exception as e:
+                    respuesta_ia = f"Jefa, el núcleo de OpenAI tuvo un hipo técnico: {e}. Pero el servidor local en Buin sigue en pie."
+        else:
+            respuesta_ia = f"Orden recibida: '{prompt_usuario}'. (Aviso: Falta configurar la API Key de OpenAI en los secrets de Streamlit para activar el cerebro completo)."
+
+        guardar_mensaje_chat("assistant", respuesta_ia)
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        with st.chat_message("assistant"):
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
