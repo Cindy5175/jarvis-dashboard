@@ -101,7 +101,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS Y SECURITY BOT ENGINE 24/7 (CORREGIDO) ---
+# --- BASE DE DATOS Y SECURITY BOT ENGINE 24/7 ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -179,7 +179,8 @@ if "security_bot_activo" not in st.session_state:
     t = threading.Thread(target=motor_patrullaje_seguridad, daemon=True)
     t.start()
     registrar_alerta_bot("🤖 JARVIS Security Bot 24/7 Inicializado y Patrullando", "OK")
-    # --- CONTROL DE ACCESO UNIFICADO ---
+
+# --- CONTROL DE ACCESO UNIFICADO ---
 CLAVE_MAESTRA = "stark123"
 
 if "intentos_fallidos" not in st.session_state:
@@ -295,6 +296,7 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
+    # --- MÓDULO SECURITY BOT 24/7 ---
     with st.expander("🛡️ JARVIS Security Bot (24/7)", expanded=True):
         st.markdown("• **Estado del Bot:** `PATRULLANDO EN VIVO 🟢`")
         if st.button("🔍 Auditar Vulnerabilidades Ahora", use_container_width=True):
@@ -307,12 +309,85 @@ with st.sidebar:
             icon = "🟢" if lvl == "OK" else ("🟡" if lvl == "WARN" else "🚨")
             st.markdown(f"<span style='font-size: 0.65rem; color: #00d2ff;'>`[{hora}]` {icon} {msg}</span>", unsafe_allow_html=True)
 
+    # --- MÓDULO E.D.I.T.H. & ÓPTICA TÁCTICA ---
+    with st.expander("🎙️ E.D.I.T.H. & Óptica Táctica", expanded=True):
+        st.markdown("• **Escucha Continua del Navegador (Hands-Free)**")
+        
+        components.html("""
+            <div style="text-align: center; font-family: monospace; background-color: rgba(0, 210, 255, 0.04); padding: 5px;">
+                <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
+                <p id="estado-voz" style="font-size: 0.65rem; color: #00d2ff; margin-top: 6px;">[ Micrófono en espera ]</p>
+            </div>
+            
+            <script>
+                function iniciarEscucha() {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        alert("Tu navegador no soporta reconocimiento de voz directo. Usa Google Chrome.");
+                        return;
+                    }
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'es-CL';
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    
+                    const estado = document.getElementById('estado-voz');
+                    estado.innerText = "[ Escuchando a la jefa... Hable ahora ]";
+                    
+                    recognition.onresult = function(event) {
+                        const textoDictado = event.results[0][0].transcript;
+                        estado.innerText = "[ Comando capturado: " + textoDictado + " ]";
+                        
+                        const utterance = new SpeechSynthesisUtterance("Orden recibida, jefa: " + textoDictado);
+                        utterance.lang = 'es-CL';
+                        window.speechSynthesis.speak(utterance);
+                    };
+                    
+                    recognition.onerror = function(event) {
+                        estado.innerText = "[ Error de audio o permiso denegado ]";
+                    };
+                    
+                    recognition.onend = function() {
+                        setTimeout(() => {
+                            estado.innerText = "[ Micrófono en espera ]";
+                        }, 3000);
+                    };
+                    
+                    recognition.start();
+                }
+            </script>
+        """, height=100)
+
+        st.markdown("---")
+        texto_voz = st.text_input("Texto manual para E.D.I.T.H.:", "Sistemas ópticos al cien por ciento, jefa.")
+        if st.button("🗣️ Reproducir Voz Manual", use_container_width=True):
+            try:
+                from gtts import gTTS
+                import base64
+                tts = gTTS(text=texto_voz, lang='es')
+                audio_bytes = io.BytesIO()
+                tts.write_to_fp(audio_bytes)
+                audio_bytes.seek(0)
+                b64 = base64.b64encode(audio_bytes.read()).decode()
+                st.markdown(f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>', unsafe_allow_html=True)
+                st.success("Audio reproducido por E.D.I.T.H.")
+            except:
+                st.warning("Módulo de voz gTTS no disponible.")
+
+        usar_camara_edith = st.checkbox("📷 Activar Cámara Óptica E.D.I.T.H.", value=False)
+        if usar_camara_edith:
+            foto_edith = st.camera_input("Captura orbital:")
+            if foto_edith:
+                st.success("Fotograma analizado por el sistema óptico.")
+
+    # --- MÓDULO ESTACIÓN ORBITAL & ISS ---
     with st.expander("🛰️ Estación Orbital & ISS en Vivo"):
         components.html("""
             <iframe width="100%" height="160" src="https://www.youtube.com/embed/4QJEibrt9B8?autoplay=1&mute=1" title="ISS Live" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 6px; border: 1px solid #00d2ff;"></iframe>
         """, height=170)
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
+    # --- MÓDULO AGENTE AUTÓNOMO ---
     with st.expander("🤖 Agente Autónomo (Paralelo)"):
         nueva_tarea = st.text_input("Nueva tarea para agente:", key="input_tarea_side")
         estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
@@ -332,8 +407,9 @@ with st.sidebar:
                 if st.button("❌", key=f"d_{tid}"):
                     delete_db_tarea(tid)
                     st.rerun()
-                    # =========================================================================
-# PANEL CENTRAL: CHAT CON IA & COMANDOS DE SEGURIDAD
+
+# =========================================================================
+# PANEL CENTRAL: CHAT CON IA (OPENAI) & COMANDOS DE SEGURIDAD
 # =========================================================================
 
 col_h1, col_h2 = st.columns([4, 1])
