@@ -5,7 +5,7 @@ import time
 
 # --- CONFIGURACIÓN DE OPENAI ---
 # Reemplaza con tu clave de OpenAI o asegúrate de tenerla configurada
-OPENAI_API_KEY = "TU_OPENAI_API_KEY_AQUI"
+OPENAI_API_KEY = "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"
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 # --- CONFIGURACIÓN DEL MOTOR DE VOZ LOCAL (VARONIL) ---
