@@ -209,7 +209,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark y E.D.I.T.H. sincronizados. ¿Qué órdenes ejecutamos?"}
     ]
 
-# --- ENCABEZADO CON RELOJ EN VIVO Y MAPA TÁCTICO SATELITAL RESTAURADO ---
+# --- ENCABEZADO CON RELOJ EN VIVO Y MAPA TÁCTICO SATELITAL ---
 now_inicial = datetime.datetime.now(tz_chile)
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -227,7 +227,7 @@ components.html(f"""
             [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_completa} – <span id="reloj-vivo" style="color: #00d2ff; font-weight: bold;">00:00:00</span> ]
         </p>
         <p style="margin: 2px 0 0 0; font-size: 0.6rem; color: #00a8cc;">
-            [ 🗺️ MAPA TÁCTICO SATELITAL // ÓRBITA ACTIVA ]
+            [ 🛰️ ÓRBITA SATELITAL ACTIVA // MAPA TÁCTICO ]
         </p>
     </div>
     
@@ -246,12 +246,12 @@ components.html(f"""
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
-""", height=105)
+""", height=110)
 
 st.markdown("---")
 
 # =========================================================================
-# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL Y AGENTE DE TAREAS
+# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL Y MÓDULOS INTEGRADOS
 # =========================================================================
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -331,6 +331,37 @@ with st.sidebar:
                 st.success("Fotograma analizado.")
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
+    # --- INTEGRACIÓN NUEVA: AGENTE AUTÓNOMO EN PARALELO (Estilo Abacus) ---
+    with st.expander("🤖 Agente Autónomo (Paralelo)"):
+        st.markdown("• **Ejecución simultánea de subtareas**")
+        nueva_tarea = st.text_input("Nueva tarea para agente:", key="input_tarea_side")
+        estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
+        if st.button("➕ Desplegar Tarea", use_container_width=True) and nueva_tarea:
+            add_db_tarea(nueva_tarea, estado_inicial)
+            st.rerun()
+        
+        st.markdown("---")
+        for tid, t, est in get_db_tareas():
+            color_est = "🟡" if est == "Pendiente" else ("🔵" if est == "Ejecutando" else "🟢")
+            st.markdown(f"{color_est} **{t}** *({est})*")
+            col_a1, col_a2 = st.columns(2)
+            with col_a1:
+                if st.button("▶️ Ejecutar", key=f"run_t_{tid}"):
+                    update_db_tarea_estado(tid, "Ejecutando")
+                    st.rerun()
+            with col_a2:
+                if st.button("❌ Borrar", key=f"del_t_{tid}"):
+                    delete_db_tarea(tid)
+                    st.rerun()
+
+    # --- INTEGRACIÓN NUEVA: DOJO CIBERSEGURIDAD (Estilo Pwn.college) ---
+    with st.expander("🛡️ Dojo Ciberseguridad"):
+        st.markdown("• **Entrenamiento Ofensivo & Defensivo**")
+        if st.button("💻 Simular Auditoría de Nodos", use_container_width=True):
+            st.success("Dojo activo: Blindaje de puertos y análisis de vulnerabilidades OK.")
+        st.markdown("• **Rango actual:** *Hacker Belt / Red Team*")
+        st.link_button("🌐 Dojo Portal (Pwn.college)", "https://pwn.college", use_container_width=True)
+
     with st.expander("🐧 Fundamentos y Redes"):
         st.markdown("• **Diagnóstico de Red Real**")
         if st.button("💻 Ejecutar ipconfig real", use_container_width=True):
@@ -386,27 +417,6 @@ with st.sidebar:
         if st.button("🔄 Sincronizar Mercados", use_container_width=True):
             st.success("Portafolio actualizado.")
 
-    with st.expander("🤖 Agente de Tareas Autónomas"):
-        nueva_tarea = st.text_input("Nueva tarea para el agente:", key="input_tarea_side")
-        estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
-        if st.button("➕ Registrar Tarea Automática", use_container_width=True) and nueva_tarea:
-            add_db_tarea(nueva_tarea, estado_inicial)
-            st.rerun()
-        
-        st.markdown("---")
-        for tid, t, est in get_db_tareas():
-            color_est = "🟡" if est == "Pendiente" else ("🔵" if est == "Ejecutando" else "🟢")
-            st.markdown(f"{color_est} **{t}** *({est})*")
-            col_a1, col_a2 = st.columns(2)
-            with col_a1:
-                if st.button("▶️ Ejecutar", key=f"run_t_{tid}"):
-                    update_db_tarea_estado(tid, "Ejecutando")
-                    st.rerun()
-            with col_a2:
-                if st.button("❌ Borrar", key=f"del_t_{tid}"):
-                    delete_db_tarea(tid)
-                    st.rerun()
-
     with st.expander("⚡ Automatización Python"):
         codigo_script = st.text_area("Script a ejecutar:", "print('Núcleo operativo al 100%')")
         if st.button("⚡ Ejecutar Script", use_container_width=True):
@@ -426,7 +436,7 @@ with st.sidebar:
 
 
 # =========================================================================
-# PANEL CENTRAL: CHAT INTELIGENTE & GESTOR VISUAL DE TAREAS AUTÓNOMAS
+# PANEL CENTRAL: CHAT INTELIGENTE & GESTOR DE NÚCLEO
 # =========================================================================
 
 col_h1, col_h2 = st.columns([4, 1])
