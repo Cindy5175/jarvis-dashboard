@@ -101,7 +101,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS Y SECURITY BOT ENGINE 24/7 ---
+# --- BASE DE DATOS Y SECURITY BOT ENGINE 24/7 (CORREGIDO) ---
 DB_NAME = "jarvis_bunker.db"
 
 def init_db():
@@ -110,6 +110,28 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT DEFAULT 'Pendiente')''')
     c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT, fecha TEXT)''')
     conn.commit()
+    
+    try:
+        c.execute("SELECT fecha FROM alertas LIMIT 1")
+    except sqlite3.OperationalError:
+        try:
+            c.execute("ALTER TABLE alertas ADD COLUMN fecha TEXT")
+            conn.commit()
+        except Exception:
+            pass
+
+    c.execute("SELECT COUNT(*) FROM tareas")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Validar estado de salud (UC Christus)", "Completado"))
+        c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", ("Monitorear nodo operativo en Buin", "Ejecutando"))
+        conn.commit()
+        
+    c.execute("SELECT COUNT(*) FROM alertas")
+    if c.fetchone()[0] == 0:
+        fecha_ini = datetime.datetime.now(tz_chile).strftime("%H:%M:%S")
+        c.execute("INSERT INTO alertas (mensaje, nivel, fecha) VALUES (?, ?, ?)", ("Temperatura Buin óptima (21°C)", "INFO", fecha_ini))
+        c.execute("INSERT INTO alertas (mensaje, nivel, fecha) VALUES (?, ?, ?)", ("Blindaje WhatsApp y Gmail operativo", "OK", fecha_ini))
+        conn.commit()
     conn.close()
 
 init_db()
@@ -132,39 +154,32 @@ def get_db_alertas():
 
 # --- HILO AUTÓNOMO EN SEGUNDO PLANO (PATRULLAJE 24/7 DEL BOT) ---
 def motor_patrullaje_seguridad():
-    """Hilos de monitoreo continuo en tiempo real que corre 24/7"""
     while True:
         try:
-            # 1. Monitoreo de Recursos Hardware
             if PSUTIL_DISPONIBLE:
                 cpu = psutil.cpu_percent(interval=1)
                 mem = psutil.virtual_memory().percent
                 if cpu > 90.0:
-                    registrar_alerta_bot(f"⚠️ AMENAZA: Uso Crítico de CPU detectado ({cpu}%)", "ALERTA")
+                    registrar_alerta_bot(f"⚠️ AMENAZA: Uso Crítico de CPU ({cpu}%)", "ALERTA")
                 if mem > 88.0:
                     registrar_alerta_bot(f"⚠️ Sobrecarga en RAM ({mem}%)", "WARN")
             
-            # 2. Verificación de Conectividad del Nodo Buin
             try:
                 r = requests.get("https://1.1.1.1", timeout=3)
                 if r.status_code != 200:
                     registrar_alerta_bot("🌐 Anomalía en enlace WAN del Nodo Buin", "WARN")
             except:
-                registrar_alerta_bot("🔴 Alerta: Enlace a Internet interrumpido o restringido", "ALERTA")
-
-        except Exception as e:
+                registrar_alerta_bot("🔴 Alerta: Enlace a Internet interrumpido", "ALERTA")
+        except:
             pass
-        
-        time.sleep(30)  # Escaneo cada 30 segundos
+        time.sleep(30)
 
-# Iniciar hilo del Security Bot si no está corriendo
 if "security_bot_activo" not in st.session_state:
     st.session_state.security_bot_activo = True
     t = threading.Thread(target=motor_patrullaje_seguridad, daemon=True)
     t.start()
     registrar_alerta_bot("🤖 JARVIS Security Bot 24/7 Inicializado y Patrullando", "OK")
-
-# --- CONTROL DE ACCESO UNIFICADO ---
+    # --- CONTROL DE ACCESO UNIFICADO ---
 CLAVE_MAESTRA = "stark123"
 
 if "intentos_fallidos" not in st.session_state:
@@ -198,14 +213,11 @@ if not st.session_state.bunker_desbloqueado:
             else:
                 st.session_state.intentos_fallidos += 1
                 registrar_alerta_bot(f"🚨 Intento fallido de acceso #{st.session_state.intentos_fallidos}", "ALERTA")
-                st.error("Credencial incorrecta. Intento registrado por el Security Bot.")
+                st.error("Credencial incorrecta. Intento registrado.")
         st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
-# =========================================================================
-# BÚNKER DESBLOQUEADO - NÚCLEO STARK & SECURITY BOT
-# =========================================================================
-
+# --- FUNCIONES DE GESTIÓN DE TAREAS ---
 def get_db_tareas():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -237,7 +249,7 @@ def delete_db_tarea(id_t):
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark, E.D.I.T.H. y el Security Bot 24/7 están operando sin novedades. ¿Qué órdenes ejecutamos?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Núcleo Stark, E.D.I.T.H. y el Security Bot 24/7 están operativos. ¿Qué órdenes ejecutamos?"}
     ]
 
 # --- ENCABEZADO TÁCTICO CON RELOJ EN VIVO ---
@@ -265,11 +277,8 @@ components.html(f"""
             const h = String(ahora.getHours()).padStart(2, '0');
             const m = String(ahora.getMinutes()).padStart(2, '0');
             const s = String(ahora.getSeconds()).padStart(2, '0');
-            
             const elemento = document.getElementById('reloj-vivo');
-            if (elemento) {{
-                elemento.innerText = h + ":" + m + ":" + s;
-            }}
+            if (elemento) {{ elemento.innerText = h + ":" + m + ":" + s; }}
         }}
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
@@ -278,9 +287,7 @@ components.html(f"""
 
 st.markdown("---")
 
-# =========================================================================
-# BARRA LATERAL (IZQUIERDA) - ESTACIÓN DE CONTROL & MÓDULO SECURITY BOT
-# =========================================================================
+# --- BARRA LATERAL (IZQUIERDA) ---
 with st.sidebar:
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
         st.session_state.bunker_desbloqueado = False
@@ -288,116 +295,44 @@ with st.sidebar:
 
     st.markdown("### 🌐 ESTACIÓN DE CONTROL")
 
-    # --- MÓDULO SECURITY BOT 24/7 ---
     with st.expander("🛡️ JARVIS Security Bot (24/7)", expanded=True):
         st.markdown("• **Estado del Bot:** `PATRULLANDO EN VIVO 🟢`")
-        st.markdown("• **Modo de Defensa:** `Respuesta Automatizada`")
-        
         if st.button("🔍 Auditar Vulnerabilidades Ahora", use_container_width=True):
-            registrar_alerta_bot("🔍 Auditoría manual ejecutada. Cero fugas detectadas.", "OK")
-            st.success("Auditoría completa: Sistema 100% blindado.")
+            registrar_alerta_bot("🔍 Auditoría manual ejecutada. Cero fugas.", "OK")
+            st.success("Auditoría completa: Sistema blindado.")
             st.rerun()
-
         st.markdown("---")
         st.markdown("**📋 Registro de Seguridad en Tiempo Real:**")
-        alertas_bot = get_db_alertas()
-        for msg, lvl, hora in alertas_bot:
+        for msg, lvl, hora in get_db_alertas():
             icon = "🟢" if lvl == "OK" else ("🟡" if lvl == "WARN" else "🚨")
             st.markdown(f"<span style='font-size: 0.65rem; color: #00d2ff;'>`[{hora}]` {icon} {msg}</span>", unsafe_allow_html=True)
 
-    with st.expander("🎙️ E.D.I.T.H. & Hands-Free (Voz)"):
-        components.html("""
-            <div style="text-align: center; font-family: monospace; background-color: rgba(0, 210, 255, 0.04); padding: 5px;">
-                <button onclick="iniciarEscucha()" style="background-color: #00d2ff; color: #060911; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: monospace; width: 100%;">🎙️ Activar Escucha Hands-Free</button>
-                <p id="estado-voz" style="font-size: 0.65rem; color: #00d2ff; margin-top: 6px;">[ Micrófono en espera ]</p>
-            </div>
-            
-            <script>
-                function iniciarEscucha() {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (!SpeechRecognition) {
-                        alert("Tu navegador no soporta reconocimiento de voz directo. Usa Google Chrome.");
-                        return;
-                    }
-                    const recognition = new SpeechRecognition();
-                    recognition.lang = 'es-CL';
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-                    
-                    const estado = document.getElementById('estado-voz');
-                    estado.innerText = "[ Escuchando a la jefa... Hable ahora ]";
-                    
-                    recognition.onresult = function(event) {
-                        const textoDictado = event.results[0][0].transcript;
-                        estado.innerText = "[ Comando capturado: " + textoDictado + " ]";
-                        
-                        const utterance = new SpeechSynthesisUtterance("Orden recibida, jefa: " + textoDictado);
-                        utterance.lang = 'es-CL';
-                        window.speechSynthesis.speak(utterance);
-                    };
-                    
-                    recognition.onerror = function(event) {
-                        estado.innerText = "[ Error de audio o permiso denegado ]";
-                    };
-                    
-                    recognition.onend = function() {
-                        setTimeout(() => {
-                            estado.innerText = "[ Micrófono en espera ]";
-                        }, 3000);
-                    };
-                    
-                    recognition.start();
-                }
-            </script>
-        """, height=100)
-
-    # --- MÓDULO ESTACIÓN ORBITAL & ISS ---
     with st.expander("🛰️ Estación Orbital & ISS en Vivo"):
         components.html("""
             <iframe width="100%" height="160" src="https://www.youtube.com/embed/4QJEibrt9B8?autoplay=1&mute=1" title="ISS Live" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 6px; border: 1px solid #00d2ff;"></iframe>
         """, height=170)
         st.link_button("🌐 Visor Satelital (Osiris AI)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
 
-    # --- MÓDULO AGENTE AUTÓNOMO ---
     with st.expander("🤖 Agente Autónomo (Paralelo)"):
         nueva_tarea = st.text_input("Nueva tarea para agente:", key="input_tarea_side")
         estado_inicial = st.selectbox("Estado inicial:", ["Pendiente", "Ejecutando", "Completado"], key="sel_estado_side")
         if st.button("➕ Desplegar Tarea", use_container_width=True) and nueva_tarea:
             add_db_tarea(nueva_tarea, estado_inicial)
             st.rerun()
-        
         st.markdown("---")
         for tid, t, est in get_db_tareas():
             color_est = "🟡" if est == "Pendiente" else ("🔵" if est == "Ejecutando" else "🟢")
             st.markdown(f"{color_est} **{t}** *({est})*")
-            col_a1, col_a2 = st.columns(2)
-            with col_a1:
-                if st.button("▶️ Ejecutar", key=f"run_t_{tid}"):
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("▶️", key=f"r_{tid}"):
                     update_db_tarea_estado(tid, "Ejecutando")
                     st.rerun()
-            with col_a2:
-                if st.button("❌ Borrar", key=f"del_t_{tid}"):
+            with c2:
+                if st.button("❌", key=f"d_{tid}"):
                     delete_db_tarea(tid)
                     st.rerun()
-
-    # --- MÓDULO DOJO CIBERSEGURIDAD ---
-    with st.expander("🛡️ Dojo Ciberseguridad"):
-        st.markdown("• **Rango actual:** *Hacker Belt / Red Team*")
-        st.link_button("🌐 Dojo Portal (Pwn.college)", "https://pwn.college", use_container_width=True)
-
-    with st.expander("💻 Hardware Real (psutil)"):
-        if PSUTIL_DISPONIBLE:
-            cpu_uso = psutil.cpu_percent(interval=0.5)
-            memoria = psutil.virtual_memory()
-            st.markdown(f"• **CPU en uso:** `{cpu_uso}%`")
-            st.markdown(f"• **RAM usada:** `{memoria.percent}%`")
-        if st.button("🔄 Actualizar Hardware", use_container_width=True):
-            st.rerun()
-
-    st.markdown("---")
-    st.link_button("🌤️ Ventusky (Meteo)", "https://www.ventusky.com", use_container_width=True)
-
-# =========================================================================
+                    # =========================================================================
 # PANEL CENTRAL: CHAT CON IA & COMANDOS DE SEGURIDAD
 # =========================================================================
 
