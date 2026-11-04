@@ -456,3 +456,4 @@ if prompt_usuario := st.chat_input("Escriba su orden o dicte a E.D.I.T.H...."):
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
     st.rerun()
+
