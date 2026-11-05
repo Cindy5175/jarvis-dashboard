@@ -1,7 +1,7 @@
 streamlit
-google-generativeai
-gtts
+gTTS
 pandas
-psutil
 requests
-streamlit-autorefresh
+psutil
+google-generativeai
+pypdf
