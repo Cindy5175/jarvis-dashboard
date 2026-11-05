@@ -50,17 +50,23 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
-# Indicador visual superior exacto (el núcleo brillante)
+# Reactor Arc Triangular idéntico a tu referencia visual (con brillo LED cian)
 st.markdown(
     """
-    <div style="text-align: center; margin-bottom: -5px;">
-        <span style="font-size: 28px; text-shadow: 0 0 12px #00e5ff;">🔵</span>
+    <div style="text-align: center; margin-bottom: 10px;">
+        <svg width="90" height="90" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
+            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
+            <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
+            <polygon points="50,32 70,66 30,66" fill="#00e5ff" opacity="0.3"/>
+            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)"/>
+        </svg>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Cabecera táctica exacta idéntica a tu referencia visual
+# Cabecera táctica exacta
 st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // E.D.I.T.H.</h3>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
 
