@@ -118,4 +118,64 @@ if not st.session_state.autenticado:
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 10px;">
-        <svg width="90" height="
+        <svg width="90" height="90" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
+            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
+            <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
+            <polygon points="50,32 70,66 30,66" fill="#00e5ff" opacity="0.3"/>
+            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)"/>
+        </svg>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Cabecera táctica exacta
+st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
+
+# Línea de estado y fecha con segundero en tiempo real
+fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
+st.markdown(
+    f"""
+    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-family: monospace; font-weight: bold;'>
+        [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+# Botón de seguridad principal en el cuerpo
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.session_state.autenticado = False
+    st.rerun()
+
+st.markdown("---")
+
+# --- BARRA LATERAL (IZQUIERDA) ---
+with st.sidebar:
+    st.markdown("### 🌐 NÚCLEO DE CONTROL")
+    st.markdown("---")
+
+    with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
+        st.markdown("📡 **Conexión Oficial: [osirisai.live](https://www.osirisai.live)**")
+        components.iframe("https://www.osirisai.live", height=300, scrolling=True)
+        st.success("Ojo de Dios sincronizado con el núcleo web externo, jefa.")
+
+    with st.expander("🗺️ Mapa Táctico Satelital"):
+        st.markdown("Coordenadas Perimetrales Buin")
+        map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
+        st.map(map_data, zoom=10, use_container_width=True)
+
+    with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
+        st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
+
+    with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
+        st.video("https://www.youtube.com/watch?v=kUfuwa8mDrA")
+
+    with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
+        st.markdown("**Estación Meteorológica Local**")
+        st.markdown(
+            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px
