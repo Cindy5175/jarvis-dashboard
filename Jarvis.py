@@ -1,77 +1,54 @@
 import streamlit as st
-import speech_recognition as sr
-import pyttsx3
-import threading
+from datetime import datetime
 
-# Configuración de la página (Estética intacta)
+# Configuración de la página con la estética exacta de tu teléfono
 st.set_page_config(
     page_title="J.A.R.V.I.S. - Nodo Táctico",
     page_icon="⚡",
-    layout="wide"
+    layout="centered"
 )
 
-# Inicializar motor de voz (Voz varonil y tono sarcástico)
-try:
-    engine = pyttsx3.init()
-    voices = engine.getProperty('voices')
-    # Buscar una voz en español o la primera disponible de tipo masculino si está configurada
-    for voice in voices:
-        if "spanish" in voice.name.lower() or "male" in voice.name.lower():
-            engine.setProperty('voice', voice.id)
-            break
-    engine.setProperty('rate', 160)
-except Exception:
-    pass
-
-def hablar_jarvis(texto):
-    """Función para que Jarvis hable en voz alta"""
-    try:
-        engine.say(texto)
-        engine.runAndWait()
-    except Exception:
-        pass
-
-# Interfaz visual táctica
-st.title("⚡ J.A.R.V.I.S. IA // NÚCLEO TÁCTICO")
+# Encabezado táctico idéntico al de tu móvil
+st.markdown("### _J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE")
+fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
+st.markdown(f"`[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]`")
 st.markdown("---")
 
-st.sidebar.header("⚙️ Configuración del Sistema")
-modo_voz = st.sidebar.toggle("🎙️ Escucha Continua (Hands-Free)", value=True)
-sarcasmo_nivel = st.sidebar.slider("Nivel de Sarcasmo", 1, 10, 8)
-camara_activa = st.sidebar.toggle("📷 Cámaras en Vivo (Ojo de Dios)", value=False)
+# Botón principal de seguridad
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.warning("Sistema de búnker bloqueado temporalmente por seguridad, jefa.")
 
-if st.sidebar.button("➕ Registrar Tarea"):
-    st.sidebar.success("Tarea registrada correctamente en el Nodo Buin.")
-
-# Sección de estado táctico
+st.markdown("---")
 st.markdown("### 🌐 NÚCLEO DE CONTROL")
-with st.expander("🛡️ Opciones de Seguridad"):
-    if st.button("🔒 Bloquear Búnker"):
-        st.warning("Sistema de búnker bloqueado temporalmente por seguridad, jefa.")
+
+# Módulos desplegables idénticos a los de tu teléfono
+with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
+    st.info("Conectando con la red de vigilancia del Nodo Buin...")
+
+with st.expander("🌤️ Clima en Vivo (Buin)"):
+    st.markdown("**Estación Meteorológica Local**")
+    st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
 
 st.markdown("---")
 st.subheader("💬 Interacción con el Asistente")
 
+# Historial del chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Sistema operativo en línea, Nodo Buin sincronizado. ¿Qué milagro necesitas hoy, jefa?"}
+        {"role": "assistant", "content": "Sistema operativo en línea, Nodo Buin sincronizado. ¿Qué orden ejecutamos hoy, jefa?"}
     ]
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada por texto tradicional
+# Entrada de chat
 if prompt := st.chat_input("Escribe una orden para Jarvis..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    respuesta_jarvis = f"Procesando tu orden '{prompt}' con nivel de sarcasmo {sarcasmo_nivel}. Por supuesto, haré el trabajo pesado mientras tú descansas, jefa."
-    
-    st.session_state.messages.append({"role": "assistant", "content": respuesta_jarvis})
+    respuesta = f"Procesando la orden '{prompt}' desde el Nodo Buin. Todo bajo control, jefa."
+    st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
-        st.markdown(respuesta_jarvis)
-    
-    # Jarvis habla
-    hablar_jarvis(respuesta_jarvis)
+        st.markdown(respuesta)
