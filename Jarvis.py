@@ -13,6 +13,7 @@ import random
 import streamlit.components.v1 as components
 import os
 import google.generativeai as genai
+from pypdf import PdfReader
 
 # Configuración de la página
 st.set_page_config(
@@ -27,7 +28,7 @@ GOOGLE_KEY_AQ = "PEGA_AQUI_TU_CLAVE_AQ"
 os.environ["GOOGLE_API_KEY"] = GOOGLE_KEY_AQ
 genai.configure(api_key=GOOGLE_KEY_AQ)
 
-# --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS Y CHAT) ---
+# --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS, CHAT Y BIBLIOTECA PDF) ---
 def init_db():
     conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
     c = conn.cursor()
@@ -35,6 +36,8 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS chat_historial 
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, rol TEXT, contenido TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS biblioteca_pdf 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, contenido TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     conn.close()
 
@@ -77,7 +80,22 @@ def purgar_chat_db():
     conn.commit()
     conn.close()
 
-# --- 2. TELEMETRÍA REAL Y CEREBRO DE JARVIS (CON RESPALDO INTELIGENTE) ---
+def guardar_pdf_db(titulo, contenido):
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
+    c = conn.cursor()
+    c.execute("INSERT INTO biblioteca_pdf (titulo, contenido) VALUES (?, ?)", (titulo, contenido))
+    conn.commit()
+    conn.close()
+
+def obtener_biblioteca_db():
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
+    c = conn.cursor()
+    c.execute("SELECT id, titulo, fecha FROM biblioteca_pdf ORDER BY id DESC")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+# --- 2. TELEMETRÍA REAL Y CEREBRO DE JARVIS (CON RESPALDO Y CONTEXTO PDF) ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -111,7 +129,7 @@ def consultar_cerebro_jarvis(prompt_usuario, historial):
             "militar con el estudio de leyes, titulándose como abogado en la Universidad de Chile a los 28 años.\n"
             "2. **El Combate Naval de Iquique:** Al mando de la frágil corbeta *Esmeralda*, debió enfrentar al imponente acorazado "
             "peruano *Huáscar* (comandado por Miguel Grau), un buque infinitamente superior en blindaje y potencia de fuego.\n"
-            "3. **El Salto al Abordaje:** Cuando su nave ya estaba condenada, protagonizó uno de los actos de arrojo más grandes "
+            "3. **El Salto al Abordaje:** Когда su nave ya estaba condenada, protagonizó uno de los actos de arrojo más grandes "
             "de la historia militar gritando *'¡Muchachos, a abordo!'* y saltando a la cubierta del *Huáscar*.\n\n"
             "(Y para que conste, jefa: aunque la credencial externa patalee con el prefijo AQ, la base interna del Nodo Buin responde de inmediato)."
         )
@@ -240,7 +258,7 @@ components.html("""
 
 st.markdown("---")
 
-# --- BARRA LATERAL CON MÓDULO IZQUIERDO SIMÉTRICO (1, 2, 3) Y COMANDO DE VOZ EXTRA ---
+# --- BARRA LATERAL CON MÓDULO SIMÉTRICO [1,2,3], COMANDO DE VOZ Y BIBLIOTECA PDF ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
@@ -261,7 +279,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # --- COMANDO DE VOZ EXTRA (INTERRUPTOR DE REPORTE TÁCTICO) ---
+    # --- COMANDO DE VOZ EXTRA ---
     st.markdown("##### 🔊 Comando de Voz Extra")
     if st.button("🎙️ Ejecutar Reporte Verbal", use_container_width=True):
         frase_reporte = "Sistemas operativos al cien por ciento en el Nodo Buin, jefa. El reactor y la enciclopedia marchan sin novedad."
@@ -269,6 +287,40 @@ with st.sidebar:
         hablar_jarvis_web(frase_reporte)
         st.success("¡Reporte verbal emitido con éxito por el núcleo, jefa!")
         st.rerun()
+
+    st.markdown("---")
+
+    # --- NUEVO MÓDULO: BIBLIOTECA PDF (CARGA Y PERSISTENCIA) ---
+    with st.expander("📚 Biblioteca PDF (Ingesta en BD)"):
+        st.markdown("Sube tus documentos para guardarlos en la base de datos del Nodo Buin:")
+        archivo_pdf = st.file_uploader("Seleccionar archivo PDF", type=["pdf"])
+        
+        if archivo_pdf is not None:
+            if st.button("Indexar e Ingerir PDF 📥", use_container_width=True):
+                try:
+                    lector = PdfReader(archivo_pdf)
+                    texto_extraido = ""
+                    for pagina in lector.pages:
+                        t_pag = pagina.extract_text()
+                        if t_pag:
+                            texto_extraido += t_pag + "\n"
+                    
+                    if texto_extraido.strip():
+                        guardar_pdf_db(archivo_pdf.name, texto_extraido)
+                        st.success(f"¡'{archivo_pdf.name}' indexado e ingerido en SQLite con éxito, jefa!")
+                    else:
+                        st.warning("El PDF parece estar vacío o protegido contra extracción.")
+                except Exception as e:
+                    st.error(f"Error procesando el PDF: {e}")
+        
+        st.markdown("---")
+        st.markdown("**Libros en Memoria del Nodo:**")
+        libros_guardados = obtener_biblioteca_db()
+        if libros_guardados:
+            for lid, ltitle, ldate in libros_guardados:
+                st.markdown(f"- 📖 `{ltitle}`")
+        else:
+            st.text("No hay libros ingestados todavía.")
 
     st.markdown("---")
 
@@ -353,7 +405,7 @@ st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo y enciclopedia universal cargada con éxito, jefa. ¿De qué historia, ciencia o código conversamos hoy en el Nodo Buin?"
+    mensaje_inicial = "Centro de mando unificado activo, enciclopedia universal y biblioteca PDF sincronizadas con éxito, jefa. ¿Qué documento o tema analizamos hoy en el Nodo Buin?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -361,7 +413,7 @@ for rol, contenido in historial_chat:
     with st.chat_message(rol):
         st.markdown(contenido)
 
-if prompt := st.chat_input("Pregunta sobre Arturo Prat, ciencia, historia, código o escribe 'cmd:...', jefa..."):
+if prompt := st.chat_input("Pregunta sobre tus PDFs, Arturo Prat, ciencia, código o escribe 'cmd:...', jefa..."):
     guardar_mensaje_db("user", prompt)
     with st.chat_message("user"):
         st.markdown(prompt)
