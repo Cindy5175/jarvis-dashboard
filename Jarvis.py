@@ -41,10 +41,7 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 st.markdown("---")
 st.markdown("### 🌐 NÚCLEO DE CONTROL")
 
-# Módulos tácticos desplegables idénticos a tus capturas
-with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
-    st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
-
+# Bloques de módulos ordenados idénticos a tu versión anterior
 with st.expander("🌤️ Clima en Vivo (Buin)"):
     st.markdown(
         """
@@ -61,6 +58,9 @@ with st.expander("🌤️ Clima en Vivo (Buin)"):
 with st.expander("📍 Coordenadas Tácticas Buin"):
     st.success("Latitud: -33.73 | Longitud: -70.72 - Perímetro seguro.")
 
+with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
+    st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
+
 with st.expander("🎙️ Escucha Continua (Hands-Free)"):
     st.info("Módulo de escucha automática integrado en el núcleo operativo.")
 
@@ -73,7 +73,7 @@ with st.expander("🛡️ Módulo E.D.I.T.H."):
 st.markdown("---")
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
 
-# Inicializar historial de chat con el toque sarcástico característico
+# Inicializar historial de chat con el toque sarcástico
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"}
