@@ -178,4 +178,73 @@ with st.sidebar:
     with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
         st.markdown("**Estación Meteorológica Local**")
         st.markdown(
-            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px
+            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f'<div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
+            unsafe_allow_html=True
+        )
+
+    with st.expander("🎙️ Escucha Continua (Hands-Free)"):
+        st.info("Micrófono abierto en tiempo real, jefa.")
+        audio_handsfree = st.audio_input("Dictar comando de voz continuo:")
+        if audio_handsfree:
+            st.success("¡Comando de voz capturado por el núcleo de audio, jefa! Procesando orden...")
+
+    with st.expander("➕ Registro de Misiones (Base de Datos Real)"):
+        st.text("Sincronizado con SQLite.")
+        nueva_tarea = st.text_input("Nueva Misión / Tarea:")
+        if st.button("Registrar en BD ➕", use_container_width=True):
+            if nueva_tarea:
+                agregar_tarea_db(nueva_tarea)
+                st.success(f"Misión guardada en base de datos: '{nueva_tarea}'")
+            else:
+                st.warning("Escribe una tarea primero, jefa.")
+        
+        st.markdown("---")
+        st.markdown("**Misiones Registradas:**")
+        tareas_guardadas = obtener_tareas_db()
+        if tareas_guardadas:
+            for tid, ttext, tstatus in tareas_guardadas:
+                st.markdown(f"- `{ttext}` ({tstatus})")
+        else:
+            st.text("No hay misiones activas.")
+
+# --- CUERPO PRINCIPAL: CHAT IA OPERATIVO ---
+st.subheader("💬 Chat IA & Sistema Operativo")
+
+# Inicializar historial de chat
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Ojo de Dios conectado a osirisai.live, escucha continua activa y búnker blindado, jefa. ¿Qué órdenes tenemos para hoy?"}
+    ]
+
+# Mostrar historial de mensajes
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Entrada de chat abajo
+if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    prompt_lower = prompt.lower().strip()
+    
+    # Filtro inteligente para emojis o risas sueltas
+    if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Burlándote de que el código ya quedó blindado?"
+    elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
+        respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
+    elif "hola" in prompt_lower:
+        respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
+    else:
+        respuesta = f"Procesando tu orden '{prompt}' vinculada a la red de Osiris en el Nodo Buin, jefa."
+    
+    st.session_state.messages.append({"role": "assistant", "content": respuesta})
+    with st.chat_message("assistant"):
+        st.markdown(respuesta)
+
+    hablar_jarvis_web(respuesta)
