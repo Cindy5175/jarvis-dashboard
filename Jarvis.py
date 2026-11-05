@@ -50,13 +50,21 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
-# Cabecera con el Reactor Arc de Tony Stark y letras azules
-st.image("https://i.ibb.co/6y1M15X/arc-reactor.jpg", width=120)  # O usa la imagen local de tu reactor
+# Cabecera con un indicador de reactor estilizado en HTML puro (sin errores de carga)
+st.markdown(
+    """
+    <div style="text-align: center; margin-bottom: 10px;">
+        <span style="font-size: 50px; text-shadow: 0 0 15px #00e5ff;">🔺</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 st.markdown("<h2 style='text-align: center; color: #00e5ff;'>J.A.R.V.I.S IA</h2>", unsafe_allow_html=True)
-st.markdown("### _E.D.I.T.H. TACTICAL CORE_")
+st.markdown("<h4 style='text-align: center; color: #00e5ff;'>E.D.I.T.H. TACTICAL CORE</h4>", unsafe_allow_html=True)
 
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
-st.markdown(f"`[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]`")
+st.markdown(f"<div style='text-align: center;'><code>[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]</code></div>", unsafe_allow_html=True)
 st.markdown("---")
 
 # --- BARRA LATERAL CON MÓDULOS OCULTOS ---
