@@ -129,7 +129,7 @@ def consultar_cerebro_jarvis(prompt_usuario, historial):
             "militar con el estudio de leyes, titulándose como abogado en la Universidad de Chile a los 28 años.\n"
             "2. **El Combate Naval de Iquique:** Al mando de la frágil corbeta *Esmeralda*, debió enfrentar al imponente acorazado "
             "peruano *Huáscar* (comandado por Miguel Grau), un buque infinitamente superior en blindaje y potencia de fuego.\n"
-            "3. **El Salto al Abordaje:** Когда su nave ya estaba condenada, protagonizó uno de los actos de arrojo más grandes "
+            "3. **El Salto al Abordaje:** Cuando su nave ya estaba condenada, protagonizó uno de los actos de arrojo más grandes "
             "de la historia militar gritando *'¡Muchachos, a abordo!'* y saltando a la cubierta del *Huáscar*.\n\n"
             "(Y para que conste, jefa: aunque la credencial externa patalee con el prefijo AQ, la base interna del Nodo Buin responde de inmediato)."
         )
@@ -290,7 +290,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # --- NUEVO MÓDULO: BIBLIOTECA PDF (CARGA Y PERSISTENCIA) ---
+    # --- MÓDULO: BIBLIOTECA PDF (CON RECARGA AUTOMÁTICA) ---
     with st.expander("📚 Biblioteca PDF (Ingesta en BD)"):
         st.markdown("Sube tus documentos para guardarlos en la base de datos del Nodo Buin:")
         archivo_pdf = st.file_uploader("Seleccionar archivo PDF", type=["pdf"])
@@ -308,6 +308,7 @@ with st.sidebar:
                     if texto_extraido.strip():
                         guardar_pdf_db(archivo_pdf.name, texto_extraido)
                         st.success(f"¡'{archivo_pdf.name}' indexado e ingerido en SQLite con éxito, jefa!")
+                        st.rerun()
                     else:
                         st.warning("El PDF parece estar vacío o protegido contra extracción.")
                 except Exception as e:
