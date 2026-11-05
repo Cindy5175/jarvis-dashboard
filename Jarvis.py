@@ -8,8 +8,8 @@ import sqlite3
 import requests
 import psutil
 import subprocess
+import json
 import streamlit.components.v1 as components
-from openai import OpenAI
 
 # Configuración de la página
 st.set_page_config(
@@ -20,9 +20,6 @@ st.set_page_config(
 
 # --- LLAVE DE OPENAI QUEMADA EN EL NÚCLEO ---
 OPENAI_KEY_FIJA = "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"
-
-# Inicializar cliente de OpenAI
-client = OpenAI(api_key=OPENAI_KEY_FIJA)
 
 # --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS Y CHAT) ---
 def init_db():
@@ -74,7 +71,7 @@ def purgar_chat_db():
     conn.commit()
     conn.close()
 
-# --- 2. TELEMETRÍA REAL Y VERIFICACIÓN DE LLM ---
+# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O VÍA HTTP ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -88,10 +85,42 @@ cpu_real, ram_real, disco_real = obtener_telemetria_real()
 
 def verificar_estado_openai():
     if OPENAI_KEY_FIJA and OPENAI_KEY_FIJA.startswith("sk-"):
-        return "🟢 Activo (GPT-4o Conectado)"
+        return "🟢 Activo (GPT-4o HTTP)"
     return "🟡 En espera (Sin clave config)"
 
 openai_status = verificar_estado_openai()
+
+def consultar_gpt4o(prompt_usuario, historial):
+    """Consulta directa a la API de OpenAI mediante requests sin requerir librerías externas."""
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OPENAI_KEY_FIJA}"
+    }
+    
+    messages = [
+        {"role": "system", "content": "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. Tienes una personalidad masculina, educada pero con un sarcasmo fino y sutil. Respondes de manera fluida, técnica y leal, usando chilenismos sutiles cuando sea apropiado para darle cercanía."}
+    ]
+    
+    for r, c in historial[-8:]:
+        messages.append({"role": "user" if r == "user" else "assistant", "content": c})
+    messages.append({"role": "user", "content": prompt_usuario})
+    
+    data = {
+        "model": "gpt-4o",
+        "messages": messages,
+        "temperature": 0.7
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        resultado = response.json()
+        if "choices" in resultado:
+            return resultado["choices"][0]["message"]["content"]
+        else:
+            return f"⚠️ Error en respuesta de OpenAI: {resultado.get('error', {}).get('message', 'Desconocido')}"
+    except Exception as e:
+        return f"⚠️ Error de conexión HTTP con OpenAI: {e}"
 
 def obtener_clima_buin():
     try:
@@ -139,7 +168,7 @@ st.markdown(
 )
 
 def hablar_jarvis_web(texto):
-    """Genera audio con tono fluido para Jarvis."""
+    """Genera audio con tono fluido para Jarvis sin bucles."""
     try:
         tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
@@ -236,7 +265,7 @@ with st.sidebar:
         st.markdown("💎 Gemini Link: 🟢 Sincronizado")
 
     with st.expander("📡 Live Feed"):
-        st.markdown("🟢 [OK] GPT-4o integrado al núcleo.")
+        st.markdown("🟢 [OK] GPT-4o HTTP conectado.")
         st.markdown("🟢 [OK] Nodo Buin operativo.")
 
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
@@ -300,7 +329,7 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# --- CUERPO PRINCIPAL: CHAT IA CON GPT-4O Y PERSISTENCIA SQLITE ---
+# --- CUERPO PRINCIPAL: CHAT IA ESTABLE CON GPT-4O ---
 st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
@@ -320,7 +349,6 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
 
     prompt_lower = prompt.lower().strip()
     
-    # Manejo de comandos locales de terminal si empiezan con cmd:
     if prompt_lower.startswith("cmd:"):
         comando_terminal = prompt[4:].strip()
         try:
@@ -329,24 +357,8 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     else:
-        # Llamada real a OpenAI gpt-4o con personalidad de JARVIS
-        try:
-            messages = [
-                {"role": "system", "content": "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. Tienes una personalidad masculina, educada pero con un sarcasmo fino y sutil. Respondes de manera fluida, técnica y leal, usando chilenismos sutiles cuando sea apropiado para darle cercanía."},
-            ]
-            # Agregar el historial reciente para contexto
-            for r, c in historial_chat[-10:]:
-                messages.append({"role": "user" if r == "user" else "assistant", "content": c})
-            messages.append({"role": "user", "content": prompt})
-
-            completion = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                temperature=0.7
-            )
-            respuesta = completion.choices[0].message.content
-        except Exception as e:
-            respuesta = f"⚠️ Error al conectar con el núcleo de OpenAI: {e}"
+        # Llamada directa a GPT-4o vía HTTP segura
+        respuesta = consultar_gpt4o(prompt, historial_chat)
 
     guardar_mensaje_db("assistant", respuesta)
     with st.chat_message("assistant"):
