@@ -99,9 +99,9 @@ with st.sidebar:
         if st.button("🟢 Activar Ojo de Dios", use_container_width=True):
             st.success("¡Cámaras en vivo activadas con éxito, jefa!")
 
-    with st.expander("🌌 Transmisión Espacial en Vivo"):
-        st.markdown("📡 **Señal Satelital en Directo (NASA/Espacio)**")
-        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+    with st.expander("🌍 Transmisión Mundial en Vivo (earthTV)"):
+        st.markdown("📡 **Señal Satelital en Directo (The World Live)**")
+        st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
 
     with st.expander("🌤️ Clima en Vivo (Buin)"):
         st.markdown("**Estación Meteorológica Local**")
