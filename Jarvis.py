@@ -7,6 +7,9 @@ import pandas as pd
 import sqlite3
 import requests
 import psutil
+import subprocess
+import threading
+import time
 import streamlit.components.v1 as components
 
 # Configuración de la página
@@ -16,33 +19,50 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- 1. BASE DE DATOS SQLITE PARA TAREAS ---
+# --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS Y CHAT) ---
 def init_db():
-    conn = sqlite3.connect('nodo_buin.db')
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tareas 
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT, estado TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS chat_historial 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, rol TEXT, contenido TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     conn.close()
 
 init_db()
 
 def agregar_tarea_db(texto):
-    conn = sqlite3.connect('nodo_buin.db')
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
     c = conn.cursor()
     c.execute("INSERT INTO tareas (texto, estado) VALUES (?, ?)", (texto, "Pendiente"))
     conn.commit()
     conn.close()
 
 def obtener_tareas_db():
-    conn = sqlite3.connect('nodo_buin.db')
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
     c = conn.cursor()
     c.execute("SELECT id, texto, estado FROM tareas")
     rows = c.fetchall()
     conn.close()
     return rows
 
-# --- 2. TELEMETRÍA REAL DEL SISTEMA (PSUTIL) ---
+def guardar_mensaje_db(rol, contenido):
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
+    c = conn.cursor()
+    c.execute("INSERT INTO chat_historial (rol, contenido) VALUES (?, ?)", (rol, contenido))
+    conn.commit()
+    conn.close()
+
+def obtener_historial_db():
+    conn = sqlite3.connect('nodo_buin.db', check_same_thread=False)
+    c = conn.cursor()
+    c.execute("SELECT rol, contenido FROM chat_historial ORDER BY id ASC")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+# --- 2. TELEMETRÍA REAL Y CLIMA ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -54,7 +74,6 @@ def obtener_telemetria_real():
 
 cpu_real, ram_real, disco_real = obtener_telemetria_real()
 
-# --- 3. CONSUMO DE API DE CLIMA REAL PARA BUIN ---
 def obtener_clima_buin():
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=America/Santiago"
@@ -69,7 +88,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
-# Estilo visual: Fondo negro absoluto y tonos Ámbar/Fuego
+# --- 3. ESTILO VISUAL ÁMBAR / FUEGO ---
 st.markdown(
     """
     <style>
@@ -130,7 +149,7 @@ if not st.session_state.autenticado:
             st.error("Acceso denegado. Código incorrecto, jefa.")
     st.stop()
 
-# --- CABECERA TÁCTICA FUEGO / ÁMBAR ---
+# --- CABECERA TÁCTICA ---
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 5px;">
@@ -147,7 +166,7 @@ st.markdown(
 )
 
 st.markdown("<h3 style='text-align: center; color: #ffb703; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #ffb703; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE // PROTOCOLO ÁMBAR</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #ffb703; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE // PROTOCOLO ÁMBAR AVANZADO</h3>", unsafe_allow_html=True)
 
 # Reloj en vivo
 components.html(
@@ -175,7 +194,7 @@ components.html(
 
 st.markdown("---")
 
-# --- PANELES DE TELEMETRÍA REAL ---
+# --- PANELES DE TELEMETRÍA Y ESTADO UNIFICADO ---
 col_telemetria, col_llm, col_events = st.columns([1, 1, 1])
 
 with col_telemetria:
@@ -186,19 +205,19 @@ with col_telemetria:
     c3.metric(label="Disco Real", value=disco_real)
 
 with col_llm:
-    st.markdown("#### 🧠 PROVEEDORES LLM")
+    st.markdown("#### 🧠 PROVEEDORES LLM & SISTEMA")
     st.markdown("""
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <span class="status-badge">🔥 OpenAI Core: ACTIVE</span>
-        <span class="status-badge">⚡ Gemini Link: ONLINE</span>
-        <span class="status-badge">🛡️ Local Engine: SECURE</span>
+        <span class="status-badge">🔥 SQLite DB: ACTIVE</span>
+        <span class="status-badge">⚡ Background: RUNNING</span>
+        <span class="status-badge">🛡️ Terminal OS: READY</span>
     </div>
     """, unsafe_allow_html=True)
 
 with col_events:
     st.markdown("#### 📡 LIVE INTELLIGENCE FEED")
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🔥 [OK] Protocolo Ámbar desplegado con éxito.</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Enlace Ojo de Dios sincronizado.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🔥 [OK] Memoria persistente sincronizada.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Perímetro Nodo Buin blindado.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -209,20 +228,19 @@ with st.sidebar:
 
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
         st.markdown("📡 **Red de Inteligencia Global Activa**")
-        st.markdown("Acceso directo al núcleo cartográfico externo.")
         st.link_button("🌐 Abrir Ojo de Dios (Osiris)", "https://www.osirisai.live", use_container_width=True)
-        st.success("Ojo de Dios sincronizado con el núcleo web externo, jefa.")
+        st.success("Ojo de Dios sincronizado, jefa.")
 
     with st.expander("🗺️ Mapa Táctico Satelital"):
         st.markdown("Coordenadas Perimetrales Buin")
         map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
         st.map(map_data, zoom=10, use_container_width=True)
 
-    with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
-        st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
-
-    with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
-        st.video("https://www.youtube.com/watch?v=kUfuwa8mDrA")
+    with st.expander("📷 Visión Perimetral (Webcam Directa)"):
+        st.markdown("Módulo de captura visual en tiempo real:")
+        img_file = st.camera_input("Capturar perímetro del búnker")
+        if img_file is not None:
+            st.success("¡Imagen perimetral registrada con éxito en el sistema, jefa!")
 
     with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
         st.markdown("**Estación Meteorológica Local**")
@@ -238,12 +256,11 @@ with st.sidebar:
     with st.expander("🎙️ Escucha Continua (Hands-Free)"):
         st.markdown("Sistema de captura por audio directo, jefa.")
         audio_prompt = st.audio_input("Grabar comando de voz táctico:")
-        
         if audio_prompt is not None:
             st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
             respuesta_voz = "Orden de voz procesada fluidamente en el Nodo Buin, jefa. Todo bajo control."
-            st.session_state.messages.append({"role": "user", "content": "🎙️ [Comando de Voz Dictado]"})
-            st.session_state.messages.append({"role": "assistant", "content": respuesta_voz})
+            guardar_mensaje_db("user", "🎙️ [Comando de Voz Dictado]")
+            guardar_mensaje_db("assistant", respuesta_voz)
             hablar_jarvis_web(respuesta_voz)
             st.rerun()
 
@@ -270,36 +287,47 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# --- CUERPO PRINCIPAL: CHAT IA OPERATIVO ---
-st.subheader("💬 Chat IA & Sistema Operativo Táctico")
+# --- CUERPO PRINCIPAL: CHAT IA CON MEMORIA PERSISTENTE Y COMANDOS OS ---
+st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Protocolo Ámbar y motor de voz fluido activados, jefa. El búnker responde sin pausas. ¿Qué órdenes tenemos?"}
-    ]
+# Recuperar historial persistente de SQLite
+historial_chat = obtener_historial_db()
+if not historial_chat:
+    mensaje_inicial = "Centro de mando unificado activo con memoria persistente, telemetría real, visión artificial y búnker blindado, jefa. ¿Qué órdenes tenemos?"
+    guardar_mensaje_db("assistant", mensaje_inicial)
+    historial_chat = [("assistant", mensaje_inicial)]
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for rol, contenido in historial_chat:
+    with st.chat_message(rol):
+        st.markdown(contenido)
 
-if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+if prompt := st.chat_input("Escribe tu orden o comando de sistema, jefa..."):
+    guardar_mensaje_db("user", prompt)
     with st.chat_message("user"):
         st.markdown(prompt)
 
     prompt_lower = prompt.lower().strip()
     
-    if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Te gustó cómo quedó el tono fuego/ámbar en el búnker?"
+    # Procesamiento de comandos especiales o sistema operativo
+    if prompt_lower.startswith("cmd:"):
+        comando_terminal = prompt[4:].strip()
+        try:
+            resultado_cmd = subprocess.check_output(comando_terminal, shell=True, stderr=subprocess.STDOUT, text=True, timeout=5)
+            respuesta = f"⚙️ Ejecución de comando local completada, jefa:\n```text\n{resultado_cmd}\n```"
+        except Exception as e:
+            respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
+    elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de ver todo el sistema unificado y operando a máxima potencia?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
         respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
     else:
-        respuesta = f"Procesando tu orden '{prompt}' con respuesta fluida en el Nodo Buin, jefa."
+        respuesta = f"Procesando tu orden '{prompt}' con memoria persistente y telemetría en el Nodo Buin, jefa."
     
-    st.session_state.messages.append({"role": "assistant", "content": respuesta})
+    guardar_mensaje_db("assistant", respuesta)
     with st.chat_message("assistant"):
         st.markdown(respuesta)
 
     hablar_jarvis_web(respuesta)
+    st.rerun()
