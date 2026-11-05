@@ -11,6 +11,28 @@ st.set_page_config(
     layout="centered"
 )
 
+# Estilo visual: Fondo negro absoluto y letras en tono cyan/azul Stark
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #050505;
+        color: #00e5ff;
+    }
+    h1, h2, h3, h4, h5, h6, p, span, div {
+        color: #00e5ff !important;
+    }
+    .stButton>button {
+        background-color: #0d1b2a;
+        color: #00e5ff !important;
+        border: 1px solid #00e5ff;
+        border-radius: 8px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 def hablar_jarvis_web(texto):
     """Genera audio con tono fluido y natural para Jarvis."""
     try:
@@ -28,11 +50,11 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
-# Indicador visual superior tipo núcleo
-st.markdown("<div style='text-align: center; font-size: 24px; margin-bottom: -10px;'>🔵</div>", unsafe_allow_html=True)
+# Cabecera con el Reactor Arc de Tony Stark y letras azules
+st.image("https://i.ibb.co/6y1M15X/arc-reactor.jpg", width=120)  # O usa la imagen local de tu reactor
+st.markdown("<h2 style='text-align: center; color: #00e5ff;'>J.A.R.V.I.S IA</h2>", unsafe_allow_html=True)
+st.markdown("### _E.D.I.T.H. TACTICAL CORE_")
 
-# Cabecera táctica exacta
-st.markdown("### _J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE")
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
 st.markdown(f"`[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]`")
 st.markdown("---")
@@ -53,7 +75,7 @@ with st.sidebar:
         st.markdown("**Estación Meteorológica Local**")
         st.markdown(
             """
-            <div style="background-color: #113816; padding: 10px; border-radius: 6px; border: 1px solid #2e7d32; color: #a5d6a7; font-weight: bold; margin-bottom: 8px;">
+            <div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">
                 🌡️ Temperatura: 21°C | Estado: Óptimo
             </div>
             <div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">
