@@ -4,7 +4,7 @@ import base64
 from gtts import gTTS
 import io
 
-# Configuración de la página (Estética intacta)
+# Configuración de la página
 st.set_page_config(
     page_title="J.A.R.V.I.S. - Nodo Táctico",
     page_icon="⚡",
@@ -28,6 +28,9 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
+# Indicador visual superior tipo núcleo
+st.markdown("<div style='text-align: center; font-size: 24px; margin-bottom: -10px;'>🔵</div>", unsafe_allow_html=True)
+
 # Cabecera táctica exacta
 st.markdown("### _J.A.R.V.I.S IA // E.D.I.T.H. TACTICAL CORE")
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
@@ -41,8 +44,12 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 st.markdown("---")
 st.markdown("### 🌐 NÚCLEO DE CONTROL")
 
-# Bloques de módulos ordenados idénticos a tu versión
+# Módulos ordenados exactamente con la misma estructura visual
+with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
+    st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
+
 with st.expander("🌤️ Clima en Vivo (Buin)"):
+    st.markdown("**Estación Meteorológica Local**")
     st.markdown(
         """
         <div style="background-color: #113816; padding: 10px; border-radius: 6px; border: 1px solid #2e7d32; color: #a5d6a7; font-weight: bold; margin-bottom: 8px;">
@@ -57,9 +64,6 @@ with st.expander("🌤️ Clima en Vivo (Buin)"):
 
 with st.expander("📍 Coordenadas Tácticas Buin"):
     st.success("Latitud: -33.73 | Longitud: -70.72 - Perímetro seguro.")
-
-with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
-    st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
 
 with st.expander("🎙️ Escucha Continua (Hands-Free)"):
     st.info("Módulo de escucha automática integrado en el núcleo operativo.")
