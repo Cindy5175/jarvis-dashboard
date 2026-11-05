@@ -6,6 +6,7 @@ import io
 import pandas as pd
 import sqlite3
 import requests
+import streamlit.components.v1 as components
 
 # Configuración de la página
 st.set_page_config(
@@ -129,38 +130,36 @@ st.markdown(
 st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
 
-# Línea de estado con reloj JavaScript sincronizado a Buin, Chile (CERO PARPADEOS)
-st.markdown(
+# Línea de estado con reloj JavaScript sincronizado a Buin (CERO PARPADEOS / COMPONENTE AISLADO)
+components.html(
     """
-    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-family: monospace; font-weight: bold;'>
+    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-family: monospace; font-weight: bold; background-color: #050505; padding: 4px;'>
         [ STARK INDUSTRIES // NODO BUIN, CHILE // <span id="reloj-vivo">CARGANDO HORA...</span> ]
     </div>
     <script>
-    (function() {
-        function actualizarReloj() {
-            try {
-                const now = new Date();
-                const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                let fechaStr = now.toLocaleDateString('es-CL', opcionesFecha);
-                fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
-                
-                const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
-                
-                const elemento = document.getElementById('reloj-vivo');
-                if (elemento) {
-                    elemento.innerHTML = fechaStr + ' - ' + horaStr;
-                }
-            } catch(e) {
-                console.log("Error en reloj:", e);
+    function actualizarReloj() {
+        try {
+            const now = new Date();
+            const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let fechaStr = now.toLocaleDateString('es-CL', opcionesFecha);
+            fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
+            
+            const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
+            
+            const elemento = document.getElementById('reloj-vivo');
+            if (elemento) {
+                elemento.innerHTML = fechaStr + ' - ' + horaStr;
             }
+        } catch(e) {
+            console.log("Error en reloj:", e);
         }
-        actualizarReloj();
-        setInterval(actualizarReloj, 1000);
-    })();
+    }
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
     </script>
     """,
-    unsafe_allow_html=True
+    height=40
 )
 
 st.markdown("---")
@@ -236,7 +235,7 @@ st.subheader("💬 Chat IA & Sistema Operativo")
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Reloj sincronizado a Chile, parpadeo eliminado, Ojo de Dios operativo y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Reloj sincronizado a Chile mediante componente seguro, parpadeo eliminado, Ojo de Dios operativo y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 # Mostrar historial de mensajes
@@ -254,7 +253,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     
     # Filtro inteligente para emojis o risas sueltas
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el búnker ya quedó sin errores?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el código ya quedó blindado sin letras raras?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
