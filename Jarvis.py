@@ -110,11 +110,12 @@ if not st.session_state.autenticado:
             st.error("Acceso denegado. Código incorrecto, jefa.")
     st.stop()
 
+# --- CABECERA TÁCTICA NODO STARK ---
 # Reactor Arc Triangular idéntico con brillo LED cian
 st.markdown(
     """
-    <div style="text-align: center; margin-bottom: 10px;">
-        <svg width="90" height="90" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
+    <div style="text-align: center; margin-bottom: 5px;">
+        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
             <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
             <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
             <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
@@ -126,15 +127,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Cabecera táctica
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
+
+# Reloj en vivo aislado (sin cortes y sin parpadeos)
 components.html(
     """
-    <div style='text-align: center; color: #00e5ff; font-family: monospace; background-color: #050505; padding: 2px;'>
-        <h3 style='margin: 0; color: #00e5ff; font-size: 1.2rem; font-weight: bold;'>_J.A.R.V.I.S IA // NODO BUIN</h3>
-        <h3 style='margin: 0; color: #00e5ff; font-size: 1.2rem; font-weight: bold;'>TACTICAL CORE</h3>
-        <div style='margin-top: 6px; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-weight: bold; font-size: 0.85rem;'>
-            [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
-        </div>
+    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
+        [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
     </div>
     <script>
     function actualizarReloj() {
@@ -155,7 +155,7 @@ components.html(
     setInterval(actualizarReloj, 1000);
     </script>
     """,
-    height=95,
+    height=35,
     scrolling=False
 )
 
@@ -236,7 +236,7 @@ st.subheader("💬 Chat IA & Sistema Operativo")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Sistema de audio seguro integrado, búnker blindado y Ojo de Dios operativo, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Cabecera táctica y Reactor Arc restaurados de forma definitiva, reloj corriendo fluido y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 for message in st.session_state.messages:
@@ -251,7 +251,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     prompt_lower = prompt.lower().strip()
     
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el audio nativo ya quedó funcionando sin bloqueos?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el Reactor Arc volvió a brillar en su sitio?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
