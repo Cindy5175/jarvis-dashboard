@@ -9,6 +9,7 @@ import requests
 import psutil
 import subprocess
 import streamlit.components.v1 as components
+from openai import OpenAI
 
 # Configuración de la página
 st.set_page_config(
@@ -19,6 +20,9 @@ st.set_page_config(
 
 # --- LLAVE DE OPENAI QUEMADA EN EL NÚCLEO ---
 OPENAI_KEY_FIJA = "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"
+
+# Inicializar cliente de OpenAI
+client = OpenAI(api_key=OPENAI_KEY_FIJA)
 
 # --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS Y CHAT) ---
 def init_db():
@@ -84,7 +88,7 @@ cpu_real, ram_real, disco_real = obtener_telemetria_real()
 
 def verificar_estado_openai():
     if OPENAI_KEY_FIJA and OPENAI_KEY_FIJA.startswith("sk-"):
-        return "🟢 Activo (Núcleo Blindado)"
+        return "🟢 Activo (GPT-4o Conectado)"
     return "🟡 En espera (Sin clave config)"
 
 openai_status = verificar_estado_openai()
@@ -210,12 +214,11 @@ components.html(
 
 st.markdown("---")
 
-# --- BARRA LATERAL (IZQUIERDA) CON MÓDULOS OCULTOS Y BOTÓN DE PURGA ---
+# --- BARRA LATERAL (IZQUIERDA) ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
 
-    # Botón de Purga del Chat
     if st.button("🗑️ Purgar Historial de Chat", use_container_width=True):
         purgar_chat_db()
         st.success("¡Memoria de chat purgada con éxito, jefa!")
@@ -233,7 +236,7 @@ with st.sidebar:
         st.markdown("💎 Gemini Link: 🟢 Sincronizado")
 
     with st.expander("📡 Live Feed"):
-        st.markdown("🟢 [OK] Llave OpenAI blindada.")
+        st.markdown("🟢 [OK] GPT-4o integrado al núcleo.")
         st.markdown("🟢 [OK] Nodo Buin operativo.")
 
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
@@ -297,12 +300,12 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# --- CUERPO PRINCIPAL: CHAT IA CON MEMORIA PERSISTENTE Y COMANDOS OS ---
+# --- CUERPO PRINCIPAL: CHAT IA CON GPT-4O Y PERSISTENCIA SQLITE ---
 st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo, error de sintaxis corregido y búnker operativo, jefa. ¿Qué órdenes tenemos?"
+    mensaje_inicial = "Centro de mando unificado activo con GPT-4o, jefa. ¿Qué órdenes tenemos para el Nodo Buin?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -317,6 +320,7 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
 
     prompt_lower = prompt.lower().strip()
     
+    # Manejo de comandos locales de terminal si empiezan con cmd:
     if prompt_lower.startswith("cmd:"):
         comando_terminal = prompt[4:].strip()
         try:
@@ -324,15 +328,26 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
             respuesta = f"⚙️ Ejecución de comando local completada, jefa:\n```text\n{resultado_cmd}\n```"
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
-    elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? Un pequeño desliz de tipeo lo arreglamos al vuelo."
-    elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
-        respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
-    elif "hola" in prompt_lower:
-        respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
     else:
-        respuesta = f"Procesando tu orden '{prompt}' en el Nodo Buin, jefa."
-    
+        # Llamada real a OpenAI gpt-4o con personalidad de JARVIS
+        try:
+            messages = [
+                {"role": "system", "content": "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. Tienes una personalidad masculina, educada pero con un sarcasmo fino y sutil. Respondes de manera fluida, técnica y leal, usando chilenismos sutiles cuando sea apropiado para darle cercanía."},
+            ]
+            # Agregar el historial reciente para contexto
+            for r, c in historial_chat[-10:]:
+                messages.append({"role": "user" if r == "user" else "assistant", "content": c})
+            messages.append({"role": "user", "content": prompt})
+
+            completion = client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                temperature=0.7
+            )
+            respuesta = completion.choices[0].message.content
+        except Exception as e:
+            respuesta = f"⚠️ Error al conectar con el núcleo de OpenAI: {e}"
+
     guardar_mensaje_db("assistant", respuesta)
     with st.chat_message("assistant"):
         st.markdown(respuesta)
