@@ -244,7 +244,6 @@ with st.sidebar:
     with st.expander("🗺️ Mapa Táctico Satelital"):
         st.markdown("Coordenadas Perimetrales Buin")
         map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
-        # Mapa achicado usando zoom más alto y altura reducida con CSS / st.map
         st.map(map_data, zoom=12, use_container_width=True)
 
     with st.expander("📷 Visión Perimetral (Webcam Directa)"):
@@ -268,7 +267,7 @@ with st.sidebar:
         st.markdown("Sistema de captura por audio directo, jefa.")
         audio_prompt = st.audio_input("Grabar comando de voz táctico:")
         if audio_prompt is not None:
-            st.success("¡Audio capturado por el núcleo delNodo Buin, jefa!")
+            st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
             respuesta_voz = "Orden de voz procesada en el Nodo Buin, jefa. Todo bajo control."
             guardar_mensaje_db("user", "🎙️ [Comando de Voz Dictado]")
             guardar_mensaje_db("assistant", respuesta_voz)
@@ -278,7 +277,7 @@ with st.sidebar:
     with st.expander("➕ Registro de Misiones (Base de Datos Real)"):
         st.text("Sincronizado con SQLite.")
         nueva_tarea = st.text_input("Nueva Misión / Tarea:")
-        if st.button("Registrar en BD ➕", use_command_width=True):
+        if st.button("Registrar en BD ➕", use_container_width=True):
             if nueva_tarea:
                 agregar_tarea_db(nueva_tarea)
                 st.success(f"Misión guardada en base de datos: '{nueva_tarea}'")
@@ -303,7 +302,7 @@ st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo, purga de chat lista, mapa compactado y búnker operativo, jefa. ¿Qué órdenes tenemos?"
+    mensaje_inicial = "Centro de mando unificado activo, error de sintaxis corregido y búnker operativo, jefa. ¿Qué órdenes tenemos?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -321,12 +320,12 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
     if prompt_lower.startswith("cmd:"):
         comando_terminal = prompt[4:].strip()
         try:
-            resultado_cmd = subprocess.check_output(comando_terminal, shell=True, stderr=subprocess.STDOUT, text=True, timeout5=5)
+            resultado_cmd = subprocess.check_output(comando_terminal, shell=True, stderr=subprocess.STDOUT, text=True, timeout=5)
             respuesta = f"⚙️ Ejecución de comando local completada, jefa:\n```text\n{resultado_cmd}\n```"
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? Con el botón de purga y el mapa ajustado ya quedó impecable."
+        respuesta = "¿De qué te ríes tanto, jefa? Un pequeño desliz de tipeo lo arreglamos al vuelo."
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
