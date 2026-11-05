@@ -101,7 +101,6 @@ with st.sidebar:
 
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
         st.markdown("📡 **Feed Satelital & Rastreo Global Activo**")
-        # Integración real del visor de rastreo / streaming directo
         st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
         st.success("Ojo de Dios (Osiris) enlazado al Nodo Buin con telemetría en directo.")
 
@@ -161,8 +160,12 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    prompt_lower = prompt.lower()
-    if "código azul" in prompt_lower or "codigo azul" in prompt_lower:
+    prompt_lower = prompt.lower().strip()
+    
+    # Filtro inteligente para emojis o risas sueltas
+    if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Encontraste un bug gracioso o te estás burlando de mis protocolos de seguridad?"
+    elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
         respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
