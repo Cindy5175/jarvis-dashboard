@@ -10,12 +10,12 @@ import streamlit.components.v1 as components
 
 # Configuración de la página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Nodo Táctico",
+    page_title="J.A.R.V.I.S. - Tactical Core",
     page_icon="⚡",
-    layout="centered"
+    layout="wide"
 )
 
-# --- 1. CONFIGURACIÓN DE BASE DE DATOS SQLITE PARA TAREAS ---
+# --- 1. BASE DE DATOS SQLITE PARA TAREAS ---
 def init_db():
     conn = sqlite3.connect('nodo_buin.db')
     c = conn.cursor()
@@ -56,7 +56,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
-# Estilo visual: Fondo negro absoluto y letras en tono cyan/azul Stark
+# Estilo visual táctico Stark
 st.markdown(
     """
     <style>
@@ -73,13 +73,28 @@ st.markdown(
         border: 1px solid #00e5ff;
         border-radius: 8px;
     }
+    .metric-card {
+        background-color: #0b1d3a;
+        border: 1px solid #00e5ff;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .status-badge {
+        background-color: #00e5ff22;
+        border: 1px solid #00e5ff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 def hablar_jarvis_web(texto):
-    """Genera audio con tono fluido y natural para Jarvis."""
+    """Genera audio con tono fluido para Jarvis."""
     try:
         tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
@@ -111,7 +126,6 @@ if not st.session_state.autenticado:
     st.stop()
 
 # --- CABECERA TÁCTICA NODO STARK ---
-# Reactor Arc Triangular idéntico con brillo LED cian
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 5px;">
@@ -128,9 +142,9 @@ st.markdown(
 )
 
 st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE COMMAND CENTER</h3>", unsafe_allow_html=True)
 
-# Reloj en vivo aislado (sin cortes y sin parpadeos)
+# Reloj en vivo
 components.html(
     """
     <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
@@ -142,14 +156,9 @@ components.html(
             const now = new Date();
             const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
-            
             const elemento = document.getElementById('reloj-vivo');
-            if (elemento) {
-                elemento.innerHTML = horaStr;
-            }
-        } catch(e) {
-            console.log("Error en reloj:", e);
-        }
+            if (elemento) { elemento.innerHTML = horaStr; }
+        } catch(e) { console.log("Error en reloj:", e); }
     }
     actualizarReloj();
     setInterval(actualizarReloj, 1000);
@@ -161,9 +170,30 @@ components.html(
 
 st.markdown("---")
 
-if st.button("🔒 Bloquear Búnker", use_container_width=True):
-    st.session_state.autenticado = False
-    st.rerun()
+# --- PANELS DE MONITOREO TÁCTICO (NUEVO) ---
+col_telemetria, col_llm, col_events = st.columns([1, 1, 1])
+
+with col_telemetria:
+    st.markdown("#### 💻 TELEMETRÍA DEL SISTEMA")
+    c1, c2, c3 = st.columns(3)
+    c1.metric(label="CPU Core", value="15%")
+    c2.metric(label="RAM Usage", value="48%")
+    c3.metric(label="NVMe Disk", value="32%")
+
+with col_llm:
+    st.markdown("#### 🧠 PROVEEDORES LLM")
+    st.markdown("""
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <span class="status-badge">⚡ OpenAI (GPT-4o): ACTIVE</span>
+        <span class="status-badge">💎 Gemini Core: ONLINE</span>
+        <span class="status-badge">🌀 Local Engine: READY</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_events:
+    st.markdown("#### 📡 LIVE INTELLIGENCE FEED")
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Perímetro Búnker Buin asegurado.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Enlace Ojo de Dios sincronizado.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -231,12 +261,16 @@ with st.sidebar:
         else:
             st.text("No hay misiones activas.")
 
+    if st.button("🔒 Bloquear Búnker", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
+
 # --- CUERPO PRINCIPAL: CHAT IA OPERATIVO ---
-st.subheader("💬 Chat IA & Sistema Operativo")
+st.subheader("💬 Chat IA & Sistema Operativo Táctico")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Cabecera táctica y Reactor Arc restaurados de forma definitiva, reloj corriendo fluido y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Centro de mando táctico en línea con telemetría en tiempo real, estado de LLMs y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 for message in st.session_state.messages:
@@ -251,7 +285,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     prompt_lower = prompt.lower().strip()
     
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el Reactor Arc volvió a brillar en su sitio?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que ahora sí tenemos un Command Center al nivel de Tony Stark?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
