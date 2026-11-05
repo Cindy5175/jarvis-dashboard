@@ -1,2 +1,5 @@
-PyMuPDF>=1.23.0
 streamlit
+PyMuPDF
+gTTS
+streamlit-autorefresh
+openai
