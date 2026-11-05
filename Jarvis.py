@@ -159,11 +159,11 @@ if not st.session_state.autenticado:
             st.error("Acceso denegado. Código incorrecto, jefa.")
     st.stop()
 
-# --- CABECERA TÁCTICA ---
+# --- CABECERA TÁCTICA LIMPIA ---
 st.markdown(
     """
-    <div style="text-align: center; margin-bottom: 5px;">
-        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
+    <div style="text-align: center; margin-bottom: 2px;">
+        <svg width="75" height="75" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00e5ff);">
             <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
             <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
             <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
@@ -175,8 +175,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE COMMAND CENTER</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: 0px; margin-bottom: 2px;'>J.A.R.V.I.S IA</h3>", unsafe_allow_html=True)
 
 # Reloj en vivo
 components.html(
@@ -198,7 +197,7 @@ components.html(
     setInterval(actualizarReloj, 1000);
     </script>
     """,
-    height=35,
+    height=30,
     scrolling=False
 )
 
@@ -297,7 +296,7 @@ st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo, paneles alineados a la izquierda y búnker operativo, jefa. ¿Qué órdenes tenemos?"
+    mensaje_inicial = "Centro de mando unificado activo, interfaz limpia y búnker operativo, jefa. ¿Qué órdenes tenemos?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -320,7 +319,7 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? Ya quedó todo alineado hacia la izquierda."
+        respuesta = "¿De qué te ríes tanto, jefa? La interfaz quedó impecable."
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
