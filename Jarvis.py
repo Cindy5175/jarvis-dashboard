@@ -83,18 +83,22 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de chat con voz automática integrada
+# Entrada de chat con voz automática y detección de Código Azul
 if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Respuesta de Jarvis con sarcasmo y acento del Nodo Buin
-    respuesta = f"Procesando tu orden '{prompt}' desde el Nodo Buin, jefa. Por supuesto, haré el trabajo duro mientras tú descansas."
+    # Lógica del Código Azul vs Órdenes normales
+    prompt_lower = prompt.lower()
+    if "código azul" in prompt_lower or "codigo azul" in prompt_lower:
+        respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
+    else:
+        respuesta = f"Procesando tu orden '{prompt}' desde el Nodo Buin, jefa. Por supuesto, haré el trabajo duro mientras tú descansas."
     
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
         st.markdown(respuesta)
 
-    # Jarvis habla solito automáticamente sin romper la simetría ni el diseño
+    # Jarvis habla solito automáticamente
     hablar_jarvis_web(respuesta)
