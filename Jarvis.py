@@ -13,7 +13,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Auto-refresco del núcleo cada 1000ms (1 segundo) para que el segundero corra de verdad
+# Auto-refresco del núcleo cada 1000ms para el segundero en vivo
 st_autorefresh(interval=1000, key="reloj_tactico")
 
 # Estilo visual: Fondo negro absoluto y letras en tono cyan/azul Stark
@@ -72,10 +72,10 @@ st.markdown(
 )
 
 # Cabecera táctica exacta
-st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // E.D.I.T.H.</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
 
-# Línea de estado y fecha con segundero en tiempo real real
+# Línea de estado y fecha con segundero en tiempo real
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
 st.markdown(
     f"""
@@ -94,26 +94,26 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 
 st.markdown("---")
 
-# --- BARRA LATERAL (IZQUIERDA) CON MAPA Y CÁMARAS EN VIVO ---
+# --- BARRA LATERAL (IZQUIERDA): OJO DE DIOS DE OSIRIS Y MÓDULOS ACTIVOS ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
 
+    with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
+        st.markdown("📡 **Feed Satelital & Rastreo Global Activo**")
+        # Integración real del visor de rastreo / streaming directo
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+        st.success("Ojo de Dios (Osiris) enlazado al Nodo Buin con telemetría en directo.")
+
     with st.expander("🗺️ Mapa Táctico Satelital"):
-        st.markdown("Coordenadas Nodo Buin")
+        st.markdown("Coordenadas Perimetrales Buin")
         map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
         st.map(map_data, zoom=10, use_container_width=True)
 
-    with st.expander("🌌 Cámara en Vivo: Espacio (ISS)"):
-        st.markdown("📡 **NASA / ISS Live Feed**")
-        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
-
     with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
-        st.markdown("📡 **The World Live**")
         st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
 
     with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
-        st.markdown("📡 **Tráfico y Puertos**")
         st.video("https://www.youtube.com/watch?v=kUfuwa8mDrA")
 
     with st.expander("🌤️ Clima en Vivo (Buin)"):
@@ -141,18 +141,13 @@ with st.sidebar:
             else:
                 st.warning("Escribe una tarea primero, jefa.")
 
-    with st.expander("🛡️ Módulo E.D.I.T.H."):
-        st.markdown("Control satelital de defensa activo.")
-        if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
-            st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
-
-# --- CUERPO PRINCIPAL: CHAT IA & PROTOCOLO E.D.I.T.H. ---
-st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
+# --- CUERPO PRINCIPAL: CHAT IA OPERATIVO ---
+st.subheader("💬 Chat IA & Sistema Operativo")
 
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Reloj sincronizado con el cronómetro de Industrias Stark, jefa. Ahora los segundos corren de verdad. ¿Qué orden ejecutamos hoy?"}
+        {"role": "assistant", "content": "Ojo de Dios de Osiris en línea, jefa. Enlaces de rastreo conectados y segundero sincronizado. ¿Qué ruta o zona vigilamos ahora?"}
     ]
 
 # Mostrar historial de mensajes
@@ -161,7 +156,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Entrada de chat abajo
-if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
+if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -172,7 +167,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
     elif "hola" in prompt_lower:
         respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
     else:
-        respuesta = f"Procesando tu orden '{prompt}' desde el Nodo Buin, jefa. Por supuesto, haré el trabajo duro mientras tú descansas."
+        respuesta = f"Procesando tu orden '{prompt}' mediante el sistema Osiris en el Nodo Buin, jefa. De inmediato."
     
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
