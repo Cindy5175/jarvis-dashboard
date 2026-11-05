@@ -11,8 +11,8 @@ import streamlit.components.v1 as components
 
 # Configuración de la página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Tactical Core",
-    page_icon="⚡",
+    page_title="J.A.R.V.I.S. - Tactical Core (Ámbar)",
+    page_icon="🔥",
     layout="wide"
 )
 
@@ -47,7 +47,6 @@ def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
         ram = psutil.virtual_memory().percent
-        # Disco principal del equipo
         disco = psutil.disk_usage('/').percent
         return f"{cpu}%", f"{ram}%", f"{disco}%"
     except Exception:
@@ -70,26 +69,26 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
-# Estilo visual táctico Stark
+# Estilo visual: Fondo negro absoluto y tonos Ámbar/Fuego
 st.markdown(
     """
     <style>
     .stApp {
         background-color: #050505;
-        color: #00e5ff;
+        color: #ffb703;
     }
     h1, h2, h3, h4, h5, h6, p, span, div {
-        color: #00e5ff !important;
+        color: #ffb703 !important;
     }
     .stButton>button {
-        background-color: #0d1b2a;
-        color: #00e5ff !important;
-        border: 1px solid #00e5ff;
+        background-color: #331a00;
+        color: #ffb703 !important;
+        border: 1px solid #ffb703;
         border-radius: 8px;
     }
     .status-badge {
-        background-color: #00e5ff22;
-        border: 1px solid #00e5ff;
+        background-color: #ffb70322;
+        border: 1px solid #ffb703;
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.8rem;
@@ -100,7 +99,7 @@ st.markdown(
 )
 
 def hablar_jarvis_web(texto):
-    """Genera audio con tono fluido para Jarvis."""
+    """Genera audio ultrafluido y sin pausas para Jarvis."""
     try:
         tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
@@ -121,7 +120,7 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
-    st.markdown("<h2 style='text-align: center; color: #00e5ff;'>🛡️ ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #ffb703;'>🛡️ ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
     pin_ingresado = st.text_input("Ingrese Código Biométrico / PIN de Seguridad:", type="password")
     if st.button("Desbloquear Sistema Stark", use_container_width=True):
         if pin_ingresado == "1975" or pin_ingresado == "stark":
@@ -131,29 +130,29 @@ if not st.session_state.autenticado:
             st.error("Acceso denegado. Código incorrecto, jefa.")
     st.stop()
 
-# --- CABECERA TÁCTICA NODO STARK ---
+# --- CABECERA TÁCTICA FUEGO / ÁMBAR ---
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 5px;">
-        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
-            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
-            <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
-            <polygon points="50,32 70,66 30,66" fill="#00e5ff" opacity="0.3"/>
-            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)"/>
+        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #ffb703);">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#ffb703" stroke-width="4" stroke-dasharray="10 5"/>
+            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#ffb703" stroke-width="2"/>
+            <polygon points="50,20 80,72 20,72" fill="none" stroke="#ffb703" stroke-width="4"/>
+            <polygon points="50,32 70,66 30,66" fill="#ffb703" opacity="0.3"/>
+            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffb703)"/>
         </svg>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE COMMAND CENTER</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #ffb703; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #ffb703; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE // PROTOCOLO ÁMBAR</h3>", unsafe_allow_html=True)
 
 # Reloj en vivo
 components.html(
     """
-    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
+    <div style='text-align: center; color: #ffb703; text-shadow: 0 0 8px #ffb703; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
         [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
     </div>
     <script>
@@ -176,7 +175,7 @@ components.html(
 
 st.markdown("---")
 
-# --- PANELES DE TELEMETRÍA REAL DEL SISTEMA ---
+# --- PANELES DE TELEMETRÍA REAL ---
 col_telemetria, col_llm, col_events = st.columns([1, 1, 1])
 
 with col_telemetria:
@@ -190,15 +189,15 @@ with col_llm:
     st.markdown("#### 🧠 PROVEEDORES LLM")
     st.markdown("""
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <span class="status-badge">⚡ OpenAI (GPT-4o): ACTIVE</span>
-        <span class="status-badge">💎 Gemini Core: ONLINE</span>
-        <span class="status-badge">🌀 Local Engine: READY</span>
+        <span class="status-badge">🔥 OpenAI Core: ACTIVE</span>
+        <span class="status-badge">⚡ Gemini Link: ONLINE</span>
+        <span class="status-badge">🛡️ Local Engine: SECURE</span>
     </div>
     """, unsafe_allow_html=True)
 
 with col_events:
     st.markdown("#### 📡 LIVE INTELLIGENCE FEED")
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Sensores psutil vinculados al hardware.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🔥 [OK] Protocolo Ámbar desplegado con éxito.</p>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Enlace Ojo de Dios sincronizado.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
@@ -228,11 +227,11 @@ with st.sidebar:
     with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
         st.markdown("**Estación Meteorológica Local**")
         st.markdown(
-            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
+            f'<div style="background-color: #331a00; padding: 10px; border-radius: 6px; border: 1px solid #ffb703; color: #ffb703; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
             unsafe_allow_html=True
         )
         st.markdown(
-            f'<div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
+            f'<div style="background-color: #4d2600; padding: 10px; border-radius: 6px; border: 1px solid #ff9900; color: #ffcc66; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
             unsafe_allow_html=True
         )
 
@@ -242,7 +241,7 @@ with st.sidebar:
         
         if audio_prompt is not None:
             st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
-            respuesta_voz = "Orden de voz recibida y ejecutada en el Nodo Buin, jefa. Todo bajo control."
+            respuesta_voz = "Orden de voz procesada fluidamente en el Nodo Buin, jefa. Todo bajo control."
             st.session_state.messages.append({"role": "user", "content": "🎙️ [Comando de Voz Dictado]"})
             st.session_state.messages.append({"role": "assistant", "content": respuesta_voz})
             hablar_jarvis_web(respuesta_voz)
@@ -276,7 +275,7 @@ st.subheader("💬 Chat IA & Sistema Operativo Táctico")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Sensores conectados al hardware real del sistema, telemetría de CPU y RAM activa, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Protocolo Ámbar y motor de voz fluido activados, jefa. El búnker responde sin pausas. ¿Qué órdenes tenemos?"}
     ]
 
 for message in st.session_state.messages:
@@ -291,13 +290,13 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     prompt_lower = prompt.lower().strip()
     
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de ver cómo el búnker lee los recursos reales de la máquina?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Te gustó cómo quedó el tono fuego/ámbar en el búnker?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
         respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
     else:
-        respuesta = f"Procesando tu orden '{prompt}' en el Nodo Buin, jefa."
+        respuesta = f"Procesando tu orden '{prompt}' con respuesta fluida en el Nodo Buin, jefa."
     
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
