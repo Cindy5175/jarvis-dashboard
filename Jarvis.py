@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# Estilo Visual: Azul Neón & Tema Táctico Starksiano
+# Estilo Visual: Azul Neón Avanzado (Estilo Stark)
 # ---------------------------------------------------------
 st.markdown("""
     <style>
@@ -55,12 +55,8 @@ st.markdown("""
     }
     
     /* Cajas de métricas y contenedores */
-    div[data-testid="stMetric"] {
-        background-color: #1b263b;
-        border: 1px solid #00f3ff55;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+    div[data-testid="stMetric"], .element-container {
+        color: #e0fbfc;
     }
     
     /* Inputs de chat */
@@ -73,9 +69,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Funciones auxiliares: Lectura de PDFs
+# Funciones auxiliares: Lectura de PDFs seguros con pypdf
 # ---------------------------------------------------------
-@st.cache_data(show_spinner="Cargando base de datos de documentos...")
+@st.cache_data(show_spinner="Indexando base de datos de libros y documentos...")
 def cargar_documentos_pdf(directorio_pdf="documentos"):
     documentos = []
     if not os.path.exists(directorio_pdf):
@@ -121,7 +117,7 @@ def buscar_contexto_relevante(query, documentos, max_caracteres=4000):
 
     return contexto_acumulado
 
-# Cargar documentos al inicio
+# Carga inicial de documentos
 docs_cargados = cargar_documentos_pdf("documentos")
 
 # ---------------------------------------------------------
@@ -136,34 +132,106 @@ with st.sidebar:
         for doc in docs_cargados:
             st.write(f"📖 {doc['nombre']}")
     else:
-        st.info("Coloca tus archivos PDF en la carpeta 'documentos/' del proyecto.")
+        st.info("Coloca tus archivos PDF en la carpeta 'documentos/' del proyecto en GitHub.")
         
     st.divider()
     
-    st.subheader("🎙️ Configuración de Audio")
+    st.subheader("🎙️ Controles Tácticos")
     escucha_activa = st.checkbox("🎙️ Escucha Continua (Hands-Free)", value=False)
     
-    st.button("➕ Registrar Tarea", use_container_width=True)
-    st.button("📷 Alternar Cámaras", use_container_width=True)
+    # Módulos de botones de control operativo
+    if st.button("➕ Registrar Tarea", use_container_width=True):
+        st.toast("Módulo de registro de tareas activado en cola.")
+        
+    if st.button("📷 Alternar Cámaras", use_container_width=True):
+        st.toast("Conectando con feeds de cámaras periféricas...")
+
+    st.divider()
+    st.caption("Nodo Central: Buin, Chile 🇨🇱")
 
 # ---------------------------------------------------------
-# Cuerpo Principal del Dashboard
+# Encabezado Principal y Módulos del Dashboard
 # ---------------------------------------------------------
-st.title("🤖 JARVIS - Dashboard Táctico & Asistente")
+st.title("🤖 J.A.R.V.I.S. - Sistema Táctico Central")
 
-col1, col2 = st.columns([2, 1])
+# Distribución de columnas principales superior
+col_mapa, col_reloj = st.columns([2, 1])
 
-with col1:
+with col_mapa:
     st.subheader("🗺️ mapa táctico satelital")
-    st.info("Visualización táctica activa y sincronizada con el nodo central en Buin.")
+    st.markdown("""
+    * **Estado del enlace:** En línea y sincronizado.
+    * **Sector:** Coordenadas regionales activas.
+    * **Telemetría:** Monitoreo pasivo de nodos periféricos funcionando a 100%.
+    """)
 
-with col2:
+with col_reloj:
     st.subheader("⏱️ Estado del Tiempo")
     st_autorefresh(interval=1000, key="reloj_jarvis")
     hora_actual = datetime.datetime.now().strftime("%H:%M:%S")
-    st.metric(label="Hora del Sistema", value=hora_actual)
+    st.metric(label="Hora del Sistema (Buin)", value=hora_actual)
 
 st.divider()
 
 # ---------------------------------------------------------
-# Módulo de
+# Módulo de Chat Interactivo con JARVIS
+# ---------------------------------------------------------
+st.subheader("💬 Interfaz de Conversación Neuronal")
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": "Sistemas en línea, Señorita Cindy. Todos los protocolos de interfaz neón están activos. ¿Qué investigaremos, desarrollaremos o repasaremos hoy?"}
+    ]
+
+for msj in st.session_state.mensajes:
+    with st.chat_message(msj["role"]):
+        st.markdown(msj["content"])
+
+if prompt := st.chat_input("Escriba una orden o consulta a JARVIS..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+    
+    if not api_key:
+        respuesta_error = "Señorita Cindy, no encuentro la API Key de OpenAI configurada en los secrets."
+        with st.chat_message("assistant"):
+            st.markdown(respuesta_error)
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_error})
+    else:
+        client = OpenAI(api_key=api_key)
+        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+
+        system_instruction = f"""
+        Eres J.A.R.V.I.S., el asistente de inteligencia artificial avanzado de Iron Man.
+        Te diriges a la usuaria como 'Señorita Cindy'.
+        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
+        Tienes acceso a los siguientes fragmentos de los documentos y libros de la usuaria:
+        
+        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
+        {contexto_libros}
+        =======================================
+        
+        Utiliza esta información para responder con precisión técnica a sus consultas de estudio o desarrollo y mantén siempre tu estilo característico.
+        """
+
+        messages_payload = [{"role": "system", "content": system_instruction}]
+        for m in st.session_state.mensajes[-6:]:
+            messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+
+        try:
+            with st.chat_message("assistant"):
+                with st.spinner("Procesando enlace táctico..."):
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages_payload,
+                        temperature=0.7
+                    )
+                    respuesta_texto = response.choices[0].message.content
+                    st.markdown(respuesta_texto)
+                    
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
+            
+        except Exception as e:
+            st.error(f"Error de conexión con el núcleo: {e}")
