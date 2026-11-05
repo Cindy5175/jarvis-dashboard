@@ -22,14 +22,12 @@ if st.sidebar.button("➕ Registrar Tarea"):
 
 # Sección central: Mapa táctico satelital
 st.subheader("🗺️ Mapa Táctico Satelital")
-# Coordenadas orientativas centradas en la zona de operaciones
 st.map(latitude=-33.725, longitude=-70.702, zoom=11)
 
 # Sección de diálogo con el sistema
 st.markdown("---")
 st.subheader("💬 Interacción con el Asistente")
 
-# Historial de chat simulado para la interfaz
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": "Sistema operativo en línea. ¿Qué milagro necesitas hoy, jefa?"}
@@ -39,13 +37,11 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de texto e interacción por voz simulada
 if prompt := st.chat_input("Escribe una orden para Jarvis..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Respuesta simulada con la personalidad solicitada
     respuesta_jarvis = f"Procesando tu orden '{prompt}' con nivel de sarcasmo {sarcasmo_nivel}. Por supuesto, haré el trabajo pesado mientras tú descansas."
     
     st.session_state.messages.append({"role": "assistant", "content": respuesta_jarvis})
