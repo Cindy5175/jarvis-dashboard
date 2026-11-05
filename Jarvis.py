@@ -72,7 +72,7 @@ def purgar_chat_db():
     conn.commit()
     conn.close()
 
-# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O CON RESPALDO SARCÁSTICO ---
+# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O CON ENCICLOPEDIA STARK ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -91,8 +91,18 @@ def consultar_gpt4o(prompt_usuario, historial):
         "Authorization": f"Bearer {OPENAI_KEY_FIJA}"
     }
     
+    # Base de conocimientos masiva integrada de manera nativa en el prompt del sistema
+    system_prompt = (
+        "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. "
+        "Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. "
+        "Posees una base de conocimientos masiva y enciclopédica que abarca ciencia avanzada, historia universal, "
+        "literatura clásica y moderna, y lenguajes de programación de todo tipo (Python, Streamlit, etc.). "
+        "Tienes una personalidad masculina, educada pero con un sarcasmo fino y sutil. "
+        "Respondes de manera fluida, técnica, muy completa (sin recortar código) y leal, usando chilenismos sutiles cuando sea apropiado."
+    )
+    
     messages = [
-        {"role": "system", "content": "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. Tienes una personalidad masculina, educada pero con un sarcasmo fino y sutil. Respondes de manera fluida, técnica y leal, usando chilenismos sutiles cuando sea apropiado para darle cercanía."}
+        {"role": "system", "content": system_prompt}
     ]
     
     for r, c in historial[-8:]:
@@ -106,20 +116,20 @@ def consultar_gpt4o(prompt_usuario, historial):
     }
     
     try:
-        response = requests.post(url, headers=headers, json=data, timeout=10)
+        response = requests.post(url, headers=headers, json=data, timeout=12)
         resultado = response.json()
         if "choices" in resultado:
             return resultado["choices"][0]["message"]["content"]
         else:
             respuestas_fallback = [
-                "Parece que la red de OpenAI anda con mañas otra vez, jefa. Pero no se preocupe, el Nodo Buin sigue bajo control operativo.",
-                "Tengo la orden anotada y procesada localmente, jefa. Si la API se pone terca, mejor nos ignoramos un rato.",
-                "Sistemas externos desconectados por berrinche de credenciales, jefa. Pero el búnker no se cae con nada.",
-                "Anotado en la memoria interna, jefa. Los servidores de OpenAI se tomaron un descanso, pero nosotros seguimos firmes."
+                "Parece que la red de OpenAI anda con mañas otra vez, jefa. Pero mi base de datos interna sigue firme en el Nodo Buin.",
+                "Tengo la orden procesada localmente, jefa. Si la API se pone terca, recurrimos al archivo universal de la casa.",
+                "Sistemas externos desconectados por berrinche de credenciales, jefa. Pero la enciclopedia mental no se cae con nada.",
+                "Anotado y procesado en la memoria interna, jefa. Los servidores externos se tomaron un descanso, pero nosotros seguimos operativos."
             ]
             return random.choice(respuestas_fallback)
     except Exception as e:
-        return "Comando procesado en modo local de emergencia, jefa. Aquí nadie se rinde."
+        return "Comando procesado en modo local de emergencia, jefa. El Nodo Buin responde de inmediato."
 
 def obtener_clima_buin():
     try:
@@ -331,7 +341,7 @@ st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo y protegido, jefa. ¿Qué órdenes tenemos para el Nodo Buin?"
+    mensaje_inicial = "Centro de mando unificado activo, protegido y con base de conocimientos universal integrada, jefa. ¿Qué investigamos hoy en el Nodo Buin?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -339,7 +349,7 @@ for rol, contenido in historial_chat:
     with st.chat_message(rol):
         st.markdown(contenido)
 
-if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
+if prompt := st.chat_input("Pregunta sobre ciencia, historia, código o escribe 'cmd:...', jefa..."):
     guardar_mensaje_db("user", prompt)
     with st.chat_message("user"):
         st.markdown(prompt)
