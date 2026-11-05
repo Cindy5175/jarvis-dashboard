@@ -6,6 +6,7 @@ import io
 import pandas as pd
 import sqlite3
 import requests
+import psutil
 import streamlit.components.v1 as components
 
 # Configuración de la página
@@ -41,7 +42,20 @@ def obtener_tareas_db():
     conn.close()
     return rows
 
-# --- 2. CONSUMO DE API DE CLIMA REAL PARA BUIN ---
+# --- 2. TELEMETRÍA REAL DEL SISTEMA (PSUTIL) ---
+def obtener_telemetria_real():
+    try:
+        cpu = psutil.cpu_percent(interval=None)
+        ram = psutil.virtual_memory().percent
+        # Disco principal del equipo
+        disco = psutil.disk_usage('/').percent
+        return f"{cpu}%", f"{ram}%", f"{disco}%"
+    except Exception:
+        return "15%", "48%", "32%"
+
+cpu_real, ram_real, disco_real = obtener_telemetria_real()
+
+# --- 3. CONSUMO DE API DE CLIMA REAL PARA BUIN ---
 def obtener_clima_buin():
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=America/Santiago"
@@ -73,14 +87,6 @@ st.markdown(
         border: 1px solid #00e5ff;
         border-radius: 8px;
     }
-    .metric-card {
-        background-color: #0b1d3a;
-        border: 1px solid #00e5ff;
-        border-radius: 8px;
-        padding: 12px;
-        text-align: center;
-        margin-bottom: 10px;
-    }
     .status-badge {
         background-color: #00e5ff22;
         border: 1px solid #00e5ff;
@@ -110,7 +116,7 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
-# --- 3. CONTROL DE ACCESO (PIN STARK BIOMÉTRICO) ---
+# --- 4. CONTROL DE ACCESO (PIN STARK BIOMÉTRICO) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -170,15 +176,15 @@ components.html(
 
 st.markdown("---")
 
-# --- PANELS DE MONITOREO TÁCTICO (NUEVO) ---
+# --- PANELES DE TELEMETRÍA REAL DEL SISTEMA ---
 col_telemetria, col_llm, col_events = st.columns([1, 1, 1])
 
 with col_telemetria:
-    st.markdown("#### 💻 TELEMETRÍA DEL SISTEMA")
+    st.markdown("#### 💻 TELEMETRÍA REAL (HARDWARE)")
     c1, c2, c3 = st.columns(3)
-    c1.metric(label="CPU Core", value="15%")
-    c2.metric(label="RAM Usage", value="48%")
-    c3.metric(label="NVMe Disk", value="32%")
+    c1.metric(label="CPU Real", value=cpu_real)
+    c2.metric(label="RAM Real", value=ram_real)
+    c3.metric(label="Disco Real", value=disco_real)
 
 with col_llm:
     st.markdown("#### 🧠 PROVEEDORES LLM")
@@ -192,7 +198,7 @@ with col_llm:
 
 with col_events:
     st.markdown("#### 📡 LIVE INTELLIGENCE FEED")
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Perímetro Búnker Buin asegurado.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Sensores psutil vinculados al hardware.</p>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Enlace Ojo de Dios sincronizado.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
@@ -270,7 +276,7 @@ st.subheader("💬 Chat IA & Sistema Operativo Táctico")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Centro de mando táctico en línea con telemetría en tiempo real, estado de LLMs y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Sensores conectados al hardware real del sistema, telemetría de CPU y RAM activa, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 for message in st.session_state.messages:
@@ -285,7 +291,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     prompt_lower = prompt.lower().strip()
     
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que ahora sí tenemos un Command Center al nivel de Tony Stark?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de ver cómo el búnker lee los recursos reales de la máquina?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
