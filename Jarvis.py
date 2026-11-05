@@ -4,6 +4,7 @@ import base64
 from gtts import gTTS
 import io
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh
 
 # Configuración de la página
 st.set_page_config(
@@ -11,6 +12,9 @@ st.set_page_config(
     page_icon="⚡",
     layout="centered"
 )
+
+# Auto-refresco del núcleo cada 1000ms (1 segundo) para que el segundero corra de verdad
+st_autorefresh(interval=1000, key="reloj_tactico")
 
 # Estilo visual: Fondo negro absoluto y letras en tono cyan/azul Stark
 st.markdown(
@@ -71,7 +75,7 @@ st.markdown(
 st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // E.D.I.T.H.</h3>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
 
-# Línea de estado y fecha con AZUL NEÓN BRILLANTE
+# Línea de estado y fecha con segundero en tiempo real real
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
 st.markdown(
     f"""
@@ -90,7 +94,7 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 
 st.markdown("---")
 
-# --- BARRA LATERAL (IZQUIERDA) CON TODOS LOS MÓDULOS, CÁMARAS Y MAPA ---
+# --- BARRA LATERAL (IZQUIERDA) CON MAPA Y CÁMARAS EN VIVO ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
@@ -148,7 +152,7 @@ st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"}
+        {"role": "assistant", "content": "Reloj sincronizado con el cronómetro de Industrias Stark, jefa. Ahora los segundos corren de verdad. ¿Qué orden ejecutamos hoy?"}
     ]
 
 # Mostrar historial de mensajes
