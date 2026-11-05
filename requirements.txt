@@ -1,5 +1,5 @@
 streamlit
 pypdf
-gTTS
 streamlit-autorefresh
 openai
+google-generativeai
