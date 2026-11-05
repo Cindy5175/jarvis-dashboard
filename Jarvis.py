@@ -8,14 +8,12 @@ import sqlite3
 import requests
 import psutil
 import subprocess
-import threading
-import time
 import streamlit.components.v1 as components
 
 # Configuración de la página
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Tactical Core (Ámbar)",
-    page_icon="🔥",
+    page_title="J.A.R.V.I.S. - Tactical Core",
+    page_icon="⚡",
     layout="wide"
 )
 
@@ -88,26 +86,26 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
-# --- 3. ESTILO VISUAL ÁMBAR / FUEGO ---
+# --- 3. ESTILO VISUAL AZUL NEÓN STARK ---
 st.markdown(
     """
     <style>
     .stApp {
         background-color: #050505;
-        color: #ffb703;
+        color: #00e5ff;
     }
     h1, h2, h3, h4, h5, h6, p, span, div {
-        color: #ffb703 !important;
+        color: #00e5ff !important;
     }
     .stButton>button {
-        background-color: #331a00;
-        color: #ffb703 !important;
-        border: 1px solid #ffb703;
+        background-color: #0d1b2a;
+        color: #00e5ff !important;
+        border: 1px solid #00e5ff;
         border-radius: 8px;
     }
     .status-badge {
-        background-color: #ffb70322;
-        border: 1px solid #ffb703;
+        background-color: #00e5ff22;
+        border: 1px solid #00e5ff;
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.8rem;
@@ -118,7 +116,7 @@ st.markdown(
 )
 
 def hablar_jarvis_web(texto):
-    """Genera audio ultrafluido y sin pausas para Jarvis."""
+    """Genera audio con tono fluido para Jarvis."""
     try:
         tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
@@ -139,7 +137,7 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
-    st.markdown("<h2 style='text-align: center; color: #ffb703;'>🛡️ ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #00e5ff;'>🛡️ ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
     pin_ingresado = st.text_input("Ingrese Código Biométrico / PIN de Seguridad:", type="password")
     if st.button("Desbloquear Sistema Stark", use_container_width=True):
         if pin_ingresado == "1975" or pin_ingresado == "stark":
@@ -153,25 +151,25 @@ if not st.session_state.autenticado:
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 5px;">
-        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #ffb703);">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#ffb703" stroke-width="4" stroke-dasharray="10 5"/>
-            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#ffb703" stroke-width="2"/>
-            <polygon points="50,20 80,72 20,72" fill="none" stroke="#ffb703" stroke-width="4"/>
-            <polygon points="50,32 70,66 30,66" fill="#ffb703" opacity="0.3"/>
-            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffb703)"/>
+        <svg width="85" height="85" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 14px #00e5ff);">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
+            <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
+            <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
+            <polygon points="50,32 70,66 30,66" fill="#00e5ff" opacity="0.3"/>
+            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #00e5ff)"/>
         </svg>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown("<h3 style='text-align: center; color: #ffb703; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #ffb703; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE // PROTOCOLO ÁMBAR AVANZADO</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-bottom: 0;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -5px; margin-bottom: 5px;'>TACTICAL CORE COMMAND CENTER</h3>", unsafe_allow_html=True)
 
 # Reloj en vivo
 components.html(
     """
-    <div style='text-align: center; color: #ffb703; text-shadow: 0 0 8px #ffb703; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
+    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
         [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
     </div>
     <script>
@@ -208,15 +206,15 @@ with col_llm:
     st.markdown("#### 🧠 PROVEEDORES LLM & SISTEMA")
     st.markdown("""
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <span class="status-badge">🔥 SQLite DB: ACTIVE</span>
-        <span class="status-badge">⚡ Background: RUNNING</span>
+        <span class="status-badge">⚡ OpenAI Core: ACTIVE</span>
+        <span class="status-badge">💎 Gemini Link: ONLINE</span>
         <span class="status-badge">🛡️ Terminal OS: READY</span>
     </div>
     """, unsafe_allow_html=True)
 
 with col_events:
     st.markdown("#### 📡 LIVE INTELLIGENCE FEED")
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🔥 [OK] Memoria persistente sincronizada.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Azul Neón Stark restablecido.</p>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Perímetro Nodo Buin blindado.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
@@ -245,11 +243,11 @@ with st.sidebar:
     with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
         st.markdown("**Estación Meteorológica Local**")
         st.markdown(
-            f'<div style="background-color: #331a00; padding: 10px; border-radius: 6px; border: 1px solid #ffb703; color: #ffb703; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
+            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
             unsafe_allow_html=True
         )
         st.markdown(
-            f'<div style="background-color: #4d2600; padding: 10px; border-radius: 6px; border: 1px solid #ff9900; color: #ffcc66; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
+            f'<div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
             unsafe_allow_html=True
         )
 
@@ -258,7 +256,7 @@ with st.sidebar:
         audio_prompt = st.audio_input("Grabar comando de voz táctico:")
         if audio_prompt is not None:
             st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
-            respuesta_voz = "Orden de voz procesada fluidamente en el Nodo Buin, jefa. Todo bajo control."
+            respuesta_voz = "Orden de voz procesada en el Nodo Buin, jefa. Todo bajo control."
             guardar_mensaje_db("user", "🎙️ [Comando de Voz Dictado]")
             guardar_mensaje_db("assistant", respuesta_voz)
             hablar_jarvis_web(respuesta_voz)
@@ -290,10 +288,9 @@ with st.sidebar:
 # --- CUERPO PRINCIPAL: CHAT IA CON MEMORIA PERSISTENTE Y COMANDOS OS ---
 st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
-# Recuperar historial persistente de SQLite
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo con memoria persistente, telemetría real, visión artificial y búnker blindado, jefa. ¿Qué órdenes tenemos?"
+    mensaje_inicial = "Centro de mando unificado en azul neón activo con memoria persistente, telemetría real y búnker blindado, jefa. ¿Qué órdenes tenemos?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -308,7 +305,6 @@ if prompt := st.chat_input("Escribe tu orden o comando de sistema, jefa..."):
 
     prompt_lower = prompt.lower().strip()
     
-    # Procesamiento de comandos especiales o sistema operativo
     if prompt_lower.startswith("cmd:"):
         comando_terminal = prompt[4:].strip()
         try:
@@ -317,13 +313,13 @@ if prompt := st.chat_input("Escribe tu orden o comando de sistema, jefa..."):
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de ver todo el sistema unificado y operando a máxima potencia?"
+        respuesta = "¿De qué te ríes tanto, jefa? De vuelta al azul neón Stark original como debe ser."
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
         respuesta = "Hola de nuevo, jefa. ¿Te dignaste a saludar al sistema o necesitas que mueva medio Buin otra vez?"
     else:
-        respuesta = f"Procesando tu orden '{prompt}' con memoria persistente y telemetría en el Nodo Buin, jefa."
+        respuesta = f"Procesando tu orden '{prompt}' en el Nodo Buin, jefa."
     
     guardar_mensaje_db("assistant", respuesta)
     with st.chat_message("assistant"):
