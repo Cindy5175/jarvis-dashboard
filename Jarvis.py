@@ -1,5 +1,5 @@
 import base64
-from gTTS import gtts
+from gtts import gtts
 import io
 
 
