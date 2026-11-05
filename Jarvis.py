@@ -89,13 +89,15 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 
 st.markdown("---")
 
-# --- BARRA LATERAL CON MÓDULOS OCULTOS ---
+# --- BARRA LATERAL CON MÓDULOS Y BOTONES ACTIVOS EN TIEMPO REAL ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
 
     with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
-        st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
+        st.info("Red de vigilancia satelital lista.")
+        if st.button("🟢 Activar Ojo de Dios", use_container_width=True):
+            st.success("¡Cámaras en vivo activadas con éxito, jefa!")
 
     with st.expander("🌌 Transmisión Espacial en Vivo"):
         st.markdown("📡 **Señal Satelital en Directo (NASA/Espacio)**")
@@ -116,13 +118,23 @@ with st.sidebar:
         st.success("Latitud: -33.73 | Longitud: -70.72 - Perímetro seguro.")
 
     with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-        st.info("Módulo de escucha automática integrado en el núcleo operativo.")
+        st.info("Control de audio local en tiempo real.")
+        if st.button("🎙️ Iniciar Hands-Free", use_container_width=True):
+            st.success("¡Escucha continua activada en el nodo local, jefa!")
 
     with st.expander("➕ Registro de Tareas"):
-        st.text("Nodo Buin sincronizado con el registro de misiones.")
+        st.text("Nodo Buin sincronizado.")
+        nueva_tarea = st.text_input("Nueva Misión / Tarea:")
+        if st.button("Registrar Tarea ➕", use_container_width=True):
+            if nueva_tarea:
+                st.success(f"Tarea registrada: '{nueva_tarea}'")
+            else:
+                st.warning("Escribe una tarea primero, jefa.")
 
     with st.expander("🛡️ Módulo E.D.I.T.H."):
-        st.markdown("Control satelital de defensa y apoyo táctico activo.")
+        st.markdown("Control satelital de defensa activo.")
+        if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
+            st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
 
 # --- CUERPO PRINCIPAL: CHAT IA & PROTOCOLO E.D.I.T.H. ---
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
