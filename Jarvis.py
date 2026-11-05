@@ -75,6 +75,13 @@ def obtener_telemetria_real():
 
 cpu_real, ram_real, disco_real = obtener_telemetria_real()
 
+def verificar_estado_openai():
+    if OPENAI_KEY_FIJA and OPENAI_KEY_FIJA.startswith("sk-"):
+        return "🟢 Activo (Núcleo Blindado)"
+    return "🟡 En espera (Sin clave config)"
+
+openai_status = verificar_estado_openai()
+
 def obtener_clima_buin():
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=America/Santiago"
@@ -197,8 +204,8 @@ components.html(
 
 st.markdown("---")
 
-# --- PANELES REALES E INTERACTIVOS SUPERIORES ---
-col_telemetria, col_llm, col_events = st.columns([1.1, 1, 0.9])
+# --- PANELES REALES ALINEADOS A LA IZQUIERDA ---
+col_telemetria, col_llm, col_events = st.columns([1.4, 1.2, 0.8])
 
 with col_telemetria:
     st.markdown("#### 💻 TELEMETRÍA REAL")
@@ -209,13 +216,13 @@ with col_telemetria:
 
 with col_llm:
     st.markdown("#### 🧠 ESTADO DE NÚCLEOS LLM")
-    st.markdown('<div class="status-badge">⚡ OpenAI: 🟢 Activo (Hardcoded OK)</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="status-badge">⚡ OpenAI: {openai_status}</div>', unsafe_allow_html=True)
     st.markdown('<div class="status-badge">💎 Gemini Link: 🟢 Sincronizado</div>', unsafe_allow_html=True)
 
 with col_events:
     st.markdown("#### 📡 LIVE FEED")
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Llave OpenAI blindada en código.</p>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Nodo Buin 100% operativo.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Llave OpenAI blindada.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; margin: 0;'>🟢 [OK] Nodo Buin operativo.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -290,7 +297,7 @@ st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo, llave OpenAI blindada en el código y búnker operativo, jefa. ¿Qué órdenes tenemos?"
+    mensaje_inicial = "Centro de mando unificado activo, paneles alineados a la izquierda y búnker operativo, jefa. ¿Qué órdenes tenemos?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -313,7 +320,7 @@ if prompt := st.chat_input("Escribe tu orden o comando con 'cmd:', jefa..."):
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     elif prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? Solucionado de raíz para que no te moleste más."
+        respuesta = "¿De qué te ríes tanto, jefa? Ya quedó todo alineado hacia la izquierda."
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
