@@ -101,7 +101,6 @@ def consultar_cerebro_jarvis(prompt_usuario, historial):
     
     prompt_lower = prompt_usuario.lower()
     
-    # Respaldo inteligente local para garantizar respuestas enciclopédicas inmediatas
     if "arturo prat" in prompt_lower:
         return (
             "**Agustín Arturo Prat Chacón** (1848–1879) fue un abogado y marino chileno, reconocido unánimemente "
@@ -177,7 +176,9 @@ st.markdown(
 
 def hablar_jarvis_web(texto):
     try:
-        tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
+        # Limpieza de asteriscos y Markdown para que la voz no lea código basura
+        texto_limpio = texto.replace("*", "").replace("#", "").replace("-", " ")
+        tts = gTTS(text=texto_limpio, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
         tts.write_to_fp(fp)
         fp.seek(0)
@@ -222,148 +223,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: 0px; margin-bottom: 2px;'>J.A.R.V.I.S IA</h3>", unsafe_allow_html=True)
-
-# Reloj en vivo
-components.html(
-    """
-    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
-        [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
-    </div>
-    <script>
-    function actualizarReloj() {
-        try {
-            const now = new Date();
-            const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
-            const elemento = document.getElementById('reloj-vivo');
-            if (elemento) { elemento.innerHTML = horaStr; }
-        } catch(e) { console.log("Error en reloj:", e); }
-    }
-    actualizarReloj();
-    setInterval(actualizarReloj, 1000);
-    </script>
-    """,
-    height=30,
-    scrolling=False
-)
-
-st.markdown("---")
-
-# --- BARRA LATERAL ---
-with st.sidebar:
-    st.markdown("### 🌐 NÚCLEO DE CONTROL")
-    st.markdown("---")
-
-    if st.button("🗑️ Purgar Historial de Chat", use_container_width=True):
-        purgar_chat_db()
-        st.success("¡Memoria de chat purgada con éxito, jefa!")
-        st.rerun()
-
-    st.markdown("---")
-
-    with st.expander("💻 Telemetría Real"):
-        st.markdown(f"- **CPU:** {cpu_real}")
-        st.markdown(f"- **RAM:** {ram_real}")
-        st.markdown(f"- **Disco:** {disco_real}")
-
-    with st.expander("🧠 Estado de Núcleos LLM"):
-        st.markdown("⚡ Gemini Link: 🟢 Sincronizado (AQ)")
-
-    with st.expander("📡 Live Feed"):
-        st.markdown("🟢 [OK] Nodo Buin operativo.")
-
-    with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
-        st.markdown("📡 **Red de Inteligencia Global Activa**")
-        st.link_button("🌐 Abrir Ojo de Dios (Osiris)", "https://www.osirisai.live", use_container_width=True)
-
-    with st.expander("🗺️ Mapa Táctico Satelital"):
-        st.markdown("Coordenadas Perimetrales Buin")
-        map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
-        st.map(map_data, zoom=12, use_container_width=True)
-
-    with st.expander("📷 Visión Perimetral (Webcam Directa)"):
-        st.markdown("Módulo de captura visual en tiempo real:")
-        img_file = st.camera_input("Capturar perímetro del búnker")
-        if img_file is not None:
-            st.success("¡Imagen perimetral registrada con éxito en el sistema, jefa!")
-
-    with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
-        st.markdown(
-            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real}</div>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            f'<div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
-            unsafe_allow_html=True
-        )
-
-    with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-        audio_prompt = st.audio_input("Grabar comando de voz táctico:")
-        if audio_prompt is not None:
-            st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
-            respuesta_voz = "Orden de voz procesada en el Nodo Buin, jefa. Todo bajo control."
-            guardar_mensaje_db("user", "🎙️ [Comando de Voz Dictado]")
-            guardar_mensaje_db("assistant", respuesta_voz)
-            hablar_jarvis_web(respuesta_voz)
-            st.rerun()
-
-    with st.expander("➕ Registro de Misiones (Base de Datos Real)"):
-        st.text("Sincronizado con SQLite.")
-        nueva_tarea = st.text_input("Nueva Misión / Tarea:")
-        if st.button("Registrar en BD ➕", use_container_width=True):
-            if nueva_tarea:
-                agregar_tarea_db(nueva_tarea)
-                st.success(f"Misión guardada: '{nueva_tarea}'")
-            else:
-                st.warning("Escribe una tarea primero, jefa.")
-        
-        st.markdown("---")
-        st.markdown("**Misiones Registradas:**")
-        tareas_guardadas = obtener_tareas_db()
-        if tareas_guardadas:
-            for tid, ttext, tstatus in tareas_guardadas:
-                st.markdown(f"- `{ttext}` ({tstatus})")
-        else:
-            st.text("No hay misiones activas.")
-
-    if st.button("🔒 Bloquear Búnker", use_container_width=True):
-        st.session_state.autenticado = False
-        st.rerun()
-
-# --- CUERPO PRINCIPAL: CHAT IA CON ENCICLOPEDIA ---
-st.subheader("💬 Chat IA & Terminal Operativa Táctica")
-
-historial_chat = obtener_historial_db()
-if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo y enciclopedia universal cargada con éxito, jefa. ¿De qué historia, ciencia o código conversamos hoy en el Nodo Buin?"
-    guardar_mensaje_db("assistant", mensaje_inicial)
-    historial_chat = [("assistant", mensaje_inicial)]
-
-for rol, contenido in historial_chat:
-    with st.chat_message(rol):
-        st.markdown(contenido)
-
-if prompt := st.chat_input("Pregunta sobre Arturo Prat, ciencia, historia, código o escribe 'cmd:...', jefa..."):
-    guardar_mensaje_db("user", prompt)
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    prompt_lower = prompt.lower().strip()
-    
-    if prompt_lower.startswith("cmd:"):
-        comando_terminal = prompt[4:].strip()
-        try:
-            resultado_cmd = subprocess.check_output(comando_terminal, shell=True, stderr=subprocess.STDOUT, text=True, timeout=5)
-            respuesta = f"⚙️ Ejecución de comando local completada, jefa:\n```text\n{resultado_cmd}\n```"
-        except Exception as e:
-            respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
-    else:
-        respuesta = consultar_cerebro_jarvis(prompt, historial_chat)
-
-    guardar_mensaje_db("assistant", respuesta)
-    with st.chat_message("assistant"):
-        st.markdown(respuesta)
-
-    hablar_jarvis_web(respuesta)
-    st.rerun()
+st.markdown("<h3 style='text-align: center; color: #00e5ff
