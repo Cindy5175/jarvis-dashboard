@@ -4,7 +4,7 @@ import base64
 from gtts import gTTS
 import io
 
-# Configuración de la página con barra lateral expandible
+# Configuración de la página
 st.set_page_config(
     page_title="J.A.R.V.I.S. - Nodo Táctico",
     page_icon="⚡",
@@ -12,9 +12,8 @@ st.set_page_config(
 )
 
 def hablar_jarvis_web(texto):
-    """Genera audio con tono fluido para Jarvis."""
+    """Genera audio con tono fluido y natural para Jarvis."""
     try:
-        # Usamos slow=False para evitar el efecto de lectura robotizada lenta
         tts = gTTS(text=texto, lang='es', tld='cl', slow=False)
         fp = io.BytesIO()
         tts.write_to_fp(fp)
@@ -38,13 +37,17 @@ fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
 st.markdown(f"`[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]`")
 st.markdown("---")
 
-# --- MÓDULOS EN LA BARRA LATERAL (IZQUIERDA EN MODO OCULTO/DESPLEGABLE) ---
+# --- BARRA LATERAL CON MÓDULOS OCULTOS ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
 
     with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
         st.info("Conectando con la red de vigilancia satelital del Nodo Buin...")
+
+    with st.expander("🌌 Transmisión Espacial en Vivo"):
+        st.markdown("📡 **Señal Satelital en Directo (NASA/Espacio)**")
+        st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
 
     with st.expander("🌤️ Clima en Vivo (Buin)"):
         st.markdown("**Estación Meteorológica Local**")
@@ -74,9 +77,9 @@ with st.sidebar:
 
     st.markdown("---")
     if st.button("🔒 Bloquear Búnker", use_container_width=True):
-        st.warning("Sistema bloqueado temporalmente.")
+        st.warning("Sistema de búnker bloqueado temporalmente por seguridad, jefa.")
 
-# --- CUERPO PRINCIPAL (CHAT Y DIÁLOGO) ---
+# --- CUERPO PRINCIPAL: CHAT IA & PROTOCOLO E.D.I.T.H. ---
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
 
 # Inicializar historial de chat
@@ -90,7 +93,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de chat abajo con respuesta fluida y sarcástica
+# Entrada de chat abajo (flujo nativo)
 if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
