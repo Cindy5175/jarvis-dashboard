@@ -1,6 +1,7 @@
 streamlit
+google-generativeai
 gtts
 pandas
-requests
 psutil
-openai
+requests
+streamlit-autorefresh
