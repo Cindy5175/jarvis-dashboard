@@ -153,8 +153,7 @@ def obtener_clima_buin():
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
 # --- 3. ESTILO VISUAL AZUL NEÓN STARK ---
-st.markdown(
-    """
+st.markdown("""
     <style>
     .stApp {
         background-color: #050505;
@@ -170,9 +169,7 @@ st.markdown(
         border-radius: 8px;
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+    """, unsafe_allow_html=True)
 
 def hablar_jarvis_web(texto):
     try:
@@ -207,10 +204,183 @@ if not st.session_state.autenticado:
     st.stop()
 
 # --- CABECERA TÁCTICA ---
-st.markdown(
-    """
+st.markdown("""
     <div style="text-align: center; margin-bottom: 2px;">
         <svg width="75" height="75" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 12px #00e5ff);">
             <circle cx="50" cy="50" r="45" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="10 5"/>
             <circle cx="50" cy="50" r="38" fill="#050505" stroke="#00e5ff" stroke-width="2"/>
-            <polygon points="50
+            <polygon points="50,20 80,72 20,72" fill="none" stroke="#00e5ff" stroke-width="4"/>
+            <polygon points="50,32 70,66 30,66" fill="#00e5ff" opacity="0.3"/>
+            <polygon points="50,45 60,60 40,60" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)"/>
+        </svg>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: 0px; margin-bottom: 2px;'>J.A.R.V.I.S IA</h3>", unsafe_allow_html=True)
+
+# Reloj en vivo
+components.html("""
+    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-family: monospace; font-weight: bold; font-size: 0.85rem; background-color: #050505;'>
+        [BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
+    </div>
+    <script>
+    function actualizarReloj() {
+        try {
+            const now = new Date();
+            const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
+            const elemento = document.getElementById('reloj-vivo');
+            if (elemento) { elemento.innerHTML = horaStr; }
+        } catch(e) { console.log("Error en reloj:", e); }
+    }
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
+    </script>
+    """, height=30, scrolling=False)
+
+st.markdown("---")
+
+# --- BARRA LATERAL CON MÓDULO IZQUIERDO SIMÉTRICO (1, 2, 3) Y COMANDO DE VOZ EXTRA ---
+with st.sidebar:
+    st.markdown("### 🌐 NÚCLEO DE CONTROL")
+    st.markdown("---")
+
+    # --- MÓDULO SIMÉTRICO A LA IZQUIERDA (OPCIONES 1, 2, 3) ---
+    st.markdown("##### ⚡ Selector Táctico [1-2-3]")
+    col_btn1, col_btn2, col_btn3 = st.columns(3)
+    
+    with col_btn1:
+        if st.button("1", use_container_width=True, help="Módulo Estado Base"):
+            st.toast("Módulo [1] Activo: Telemetría nominal.", icon="⚡")
+    with col_btn2:
+        if st.button("2", use_container_width=True, help="Módulo Protocolo Alerta"):
+            st.toast("Módulo [2] Activo: Perímetro seguro.", icon="🛡️")
+    with col_btn3:
+        if st.button("3", use_container_width=True, help="Módulo Diagnóstico Core"):
+            st.toast("Módulo [3] Activo: Enlace estable.", icon="🟢")
+
+    st.markdown("---")
+
+    # --- COMANDO DE VOZ EXTRA (INTERRUPTOR DE REPORTE TÁCTICO) ---
+    st.markdown("##### 🔊 Comando de Voz Extra")
+    if st.button("🎙️ Ejecutar Reporte Verbal", use_container_width=True):
+        frase_reporte = "Sistemas operativos al cien por ciento en el Nodo Buin, jefa. El reactor y la enciclopedia marchan sin novedad."
+        guardar_mensaje_db("assistant", f"🔊 [Comando de Voz Extra]: {frase_reporte}")
+        hablar_jarvis_web(frase_reporte)
+        st.success("¡Reporte verbal emitido con éxito por el núcleo, jefa!")
+        st.rerun()
+
+    st.markdown("---")
+
+    if st.button("🗑️ Purgar Historial de Chat", use_container_width=True):
+        purgar_chat_db()
+        st.success("¡Memoria de chat purgada con éxito, jefa!")
+        st.rerun()
+
+    st.markdown("---")
+
+    with st.expander("💻 Telemetría Real"):
+        st.markdown(f"- **CPU:** {cpu_real}")
+        st.markdown(f"- **RAM:** {ram_real}")
+        st.markdown(f"- **Disco:** {disco_real}")
+
+    with st.expander("🧠 Estado de Núcleos LLM"):
+        st.markdown("⚡ Gemini Link: 🟢 Sincronizado (AQ)")
+
+    with st.expander("📡 Live Feed"):
+        st.markdown("🟢 [OK] Nodo Buin operativo.")
+
+    with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
+        st.markdown("📡 **Red de Inteligencia Global Activa**")
+        st.link_button("🌐 Abrir Ojo de Dios (Osiris)", "https://www.osirisai.live", use_container_width=True)
+
+    with st.expander("🗺️ Mapa Táctico Satelital"):
+        st.markdown("Coordenadas Perimetrales Buin")
+        map_data = pd.DataFrame([[-33.7300, -70.7200]], columns=['lat', 'lon'])
+        st.map(map_data, zoom=12, use_container_width=True)
+
+    with st.expander("📷 Visión Perimetral (Webcam Directa)"):
+        st.markdown("Módulo de captura visual en tiempo real:")
+        img_file = st.camera_input("Capturar perímetro del búnker")
+        if img_file is not None:
+            st.success("¡Imagen perimetral registrada con éxito en el sistema, jefa!")
+
+    with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
+        st.markdown(
+            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real}</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f'<div style="background-color: #1a237e; padding: 10px; border-radius: 6px; border: 1px solid #3f51b5; color: #9fa8da; font-weight: bold;">💧 Humedad: {hum_real} | Viento: {viento_real}</div>',
+            unsafe_allow_html=True
+        )
+
+    with st.expander("🎙️ Escucha Continua (Hands-Free)"):
+        audio_prompt = st.audio_input("Grabar comando de voz táctico:")
+        if audio_prompt is not None:
+            st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
+            respuesta_voz = "Orden de voz procesada en el Nodo Buin, jefa. Todo bajo control."
+            guardar_mensaje_db("user", "🎙️ [Comando de Voz Dictado]")
+            guardar_mensaje_db("assistant", respuesta_voz)
+            hablar_jarvis_web(respuesta_voz)
+            st.rerun()
+
+    with st.expander("➕ Registro de Misiones (Base de Datos Real)"):
+        st.text("Sincronizado con SQLite.")
+        nueva_tarea = st.text_input("Nueva Misión / Tarea:")
+        if st.button("Registrar en BD ➕", use_container_width=True):
+            if nueva_tarea:
+                agregar_tarea_db(nueva_tarea)
+                st.success(f"Misión guardada: '{nueva_tarea}'")
+            else:
+                st.warning("Escribe una tarea primero, jefa.")
+        
+        st.markdown("---")
+        st.markdown("**Misiones Registradas:**")
+        tareas_guardadas = obtener_tareas_db()
+        if tareas_guardadas:
+            for tid, ttext, tstatus in tareas_guardadas:
+                st.markdown(f"- `{ttext}` ({tstatus})")
+        else:
+            st.text("No hay misiones activas.")
+
+    if st.button("🔒 Bloquear Búnker", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
+
+# --- CUERPO PRINCIPAL: CHAT IA CON ENCICLOPEDIA ---
+st.subheader("💬 Chat IA & Terminal Operativa Táctica")
+
+historial_chat = obtener_historial_db()
+if not historial_chat:
+    mensaje_inicial = "Centro de mando unificado activo y enciclopedia universal cargada con éxito, jefa. ¿De qué historia, ciencia o código conversamos hoy en el Nodo Buin?"
+    guardar_mensaje_db("assistant", mensaje_inicial)
+    historial_chat = [("assistant", mensaje_inicial)]
+
+for rol, contenido in historial_chat:
+    with st.chat_message(rol):
+        st.markdown(contenido)
+
+if prompt := st.chat_input("Pregunta sobre Arturo Prat, ciencia, historia, código o escribe 'cmd:...', jefa..."):
+    guardar_mensaje_db("user", prompt)
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    prompt_lower = prompt.lower().strip()
+    
+    if prompt_lower.startswith("cmd:"):
+        comando_terminal = prompt[4:].strip()
+        try:
+            resultado_cmd = subprocess.check_output(comando_terminal, shell=True, stderr=subprocess.STDOUT, text=True, timeout=5)
+            respuesta = f"⚙️ Ejecución de comando local completada, jefa:\n```text\n{resultado_cmd}\n```"
+        except Exception as e:
+            respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
+    else:
+        respuesta = consultar_cerebro_jarvis(prompt, historial_chat)
+
+    guardar_mensaje_db("assistant", respuesta)
+    with st.chat_message("assistant"):
+        st.markdown(respuesta)
+
+    hablar_jarvis_web(respuesta)
+    st.rerun()
