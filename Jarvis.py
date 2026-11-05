@@ -126,30 +126,29 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Cabecera táctica exacta con el guion bajo y reloj en vivo ensanchado
+# Cabecera táctica ajustada para que quepa perfecto sin cortes
 components.html(
     """
     <div style='text-align: center; color: #00e5ff; font-family: monospace; background-color: #050505; padding: 5px; width: 100%; box-sizing: border-box;'>
-        <h3 style='margin: 0; color: #00e5ff; font-size: 1.25rem; font-weight: bold;'>_J.A.R.V.I.S IA // NODO BUIN</h3>
-        <h3 style='margin: 0; color: #00e5ff; font-size: 1.25rem; font-weight: bold;'>TACTICAL CORE</h3>
-        <div style='margin-top: 8px; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-weight: bold; font-size: 0.90rem;'>
-            [ STARK INDUSTRIES // NODO BUIN, CHILE // <span id="reloj-vivo">CARGANDO HORA...</span> ]
+        <h3 style='margin: 0; color: #00e5ff; font-size: 1.2rem; font-weight: bold;'>_J.A.R.V.I.S IA // NODO BUIN</h3>
+        <h3 style='margin: 0; color: #00e5ff; font-size: 1.2rem; font-weight: bold;'>TACTICAL CORE</h3>
+        <div style='margin-top: 6px; color: #00ffff; text-shadow: 0 0 8px #00ffff; font-weight: bold; font-size: 0.75rem; white-space: nowrap;'>
+            [STARK // NODO BUIN, CHILE // <span id="reloj-vivo">CARGANDO...</span>]
         </div>
     </div>
     <script>
     function actualizarReloj() {
         try {
             const now = new Date();
-            const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
             let fechaStr = now.toLocaleDateString('es-CL', opcionesFecha);
-            fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
             
             const opcionesHora = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             let horaStr = new Intl.DateTimeFormat('es-CL', opcionesHora).format(now);
             
             const elemento = document.getElementById('reloj-vivo');
             if (elemento) {
-                elemento.innerHTML = fechaStr + ' - ' + horaStr;
+                elemento.innerHTML = fechaStr + ' ' + horaStr;
             }
         } catch(e) {
             console.log("Error en reloj:", e);
@@ -159,7 +158,7 @@ components.html(
     setInterval(actualizarReloj, 1000);
     </script>
     """,
-    height=110,
+    height=100,
     scrolling=False
 )
 
@@ -236,7 +235,7 @@ st.subheader("💬 Chat IA & Sistema Operativo")
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Sistema optimizado al 100%, reloj visible sin cortes, parpadeo eliminado, Ojo de Dios operativo y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Línea de estado ajustada sin cortes, reloj en vivo corriendo fluido, búnker blindado y Ojo de Dios operativo, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 # Mostrar historial de mensajes
@@ -254,7 +253,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     
     # Filtro inteligente para emojis o risas sueltas
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el búnker ya quedó perfecto de punta a punta?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que ajustamos el ancho del panel con precisión milimétrica Stark?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
