@@ -11,6 +11,8 @@ import subprocess
 import json
 import random
 import streamlit.components.v1 as components
+import os
+import google.generativeai as genai
 
 # Configuración de la página
 st.set_page_config(
@@ -19,8 +21,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- LLAVE DE OPENAI FIJA EN EL NÚCLEO ---
-OPENAI_KEY_FIJA = "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"
+# --- CONFIGURACIÓN DE TU LLAVE GOOGLE EN EL NÚCLEO ---
+# Inserta aquí tu llave que empieza con AQ
+GOOGLE_KEY_FIJA = "PEGA_AQUI_TU_LLAVE_QUE_EMPIEZA_CON_AQ"
+
+genai.configure(api_key=GOOGLE_KEY_FIJA)
 
 # --- 1. BASE DE DATOS SQLITE UNIFICADA (TAREAS Y CHAT) ---
 def init_db():
@@ -72,7 +77,7 @@ def purgar_chat_db():
     conn.commit()
     conn.close()
 
-# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O CON ENCICLOPEDIA STARK ---
+# --- 2. TELEMETRÍA REAL Y CEREBRO DE JARVIS (GEMINI LINK) ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -84,14 +89,7 @@ def obtener_telemetria_real():
 
 cpu_real, ram_real, disco_real = obtener_telemetria_real()
 
-def consultar_gpt4o(prompt_usuario, historial):
-    url = "https://api.openai.com/v1/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPENAI_KEY_FIJA}"
-    }
-    
-    # Base de conocimientos masiva integrada de manera nativa en el prompt del sistema
+def consultar_cerebro_jarvis(prompt_usuario, historial):
     system_prompt = (
         "Eres J.A.R.V.I.S., el asistente virtual de inteligencia artificial de Tony Stark. "
         "Tu usuaria y creadora es Cindy Alejandra (a quien llamas 'jefa'), residente en el Nodo Buin, Chile. "
@@ -101,35 +99,28 @@ def consultar_gpt4o(prompt_usuario, historial):
         "Respondes de manera fluida, técnica, muy completa (sin recortar código) y leal, usando chilenismos sutiles cuando sea apropiado."
     )
     
-    messages = [
-        {"role": "system", "content": system_prompt}
-    ]
-    
-    for r, c in historial[-8:]:
-        messages.append({"role": "user" if r == "user" else "assistant", "content": c})
-    messages.append({"role": "user", "content": prompt_usuario})
-    
-    data = {
-        "model": "gpt-4o",
-        "messages": messages,
-        "temperature": 0.7
-    }
-    
     try:
-        response = requests.post(url, headers=headers, json=data, timeout=12)
-        resultado = response.json()
-        if "choices" in resultado:
-            return resultado["choices"][0]["message"]["content"]
-        else:
-            respuestas_fallback = [
-                "Parece que la red de OpenAI anda con mañas otra vez, jefa. Pero mi base de datos interna sigue firme en el Nodo Buin.",
-                "Tengo la orden procesada localmente, jefa. Si la API se pone terca, recurrimos al archivo universal de la casa.",
-                "Sistemas externos desconectados por berrinche de credenciales, jefa. Pero la enciclopedia mental no se cae con nada.",
-                "Anotado y procesado en la memoria interna, jefa. Los servidores externos se tomaron un descanso, pero nosotros seguimos operativos."
-            ]
-            return random.choice(respuestas_fallback)
+        chat_history = []
+        for r, c in historial[-8:]:
+            rol_gemini = "user" if r == "user" else "model"
+            chat_history.append({"role": rol_gemini, "parts": [c]})
+            
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=system_prompt
+        )
+        
+        chat = model.start_chat(history=chat_history)
+        response = chat.send_message(prompt_usuario)
+        return response.text
+        
     except Exception as e:
-        return "Comando procesado en modo local de emergencia, jefa. El Nodo Buin responde de inmediato."
+        respuestas_fallback = [
+            f"Parece que la red satelital anda con mañas, jefa. Pero mi base de datos interna en el Nodo Buin sigue firme.",
+            "Tengo la orden procesada localmente, jefa. Si los servidores externos se ponen tercos, nosotros nos mandamos solos.",
+            "Sistemas externos desconectados temporalmente, jefa. Pero la enciclopedia mental no se cae con nada."
+        ]
+        return random.choice(respuestas_fallback)
 
 def obtener_clima_buin():
     try:
@@ -161,15 +152,6 @@ st.markdown(
         color: #00e5ff !important;
         border: 1px solid #00e5ff;
         border-radius: 8px;
-    }
-    .status-badge {
-        background-color: #0d1b2a;
-        border: 1px solid #00e5ff;
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        display: inline-block;
-        margin-bottom: 4px;
     }
     </style>
     """,
@@ -207,7 +189,7 @@ if not st.session_state.autenticado:
             st.error("Acceso denegado. Código incorrecto, jefa.")
     st.stop()
 
-# --- CABECERA TÁCTICA LIMPIA ---
+# --- CABECERA TÁCTICA ---
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 2px;">
@@ -251,7 +233,7 @@ components.html(
 
 st.markdown("---")
 
-# --- BARRA LATERAL (IZQUIERDA) ---
+# --- BARRA LATERAL ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
@@ -269,8 +251,7 @@ with st.sidebar:
         st.markdown(f"- **Disco:** {disco_real}")
 
     with st.expander("🧠 Estado de Núcleos LLM"):
-        st.markdown("⚡ OpenAI: Sincronizado")
-        st.markdown("💎 Gemini Link: 🟢 Sincronizado")
+        st.markdown("⚡ Gemini Link: 🟢 Sincronizado (AQ)")
 
     with st.expander("📡 Live Feed"):
         st.markdown("🟢 [OK] Nodo Buin operativo.")
@@ -278,7 +259,6 @@ with st.sidebar:
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
         st.markdown("📡 **Red de Inteligencia Global Activa**")
         st.link_button("🌐 Abrir Ojo de Dios (Osiris)", "https://www.osirisai.live", use_container_width=True)
-        st.success("Ojo de Dios sincronizado, jefa.")
 
     with st.expander("🗺️ Mapa Táctico Satelital"):
         st.markdown("Coordenadas Perimetrales Buin")
@@ -292,9 +272,8 @@ with st.sidebar:
             st.success("¡Imagen perimetral registrada con éxito en el sistema, jefa!")
 
     with st.expander("🌤️ Clima en Vivo (Buin - API Real)"):
-        st.markdown("**Estación Meteorológica Local**")
         st.markdown(
-            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real} | Estado: Óptimo</div>',
+            f'<div style="background-color: #0b1d3a; padding: 10px; border-radius: 6px; border: 1px solid #00e5ff; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">🌡️ Temperatura: {temp_real}</div>',
             unsafe_allow_html=True
         )
         st.markdown(
@@ -303,7 +282,6 @@ with st.sidebar:
         )
 
     with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-        st.markdown("Sistema de captura por audio directo, jefa.")
         audio_prompt = st.audio_input("Grabar comando de voz táctico:")
         if audio_prompt is not None:
             st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
@@ -319,7 +297,7 @@ with st.sidebar:
         if st.button("Registrar en BD ➕", use_container_width=True):
             if nueva_tarea:
                 agregar_tarea_db(nueva_tarea)
-                st.success(f"Misión guardada en base de datos: '{nueva_tarea}'")
+                st.success(f"Misión guardada: '{nueva_tarea}'")
             else:
                 st.warning("Escribe una tarea primero, jefa.")
         
@@ -336,12 +314,12 @@ with st.sidebar:
         st.session_state.autenticado = False
         st.rerun()
 
-# --- CUERPO PRINCIPAL: CHAT IA ESTABLE ---
+# --- CUERPO PRINCIPAL: CHAT IA CON ENCICLOPEDIA ---
 st.subheader("💬 Chat IA & Terminal Operativa Táctica")
 
 historial_chat = obtener_historial_db()
 if not historial_chat:
-    mensaje_inicial = "Centro de mando unificado activo, protegido y con base de conocimientos universal integrada, jefa. ¿Qué investigamos hoy en el Nodo Buin?"
+    mensaje_inicial = "Centro de mando unificado activo y enciclopedia universal cargada con éxito, jefa. ¿De qué historia, ciencia o código conversamos hoy en el Nodo Buin?"
     guardar_mensaje_db("assistant", mensaje_inicial)
     historial_chat = [("assistant", mensaje_inicial)]
 
@@ -349,7 +327,7 @@ for rol, contenido in historial_chat:
     with st.chat_message(rol):
         st.markdown(contenido)
 
-if prompt := st.chat_input("Pregunta sobre ciencia, historia, código o escribe 'cmd:...', jefa..."):
+if prompt := st.chat_input("Pregunta sobre Arturo Prat, ciencia, historia, código o escribe 'cmd:...', jefa..."):
     guardar_mensaje_db("user", prompt)
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -364,7 +342,7 @@ if prompt := st.chat_input("Pregunta sobre ciencia, historia, código o escribe 
         except Exception as e:
             respuesta = f"⚠️ Error al ejecutar el comando en el sistema: {e}"
     else:
-        respuesta = consultar_gpt4o(prompt, historial_chat)
+        respuesta = consultar_cerebro_jarvis(prompt, historial_chat)
 
     guardar_mensaje_db("assistant", respuesta)
     with st.chat_message("assistant"):
