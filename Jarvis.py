@@ -83,14 +83,17 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"}
     ]
 
-# Caja de chat ubicada ARRIBA mediante formulario controlado para moverla donde queramos
-with st.form(key="chat_form", clear_on_submit=True):
-    prompt = st.text_input("Escribe tu orden o dicte a E.D.I.T.H., jefa...", placeholder="Ej: escaneo de sistemas...")
-    enviar = st.form_submit_button("Enviar Orden ⚡")
+# Mostrar historial de chat existente
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if enviar and prompt:
+# Entrada de chat abajo (como corresponde al diseño nativo)
+if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
     prompt_lower = prompt.lower()
     if "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
@@ -98,11 +101,7 @@ if enviar and prompt:
         respuesta = f"Procesando tu orden '{prompt}' desde el Nodo Buin, jefa. Por supuesto, haré el trabajo duro mientras tú descansas."
     
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
-    
-    # Reproducir el audio de inmediato al enviar
-    hablar_jarvis_web(respuesta)
+    with st.chat_message("assistant"):
+        st.markdown(respuesta)
 
-# Mostrar el historial de mensajes ordenados
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    hablar_jarvis_web(respuesta)
