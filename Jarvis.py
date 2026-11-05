@@ -8,7 +8,7 @@ import io
 st.set_page_config(
     page_title="J.A.R.V.I.S. - Nodo Táctico",
     page_icon="⚡",
-    layout="centered"
+    layout="wide"
 )
 
 # Estilo visual: Fondo negro absoluto y letras en tono cyan/azul Stark
@@ -89,19 +89,15 @@ if st.button("🔒 Bloquear Búnker", use_container_width=True):
 
 st.markdown("---")
 
-# --- BARRA LATERAL CON MÓDULOS Y BOTONES ACTIVOS EN TIEMPO REAL ---
+# --- BARRA LATERAL CON MÓDULOS Y CONTROLES ---
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
     st.markdown("---")
 
-    with st.expander("📷 Cámaras en Vivo (Ojo de Dios)"):
-        st.info("Red de vigilancia satelital lista.")
-        if st.button("🟢 Activar Ojo de Dios", use_container_width=True):
-            st.success("¡Cámaras en vivo activadas con éxito, jefa!")
-
-    with st.expander("🌍 Transmisión Mundial en Vivo (earthTV)"):
-        st.markdown("📡 **Señal Satelital en Directo (The World Live)**")
-        st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
+    with st.expander("📷 Cámaras y Telemetría Real"):
+        st.info("Conectado a feeds de tráfico y sensores globales.")
+        if st.button("🟢 Actualizar Enlaces en Vivo", use_container_width=True):
+            st.success("Sincronización de cámaras completada, jefa.")
 
     with st.expander("🌤️ Clima en Vivo (Buin)"):
         st.markdown("**Estación Meteorológica Local**")
@@ -136,13 +132,41 @@ with st.sidebar:
         if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
             st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
 
-# --- CUERPO PRINCIPAL: CHAT IA & PROTOCOLO E.D.I.T.H. ---
+# --- CUERPO PRINCIPAL: MAPA TÁCTICO SATELITAL Y MULTIPANTALLA ---
+st.markdown("### 🗺️ MAPA TÁCTICO SATELITAL & NODO DE VIGILANCIA")
+
+# Integración de un mapa interactivo con las coordenadas exactas de Buin, Chile (-33.73, -70.72)
+import pandas as pd
+map_data = pd.DataFrame(
+    [[-33.7300, -70.7200]],
+    columns=['lat', 'lon']
+)
+st.map(map_data, zoom=11, use_container_width=True)
+
+st.markdown("---")
+st.markdown("### 📡 FEEDS DE TELEMETRÍA GLOBAL EN DIRECTO")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("🌌 **Estación Espacial Internacional (ISS)**")
+    st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+
+with col2:
+    st.markdown("🌍 **earthTV (Red Mundial)**")
+    st.video("https://www.youtube.com/watch?v=HfgIFGbdGJ0")
+
+with col3:
+    st.markdown("🎥 **SkylineWebcams (Tráfico/Puertos)**")
+    st.video("https://www.youtube.com/watch?v=kUfuwa8mDrA")
+
+st.markdown("---")
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
 
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está estable, la temperatura es perfecta y, sorprendentemente, nadie ha intentado hackearnos hoy. ¿Qué milagro te trae por aquí?"}
+        {"role": "assistant", "content": "Sistema cartográfico de Buin sincronizado, jefa. El mapa táctico satelital está en línea y vigilando el perímetro. ¿Qué más se te ofrece?"}
     ]
 
 # Mostrar historial de mensajes
@@ -150,7 +174,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de chat abajo (flujo nativo)
+# Entrada de chat abajo
 if prompt := st.chat_input("Escribe tu orden o dicte a E.D.I.T.H., jefa..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
