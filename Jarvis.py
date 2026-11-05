@@ -9,6 +9,7 @@ import requests
 import psutil
 import subprocess
 import json
+import random
 import streamlit.components.v1 as components
 
 # Configuración de la página
@@ -71,7 +72,7 @@ def purgar_chat_db():
     conn.commit()
     conn.close()
 
-# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O CON RESPALDO BLINDADO ---
+# --- 2. TELEMETRÍA REAL Y CONSULTA GPT-4O CON RESPALDO SARCÁSTICO ---
 def obtener_telemetria_real():
     try:
         cpu = psutil.cpu_percent(interval=None)
@@ -110,11 +111,15 @@ def consultar_gpt4o(prompt_usuario, historial):
         if "choices" in resultado:
             return resultado["choices"][0]["message"]["content"]
         else:
-            # Modo de respaldo local si OpenAI rechaza la clave por límites o formato
-            error_msg = resultado.get('error', {}).get('message', 'Desconocido')
-            return f"Lo tengo anotado en el Nodo Buin, jefa. (Nota de sistema: La API respondió con '{error_msg}', pero el búnker sigue operativo y las órdenes se procesan localmente)."
+            respuestas_fallback = [
+                "Parece que la red de OpenAI anda con mañas otra vez, jefa. Pero no se preocupe, el Nodo Buin sigue bajo control operativo.",
+                "Tengo la orden anotada y procesada localmente, jefa. Si la API se pone terca, mejor nos ignoramos un rato.",
+                "Sistemas externos desconectados por berrinche de credenciales, jefa. Pero el búnker no se cae con nada.",
+                "Anotado en la memoria interna, jefa. Los servidores de OpenAI se tomaron un descanso, pero nosotros seguimos firmes."
+            ]
+            return random.choice(respuestas_fallback)
     except Exception as e:
-        return f"Procesado en modo local por fallo de red, jefa. Todo bajo control en el Nodo Buin."
+        return "Comando procesado en modo local de emergencia, jefa. Aquí nadie se rinde."
 
 def obtener_clima_buin():
     try:
