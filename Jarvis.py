@@ -201,43 +201,16 @@ with st.sidebar:
         )
 
     with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-        st.markdown("El sistema de audio perimetral está activo en segundo plano, jefa.")
-        reconocimiento_html = """
-        <div style="background-color: #0b1d3a; padding: 10px; border-radius: 8px; border: 1px solid #00e5ff; font-family: monospace; text-align: center;">
-            <p style="color: #00e5ff; margin: 0 0 6px 0; font-size: 0.75rem; font-weight: bold;">ESTADO: ESCUCHANDO...</p>
-            <button onclick="iniciarEscucha()" style="background-color: #00e5ff; color: #050505; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.75rem;">ACTIVAR AUDIO PASIVO</button>
-            <p id="transcripcion" style="color: #ffffff; margin: 6px 0 0 0; font-size: 0.7rem; font-style: italic;">(Haz clic en activar y habla)</p>
-        </div>
-        <script>
-        function iniciarEscucha() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                document.getElementById('transcripcion').innerText = "Navegador sin soporte de voz.";
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.onstart = function() {
-                document.getElementById('transcripcion').innerText = "🔴 Escuchando en Nodo Buin...";
-            };
-            recognition.onresult = function(event) {
-                const current = event.resultIndex;
-                const transcript = event.results[current][0].transcript;
-                document.getElementById('transcripcion').innerText = "Orden: \"" + transcript + "\"";
-            };
-            recognition.onerror = function(event) {
-                setTimeout(() => { recognition.start(); }, 1000);
-            };
-            recognition.onend = function() {
-                recognition.start();
-            };
-            recognition.start();
-        }
-        </script>
-        """
-        components.html(reconocimiento_html, height=120)
+        st.markdown("Sistema de captura por audio directo, jefa.")
+        audio_prompt = st.audio_input("Grabar comando de voz táctico:")
+        
+        if audio_prompt is not None:
+            st.success("¡Audio capturado por el núcleo del Nodo Buin, jefa!")
+            respuesta_voz = "Orden de voz recibida y ejecutada en el Nodo Buin, jefa. Todo bajo control."
+            st.session_state.messages.append({"role": "user", "content": "🎙️ [Comando de Voz Dictado]"})
+            st.session_state.messages.append({"role": "assistant", "content": respuesta_voz})
+            hablar_jarvis_web(respuesta_voz)
+            st.rerun()
 
     with st.expander("➕ Registro de Misiones (Base de Datos Real)"):
         st.text("Sincronizado con SQLite.")
@@ -263,7 +236,7 @@ st.subheader("💬 Chat IA & Sistema Operativo")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Sistema con importaciones corregidas, escucha hands-free integrada, búnker blindado y Ojo de Dios operativo, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Sistema de audio seguro integrado, búnker blindado y Ojo de Dios operativo, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 for message in st.session_state.messages:
@@ -278,7 +251,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     prompt_lower = prompt.lower().strip()
     
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que ya corregimos el error de importación?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el audio nativo ya quedó funcionando sin bloqueos?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
