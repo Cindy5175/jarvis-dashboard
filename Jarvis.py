@@ -50,21 +50,28 @@ def hablar_jarvis_web(texto):
     except Exception:
         pass
 
-# Cabecera con un indicador de reactor estilizado en HTML puro (sin errores de carga)
+# Indicador visual superior exacto (el núcleo brillante)
 st.markdown(
     """
-    <div style="text-align: center; margin-bottom: 10px;">
-        <span style="font-size: 50px; text-shadow: 0 0 15px #00e5ff;">🔺</span>
+    <div style="text-align: center; margin-bottom: -5px;">
+        <span style="font-size: 28px; text-shadow: 0 0 12px #00e5ff;">🔵</span>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown("<h2 style='text-align: center; color: #00e5ff;'>J.A.R.V.I.S IA</h2>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #00e5ff;'>E.D.I.T.H. TACTICAL CORE</h4>", unsafe_allow_html=True)
+# Cabecera táctica exacta idéntica a tu referencia visual
+st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // E.D.I.T.H.</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
 
 fecha_actual = datetime.now().strftime("%A, %d de %B de %Y - %H:%M:%S")
 st.markdown(f"<div style='text-align: center;'><code>[ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_actual} ]</code></div>", unsafe_allow_html=True)
+st.markdown("---")
+
+# Botón de seguridad principal en el cuerpo
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.warning("Sistema de búnker bloqueado temporalmente por seguridad, jefa.")
+
 st.markdown("---")
 
 # --- BARRA LATERAL CON MÓDULOS OCULTOS ---
@@ -104,10 +111,6 @@ with st.sidebar:
 
     with st.expander("🛡️ Módulo E.D.I.T.H."):
         st.markdown("Control satelital de defensa y apoyo táctico activo.")
-
-    st.markdown("---")
-    if st.button("🔒 Bloquear Búnker", use_container_width=True):
-        st.warning("Sistema de búnker bloqueado temporalmente por seguridad, jefa.")
 
 # --- CUERPO PRINCIPAL: CHAT IA & PROTOCOLO E.D.I.T.H. ---
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
