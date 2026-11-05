@@ -7,7 +7,6 @@ import pandas as pd
 import sqlite3
 import requests
 from streamlit_autorefresh import st_autorefresh
-import streamlit.components.v1 as components
 
 # Configuración de la página
 st.set_page_config(
@@ -160,8 +159,9 @@ with st.sidebar:
     st.markdown("---")
 
     with st.expander("👁️ Ojo de Dios (Sistema Osiris)"):
-        st.markdown("📡 **Conexión Oficial: [osirisai.live](https://www.osirisai.live)**")
-        components.iframe("https://www.osirisai.live", height=300, scrolling=True)
+        st.markdown("📡 **Red de Inteligencia Global Activa**")
+        st.markdown("Acceso directo al núcleo cartográfico externo.")
+        st.link_button("🌐 Abrir Ojo de Dios (Osiris)", "https://www.osirisai.live", use_container_width=True)
         st.success("Ojo de Dios sincronizado con el núcleo web externo, jefa.")
 
     with st.expander("🗺️ Mapa Táctico Satelital"):
@@ -235,7 +235,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     
     # Filtro inteligente para emojis o risas sueltas
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Burlándote de que el código ya quedó blindado?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Burlándote de que el enlace de Osiris ya quedó perfecto?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
