@@ -126,15 +126,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Cabecera táctica exacta
-st.markdown("<h3 style='text-align: center; color: #00e5ff;'>_J.A.R.V.I.S IA // NODO BUIN</h3>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #00e5ff; margin-top: -15px;'>TACTICAL CORE</h3>", unsafe_allow_html=True)
-
-# Línea de estado con reloj JavaScript sincronizado a Buin (CERO PARPADEOS / COMPONENTE AISLADO)
+# Cabecera táctica exacta con el guion bajo intacto y el reloj en vivo integrados en el componente limpio
 components.html(
     """
-    <div style='text-align: center; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-family: monospace; font-weight: bold; background-color: #050505; padding: 4px;'>
-        [ STARK INDUSTRIES // NODO BUIN, CHILE // <span id="reloj-vivo">CARGANDO HORA...</span> ]
+    <div style='text-align: center; color: #00e5ff; font-family: monospace; background-color: #050505; padding: 5px;'>
+        <h3 style='margin: 0; color: #00e5ff; font-size: 1.25rem; font-weight: bold;'>_J.A.R.V.I.S IA // NODO BUIN</h3>
+        <h3 style='margin: 0; color: #00e5ff; font-size: 1.25rem; font-weight: bold;'>TACTICAL CORE</h3>
+        <div style='margin-top: 8px; color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; font-weight: bold;'>
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // <span id="reloj-vivo">CARGANDO HORA...</span> ]
+        </div>
     </div>
     <script>
     function actualizarReloj() {
@@ -159,7 +159,7 @@ components.html(
     setInterval(actualizarReloj, 1000);
     </script>
     """,
-    height=40
+    height=100
 )
 
 st.markdown("---")
@@ -235,7 +235,7 @@ st.subheader("💬 Chat IA & Sistema Operativo")
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Reloj sincronizado a Chile mediante componente seguro, parpadeo eliminado, Ojo de Dios operativo y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
+        {"role": "assistant", "content": "Cabecera táctica con guion bajo restaurada, reloj sincronizado a Chile, parpadeo eliminado y búnker blindado, jefa. ¿Qué órdenes tenemos?"}
     ]
 
 # Mostrar historial de mensajes
@@ -253,7 +253,7 @@ if prompt := st.chat_input("Escribe tu orden o dicte al sistema, jefa..."):
     
     # Filtro inteligente para emojis o risas sueltas
     if prompt_lower in ["😂", "🤣", "jaja", "jajaja", "risa"]:
-        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el código ya quedó blindado sin letras raras?"
+        respuesta = "¿De qué te ríes tanto, jefa? ¿Contenta de que el diseño de Stark Industries volvió a quedar impecable?"
     elif "código azul" in prompt_lower or "codigo azul" in prompt_lower:
         respuesta = "⚠️ ¡ATENCIÓN! Código Azul activado en el Nodo Buin. Protocolo de máxima seguridad desplegado, perímetro blindado y sistemas en alerta roja, jefa. Respira hondo, nadie va a pasar."
     elif "hola" in prompt_lower:
