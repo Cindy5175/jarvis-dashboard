@@ -72,19 +72,22 @@ def text_to_speech_bytes(text):
     except Exception as e:
         return None
 
-# Mostrar historial de chat
-for message in st.session_state.messages:
+# Mostrar historial de chat de forma estable
+for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        # Solo reproducir audio en el último mensaje del asistente para evitar conflictos de DOM
+        if message["role"] == "assistant" and idx == len(st.session_state.messages) - 1:
+            audio_path = text_to_speech_bytes(message["content"])
+            if audio_path:
+                st.audio(audio_path, format="audio/mp3")
 
 # Entrada de usuario
 user_query = st.chat_input("Escriba su comando o pregunta para JARVIS...")
 
 if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
-    with st.chat_message("user"):
-        st.markdown(user_query)
-
+    
     # Lógica de respuesta sarcástica de JARVIS orientada a libros y preguntas
     response = ""
     query_lower = user_query.lower()
@@ -103,11 +106,7 @@ if user_query:
         response = f"Recibido, señor. Procesando su solicitud: '{user_query}'. Como JARVIS, le diré que todo marcha bajo control, aunque su paciencia sea inversamente proporcional a la complejidad del problema."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
-        audio_path = text_to_speech_bytes(response)
-        if audio_path:
-            st.audio(audio_path, format="audio/mp3", autoplay=True)
+    st.rerun()
 
 # --- BOTÓN DE DESCARGA DE PDF ---
 st.sidebar.markdown("---")
