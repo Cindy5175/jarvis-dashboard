@@ -198,4 +198,116 @@ def renderizar_barra_lateral():
                 st.error("¡Ojo de Dios enlazado a los sensores del Nodo Buin, jefa!")
 
         with st.expander("🚀 Monitoreo: Elon Musk & xAI"):
-            st.
+            st.markdown("Telemetría en tiempo real de proyectos y empresas:")
+            st.markdown("- **Tesla / Cybercab**: Transición de producción.")
+            st.markdown("- **SpaceX**: Lanzamientos y evolución orbital.")
+            st.markdown("- **xAI / Grok**: Modelos de inteligencia artificial.")
+            if st.button("🛰️ Consultar Estado Musk", use_container_width=True):
+                st.toast("Enlazando telemetría corporativa...")
+                st.info("Reporte: Fábrica de Austin adaptándose a flotas autónomas y xAI con procesamiento optimizado.")
+
+        with st.expander("🌍 Cámara Global: WorldCam"):
+            st.markdown("Red mundial de cámaras de vigilancia pública y turística.")
+            if "activar_worldcam" not in st.session_state:
+                st.session_state.activar_worldcam = False
+            if st.button("🌐 Conectar Feed WorldCam", key="btn_worldcam"):
+                st.session_state.activar_worldcam = not st.session_state.activar_worldcam
+            if st.session_state.activar_worldcam:
+                st.success("Enlace a WorldCam activo.")
+                st.markdown("[Abrir portal WorldCam](https://worldcam.io)", unsafe_allow_html=True)
+            else:
+                st.info("Feed WorldCam en espera de activación.")
+
+        with st.expander("🎥 Streaming HD: SkylineWebcams"):
+            st.markdown("Transmisión óptica internacional en alta definición.")
+            if "activar_skyline" not in st.session_state:
+                st.session_state.activar_skyline = False
+            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
+                st.session_state.activar_skyline = not st.session_state.activar_skyline
+            if st.session_state.activar_skyline:
+                st.success("Streaming óptico SkylineWebcams desplegado.")
+                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
+            else:
+                st.info("Streaming en espera de activación.")
+
+        with st.expander("🛠️ Utilidades Logísticas & Red"):
+            st.markdown("Herramientas de auditoría y cartografía avanzada:")
+            st.markdown("- **LocalSend**: Transferencia local segura.")
+            st.markdown("- **Gobuster / Nikto**: Auditoría web.")
+            st.markdown("- **Ventusky**: Análisis meteorológico.")
+            if st.button("🌐 Lanzar Enlaces Tácticos", use_container_width=True):
+                st.toast("Módulo de herramientas tácticas enlazado.")
+                st.markdown("[Abrir Ventusky](https://www.ventusky.com)")
+
+        with st.expander("🗺️ Mapa Táctico Satelital"):
+            st.markdown("Nodo Buin sincronizado con satélites de defensa.")
+            st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
+
+        with st.expander("📷 Cámara en Vivo: Espacio (ISS)"):
+            st.markdown("Transmisión óptica orbital de la Estación Espacial.")
+            if "activar_iss" not in st.session_state:
+                st.session_state.activar_iss = False
+            if st.button("🔴 Conectar Feed ISS", key="btn_iss"):
+                st.session_state.activar_iss = not st.session_state.activar_iss
+            if st.session_state.activar_iss:
+                st.success("Feed orbital enlazado.")
+                st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
+            else:
+                st.info("Feed en espera de activación manual.")
+
+        with st.expander("🌤️ Clima en Vivo (Buin)"):
+            st.metric(label="Temperatura Nodo Buin", value="21 °C", delta="Estable")
+            st.caption("Humedad: 45% | Viento: 12 km/h")
+
+        with st.expander("🎙️ Escucha Continua (Hands-Free)"):
+            st.checkbox("Activar escucha de voz continua", value=False)
+            st.caption("Micrófono periférico en espera de comandos.")
+
+        with st.expander("➕ Registro de Tareas"):
+            nueva_tarea = st.text_input("Nueva Misión / Tarea:")
+            if st.button("Registrar Tarea ➕", use_container_width=True):
+                if nueva_tarea:
+                    st.success(f"Misión registrada: {nueva_tarea}")
+                else:
+                    st.warning("Escribe una descripción para la misión.")
+
+        with st.expander("🛡️ Módulo E.D.I.T.H. & Ojo de Dios"):
+            st.markdown("Control satelital de defensa y vigilancia activo.")
+            if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
+                st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
+
+        st.divider()
+        st.caption("Nodo Buin, Chile 🇨🇱")
+    return docs_cargados
+
+def renderizar_encabezado():
+    st_autorefresh(interval=1000, key="reloj_jarvis_top")
+    
+    try:
+        zona_chile = zoneinfo.ZoneInfo("America/Santiago")
+        ahora_chile = datetime.datetime.now(zona_chile)
+    except Exception:
+        ahora_chile = datetime.datetime.now()
+
+    tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
+
+    st.markdown("""
+        <div class="ark-reactor-container">
+            <div class="ark-reactor">
+                <div class="ark-triangle"></div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="stark-header">J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
+
+    col_lock1, col_lock2, col_lock3 = st.columns([2, 1, 2])
+    with col_lock2:
+        if st.button("🔒 Bloquear Búnker", use_container_width=True):
+            st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
+
+    st.divider()
+
+def gestionar_chat_ia(docs_cargados):
+    col_chat_title, col_purge_btn
