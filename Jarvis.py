@@ -84,17 +84,12 @@ def limpiar_misiones():
 st.markdown("""
     <style>
         .stApp { background-color: #0b0f19 !important; color: #00ffcc !important; }
-        
         .arc-reactor-container h4 { color: #00ffcc !important; font-size: 1.1rem !important; font-family: monospace; }
-        
         p, span, label, h1, h2, h3, h4, div { color: #00ffcc !important; font-family: monospace; }
-        
         .stChatMessage p, .stChatMessage div {
             font-size: 0.85rem !important;
             color: #00ffcc !important;
         }
-
-        /* Botones en Azul Neón absoluto */
         .stButton>button {
             color: #0b0f19 !important;
             background-color: #00ffcc !important;
@@ -109,7 +104,6 @@ st.markdown("""
             color: #ffffff !important;
             box-shadow: 0 0 12px rgba(0, 255, 204, 0.8);
         }
-        
         .arc-reactor-container {
             display: flex;
             flex-direction: column;
@@ -121,4 +115,35 @@ st.markdown("""
         .arc-ring {
             width: 45px;
             height: 45px;
-            border: 
+            border: 2.5px solid #00ffcc;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #00ffcc 0%, #0b0f19 70%);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7), inset 0 0 8px rgba(0, 255, 204, 0.5);
+            margin-bottom: 5px;
+        }
+        .arc-triangle {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #0b0f19;
+            filter: drop-shadow(0 0 5px #00ffcc);
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- ZONA HORARIA CHILENA (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_
