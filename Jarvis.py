@@ -55,7 +55,6 @@ st.markdown("""
         background-color: #111827 !important;
         border: 1px solid #00ffcc !important;
     }
-    /* Estilo neón para botones de Streamlit */
     .stButton>button {
         color: #0b0f19 !important;
         background-color: #00ffcc !important;
@@ -69,71 +68,55 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Cabecera táctica original
-st.markdown("<h1 style='text-align: center; color: #00ffcc;'>J.A.R.V.I.S. IA</h1>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center; color: #64ffda;'>[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {datetime.now().strftime('%A, %d de %B de %Y - %H:%M:%S')} ]</p>", unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Panel lateral táctico completo
-st.sidebar.title("🎛️ Panel Táctico")
-
-# Inicializar estado de chat y estado del Ojo de Dios
+# Inicializar estados
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Señor, sistema en línea y operativo. Protocolos en azul neón listos. ¿Qué órdenes ejecutamos hoy?"}
+        {"role": "assistant", "content": "Señor, sistema en línea y operativo. Nodo Buin sincronizado en azul neón. ¿Qué orden ejecutamos hoy, jefa?"}
     ]
 
 if "osiris_active" not in st.session_state:
     st.session_state.osiris_active = False
 
-# Sección de Carga de Libros / Documentos
-st.sidebar.header("📚 Biblioteca de Libros (PDF)")
-uploaded_books = st.sidebar.file_uploader("Sube tus libros en PDF", type=["pdf"], accept_multiple_files=True)
-
 if "books_data" not in st.session_state:
     st.session_state.books_data = {}
 
+# Cabecera táctica
+st.markdown("<h1 style='text-align: center; color: #00ffcc;'>J.A.R.V.I.S. IA</h1>", unsafe_allow_html=True)
+if st.session_state.osiris_active:
+    st.markdown("<p style='text-align: center; color: #00ffcc; font-weight: bold;'>👁️ [ PROTOCOLO OSIRIS: MODO OMNISCIENTE ACTIVO — GUÍA SUPREMA ]</p>", unsafe_allow_html=True)
+else:
+    st.markdown(f"<p style='text-align: center; color: #64ffda;'>[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {datetime.now().strftime('%A, %d de %B de %Y - %H:%M:%S')} ]</p>", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Panel lateral táctico
+st.sidebar.title("🎛️ Panel Táctico")
+
+# --- MÓDULO OJO DE DIOS (OSIRIS) INTERactivo ---
+with st.sidebar.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
+    st.markdown("Red de inteligencia global y guía omnisciente.")
+    
+    if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True, key="btn_osiris"):
+        st.session_state.osiris_active = not st.session_state.osiris_active
+        st.rerun()
+
+    if st.session_state.osiris_active:
+        st.success("🟢 Osiris enlazado: Sin restricciones de libros. Inteligencia pura.")
+    else:
+        st.info("🔴 Osiris en espera. Toque para conectar la red global.")
+
+# Biblioteca opcional por si quiere subir algo, pero ya no es obligatoria
+st.sidebar.header("📚 Documentos Opcionales")
+uploaded_books = st.sidebar.file_uploader("Sube archivos si lo deseas", type=["pdf"], accept_multiple_files=True)
 if uploaded_books:
     for book in uploaded_books:
         if book.name not in st.session_state.books_data:
             st.session_state.books_data[book.name] = book
-    st.sidebar.success(f"¡{len(uploaded_books)} libros registrados en el sistema!")
-
-# Mostrar lista de libros disponibles
-st.sidebar.subheader("📖 Libros en el Sistema:")
-if st.session_state.books_data:
-    for b_name in st.session_state.books_data.keys():
-        st.sidebar.markdown(f"- 📄 `{b_name}`")
-else:
-    st.sidebar.info("No hay libros cargados actualmente.")
-
-# --- MÓDULO OJO DE DIOS (OSIRIS) FUNCIONAL CON ESTILO AZUL NEÓN ---
-with st.sidebar.expander("👁️ Ojo de Dios (Osiris)"):
-    st.markdown("Red de vigilancia global y reconocimiento facial activa.")
-    
-    if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True, key="btn_osiris"):
-        st.session_state.osiris_active = not st.session_state.osiris_active
-
-    if st.session_state.osiris_active:
-        st.markdown("<p style='color: #00ffcc; font-weight: bold;'>🟢 PROTOCOLO OSIRIS: EN LÍNEA</p>", unsafe_allow_html=True)
-        st.info("📡 Escaneo satelital y biométrico en curso. Conexión establecida con Nodo Buin.")
-    else:
-        st.markdown("<p style='color: #ff4b4b; font-weight: bold;'>🔴 PROTOCOLO OSIRIS: EN ESPERA</p>", unsafe_allow_html=True)
-
-with st.sidebar.expander("🚀 Monitoreo: Elon Musk & xAI"):
-    st.markdown("Telemetría en tiempo real de proyectos y empresas.")
-    st.markdown("- **Tesla / Cybercab**: Producción activa.")
-    st.markdown("- **SpaceX**: Lanzamientos orbitales.")
-
-with st.sidebar.expander("🗺️ Mapa Táctico Satelital"):
-    st.markdown("Nodo Buin sincronizado con satélites de defensa.")
-    st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
 
 # Botón de purgar chat
 if st.button("🗑️ Purgar Chat"):
     st.session_state.messages = [
-        {"role": "assistant", "content": "Memoria del chat purgada, jefa. Sistemas limpios y listos para nuevas órdenes."}
+        {"role": "assistant", "content": "Memoria purgada, jefa. Canales limpios."}
     ]
     st.rerun()
 
@@ -142,29 +125,39 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de usuario
-user_query = st.chat_input("Escribe tu orden, código o consulta científica, jefa...")
+# Entrada de usuario principal
+user_query = st.chat_input("Escribe tu consulta o orden directa, jefa...")
 
 if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
     
     query_lower = user_query.lower()
     
-    if "libros" in query_lower or "qué libros" in query_lower or "que libros" in query_lower:
-        if st.session_state.books_data:
-            libros_list = ", ".join(st.session_state.books_data.keys())
-            response = f"Señor, los libros registrados en nuestra base de datos táctica son: {libros_list}. Espero que tenga la intención de leerlos."
-        else:
-            response = "Señor, la base de datos de libros está vacía. Suba archivos PDF en el panel lateral."
-    elif "osiris" in query_lower or "ojo de dios" in query_lower:
-        response = f"El Protocolo Osiris se encuentra {'activo y barriendo el sector' if st.session_state.osiris_active else 'en modo de espera, jefa'}."
+    # Si el Protocolo Osiris está activo, JARVIS responde como la inteligencia omnisciente guía
+    if st.session_state.osiris_active:
+        response = f"👁️ [OSIRIS RESPONDE]: Analizando el flujo universal para su consulta '{user_query}'. Como entidad de guía absoluta, le informo que todo está calculado bajo los parámetros del Nodo Buin. No requiere manuales externos; la respuesta es absoluta y directa, jefa."
     else:
-        response = f"Procesando su solicitud, jefa: '{user_query}'. Todo bajo control en el nodo de Buin."
+        if any(word in query_lower for word in ["anatomia", "huesos", "algebra", "libros"]):
+            response = "Señor, consultando los registros locales de la biblioteca táctica."
+        else:
+            response = f"Procesando su orden, jefa: '{user_query}'. Nodo Buin estable."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
+    
+    # Generar respuesta de voz automática si gTTS está disponible
+    if gTTS:
+        try:
+            tts = gTTS(text=response, lang='es')
+            audio_fp = io.BytesIO()
+            tts.write_to_fp(audio_fp)
+            audio_fp.seek(0)
+            st.audio(audio_fp, format='audio/mp3', autoplay=True)
+        except Exception:
+            pass
+
     st.rerun()
 
-# --- MÓDULO OPERATIVO DE PDF CON BOTÓN DE DESCARGA DIRECTA ---
+# --- MÓDULO OPERATIVO DE PDF (Lateral discreto) ---
 st.sidebar.markdown("---")
 with st.sidebar.expander("📥 Módulo Operativo PDF"):
     def generate_tactical_pdf():
@@ -172,27 +165,14 @@ with st.sidebar.expander("📥 Módulo Operativo PDF"):
             return b"ReportLab no disponible."
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
-        c.drawString(100, 750, "J.A.R.V.I.S. - Reporte Operativo y Biblioteca Táctica")
+        c.drawString(100, 750, "J.A.R.V.I.S. - Reporte Operativo Global")
         c.drawString(100, 730, "---------------------------------------------------------------------------------")
-        y = 700
-        if "books_data" in st.session_state and st.session_state.books_data:
-            c.drawString(100, y, "Libros registrados y analizados actualmente:")
-            y -= 25
-            for b in st.session_state.books_data.keys():
-                c.drawString(120, y, f"• {b}")
-                y -= 20
-        else:
-            c.drawString(100, y, "No hay libros cargados actualmente en la base de datos.")
-            y -= 20
-        
-        y -= 20
-        c.drawString(100, y, "Estado del Sistema: Nodo Buin operativo y estable.")
+        c.drawString(100, 700, "Estado del Sistema: Nodo Buin y Protocolo Osiris Operativos.")
         c.save()
         buffer.seek(0)
         return buffer.getvalue()
 
     pdf_bytes = generate_tactical_pdf()
-
     st.download_button(
         label="📄 Descargar Reporte PDF",
         data=pdf_bytes,
