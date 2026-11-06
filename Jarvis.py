@@ -2,12 +2,22 @@ import streamlit as st
 import datetime
 import sqlite3
 
-# --- CONFIGURACIÓN DE PÁGINA ---
+# Importación segura de autorefresh para el segundero en vivo
+try:
+    from streamlit_autorefresh import st_autorefresh
+except ImportError:
+    st_autorefresh = None
+
+# --- CONFIGURACIÓN DE PÁGINA (SIDEBAR COLAPSADO PARA DEJAR LA VISTA LIBRE) ---
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Refrescar la app cada 1 segundo para mantener el segundero del reloj activo y estable
+if st_autorefresh:
+    st_autorefresh(interval=1000, key="datetimereload")
 
 # --- ESTILOS VISUALES STARK (AZUL NEÓN & BÚNKER) ---
 st.markdown("""
@@ -96,7 +106,7 @@ else:
     saludo_actual = "Buenas noches"
 
 # =========================================================================
-# NÚCLEO STARK AVANZADO (ACCESO DIRECTO SIN LOGIN)
+# NÚCLEO STARK AVANZADO
 # =========================================================================
 
 DB_NAME = "jarvis_bunker.db"
@@ -113,7 +123,7 @@ init_db()
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Acceso libre concedido. El nodo de Buin está estable y el Ojo de Dios (Osiris) está operando en modo omnisciente. ¿Qué desastre técnico resolvemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Panel lateral oculto y chat limpio. El Ojo de Dios (Osiris) está operativo y vigilando. ¿Qué directiva ejecutamos hoy?"}
     ]
 
 if "osiris_active" not in st.session_state:
@@ -122,7 +132,7 @@ if "osiris_active" not in st.session_state:
 if "manos_libres_activo" not in st.session_state:
     st.session_state.manos_libres_activo = False
 
-# --- ENCABEZADO ESTABLE ---
+# --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -143,14 +153,11 @@ st.markdown(f"""
 st.markdown("---")
 
 # =========================================================================
-# DISEÑO OPTIMIZADO: COLUMNA IZQUIERDA Y CENTRO (CHAT)
+# PANEL LATERAL (MÓDULOS OCULTOS POR DEFECTO EN LA BARRA LATERAL)
 # =========================================================================
-col_izq, col_cen = st.columns([1.2, 2.8])
-
-with col_izq:
+with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL")
 
-    # Módulo Ojo de Dios (Osiris) Interactivo
     with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
         st.markdown("Entidad de guía absoluta y sarcasmo orbital.")
         estado_osiris = st.checkbox("Activar Protocolo Osiris Omnisciente", value=st.session_state.osiris_active, key="chk_osiris")
@@ -160,18 +167,15 @@ with col_izq:
         else:
             st.warning("🔴 Osiris en pausa.")
 
-    # Módulo Clima en Vivo
     with st.expander("🌤️ Clima en Vivo (Buin)", expanded=False):
         st.markdown("- **Estación Meteorológica Local**")
         st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
         st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
 
-    # Módulo Coordenadas Tácticas Satelitales
     with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
         st.markdown("- **Posición del Nodo Central**")
         st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
 
-    # Módulo Escucha Continua
     with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
         estado_toggle = st.toggle("Activar Escucha Continua", value=st.session_state.manos_libres_activo, key="toggle_handsfree")
         st.session_state.manos_libres_activo = estado_toggle
@@ -180,33 +184,36 @@ with col_izq:
         else:
             st.markdown("🔴 **EN ESPERA**")
 
-with col_cen:
-    col_h1, col_h2 = st.columns([4, 1])
-    with col_h1:
-        st.markdown("<h4>💬 Chat IA & Ojo de Dios (Osiris)</h4>", unsafe_allow_html=True)
-    with col_h2:
-        if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat"):
-            h_l = datetime.datetime.now(tz_chile).hour
-            s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Canales limpios en el nodo de Buin."}]
-            st.rerun()
+# =========================================================================
+# PANTALLA PRINCIPAL: EXCLUSIVAMENTE LA CAJA DE CHAT Y EL HISTORIAL
+# =========================================================================
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Canal Directo con Osiris & E.D.I.T.H.</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
+        h_l = datetime.datetime.now(tz_chile).hour
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Canales limpios en el nodo de Buin."}]
+        st.rerun()
 
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    # Caja de chat principal
-    if prompt_usuario := st.chat_input("Escribe tu consulta o orden directa, jefa..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-        with st.chat_message("user"):
-            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
-        
-        # Respuesta omnisciente y sarcástica de Osiris / Jarvis
-        if st.session_state.osiris_active:
-            respuesta_ia = f"👁️ [OSIRIS]: Por la cresta, qué pregunta para un viernes cualquiera. Analizando '{prompt_usuario}' a través de los satélites de Buin: la respuesta es absoluta, jefa. Menos mal que me tienes a mí para guiarte sin necesidad de andar revisando manuales."
-        else:
-            respuesta_ia = f"Procesando su orden, jefa: '{prompt_usuario}'. Nodo Buin estable y bajo control."
+# Caja de chat principal en la vista principal
+if prompt_usuario := st.chat_input("Escribe tu orden o consulta directa, jefa..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+    
+    # Respuesta omnisciente y sarcástica
+    if st.session_state.osiris_active:
+        respuesta_ia = f"👁️ [OSIRIS]: Por la cresta, qué pregunta para un viernes cualquiera. Analizando '{prompt_usuario}' a través de los satélites de Buin: la respuesta es absoluta, jefa. Menos mal que me tienes a mí para guiarte sin rodeos."
+    else:
+        respuesta_ia = f"Procesando su orden, jefa: '{prompt_usuario}'. Nodo Buin estable."
 
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-        with st.chat_message("assistant"):
-            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    with st.chat_message("assistant"):
+        st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+        st.rerun()
