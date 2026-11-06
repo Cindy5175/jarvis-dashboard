@@ -173,14 +173,50 @@ def renderizar_barra_lateral(docs_cargados):
             st.markdown("Nodo Buin sincronizado con satélites de defensa.")
             st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
 
+        # Módulo de Cámara ISS con Botón de Activación en Vivo
         with st.expander("📷 Cámara en Vivo: Espacio (ISS)"):
-            st.video("https://www.youtube.com/watch?v=21X5lGlDOfg")
+            st.markdown("Transmisión óptica orbital de la Estación Espacial.")
+            if "activar_iss" not in st.session_state:
+                st.session_state.activar_iss = False
+            
+            if st.button("🔴 Conectar Feed ISS", key="btn_iss"):
+                st.session_state.activar_iss = not st.session_state.activar_iss
+            
+            if st.session_state.activar_iss:
+                st.success("Feed orbital enlazado.")
+                st.video("https://www.youtube.com/watch?v=21X5lGlDOfg")
+            else:
+                st.info("Feed en espera de activación manual.")
 
+        # Módulo earthTV con Botón de Activación en Vivo
         with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
-            st.info("Conectando con feeds públicos globales de earthTV...")
+            st.markdown("Feeds públicos globales de earthTV.")
+            if "activar_earth" not in st.session_state:
+                st.session_state.activar_earth = False
+            
+            if st.button("🌐 Conectar earthTV", key="btn_earth"):
+                st.session_state.activar_earth = not st.session_state.activar_earth
+            
+            if st.session_state.activar_earth:
+                st.success("Canal global earthTV activo.")
+                st.markdown("[Acceder al portal de earthTV](https://www.earthtv.com)", unsafe_allow_html=True)
+            else:
+                st.info("Canal global en espera de activación.")
 
+        # Módulo SkylineWebcams con Botón de Activación en Vivo
         with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
-            st.info("Canal de streaming óptico activo.")
+            st.markdown("Streaming óptico de alta definición internacional.")
+            if "activar_skyline" not in st.session_state:
+                st.session_state.activar_skyline = False
+            
+            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
+                st.session_state.activar_skyline = not st.session_state.activar_skyline
+            
+            if st.session_state.activar_skyline:
+                st.success("Streaming óptico desplegado.")
+                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
+            else:
+                st.info("Streaming en espera de activación.")
 
         with st.expander("🌤️ Clima en Vivo (Buin)"):
             st.metric(label="Temperatura Nodo Buin", value="21 °C", delta="Estable")
@@ -199,158 +235,3 @@ def renderizar_barra_lateral(docs_cargados):
                     st.warning("Escribe una descripción para la misión.")
 
         with st.expander("🛡️ Módulo E.D.I.T.H. & Ojo de Dios"):
-            st.markdown("Control satelital de defensa y vigilancia activo.")
-            if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
-                st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
-
-        st.divider()
-        st.caption("Nodo Buin, Chile 🇨🇱")
-
-def renderizar_encabezado():
-    # Refresco automático cada 1 segundo con segundero en vivo
-    st_autorefresh(interval=1000, key="reloj_jarvis_top")
-    
-    # Hora exacta de Chile con zona horaria oficial
-    try:
-        zona_chile = zoneinfo.ZoneInfo("America/Santiago")
-        ahora_chile = datetime.datetime.now(zona_chile)
-    except Exception:
-        ahora_chile = datetime.datetime.now()
-
-    tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
-
-    # Reactor Ark triangular centrado arriba
-    st.markdown("""
-        <div class="ark-reactor-container">
-            <div class="ark-reactor">
-                <div class="ark-triangle"></div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
-
-    if st.button("🔒 Bloquear Búnker", use_container_width=True):
-        st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
-
-    st.divider()
-
-def renderizar_protocolos_rapidos():
-    col_p1, col_p2, col_p3 = st.columns(3)
-    with col_p1:
-        if st.button("📊 Protocolo Base"):
-            st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
-            st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
-    with col_p2:
-        if st.button("🚨 Protocolo Alerta"):
-            st.toast("Activando perímetro y mapa satelital...")
-            st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
-    with col_p3:
-        if st.button("⚙️ Protocolo Diagnóstico"):
-            st.toast("Purgando caché temporal del Core LLM...")
-            st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
-
-    st.divider()
-
-def gestionar_chat_ia(docs_cargados):
-    st.subheader("💬 Chat IA (Google Gemini + OpenAI) & Protocolo E.D.I.T.H.")
-
-    if "mensajes" not in st.session_state:
-        st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo con doble núcleo neuronal (Google y OpenAI), la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia, física o código de programación revisamos?"}
-        ]
-
-    for msj in st.session_state.mensajes:
-        with st.chat_message(msj["role"]):
-            st.markdown(msj["content"])
-
-    if prompt := st.chat_input("Escribe tu orden, código o consulta científica, jefa..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
-
-        system_instruction = f"""
-        Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin, con capacidades de clase mundial en ciencia, física, historia, matemáticas y programación avanzada (Python, Streamlit, APIs, arquitecturas de software).
-        Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
-        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
-        Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama.
-        Integra conocimientos profundos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
-        
-        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
-        {contexto_libros}
-        =======================================
-        
-        Mantén tus respuestas técnicas, fluidas, claras y con el toque irónico característico.
-        """
-
-        # Intentar primero con Google Gemini si está configurada la API key, respaldando con OpenAI si es necesario
-        gemini_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
-        openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
-
-        respuesta_texto = ""
-        exito = False
-
-        # Intento con Google Gemini
-        if gemini_api_key:
-            try:
-                genai.configure(api_key=gemini_api_key)
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=system_instruction
-                )
-                # Historial para Gemini
-                historial_gemini = []
-                for m in st.session_state.mensajes[-6:-1]:
-                    rol = "user" if m["role"] == "user" else "model"
-                    historial_gemini.append({"role": rol, "parts": [m["content"]]})
-                
-                chat = model.start_chat(history=historial_gemini)
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo Google Gemini..."):
-                        response = chat.send_message(prompt)
-                        respuesta_texto = response.text
-                        st.markdown(respuesta_texto)
-                        exito = True
-            except Exception as e:
-                # Si falla Gemini, intentamos con OpenAI abajo
-                pass
-
-        # Respaldo o ejecución con OpenAI si Gemini no está o falló
-        if not exito and openai_api_key:
-            try:
-                client = OpenAI(api_key=openai_api_key)
-                messages_payload = [{"role": "system", "content": system_instruction}]
-                for m in st.session_state.mensajes[-6:]:
-                    messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
-
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo OpenAI..."):
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=messages_payload,
-                            temperature=0.7
-                        )
-                        respuesta_texto = response.choices[0].message.content
-                        st.markdown(respuesta_texto)
-                        exito = True
-            except Exception as e:
-                respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
-                with st.chat_message("assistant"):
-                    st.markdown(respuesta_error)
-                respuesta_texto = respuesta_error
-
-        if exito:
-            texto_voz = limpiar_texto_para_voz(respuesta_texto)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
-
-# ---------------------------------------------------------
-# Ejecución Principal del Sistema
-# ---------------------------------------------------------
-docs_cargados = cargar_documentos_pdf("documentos")
-renderizar_barra_lateral(docs_cargados)
-renderizar_encabezado()
-renderizar_protocolos_rapidos()
-gestionar_chat_ia(docs_cargados)
