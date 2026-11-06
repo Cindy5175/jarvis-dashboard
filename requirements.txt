@@ -5,3 +5,5 @@ pypdf
 streamlit-autorefresh
 openai
 google-generativeai
+requests
+pandas
