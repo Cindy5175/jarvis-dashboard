@@ -3,3 +3,4 @@ gtts
 reportlab
 pypdf
 streamlit-autorefresh
+openai
