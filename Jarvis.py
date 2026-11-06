@@ -217,3 +217,4 @@ if prompt_usuario := st.chat_input("Escribe tu orden o consulta directa, jefa...
     with st.chat_message("assistant"):
         st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
         st.rerun()
+
