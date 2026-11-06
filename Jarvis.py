@@ -125,7 +125,8 @@ def cargar_documentos_pdf(directorio_pdf="documentos"):
                 if texto_archivo.strip():
                     documentos.append({
                         "nombre": archivo,
-                        "contenido": texto_archivo
+                        "contenido": texto_archivo,
+                        "ruta": ruta_pdf
                     })
             except Exception as e:
                 st.error(f"Error al leer el archivo {archivo}: {e}")
@@ -160,23 +161,45 @@ def renderizar_barra_lateral(docs_cargados):
     with st.sidebar:
         st.header("⚙️ Estado del Sistema")
         
-        # Módulo de Base de Datos con Operatividad y Estado de PDFs incluido
-        with st.expander("📚 Base de Datos (PDFs)", expanded=True):
+        # Módulo de Base de Datos y PDFs con opción de descarga
+        with st.expander("📚 Base de Datos & PDFs", expanded=True):
             if docs_cargados:
                 st.success("🟢 Operativo (PDFs Activos)")
                 for doc in docs_cargados:
                     st.write(f"📖 {doc['nombre']}")
+                    try:
+                        with open(doc["ruta"], "rb") as archivo_pdf:
+                            st.download_button(
+                                label=f"📥 Descargar {doc['nombre'][:12]}...",
+                                data=archivo_pdf,
+                                file_name=doc['nombre'],
+                                mime="application/pdf",
+                                key=f"dl_{doc['nombre']}"
+                            )
+                    except Exception:
+                        pass
             else:
                 st.warning("🟡 Operativo (Sin PDFs en carpetas)")
                 st.info("Coloca tus archivos PDF en la carpeta 'documentos/'.")
             
         st.divider()
         
-        # Ojo de Dios (Osiris) colocado arriba del Mapa Táctico
+        # Ojo de Dios (Osiris)
         with st.expander("👁️ Ojo de Dios (Osiris)"):
             st.markdown("Red de vigilancia global y reconocimiento facial activa.")
             if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True):
                 st.error("¡Ojo de Dios enlazado a los sensores del Nodo Buin, jefa!")
+
+        # Módulo Extra: Logística, Ciberseguridad & Cartografía (Basado en referencias)
+        with st.expander("🛠️ Utilidades Logísticas & Red"):
+            st.markdown("Herramientas de auditoría y cartografía avanzada:")
+            st.markdown("- **LocalSend**: Transferencia local segura[cite: 8].")
+            st.markdown("- **Gobuster / Nikto**: Auditoría web[cite: 13, 14, 15].")
+            st.markdown("- **WorldCam**: Cámaras globales[cite: 12].")
+            st.markdown("- **SunCalc / Ventusky**: Análisis solar y meteorológico[cite: 17].")
+            if st.button("🌐 Lanzar Enlaces Tácticos", use_container_width=True):
+                st.toast("Módulo de herramientas tácticas enlazado.")
+                st.markdown("[Abrir WorldCam](https://worldcam.io) | [Ventusky](https://www.ventusky.com)")
 
         with st.expander("🗺️ Mapa Táctico Satelital"):
             st.markdown("Nodo Buin sincronizado con satélites de defensa.")
@@ -259,7 +282,6 @@ def renderizar_encabezado():
 
     tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
 
-    # Reactor Ark alineado a la izquierda
     st.markdown("""
         <div class="ark-reactor-container">
             <div class="ark-reactor">
@@ -277,7 +299,6 @@ def renderizar_encabezado():
     st.divider()
 
 def renderizar_protocolos_rapidos():
-    # 3 Protocolos a la izquierda en columna vertical
     st.markdown("### ⚡ Protocolos Rápidos")
     if st.button("📊 Protocolo Base"):
         st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
@@ -378,7 +399,7 @@ def gestionar_chat_ia(docs_cargados):
                         )
                         respuesta_texto = response.choices[0].message.content
                         st.markdown(respuesta_texto)
-                        exito = True
+                        exito> True
             except Exception as e:
                 respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
                 with st.chat_message("assistant"):
