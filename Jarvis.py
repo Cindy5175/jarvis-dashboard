@@ -119,7 +119,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulo de Mapa Táctico Satelital GlobeAlert integrado. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulos de Osiris y GlobeAlert en línea. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -153,11 +153,17 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
-    # Módulo Ojo de Dios / GlobeAlert - Enlace Directo Satelital
-    with st.expander("👁️ Mapa Táctico Satelital (GlobeAlert)", expanded=True):
-        st.markdown("Monitoreo global en tiempo real:")
-        st.link_button("🚀 Abrir GlobeAlert (Pantalla Completa)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-        st.caption("Enlace directo a la red de inteligencia táctica.")
+    # Módulo Ojo de Dios (Osiris)
+    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
+        st.markdown("Monitoreo planetario en tiempo real:")
+        st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+        st.caption("Acceso a la red global satelital.")
+
+    # Módulo GlobeAlert (Inteligencia Global)
+    with st.expander("🌍 GlobeAlert (Alertas en Vivo)", expanded=True):
+        st.markdown("Feed de inteligencia y eventos globales:")
+        st.link_button("🚀 Abrir GlobeAlert", "https://globealert.com", use_container_width=True)
+        st.caption("Monitoreo de alertas en tiempo real.")
 
     # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
