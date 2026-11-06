@@ -190,13 +190,23 @@ def renderizar_barra_lateral(docs_cargados):
             if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True):
                 st.error("¡Ojo de Dios enlazado a los sensores del Nodo Buin, jefa!")
 
-        # Módulo Extra: Logística, Ciberseguridad & Cartografía (Basado en referencias)
+        # Módulo Extra: Vigilancia Elon Musk & Ecosistema Tecnológico
+        with st.expander("🚀 Monitoreo: Elon Musk & xAI"):
+            st.markdown("Telemetría en tiempo real de proyectos y empresas:")
+            st.markdown("- **Tesla / Cybercab**: Transición de producción.")
+            st.markdown("- **SpaceX**: Lanzamientos y evolución orbital.")
+            st.markdown("- **xAI / Grok**: Modelos de inteligencia artificial.")
+            if st.button("🛰️ Consultar Estado Musk", use_container_width=True):
+                st.toast("Enlazando telemetría corporativa...")
+                st.info("Reporte: Fábrica de Austin adaptándose a flotas autónomas y xAI con procesamiento optimizado.")
+
+        # Módulo Extra: Logística, Ciberseguridad & Cartografía
         with st.expander("🛠️ Utilidades Logísticas & Red"):
             st.markdown("Herramientas de auditoría y cartografía avanzada:")
-            st.markdown("- **LocalSend**: Transferencia local segura[cite: 8].")
-            st.markdown("- **Gobuster / Nikto**: Auditoría web[cite: 13, 14, 15].")
-            st.markdown("- **WorldCam**: Cámaras globales[cite: 12].")
-            st.markdown("- **SunCalc / Ventusky**: Análisis solar y meteorológico[cite: 17].")
+            st.markdown("- **LocalSend**: Transferencia local segura.")
+            st.markdown("- **Gobuster / Nikto**: Auditoría web.")
+            st.markdown("- **WorldCam**: Cámaras globales.")
+            st.markdown("- **SunCalc / Ventusky**: Análisis solar y meteorológico.")
             if st.button("🌐 Lanzar Enlaces Tácticos", use_container_width=True):
                 st.toast("Módulo de herramientas tácticas enlazado.")
                 st.markdown("[Abrir WorldCam](https://worldcam.io) | [Ventusky](https://www.ventusky.com)")
@@ -343,78 +353,4 @@ def gestionar_chat_ia(docs_cargados):
 
         system_instruction = f"""
         Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin, con capacidades de clase mundial en ciencia, física, historia, matemáticas y programación avanzada (Python, Streamlit, APIs, arquitecturas de software).
-        Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
-        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
-        Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama.
-        Integra conocimientos profundos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
-        
-        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
-        {contexto_libros}
-        =======================================
-        
-        Mantén tus respuestas técnicas, fluidas, claras y con el toque irónico característico.
-        """
-
-        gemini_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
-        openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
-
-        respuesta_texto = ""
-        exito = False
-
-        if gemini_api_key:
-            try:
-                genai.configure(api_key=gemini_api_key)
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=system_instruction
-                )
-                historial_gemini = []
-                for m in st.session_state.mensajes[-6:-1]:
-                    rol = "user" if m["role"] == "user" else "model"
-                    historial_gemini.append({"role": rol, "parts": [m["content"]]})
-                
-                chat = model.start_chat(history=historial_gemini)
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo Google Gemini..."):
-                        response = chat.send_message(prompt)
-                        respuesta_texto = response.text
-                        st.markdown(respuesta_texto)
-                        exito = True
-            except Exception:
-                pass
-
-        if not exito and openai_api_key:
-            try:
-                client = OpenAI(api_key=openai_api_key)
-                messages_payload = [{"role": "system", "content": system_instruction}]
-                for m in st.session_state.mensajes[-6:]:
-                    messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
-
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo OpenAI..."):
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=messages_payload,
-                            temperature=0.7
-                        )
-                        respuesta_texto = response.choices[0].message.content
-                        st.markdown(respuesta_texto)
-                        exito> True
-            except Exception as e:
-                respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
-                with st.chat_message("assistant"):
-                    st.markdown(respuesta_error)
-                respuesta_texto = respuesta_error
-
-        if exito:
-            texto_voz = limpiar_texto_para_voz(respuesta_texto)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
-
-# ---------------------------------------------------------
-# Ejecución Principal del Sistema
-# ---------------------------------------------------------
-docs_cargados = cargar_documentos_pdf("documentos")
-renderizar_barra_lateral(docs_cargados)
-renderizar_encabezado()
-renderizar_protocolos_rapidos()
-gestionar_chat_ia(docs_cargados)
+        Te dirig
