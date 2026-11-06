@@ -4,3 +4,4 @@ reportlab
 pypdf
 streamlit-autorefresh
 openai
+google-generativeai
