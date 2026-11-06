@@ -4,7 +4,7 @@ import tempfile
 import io
 from datetime import datetime
 
-# Importaciones seguras con manejo de errores para evitar caídas en la nube
+# Importaciones seguras
 try:
     from gtts import gTTS
 except ImportError:
@@ -43,7 +43,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilo personalizado (Interfaz táctica oscura original)
+# Estilo personalizado (Interfaz táctica oscura con acentos Azul Neón #00ffcc)
 st.markdown("""
     <style>
     .main {
@@ -53,6 +53,18 @@ st.markdown("""
     .stTextInput textarea, input {
         color: #00ffcc !important;
         background-color: #111827 !important;
+        border: 1px solid #00ffcc !important;
+    }
+    /* Estilo neón para botones de Streamlit */
+    .stButton>button {
+        color: #0b0f19 !important;
+        background-color: #00ffcc !important;
+        border: 1px solid #00ffcc !important;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        background-color: #00b388 !important;
+        color: #ffffff !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -66,11 +78,14 @@ st.markdown("---")
 # Panel lateral táctico completo
 st.sidebar.title("🎛️ Panel Táctico")
 
-# Inicializar estado de chat
+# Inicializar estado de chat y estado del Ojo de Dios
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Señor, sistema en línea y operativo. Por la cresta, ya era hora de estabilizar este nodo. ¿Qué manuales analizaremos hoy o qué desastre técnico resolveremos?"}
+        {"role": "assistant", "content": "Señor, sistema en línea y operativo. Protocolos en azul neón listos. ¿Qué órdenes ejecutamos hoy?"}
     ]
+
+if "osiris_active" not in st.session_state:
+    st.session_state.osiris_active = False
 
 # Sección de Carga de Libros / Documentos
 st.sidebar.header("📚 Biblioteca de Libros (PDF)")
@@ -93,10 +108,18 @@ if st.session_state.books_data:
 else:
     st.sidebar.info("No hay libros cargados actualmente.")
 
-# Módulos tácticos adicionales visuales
+# --- MÓDULO OJO DE DIOS (OSIRIS) FUNCIONAL CON ESTILO AZUL NEÓN ---
 with st.sidebar.expander("👁️ Ojo de Dios (Osiris)"):
     st.markdown("Red de vigilancia global y reconocimiento facial activa.")
-    st.button("⚠️ Activar Protocolo Osiris", use_container_width=True)
+    
+    if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True, key="btn_osiris"):
+        st.session_state.osiris_active = not st.session_state.osiris_active
+
+    if st.session_state.osiris_active:
+        st.markdown("<p style='color: #00ffcc; font-weight: bold;'>🟢 PROTOCOLO OSIRIS: EN LÍNEA</p>", unsafe_allow_html=True)
+        st.info("📡 Escaneo satelital y biométrico en curso. Conexión establecida con Nodo Buin.")
+    else:
+        st.markdown("<p style='color: #ff4b4b; font-weight: bold;'>🔴 PROTOCOLO OSIRIS: EN ESPERA</p>", unsafe_allow_html=True)
 
 with st.sidebar.expander("🚀 Monitoreo: Elon Musk & xAI"):
     st.markdown("Telemetría en tiempo real de proyectos y empresas.")
@@ -130,13 +153,11 @@ if user_query:
     if "libros" in query_lower or "qué libros" in query_lower or "que libros" in query_lower:
         if st.session_state.books_data:
             libros_list = ", ".join(st.session_state.books_data.keys())
-            response = f"Señor, los libros registrados en nuestra base de datos táctica son: {libros_list}. Espero que tenga la intención de leerlos y no solo usarlos de adorno."
+            response = f"Señor, los libros registrados en nuestra base de datos táctica son: {libros_list}. Espero que tenga la intención de leerlos."
         else:
             response = "Señor, la base de datos de libros está vacía. Suba archivos PDF en el panel lateral."
-    elif any(word in query_lower for word in ["anatomia", "huesos", "articulaciones", "codo", "carpo", "cadera"]):
-        response = "Analizando Anatomía Humana: Las estructuras óseas y articulares requieren absoluta precisión. Puede descargar el reporte completo usando el módulo de PDF lateral."
-    elif any(word in query_lower for word in ["algebra", "baldor", "ecuaciones", "terminos"]):
-        response = "Álgebra y matemáticas. Excelente para mantener el cerebro activo. Pregunte lo que necesite o descargue el reporte operativo."
+    elif "osiris" in query_lower or "ojo de dios" in query_lower:
+        response = f"El Protocolo Osiris se encuentra {'activo y barriendo el sector' if st.session_state.osiris_active else 'en modo de espera, jefa'}."
     else:
         response = f"Procesando su solicitud, jefa: '{user_query}'. Todo bajo control en el nodo de Buin."
 
