@@ -1,6 +1,5 @@
 import streamlit as st
 import datetime
-import sqlite3
 import io
 
 # Importación segura de gTTS para voz y autorefresh
@@ -119,7 +118,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris, GlobeAlert y feed satelital de la NASA en línea. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris, GlobeAlert y enlaces satelitales operativos. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -165,11 +164,11 @@ with st.sidebar:
         st.link_button("🚀 Abrir GlobeAlert", "https://www.globealert.ai/", use_container_width=True)
         st.caption("Monitoreo oficial en tiempo real.")
 
-    # Módulo de Transmisión NASA / ISS en Vivo (Izquierda)
+    # Módulo ISS Live Feed (NASA) como enlace directo seguro
     with st.expander("🛰️ ISS Live Feed (NASA)", expanded=True):
-        st.markdown("Transmisión en alta definición desde la Estación Espacial Internacional:")
-        st.video("https://www.youtube.com/watch?v=ROboUHfPUrU")
-        st.caption("Feed orbital directo.")
+        st.markdown("Transmisión orbital en alta definición:")
+        st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
+        st.caption("Feed directo desde la Estación Espacial.")
 
     # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
