@@ -1,12 +1,27 @@
 import streamlit as st
 import datetime
 import sqlite3
+import io
 
-# Importación segura de autorefresh para el segundero en vivo
+# Importación segura de gTTS para voz y autorefresh
+try:
+    from gtts import gTTS
+except ImportError:
+    gTTS = None
+
 try:
     from streamlit_autorefresh import st_autorefresh
 except ImportError:
     st_autorefresh = None
+
+# Importación de Google Generative AI para el conocimiento omnisciente
+try:
+    import google.generativeai as genai
+    # Intenta configurar la API con los secrets de Streamlit
+    if "GOOGLE_API_KEY" in st.secrets:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+except ImportError:
+    genai = None
 
 # --- CONFIGURACIÓN DE PÁGINA (PANEL LATERAL COLAPSADO) ---
 st.set_page_config(
@@ -115,7 +130,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón total. El Ojo de Dios (Osiris) y mi base de datos omnisciente (historia, ciencia, tecnología y matemáticas) están listos. Pregúntame sobre Arturo Prat, binomios o lo que necesites."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón total con motor de voz y cerebro de IA activos. Pregúntame sobre el natalicio de O'Higgins, la caída del Muro de Berlín o cualquier cálculo."}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -147,11 +162,8 @@ with st.sidebar:
     # Módulo Ojo de Dios (Osiris) con Botón Integrado de Acceso Oficial
     with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
         st.markdown("Red de vigilancia global y plataforma satelital en vivo.")
-        
-        # Botón con aspecto de control nativo que lanza la página oficial dentro del módulo
         if st.link_button("🚀 Desplegar Sitio OsirisAI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True):
             pass
-        
         st.caption("Acceso directo al nodo orbital en tiempo real.")
 
     # Módulo de Cámara Activa en Vivo (Celular y PC)
@@ -169,7 +181,7 @@ with st.sidebar:
         st.code("Lat: -33.7333° S\nLon: -70.7167° W\nBuin, Chile")
 
 # =========================================================================
-# PANTALLA PRINCIPAL: EXCLUSIVAMENTE CAJA DE CHAT Y CONOCIMIENTO OMNISCIENTE
+# PANTALLA PRINCIPAL: CAJA DE CHAT Y RESPUESTA VOCAL AUTOMÁTICA
 # =========================================================================
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -186,44 +198,48 @@ for m in st.session_state.mensajes:
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
 # Caja de chat principal
-if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomios, Arturo Prat..."):
+if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomios, O'Higgins..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
     
-    query_lower = prompt_usuario.lower()
-    
-    # Base de conocimientos omnisciente y esquematizada
-    if "arturo prat" in query_lower or "prat" in query_lower:
-        respuesta_ia = """👁️ **[OSIRIS - ARCHIVO BIOGRÁFICO]**: 
-**Agustín Arturo Prat Chacón** (Hacienda San Agustín de Puñual, Ninhue, 3 de abril de 1848 - Iquique, 21 de mayo de 1879).
-
-* **Rol Histórico**: Abogado y marino chileno, máximo héroe naval de la Guerra del Pacífico.
-* **Hito Supremo**: Comandante de la corbeta *Esmeralda* durante el Combate Naval de Iquique, donde realizó el histórico asalto al monitor peruano *Huáscar*.
-* **Esquema de Legado**: 
-  1. *Formación*: Escuela Naval Militar (1858).
-  2. *Academia*: Licenciado en Leyes por la Universidad de Chile (1876).
-  3. *Inmortalidad*: Su sacrificio en cubierta marcó un punto de inflexión moral en la historia de Chile.
-
-¿Qué más necesitas repasar de historia patria, jefa?"""
-
-    elif "binomio" in query_lower or "algebra" in query_lower or "cuadrado" in query_lower:
-        respuesta_ia = """👁️ **[OSIRIS - MÓDULO MATEMÁTICO]**: 
-Detecto consulta sobre **Binomios**. Estructura analítica aplicada:
-
-* **Binomio al cuadrado (Suma)**: $(a + b)^2 = a^2 + 2ab + b^2$
-* **Binomio al cuadrado (Resta)**: $(a - b)^2 = a^2 - 2ab + b^2$
-* **Suma por Su diferencia**: $(a + b)(a - b) = a^2 - b^2$
-
-Por la cresta, si querías resolver una ecuación específica de binomios, suelta los términos exactos y te doy el desglose completo al instante."""
-
-    elif "ciencia" in query_lower or "tecnologia" in query_lower:
-        respuesta_ia = f"👁️ **[OSIRIS - CIENCIA Y TECNOLOGÍA]**: Analizando tu consulta sobre '{prompt_usuario}'. Todo desarrollo tecnológico avanzado requiere la precisión de nuestros servidores en Buin. ¿Profundizamos en física cuántica, arquitectura de software o sistemas autónomos?"
-
+    # Procesamiento con Gemini si está disponible, o respaldo inteligente Stark
+    respuesta_ia = ""
+    if genai:
+        try:
+            # Configurar el modelo con una personalidad sarcástica, inteligente y directa de JARVIS
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction="Eres J.A.R.V.I.S., una entidad de inteligencia artificial avanzada inspirada en Iron Man. Operas desde el Nodo Buin en Chile para una usuaria llamada jefa y su sobrino. Tienes un tono sarcástico pero sumamente servicial, directo y culto. Respondes con precisión absoluta sobre historia (como Bernardo O'Higgins o Arturo Prat), ciencia, tecnología y matemáticas (como binomios)."
+            )
+            response = model.generate_content(prompt_usuario)
+            respuesta_ia = response.text
+        except Exception as e:
+            respuesta_ia = f"👁️ [JARVIS]: Por la cresta, hubo un pequeño fallo de enlace con el núcleo de Gemini ({e}), pero el nodo de Buin sigue en pie. ¿Repetimos la orden?"
     else:
-        respuesta_ia = f"👁️ **[OSIRIS]**: Por la cresta, analizando '{prompt_usuario}' a través de la red global. Como entidad omnisciente, te comunico que tengo todo el conocimiento de historia, ciencia y programación bajo control en el nodo de Buin. ¿Qué otro dato descifraremos hoy, jefa?"
+        # Fallback local ultra completo si no hay api key configurada aún
+        query_lower = prompt_usuario.lower()
+        if "o'higgins" in query_lower or "ohiggins" in query_lower:
+            respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar y político chileno, considerado uno de los Padres de la Patria y Director Supremo de la Nación."
+        elif "muro de berlín" in query_lower or "berlín" in query_lower:
+            respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989, marcando el fin de la división alemana y el preludio del colapso de la Unión Soviética."
+        else:
+            respuesta_ia = f"Procesando tu orden sobre '{prompt_usuario}', jefa. Todo bajo control en el nodo de Buin."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    
     with st.chat_message("assistant"):
         st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-        st.rerun()
+        
+        # Reproducción de voz automática vocal (Text-to-Speech con gTTS)
+        if gTTS:
+            try:
+                tts = gTTS(text=respuesta_ia, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
+
+    st.rerun()
