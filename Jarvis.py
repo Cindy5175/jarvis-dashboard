@@ -12,8 +12,3 @@ except ImportError:
 try:
     from streamlit_autorefresh import st_autorefresh
 except ImportError:
-    st_autorefresh = None
-
-# Importación de Google Generative AI
-try:
-    import google.
