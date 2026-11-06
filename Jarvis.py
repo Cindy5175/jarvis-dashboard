@@ -34,20 +34,49 @@ st.markdown("""
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
     }
+    /* Estilo del Reactor Ark Triangular Neón Central */
+    .ark-reactor-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 5px 0 5px 0;
+    }
+    .ark-reactor {
+        width: 65px;
+        height: 65px;
+        background: radial-gradient(circle, #00f3ff 0%, #0d1b2a 70%);
+        border: 2px solid #00f3ff;
+        border-radius: 50%;
+        box-shadow: 0 0 18px #00f3ff, inset 0 0 12px #00f3ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .ark-triangle {
+        width: 0;
+        height: 0;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-bottom: 22px solid #ffffff;
+        filter: drop-shadow(0 0 6px #00f3ff);
+    }
     .stark-header {
         color: #00f3ff !important;
         font-family: 'Courier New', Courier, monospace;
         font-size: 1.15rem;
         font-weight: bold;
         text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
-        padding: 5px 0;
+        padding: 2px 0;
         letter-spacing: 1px;
+        text-align: center;
     }
     .stark-sub {
         color: #8be9fd !important;
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.85rem;
         margin-bottom: 15px;
+        text-align: center;
     }
     .stButton>button {
         background-color: #0d1b2a;
@@ -174,11 +203,21 @@ def renderizar_barra_lateral(docs_cargados):
                 st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
 
         st.divider()
-        st.caption("Stark Industries // Nodo Buin, Chile 🇨🇱")
+        st.caption("Nodo Buin, Chile 🇨🇱")
 
 def renderizar_encabezado():
+    # Refresco automático cada 1 segundo para mantener los segundos activos en vivo
     st_autorefresh(interval=1000, key="reloj_jarvis_top")
     tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
+
+    # Reactor Ark triangular centrado arriba
+    st.markdown("""
+        <div class="ark-reactor-container">
+            <div class="ark-reactor">
+                <div class="ark-triangle"></div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
