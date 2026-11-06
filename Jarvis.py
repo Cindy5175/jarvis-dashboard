@@ -119,7 +119,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulos de Osiris y GlobeAlert en línea. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris y GlobeAlert operativos. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -159,12 +159,11 @@ with st.sidebar:
         st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
         st.caption("Acceso a la red global satelital.")
 
- 
-    # Módulo GlobeAlert - Monitoreo Global en Tiempo Real
+    # Módulo GlobeAlert (Inteligencia Global) con enlace oficial corregido
     with st.expander("🌍 GlobeAlert (Alertas en Vivo)", expanded=True):
         st.markdown("Feed de inteligencia y eventos globales:")
-        st.link_button("🚀 Abrir GlobeAlert", "https://globealert.app", use_container_width=True)
-        st.caption("Monitoreo de alertas en tiempo real.")
+        st.link_button("🚀 Abrir GlobeAlert", "https://www.globealert.ai/", use_container_width=True)
+        st.caption("Monitoreo oficial en tiempo real.")
 
     # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
