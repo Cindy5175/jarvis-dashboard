@@ -3,14 +3,15 @@ import os
 import tempfile
 from gtts import gTTS
 import io
+from datetime import datetime
 
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Sistema Táctico",
+    page_title="J.A.R.V.I.S. - Centro de Control Táctico",
     page_icon="🤖",
     layout="wide"
 )
 
-# Estilo personalizado (Interfaz táctica oscura)
+# Estilo personalizado (Interfaz táctica oscura original)
 st.markdown("""
     <style>
     .main {
@@ -24,13 +25,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🤖 J.A.R.V.I.S. - Centro de Control y Biblioteca Táctica")
+# Cabecera táctica original
+st.markdown("<h1 style='text-align: center; color: #00ffcc;'>J.A.R.V.I.S. IA</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: #64ffda;'>[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {datetime.now().strftime('%A, %d de %B de %Y - %H:%M:%S')} ]</p>", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Panel lateral
 st.sidebar.title("🎛️ Panel Táctico")
 
 # Inicializar estado de chat
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Señor, sistema en línea y módulo de PDF totalmente operativo. ¿Qué manuales analizaremos hoy o qué reporte generamos?"}
+        {"role": "assistant", "content": "Señor, sistema en línea y arquitectura original restaurada. ¿Qué manuales analizaremos hoy o qué desastre técnico resolveremos?"}
     ]
 
 # Sección de Carga de Libros / Documentos
@@ -54,13 +61,20 @@ if st.session_state.books_data:
 else:
     st.sidebar.info("No hay libros cargados actualmente.")
 
+# Botón de purgar chat
+if st.button("🗑️ Purgar Chat"):
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Memoria del chat purgada, jefa. Sistemas limpios y listos para nuevas órdenes."}
+    ]
+    st.rerun()
+
 # Mostrar historial de chat
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # Entrada de usuario
-user_query = st.chat_input("Escriba su comando o pregunta para JARVIS...")
+user_query = st.chat_input("Escribe tu orden, código o consulta")
 
 if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
@@ -70,20 +84,20 @@ if user_query:
     if "libros" in query_lower or "qué libros" in query_lower or "que libros" in query_lower:
         if st.session_state.books_data:
             libros_list = ", ".join(st.session_state.books_data.keys())
-            response = f"Señor, los libros registrados en nuestra base de datos son: {libros_list}. Espero que los esté estudiando y no solo admirando la portada."
+            response = f"Señor, los libros registrados en nuestra base de datos táctica son: {libros_list}. Espero que tenga la intención de leerlos y no solo usarlos de adorno."
         else:
             response = "Señor, la base de datos de libros está vacía. Suba archivos PDF en el panel lateral."
     elif any(word in query_lower for word in ["anatomia", "huesos", "articulaciones", "codo", "carpo", "cadera"]):
-        response = "Analizando Anatomía Humana: Las estructuras óseas y articulares requieren absoluta precisión. Puede descargar el reporte completo usando el botón del panel lateral."
+        response = "Analizando Anatomía Humana: Las estructuras óseas y articulares requieren absoluta precisión. Puede descargar el reporte completo usando el módulo de PDF lateral."
     elif any(word in query_lower for word in ["algebra", "baldor", "ecuaciones", "terminos"]):
         response = "Álgebra y matemáticas. Excelente para mantener el cerebro activo. Pregunte lo que necesite o descargue el reporte operativo."
     else:
-        response = f"Procesando su solicitud: '{user_query}'. Todo bajo control en el sistema."
+        response = f"Procesando su solicitud, jefa: '{user_query}'. Todo bajo control en el nodo."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
 
-# --- MÓDULO DE OPERATIVO DE PDF CON BOTÓN DE DESCARGA DIRECTA ---
+# --- MÓDULO OPERATIVO DE PDF CON BOTÓN DE DESCARGA DIRECTA ---
 st.sidebar.markdown("---")
 st.sidebar.subheader("📥 Módulo Operativo PDF")
 
@@ -106,15 +120,13 @@ def generate_tactical_pdf():
         y -= 20
     
     y -= 20
-    c.drawString(100, y, "Estado del Sistema: Óptimo y operativo.")
+    c.drawString(100, y, "Estado del Sistema: Nodo Buin operativo y estable.")
     c.save()
     buffer.seek(0)
     return buffer.getvalue()
 
-# Generar los bytes del PDF
 pdf_bytes = generate_tactical_pdf()
 
-# Botón de descarga directa operativo en Streamlit
 st.sidebar.download_button(
     label="📄 Descargar Reporte PDF",
     data=pdf_bytes,
