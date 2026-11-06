@@ -212,15 +212,44 @@ def renderizar_barra_lateral(docs_cargados):
                 st.toast("Enlazando telemetría corporativa...")
                 st.info("Reporte: Fábrica de Austin adaptándose a flotas autónomas y xAI con procesamiento optimizado.")
 
+        # --- MÓDULO INTEGRADO: WorldCam (1) ---
+        with st.expander("🌍 Cámara Global: WorldCam"):
+            st.markdown("Red mundial de cámaras de vigilancia pública y turística.")
+            if "activar_worldcam" not in st.session_state:
+                st.session_state.activar_worldcam = False
+            
+            if st.button("🌐 Conectar Feed WorldCam", key="btn_worldcam"):
+                st.session_state.activar_worldcam = not st.session_state.activar_worldcam
+            
+            if st.session_state.activar_worldcam:
+                st.success("Enlace a WorldCam activo.")
+                st.markdown("[Abrir portal WorldCam](https://worldcam.io)", unsafe_allow_html=True)
+            else:
+                st.info("Feed WorldCam en espera de activación.")
+
+        # --- MÓDULO INTEGRADO: SkylineWebcams (9) ---
+        with st.expander("🎥 Streaming HD: SkylineWebcams"):
+            st.markdown("Transmisión óptica internacional en alta definición.")
+            if "activar_skyline" not in st.session_state:
+                st.session_state.activar_skyline = False
+            
+            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
+                st.session_state.activar_skyline = not st.session_state.activar_skyline
+            
+            if st.session_state.activar_skyline:
+                st.success("Streaming óptico SkylineWebcams desplegado.")
+                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
+            else:
+                st.info("Streaming en espera de activación.")
+
         with st.expander("🛠️ Utilidades Logísticas & Red"):
             st.markdown("Herramientas de auditoría y cartografía avanzada:")
             st.markdown("- **LocalSend**: Transferencia local segura.")
             st.markdown("- **Gobuster / Nikto**: Auditoría web.")
-            st.markdown("- **WorldCam**: Cámaras globales.")
-            st.markdown("- **SunCalc / Ventusky**: Análisis solar y meteorológico.")
+            st.markdown("- **Ventusky**: Análisis meteorológico.")
             if st.button("🌐 Lanzar Enlaces Tácticos", use_container_width=True):
                 st.toast("Módulo de herramientas tácticas enlazado.")
-                st.markdown("[Abrir WorldCam](https://worldcam.io) | [Ventusky](https://www.ventusky.com)")
+                st.markdown("[Abrir Ventusky](https://www.ventusky.com)")
 
         with st.expander("🗺️ Mapa Táctico Satelital"):
             st.markdown("Nodo Buin sincronizado con satélites de defensa.")
@@ -239,34 +268,6 @@ def renderizar_barra_lateral(docs_cargados):
                 st.video("https://www.youtube.com/watch?v=21X5lGlDOfg")
             else:
                 st.info("Feed en espera de activación manual.")
-
-        with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
-            st.markdown("Feeds públicos globales de earthTV.")
-            if "activar_earth" not in st.session_state:
-                st.session_state.activar_earth = False
-            
-            if st.button("🌐 Conectar earthTV", key="btn_earth"):
-                st.session_state.activar_earth = not st.session_state.activar_earth
-            
-            if st.session_state.activar_earth:
-                st.success("Canal global earthTV activo.")
-                st.markdown("[Acceder al portal de earthTV](https://www.earthtv.com)", unsafe_allow_html=True)
-            else:
-                st.info("Canal global en espera de activación.")
-
-        with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
-            st.markdown("Streaming óptico de alta definición internacional.")
-            if "activar_skyline" not in st.session_state:
-                st.session_state.activar_skyline = False
-            
-            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
-                st.session_state.activar_skyline = not st.session_state.activar_skyline
-            
-            if st.session_state.activar_skyline:
-                st.success("Streaming óptico desplegado.")
-                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
-            else:
-                st.info("Streaming en espera de activación.")
 
         with st.expander("🌤️ Clima en Vivo (Buin)"):
             st.metric(label="Temperatura Nodo Buin", value="21 °C", delta="Estable")
@@ -351,7 +352,6 @@ def gestionar_chat_ia(docs_cargados):
             {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo con doble núcleo neuronal (Google Gemini y OpenAI), la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia, física o código de programación revisamos?"}
         ]
 
-    # Renderizar historial del chat con reproductores de voz estables
     for msj in st.session_state.mensajes:
         with st.chat_message(msj["role"]):
             st.markdown(msj["content"])
@@ -421,7 +421,7 @@ def gestionar_chat_ia(docs_cargados):
                             messages=messages_payload,
                             temperature=0.7
                         )
-                        respuesta_texto = response.choices[0].message.content
+                        respuesta_texto = response.choices0.message.content
                         st.markdown(respuesta_texto)
                         exito = True
             except Exception as e:
