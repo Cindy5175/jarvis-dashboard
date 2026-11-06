@@ -217,4 +217,14 @@ st.divider()
 # ---------------------------------------------------------
 st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
 
-if "mensajes" not in st.session
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo, la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia o experimento nos trae por aquí?"}
+    ]
+
+for msj in st.session_state.mensajes:
+    with st.chat_message(msj["role"]):
+        st.markdown(msj["content"])
+
+if prompt := st.chat_input("Escribe tu orden o dicta a E.D.I.T.H., jefa..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt})
