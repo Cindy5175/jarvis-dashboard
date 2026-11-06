@@ -17,8 +17,8 @@ except ImportError:
 try:
     import google.generativeai as genai
     
-    # Configuración de tu clave de API nueva
-    api_key = "AQ.Ab8RN6KVFTbhQXeAQWUPQbhte6Gmt7w0hblI70JIddR0zpVBBg" # O puedes usar st.secrets si prefieres
+    # Tu clave de API activa
+    api_key = "AQuí_va_tu_clave_completa" 
     
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
@@ -121,7 +121,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris, GlobeAlert y feeds orbitales en línea. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulos tácticos (Osiris, GlobeAlert y NASA ISS) alineados y operativos. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -145,7 +145,7 @@ st.markdown(f"""
 st.markdown("---")
 
 # =========================================================================
-# PANEL LATERAL (IZQUIERDA)
+# PANEL LATERAL (IZQUIERDA - SIMÉTRICO Y MODULAR)
 # =========================================================================
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
@@ -155,30 +155,36 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
-    # Módulo Ojo de Dios (Osiris)
+    st.markdown("---")
+    st.markdown("#### ⚡ MÓDULOS GLOBALES")
+
+    # Módulo 1: Ojo de Dios (Osiris)
     with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
         st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-        st.caption("Acceso a la red global satelital.")
+        st.caption("Red global satelital.")
 
-    # Módulo GlobeAlert (Monitor Mundial)
-    with st.expander("🌍 GlobeAlert (Alertas en Vivo)", expanded=True):
+    # Módulo 2: GlobeAlert (Monitor Mundial)
+    with st.expander("🌍 GlobeAlert (Alertas)", expanded=True):
         st.markdown("Feed de inteligencia y eventos globales:")
         st.link_button("🚀 Abrir GlobeAlert", "https://www.globealert.ai/", use_container_width=True)
-        st.caption("Monitoreo oficial en tiempo real.")
+        st.caption("Monitoreo oficial activo.")
 
-    # Módulo ISS Live Feed (NASA)
+    # Módulo 3: ISS Live Feed (NASA)
     with st.expander("🛰️ ISS Live Feed (NASA)", expanded=True):
         st.markdown("Transmisión orbital en alta definición:")
         st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
-        st.caption("Feed directo desde la Estación Espacial.")
+        st.caption("Feed directo estación espacial.")
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ TELEMETRÍA LOCAL")
 
     # Módulo de Cámara Activa en Vivo
-    with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
-        st.markdown("Captura óptica directa desde tu dispositivo:")
+    with st.expander("📷 Cámara Activa (Biometría)", expanded=False):
+        st.markdown("Captura óptica directa:")
         foto_usuario = st.camera_input("Activar sensor visual:")
         if foto_usuario:
-            st.success("Fotograma capturado y analizado por el Nodo Buin.")
+            st.success("Fotograma analizado por el Nodo Buin.")
 
     with st.expander("🌤️ Clima Local (Buin)", expanded=False):
         st.success("🌡️ Temperatura: 21°C | Óptimo")
@@ -204,7 +210,7 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-# Caja de chat principal con respuesta fluida, humana y recíproca
+# Caja de chat principal con respaldo de seguridad infalible
 if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     with st.chat_message("user"):
@@ -213,7 +219,7 @@ if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
     respuesta_ia = ""
     
     # Intento de procesamiento con Gemini
-    if genai:
+    if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
         try:
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
@@ -225,7 +231,7 @@ if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
         except Exception:
             pass
 
-    # Respaldo local inmediato y conversacional
+    # Respaldo local inmediato
     if not respuesta_ia:
         query_lower = prompt_usuario.lower()
         if "hola" in query_lower:
