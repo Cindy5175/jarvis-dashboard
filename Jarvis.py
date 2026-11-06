@@ -71,7 +71,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Funciones auxiliares: Lectura de PDFs con pypdf y Limpieza de Texto
+# Funciones auxiliares: Lectura de PDFs con pypdf y Limpieza
 # ---------------------------------------------------------
 @st.cache_data(show_spinner="Indexando base de datos de libros y documentos...")
 def cargar_documentos_pdf(directorio_pdf="documentos"):
@@ -120,7 +120,6 @@ def buscar_contexto_relevante(query, documentos, max_caracteres=4000):
     return contexto_acumulado
 
 def limpiar_texto_para_voz(texto):
-    """Filtra asteriscos, hashtags, guiones y símbolos para la síntesis de voz."""
     texto_limpio = re.sub(r'[*#_`>-]', '', texto)
     texto_limpio = re.sub(r'\s+', ' ', texto_limpio).strip()
     return texto_limpio
@@ -143,7 +142,6 @@ with st.sidebar:
         
     st.divider()
     
-    # Módulos tácticos requeridos
     with st.expander("🗺️ Mapa Táctico Satelital"):
         st.markdown("Nodo Buin sincronizado con satélites de defensa.")
         st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
@@ -182,57 +180,10 @@ with st.sidebar:
     st.caption("Stark Industries // Nodo Buin, Chile 🇨🇱")
 
 # ---------------------------------------------------------
-# Encabezado Principal (J.A.R.V.I.S. IA, Triángulo Stark y Fecha)
+# Encabezado Principal
 # ---------------------------------------------------------
 st_autorefresh(interval=1000, key="reloj_jarvis_top")
 tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
 
 st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA // STARK INDUSTRIES</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
-
-if st.button("🔒 Bloquear Búnker", use_container_width=True):
-    st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
-
-st.divider()
-
-# ---------------------------------------------------------
-# Botones de Protocolos Rápidos (Base, Alerta, Diagnóstico)
-# ---------------------------------------------------------
-col_p1, col_p2, col_p3 = st.columns(3)
-with col_p1:
-    if st.button("📊 Protocolo Base"):
-        st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
-        st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
-with col_p2:
-    if st.button("🚨 Protocolo Alerta"):
-        st.toast("Activando perímetro y mapa satelital...")
-        st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
-with col_p3:
-    if st.button("⚙️ Protocolo Diagnóstico"):
-        st.toast("Purgando caché temporal del Core LLM...")
-        st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
-
-st.divider()
-
-# ---------------------------------------------------------
-# Chat IA & Protocolo E.D.I.T.H.
-# ---------------------------------------------------------
-st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
-
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo, la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia o experimento nos trae por aquí?"}
-    ]
-
-for msj in st.session_state.mensajes:
-    with st.chat_message(msj["role"]):
-        st.markdown(msj["content"])
-
-if prompt := st.chat_input("Escribe tu orden o dicta a E.D.I.T.H., jefa..."):
-    st.session_state.mensajes.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
-    
-    if not api
+st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual
