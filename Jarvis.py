@@ -158,11 +158,12 @@ st.markdown("---")
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
 
-    # Módulo Ojo de Dios (Osiris) - VISOR EN VIVO EMBEBIDO
+  # Módulo Ojo de Dios (Osiris) - Enlace Directo Seguro
     with st.expander("👁️ Ojo de Dios (Osiris) - En Vivo", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
-        components.iframe("https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", height=300, scrolling=True)
-
+        st.link_button("🚀 Abrir Osiris AI (Pantalla Completa)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+        st.caption("Acceso directo a la red global satelital.")
+   
     # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
         st.markdown("Captura óptica directa desde tu dispositivo:")
