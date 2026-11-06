@@ -157,6 +157,9 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón eléctrico. Módulos globales, control de voz por IA, base de datos de misiones y telemetría de armadura en línea. ¿Qué orden tenemos hoy?"}
     ]
 
+if "audio_process_key" not in st.session_state:
+    st.session_state.audio_process_key = None
+
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -180,6 +183,8 @@ st.markdown("---")
 # =========================================================================
 # PANEL LATERAL (IZQUIERDA - SIMÉTRICO Y MODULAR)
 # =========================================================================
+prompt_voz = None
+
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
 
@@ -209,26 +214,28 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
 
-    prompt_voz = None
     with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
         st.markdown("Graba tu orden hablada:")
-        audio_grabado = st.audio_input("Grabar orden de voz:")
+        audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
         
         if audio_grabado:
-            st.warning("⚡ Procesando audio en el Nodo Buin...")
+            # Evitar procesar el mismo audio repetidamente
             audio_bytes = audio_grabado.read()
-            
-            if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
-                try:
-                    model_audio = genai.GenerativeModel("gemini-1.5-flash")
-                    prompt_audio_res = model_audio.generate_content([
-                        "Escucha este audio y transcribe exactamente lo que se dice en español como una orden o consulta de texto directa, sin rodeos.",
-                        {"mime_type": "audio/wav", "data": audio_bytes}
-                    ])
-                    if prompt_audio_res and prompt_audio_res.text:
-                        prompt_voz = prompt_audio_res.text.strip()
-                except Exception as e:
-                    st.error(f"Error procesando audio: {e}")
+            if audio_bytes != st.session_state.audio_process_key:
+                st.session_state.audio_process_key = audio_bytes
+                st.warning("⚡ Procesando audio en el Nodo Buin...")
+                
+                if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                    try:
+                        model_audio = genai.GenerativeModel("gemini-1.5-flash")
+                        prompt_audio_res = model_audio.generate_content([
+                            "Escucha este audio y transcribe exactamente lo que se dice en español como una orden o consulta de texto directa, sin rodeos.",
+                            {"mime_type": "audio/wav", "data": audio_bytes}
+                        ])
+                        if prompt_audio_res and prompt_audio_res.text:
+                            prompt_voz = prompt_audio_res.text.strip()
+                    except Exception as e:
+                        st.error(f"Error procesando audio: {e}")
 
     st.markdown("---")
     st.markdown("#### 📋 REGISTRO DE MISIONES")
@@ -284,6 +291,7 @@ with col_h2:
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
         st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria limpia."}]
+        st.session_state.audio_process_key = None
         st.rerun()
 
 for m in st.session_state.mensajes:
@@ -345,4 +353,6 @@ if prompt_usuario:
             except Exception:
                 pass
 
+    # Limpiar clave de audio procesado y refrescar
+    st.session_state.audio_process_key = None
     st.rerun()
