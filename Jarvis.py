@@ -1,5 +1,6 @@
 import streamlit as st
 import datetime
+import sqlite3
 import io
 
 # Importación segura de gTTS para voz y autorefresh
@@ -40,6 +41,44 @@ st.set_page_config(
 # Reloj con segundero en vivo estable (cada 1 segundo)
 if st_autorefresh:
     st_autorefresh(interval=1000, key="datetimereload")
+
+# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE PARA MISIONES ---
+def init_db():
+    conn = sqlite3.connect("jarvis_misiones.db", check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS misiones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tarea TEXT NOT NULL,
+            estado TEXT DEFAULT 'Pendiente'
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+def agregar_mision(tarea):
+    conn = sqlite3.connect("jarvis_misiones.db", check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+    conn.commit()
+    conn.close()
+
+def obtener_misiones():
+    conn = sqlite3.connect("jarvis_misiones.db", check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, tarea, estado FROM misiones")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def limpiar_misiones():
+    conn = sqlite3.connect("jarvis_misiones.db", check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM misiones")
+    conn.commit()
+    conn.close()
 
 # --- ESTILOS VISUALES 100% AZUL NEÓN (#00ffcc) ---
 st.markdown("""
@@ -121,7 +160,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulos tácticos (Osiris, GlobeAlert y NASA ISS) alineados y operativos. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulos globales, control de voz, base de datos de misiones y telemetría de armadura en línea. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -177,9 +216,45 @@ with st.sidebar:
         st.caption("Feed directo estación espacial.")
 
     st.markdown("---")
-    st.markdown("#### ⚙️ TELEMETRÍA LOCAL")
+    st.markdown("#### 🎙️ CONTROL DE VOZ")
 
-    # Módulo de Cámara Activa en Vivo
+    with st.expander("🎤 Entrada de Audio (Speech-to-Text)", expanded=True):
+        st.markdown("Envía comandos hablados a JARVIS:")
+        audio_grabado = st.audio_input("Grabar orden de voz:")
+        if audio_grabado:
+            st.success("¡Audio capturado por el Nodo Buin! Procesando comando...")
+
+    st.markdown("---")
+    st.markdown("#### 📋 REGISTRO DE MISIONES")
+
+    with st.expander("➕ Registro de Misiones (SQLite)", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar código de nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada en BD!")
+                st.rerun()
+        
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Misiones Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("No hay misiones pendientes.")
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ TELEMETRÍA Y ESTADO")
+
+    # Módulo Visor de Estado de Sistemas
+    with st.expander("🔋 Estado de Sistemas (Armadura)", expanded=False):
+        st.success("⚡ Reactor Arc: 99.8% | Estable")
+        st.info("💻 CPU Nodo Buin: 14% | Óptimo")
+        st.code("Memoria RAM: 4.2 GB / 16 GB\nRed Satelital: Enlazada")
+
     with st.expander("📷 Cámara Activa (Biometría)", expanded=False):
         st.markdown("Captura óptica directa:")
         foto_usuario = st.camera_input("Activar sensor visual:")
