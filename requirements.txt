@@ -1,5 +1,6 @@
 streamlit
-pypdf
 streamlit-autorefresh
+pypdf
 openai
 google-generativeai
+gtts
