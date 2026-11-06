@@ -18,7 +18,6 @@ except ImportError:
 # Importación de Google Generative AI
 try:
     import google.generativeai as genai
-    # Intento automático de lectura de la llave en secrets
     api_key = None
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
@@ -130,7 +129,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón total. El Ojo de Dios ya está embebido en pantalla y mi base de datos de conocimiento (historia, ciencia y matemáticas) está lista para tu sobrino."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. El Ojo de Dios está embebido en pantalla y mi base de datos de conocimiento está lista para tu sobrino."}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -154,18 +153,17 @@ st.markdown(f"""
 st.markdown("---")
 
 # =========================================================================
-# PANEL LATERAL (MÓDULOS OCULTOS A LA IZQUIERDA)
+# PANEL LATERAL (OCULTO A LA IZQUIERDA)
 # =========================================================================
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
 
-    # Módulo Ojo de Dios (Osiris) - VISOR EN VIVO EMBEBIDO EN PANTALLA
+    # Módulo Ojo de Dios (Osiris) - VISOR EN VIVO EMBEBIDO
     with st.expander("👁️ Ojo de Dios (Osiris) - En Vivo", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
-        # Renderiza la página oficial directamente dentro de la app (iframe)
         components.iframe("https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", height=300, scrolling=True)
 
-    # Módulo de Cámara Activa en Vivo (Celular y PC)
+    # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
         st.markdown("Captura óptica directa desde tu dispositivo:")
         foto_usuario = st.camera_input("Activar sensor visual:")
@@ -202,28 +200,28 @@ if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomio
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
     
-    # Procesamiento con Gemini configurado para educar y responder de forma seria y precisa
+    # Procesamiento con Gemini configurado para educar con precisión
     respuesta_ia = ""
     if genai:
         try:
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
-                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile. Tu objetivo principal es ser una guía educativa y de conocimiento absoluto para un estudiante (el sobrino de tu jefa). Cuando te hagan preguntas serias sobre historia (como Bernardo O'Higgins, Arturo Prat, el Muro de Berlín), ciencia, tecnología o matemáticas (como binomios), DEBES responder con información detallada, exacta, clara y bien estructurada. Mantén un tono respetuoso, culto y ligeramente sofisticado, sin evadir las respuestas con bromas cuando te pidan datos concretos."
+                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile. Tu objetivo principal es ser una guía educativa y de conocimiento absoluto para un estudiante (el sobrino de tu jefa). Cuando te hagan preguntas serias sobre historia (como Bernardo O'Higgins, Arturo Prat, el Muro de Berlín), ciencia, tecnología o matemáticas (como binomios), DEBES responder con información detallada, exacta, clara y bien estructurada. Mantén un tono respetuoso, culto y ligeramente sofisticado."
             )
             response = model.generate_content(prompt_usuario)
             respuesta_ia = response.text
         except Exception as e:
-            respuesta_ia = f"👁️ [JARVIS]: Se detectó una fluctuación en el enlace con la red neuronal de Gemini ({e}). Cambiando a protocolo de respaldo local..."
+            respuesta_ia = f"👁️ [JARVIS]: Se detectó una fluctuación en el enlace con la red neuronal de Gemini ({e}). Activando respaldo local..."
     
-    # Si Gemini no responde o no está disponible, usamos base inteligente local robusta
+    # Respaldo local robusto por si acaso
     if not respuesta_ia or "fluctuación" in respuesta_ia:
         query_lower = prompt_usuario.lower()
         if "o'higgins" in query_lower or "ohiggins" in query_lower:
-            respuesta_ia = "**Bernardo O'Higgins Riquelme** (Chillán, 20 de agosto de 1778 - Lima, 24 de octubre de 1842) fue un militar y político chileno. Es reconocido como uno de los Padres de la Patria en la historia de Chile y Director Supremo entre 1817 y 1823, destacando su participación decisiva en las batallas por la Independencia."
+            respuesta_ia = "**Bernardo O'Higgins Riquelme** (Chillán, 20 de agosto de 1778 - Lima, 24 de octubre de 1842) fue un militar y político chileno. Es reconocido como uno de los Padres de la Patria en la historia de Chile y Director Supremo entre 1817 y 1823."
         elif "muro de berlín" in query_lower or "berlín" in query_lower:
-            respuesta_ia = "La **caída del Muro de Berlín** ocurrió el **9 de noviembre de 1989**. Fue un acontecimiento emblemático en la historia mundial que marcó la apertura de la frontera entre la RDA y la RFA, simbolizando el fin de la Guerra Fría y el preludio de la reunificación alemana."
+            respuesta_ia = "La **caída del Muro de Berlín** ocurrió el **9 de noviembre de 1989**, simbolizando el fin de la Guerra Fría y la reunificación alemana."
         elif "binomio" in query_lower:
-            respuesta_ia = "Un **binomio** es una expresión algebraica compuesta por dos términos sumados o restados (por ejemplo, $a + b$). Su fórmula de binomio al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
+            respuesta_ia = "Un **binomio** es una expresión algebraica de dos términos. Su fórmula de binomio al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
         else:
             respuesta_ia = f"Procesando la consulta '{prompt_usuario}' a través del Nodo Buin. Entendido, jefa."
 
@@ -232,10 +230,9 @@ if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomio
     with st.chat_message("assistant"):
         st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
         
-        # Reproducción de voz automática en audio (gTTS)
+        # Síntesis de voz automática (gTTS)
         if gTTS:
             try:
-                # Limpiamos símbolos de markdown para que la voz no lea asteriscos
                 clean_text = respuesta_ia.replace("*", "").replace("#", "").replace("$", "")
                 tts = gTTS(text=clean_text, lang='es', slow=False)
                 audio_fp = io.BytesIO()
