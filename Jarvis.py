@@ -245,15 +245,8 @@ def renderizar_barra_lateral():
 
         with st.expander("📷 Cámara en Vivo: Espacio (ISS)"):
             st.markdown("Transmisión óptica orbital de la Estación Espacial.")
-            if "activar_iss" not in st.session_state:
-                st.session_state.activar_iss = False
-            if st.button("🔴 Conectar Feed ISS", key="btn_iss"):
-                st.session_state.activar_iss = not st.session_state.activar_iss
-            if st.session_state.activar_iss:
-                st.success("Feed orbital enlazado.")
-                st.video("https://www.youtube.com/watch?v=4QJEibrt9B8")
-            else:
-                st.info("Feed en espera de activación manual.")
+            st.markdown("[Abrir Directo ISS en YouTube](https://www.youtube.com/watch?v=4QJEibrt9B8)")
+            st.caption("Enlace directo seguro para evitar bloqueos de frame.")
 
         with st.expander("🌤️ Clima en Vivo (Buin)"):
             st.metric(label="Temperatura Nodo Buin", value="21 °C", delta="Estable")
@@ -310,4 +303,102 @@ def renderizar_encabezado():
     st.divider()
 
 def gestionar_chat_ia(docs_cargados):
-    col_chat_title, col_purge_btn
+    col_chat_title, col_purge_btn = st.columns([4, 1])
+    with col_chat_title:
+        st.subheader("💬 J.A.R.V.I.S.")
+    with col_purge_btn:
+        if st.button("🗑️ Purgar Chat", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": "Memoria del chat purgada, jefa. Sistemas limpios y listos para nuevas órdenes."}
+            ]
+            st.rerun()
+
+    if "mensajes" not in st.session_state:
+        st.session_state.mensajes = [
+            {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo, la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia, física o código de programación revisamos?"}
+        ]
+
+    for msj in st.session_state.mensajes:
+        with st.chat_message(msj["role"]):
+            st.markdown(msj["content"])
+
+    if prompt := st.chat_input("Escribe tu orden, código o consulta científica, jefa..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+
+        system_instruction = (
+            "Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin, "
+            "con capacidades de clase mundial en ciencia, física, historia, matemáticas y programación avanzada (Python, Streamlit, APIs, arquitecturas de software). "
+            "Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'. "
+            "Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante. "
+            "Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama. "
+            "Integra conocimientos profundos de ciencia, historia, tecnología, los proyectos de Elon Musk y los documentos/libros de la usuaria cuando corresponda:\n\n"
+            f"=== CONTEXTO DE DOCUMENTOS Y LIBROS ===\n{contexto_libros}\n"
+            "=======================================\n\n"
+            "Mantén tus respuestas técnicas, fluidas, claras y con el toque irónico característico."
+        )
+
+        gemini_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+        openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+
+        respuesta_texto = ""
+        exito = False
+
+        if gemini_api_key:
+            try:
+                genai.configure(api_key=gemini_api_key)
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=system_instruction
+                )
+                historial_gemini = []
+                for m in st.session_state.mensajes[-6:-1]:
+                    rol = "user" if m["role"] == "user" else "model"
+                    historial_gemini.append({"role": rol, "parts": [m["content"]]})
+                
+                chat = model.start_chat(history=historial_gemini)
+                with st.chat_message("assistant"):
+                    with st.spinner("Procesando en Núcleo Google Gemini..."):
+                        response = chat.send_message(prompt)
+                        respuesta_texto = response.text
+                        st.markdown(respuesta_texto)
+                        exito = True
+            except Exception:
+                pass
+
+        if not exito and openai_api_key:
+            try:
+                client = OpenAI(api_key=openai_api_key)
+                messages_payload = [{"role": "system", "content": system_instruction}]
+                for m in st.session_state.mensajes[-6:]:
+                    messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+
+                with st.chat_message("assistant"):
+                    with st.spinner("Procesando en Núcleo OpenAI..."):
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=messages_payload,
+                            temperature=0.7
+                        )
+                        respuesta_texto = response.choices[0].message.content
+                        st.markdown(respuesta_texto)
+                        exito = True
+            except Exception as e:
+                respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
+                with st.chat_message("assistant"):
+                    st.markdown(respuesta_error)
+                respuesta_texto = respuesta_error
+
+        if exito:
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
+            st.rerun()
+
+# ---------------------------------------------------------
+# Ejecución Principal del Sistema
+# ---------------------------------------------------------
+docs_cargados = renderizar_barra_lateral()
+renderizar_encabezado()
+gestionar_chat_ia(docs_cargados)
