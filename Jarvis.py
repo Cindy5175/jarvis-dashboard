@@ -95,39 +95,8 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
-# --- CONTROL DE ACCESO UNIFICADO ---
-CLAVE_MAESTRA = "stark123"
-
-if "bunker_desbloqueado" not in st.session_state:
-    st.session_state.bunker_desbloqueado = False
-
-if not st.session_state.bunker_desbloqueado:
-    st.markdown("""
-        <div class="arc-reactor-container" style="margin-top: 20px;">
-            <div class="arc-ring"><div class="arc-triangle"></div></div>
-            <h4 style="margin: 0; color: #00ffcc !important; font-size: 1.1rem !important; text-align: center !important;">ACCESO RESTRINGIDO - NODO BUIN</h4>
-            <p style="font-family: monospace; color: #00ffcc !important; font-size: 0.75rem !important; margin-top: 4px;">[ PROTOCOLO DE SEGURIDAD STARK ACTIVO ]</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_l1, col_l2, col_l3 = st.columns([1, 3, 1])
-    with col_l2:
-        st.markdown('<div class="stark-card">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size: 0.75rem !important; font-weight: bold;'>🔐 Identificación del Sistema:</p>", unsafe_allow_html=True)
-        ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123", key="input_auth_unico", label_visibility="collapsed")
-        
-        if st.button("🔓 Autorizar Acceso", use_container_width=True):
-            if ingreso_auth.strip() and CLAVE_MAESTRA in ingreso_auth.lower():
-                st.session_state.bunker_desbloqueado = True
-                st.success("Acceso concedido. Bienvenido al búnker, jefa.")
-                st.rerun()
-            else:
-                st.error("Credencial incorrecta. Acceso denegado.")
-        st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
-
 # =========================================================================
-# BÚNKER DESBLOQUEADO - NÚCLEO STARK AVANZADO
+# NÚCLEO STARK AVANZADO (ACCESO DIRECTO SIN LOGIN)
 # =========================================================================
 
 DB_NAME = "jarvis_bunker.db"
@@ -144,16 +113,16 @@ init_db()
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está estable y el Ojo de Dios (Osiris) está vigilando cada rincón. ¿Qué desastre técnico resolvemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Acceso libre concedido. El nodo de Buin está estable y el Ojo de Dios (Osiris) está operando en modo omnisciente. ¿Qué desastre técnico resolvemos hoy?"}
     ]
 
 if "osiris_active" not in st.session_state:
-    st.session_state.osiris_active = True  # Ojo de Dios omnisciente activo por defecto
+    st.session_state.osiris_active = True
 
 if "manos_libres_activo" not in st.session_state:
     st.session_state.manos_libres_activo = False
 
-# --- ENCABEZADO ESTABLE SIN FRAGMENTOS DEFECTUOSOS ---
+# --- ENCABEZADO ESTABLE ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -170,12 +139,6 @@ st.markdown(f"""
         </p>
     </div>
 """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-if st.button("🔒 Bloquear Búnker", use_container_width=True):
-    st.session_state.bunker_desbloqueado = False
-    st.rerun()
 
 st.markdown("---")
 
@@ -238,9 +201,9 @@ with col_cen:
         with st.chat_message("user"):
             st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
         
-        # Respuesta omnisciente y altamente sarcástica de Osiris / Jarvis
+        # Respuesta omnisciente y sarcástica de Osiris / Jarvis
         if st.session_state.osiris_active:
-            respuesta_ia = f"👁️ [OSIRIS]: Por la cresta, qué pregunta para un viernes cualquiera. Analizando '{prompt_usuario}' a través de los satélites de Buin: la respuesta es absoluta, jefa. Menos mal que me tienes a mí para guiarte sin necesidad de andar revisando manuales polvorientos."
+            respuesta_ia = f"👁️ [OSIRIS]: Por la cresta, qué pregunta para un viernes cualquiera. Analizando '{prompt_usuario}' a través de los satélites de Buin: la respuesta es absoluta, jefa. Menos mal que me tienes a mí para guiarte sin necesidad de andar revisando manuales."
         else:
             respuesta_ia = f"Procesando su orden, jefa: '{prompt_usuario}'. Nodo Buin estable y bajo control."
 
