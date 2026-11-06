@@ -2,11 +2,13 @@ import os
 import datetime
 import re
 import zoneinfo
+import io
 import streamlit as st
 from pypdf import PdfReader
 from streamlit_autorefresh import st_autorefresh
 from openai import OpenAI
 import google.generativeai as genai
+from gtts import gTTS
 
 # ---------------------------------------------------------
 # Configuración inicial de la página
@@ -157,6 +159,19 @@ def limpiar_texto_para_voz(texto):
     texto_limpio = re.sub(r'\s+', ' ', texto_limpio).strip()
     return texto_limpio
 
+def generar_audio_bytes(texto):
+    try:
+        texto_procesado = limpiar_texto_para_voz(texto)
+        if not texto_procesado:
+            return None
+        tts = gTTS(text=texto_procesado, lang='es', tld='cl')
+        fp = io.BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        return fp
+    except Exception:
+        return None
+
 def renderizar_barra_lateral(docs_cargados):
     with st.sidebar:
         st.header("⚙️ Estado del Sistema")
@@ -208,221 +223,4 @@ def renderizar_barra_lateral(docs_cargados):
             st.markdown("- **WorldCam**: Cámaras globales.")
             st.markdown("- **SunCalc / Ventusky**: Análisis solar y meteorológico.")
             if st.button("🌐 Lanzar Enlaces Tácticos", use_container_width=True):
-                st.toast("Módulo de herramientas tácticas enlazado.")
-                st.markdown("[Abrir WorldCam](https://worldcam.io) | [Ventusky](https://www.ventusky.com)")
-
-        with st.expander("🗺️ Mapa Táctico Satelital"):
-            st.markdown("Nodo Buin sincronizado con satélites de defensa.")
-            st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
-
-        with st.expander("📷 Cámara en Vivo: Espacio (ISS)"):
-            st.markdown("Transmisión óptica orbital de la Estación Espacial.")
-            if "activar_iss" not in st.session_state:
-                st.session_state.activar_iss = False
-            
-            if st.button("🔴 Conectar Feed ISS", key="btn_iss"):
-                st.session_state.activar_iss = not st.session_state.activar_iss
-            
-            if st.session_state.activar_iss:
-                st.success("Feed orbital enlazado.")
-                st.video("https://www.youtube.com/watch?v=21X5lGlDOfg")
-            else:
-                st.info("Feed en espera de activación manual.")
-
-        with st.expander("🌍 Cámara en Vivo: Red Mundial (earthTV)"):
-            st.markdown("Feeds públicos globales de earthTV.")
-            if "activar_earth" not in st.session_state:
-                st.session_state.activar_earth = False
-            
-            if st.button("🌐 Conectar earthTV", key="btn_earth"):
-                st.session_state.activar_earth = not st.session_state.activar_earth
-            
-            if st.session_state.activar_earth:
-                st.success("Canal global earthTV activo.")
-                st.markdown("[Acceder al portal de earthTV](https://www.earthtv.com)", unsafe_allow_html=True)
-            else:
-                st.info("Canal global en espera de activación.")
-
-        with st.expander("🎥 Cámara en Vivo: Global (SkylineWebcams)"):
-            st.markdown("Streaming óptico de alta definición internacional.")
-            if "activar_skyline" not in st.session_state:
-                st.session_state.activar_skyline = False
-            
-            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
-                st.session_state.activar_skyline = not st.session_state.activar_skyline
-            
-            if st.session_state.activar_skyline:
-                st.success("Streaming óptico desplegado.")
-                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
-            else:
-                st.info("Streaming en espera de activación.")
-
-        with st.expander("🌤️ Clima en Vivo (Buin)"):
-            st.metric(label="Temperatura Nodo Buin", value="21 °C", delta="Estable")
-            st.caption("Humedad: 45% | Viento: 12 km/h")
-
-        with st.expander("🎙️ Escucha Continua (Hands-Free)"):
-            st.checkbox("Activar escucha de voz continua", value=False)
-            st.caption("Micrófono periférico en espera de comandos.")
-
-        with st.expander("➕ Registro de Tareas"):
-            nueva_tarea = st.text_input("Nueva Misión / Tarea:")
-            if st.button("Registrar Tarea ➕", use_container_width=True):
-                if nueva_tarea:
-                    st.success(f"Misión registrada: {nueva_tarea}")
-                else:
-                    st.warning("Escribe una descripción para la misión.")
-
-        with st.expander("🛡️ Módulo E.D.I.T.H. & Ojo de Dios"):
-            st.markdown("Control satelital de defensa y vigilancia activo.")
-            if st.button("⚠️ Activar Protocolo E.D.I.T.H.", use_container_width=True):
-                st.error("¡Protocolo de defensa E.D.I.T.H. desplegado en el Nodo Buin, jefa!")
-
-        st.divider()
-        st.caption("Nodo Buin, Chile 🇨🇱")
-
-def renderizar_encabezado():
-    st_autorefresh(interval=1000, key="reloj_jarvis_top")
-    
-    try:
-        zona_chile = zoneinfo.ZoneInfo("America/Santiago")
-        ahora_chile = datetime.datetime.now(zona_chile)
-    except Exception:
-        ahora_chile = datetime.datetime.now()
-
-    tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
-
-    st.markdown("""
-        <div class="ark-reactor-container">
-            <div class="ark-reactor">
-                <div class="ark-triangle"></div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
-
-    if st.button("🔒 Bloquear Búnker", use_container_width=False):
-        st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
-
-    st.divider()
-
-def renderizar_protocolos_rapidos():
-    st.markdown("### ⚡ Protocolos Rápidos")
-    if st.button("📊 Protocolo Base"):
-        st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
-        st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
-    
-    if st.button("🚨 Protocolo Alerta"):
-        st.toast("Activando perímetro y mapa satelital...")
-        st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
-    
-    if st.button("⚙️ Protocolo Diagnóstico"):
-        st.toast("Purgando caché temporal del Core LLM...")
-        st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
-
-    st.divider()
-
-def gestionar_chat_ia(docs_cargados):
-    col_chat_title, col_purge_btn = st.columns([4, 1])
-    with col_chat_title:
-        st.subheader("💬 Chat IA (Google Gemini + OpenAI) & Protocolo E.D.I.T.H.")
-    with col_purge_btn:
-        if st.button("🗑️ Purgar Chat", use_container_width=True):
-            st.session_state.mensajes = [
-                {"role": "assistant", "content": "Memoria del chat purgada, jefa. Sistemas limpios y listos para nuevas órdenes."}
-            ]
-            st.rerun()
-
-    if "mensajes" not in st.session_state:
-        st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo con doble núcleo neuronal (Google Gemini y OpenAI), la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia, física o código de programación revisamos?"}
-        ]
-
-    for msj in st.session_state.mensajes:
-        with st.chat_message(msj["role"]):
-            st.markdown(msj["content"])
-
-    if prompt := st.chat_input("Escribe tu orden, código o consulta científica, jefa..."):
-        st.session_state.mensajes.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
-
-        system_instruction = (
-            "Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin, "
-            "con capacidades de clase mundial en ciencia, física, historia, matemáticas y programación avanzada (Python, Streamlit, APIs, arquitecturas de software). "
-            "Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'. "
-            "Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante. "
-            "Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama. "
-            "Integra conocimientos profundos de ciencia, historia, tecnología, los proyectos de Elon Musk y los documentos/libros de la usuaria cuando corresponda:\n\n"
-            f"=== CONTEXTO DE DOCUMENTOS Y LIBROS ===\n{contexto_libros}\n"
-            "=======================================\n\n"
-            "Mantén tus respuestas técnicas, fluidas, claras y con el toque irónico característico."
-        )
-
-        gemini_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
-        openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
-
-        respuesta_texto = ""
-        exito = False
-
-        if gemini_api_key:
-            try:
-                genai.configure(api_key=gemini_api_key)
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=system_instruction
-                )
-                historial_gemini = []
-                for m in st.session_state.mensajes[-6:-1]:
-                    rol = "user" if m["role"] == "user" else "model"
-                    historial_gemini.append({"role": rol, "parts": [m["content"]]})
-                
-                chat = model.start_chat(history=historial_gemini)
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo Google Gemini..."):
-                        response = chat.send_message(prompt)
-                        respuesta_texto = response.text
-                        st.markdown(respuesta_texto)
-                        exito = True
-            except Exception:
-                pass
-
-        if not exito and openai_api_key:
-            try:
-                client = OpenAI(api_key=openai_api_key)
-                messages_payload = [{"role": "system", "content": system_instruction}]
-                for m in st.session_state.mensajes[-6:]:
-                    messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
-
-                with st.chat_message("assistant"):
-                    with st.spinner("Procesando en Núcleo OpenAI..."):
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=messages_payload,
-                            temperature=0.7
-                        )
-                        respuesta_texto = response.choices[0].message.content
-                        st.markdown(respuesta_texto)
-                        exito = True
-            except Exception as e:
-                respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
-                with st.chat_message("assistant"):
-                    st.markdown(respuesta_error)
-                respuesta_texto = respuesta_error
-
-        if exito:
-            texto_voz = limpiar_texto_para_voz(respuesta_texto)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
-
-# ---------------------------------------------------------
-# Ejecución Principal del Sistema
-# ---------------------------------------------------------
-docs_cargados = cargar_documentos_pdf("documentos")
-renderizar_barra_lateral(docs_cargados)
-renderizar_encabezado()
-renderizar_protocolos_rapidos()
-gestionar_chat_ia(docs_cargados)
+                st
