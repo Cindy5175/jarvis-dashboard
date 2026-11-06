@@ -180,12 +180,12 @@ with st.sidebar:
     st.caption("Stark Industries // Nodo Buin, Chile 🇨🇱")
 
 # ---------------------------------------------------------
-# Encabezado Principal
+# Encabezado Principal (Modificado sin referencia a Stark)
 # ---------------------------------------------------------
 st_autorefresh(interval=1000, key="reloj_jarvis_top")
 tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
 
-st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA // STARK INDUSTRIES</div>', unsafe_allow_html=True)
+st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
 
 if st.button("🔒 Bloquear Búnker", use_container_width=True):
@@ -228,3 +228,52 @@ for msj in st.session_state.mensajes:
 
 if prompt := st.chat_input("Escribe tu orden o dicta a E.D.I.T.H., jefa..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+    
+    if not api_key:
+        respuesta_error = "Señorita Cindy, no encuentro la API Key de OpenAI configurada en los secrets."
+        with st.chat_message("assistant"):
+            st.markdown(respuesta_error)
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_error})
+    else:
+        client = OpenAI(api_key=api_key)
+        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+
+        system_instruction = f"""
+        Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin.
+        Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
+        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
+        Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama (jamás sonando como un GPS antiguo o un robot plano).
+        Integra conocimientos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
+        
+        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
+        {contexto_libros}
+        =======================================
+        
+        Mantén tus respuestas fluidas, claras y con el toque irónico característico.
+        """
+
+        messages_payload = [{"role": "system", "content": system_instruction}]
+        for m in st.session_state.mensajes[-6:]:
+            messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+
+        try:
+            with st.chat_message("assistant"):
+                with st.spinner("Procesando enlace táctico..."):
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages_payload,
+                        temperature=0.7
+                    )
+                    respuesta_texto = response.choices[0].message.content
+                    st.markdown(respuesta_texto)
+                    
+                    texto_voz = limpiar_texto_para_voz(respuesta_texto)
+                    
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
+            
+        except Exception as e:
+            st.error(f"Error de conexión con el núcleo: {e}")
