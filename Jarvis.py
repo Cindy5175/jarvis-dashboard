@@ -16,7 +16,10 @@ except ImportError:
 # Importación de Google Generative AI
 try:
     import google.generativeai as genai
-    api_key = None
+    
+    # Configuración de tu clave de API nueva
+    api_key = "AQ.Ab8RN6KVFTbhQXeAQWUPQbhte6Gmt7w0hblI70JIddR0zpVBBg" # O puedes usar st.secrets si prefieres
+    
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
     elif "GEMINI_API_KEY" in st.secrets:
@@ -118,7 +121,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris, GlobeAlert y enlaces satelitales operativos. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Osiris, GlobeAlert y feeds orbitales en línea. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -164,7 +167,7 @@ with st.sidebar:
         st.link_button("🚀 Abrir GlobeAlert", "https://www.globealert.ai/", use_container_width=True)
         st.caption("Monitoreo oficial en tiempo real.")
 
-    # Módulo ISS Live Feed (NASA) como enlace directo seguro
+    # Módulo ISS Live Feed (NASA)
     with st.expander("🛰️ ISS Live Feed (NASA)", expanded=True):
         st.markdown("Transmisión orbital en alta definición:")
         st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
