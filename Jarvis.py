@@ -1,10 +1,12 @@
 import os
 import datetime
 import re
+import zoneinfo
 import streamlit as st
 from pypdf import PdfReader
 from streamlit_autorefresh import st_autorefresh
 from openai import OpenAI
+import google.generativeai as genai
 
 # ---------------------------------------------------------
 # Configuración inicial de la página
@@ -34,7 +36,6 @@ st.markdown("""
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
     }
-    /* Estilo del Reactor Ark Triangular Neón Central */
     .ark-reactor-container {
         display: flex;
         justify-content: center;
@@ -206,9 +207,17 @@ def renderizar_barra_lateral(docs_cargados):
         st.caption("Nodo Buin, Chile 🇨🇱")
 
 def renderizar_encabezado():
-    # Refresco automático cada 1 segundo para mantener los segundos activos en vivo
+    # Refresco automático cada 1 segundo con segundero en vivo
     st_autorefresh(interval=1000, key="reloj_jarvis_top")
-    tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
+    
+    # Hora exacta de Chile con zona horaria oficial
+    try:
+        zona_chile = zoneinfo.ZoneInfo("America/Santiago")
+        ahora_chile = datetime.datetime.now(zona_chile)
+    except Exception:
+        ahora_chile = datetime.datetime.now()
+
+    tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
 
     # Reactor Ark triangular centrado arriba
     st.markdown("""
@@ -245,54 +254,80 @@ def renderizar_protocolos_rapidos():
     st.divider()
 
 def gestionar_chat_ia(docs_cargados):
-    st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
+    st.subheader("💬 Chat IA (Google Gemini + OpenAI) & Protocolo E.D.I.T.H.")
 
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = [
-            {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo, la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia o experimento nos trae por aquí?"}
+            {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo con doble núcleo neuronal (Google y OpenAI), la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia, física o código de programación revisamos?"}
         ]
 
     for msj in st.session_state.mensajes:
         with st.chat_message(msj["role"]):
             st.markdown(msj["content"])
 
-    if prompt := st.chat_input("Escribe tu orden o dicta a E.D.I.T.H., jefa..."):
+    if prompt := st.chat_input("Escribe tu orden, código o consulta científica, jefa..."):
         st.session_state.mensajes.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+
+        system_instruction = f"""
+        Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin, con capacidades de clase mundial en ciencia, física, historia, matemáticas y programación avanzada (Python, Streamlit, APIs, arquitecturas de software).
+        Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
+        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
+        Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama.
+        Integra conocimientos profundos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
         
-        if not api_key:
-            respuesta_error = "Señorita Cindy, no encuentro la API Key de OpenAI configurada en los secrets."
-            with st.chat_message("assistant"):
-                st.markdown(respuesta_error)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_error})
-        else:
-            client = OpenAI(api_key=api_key)
-            contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
+        {contexto_libros}
+        =======================================
+        
+        Mantén tus respuestas técnicas, fluidas, claras y con el toque irónico característico.
+        """
 
-            system_instruction = f"""
-            Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin.
-            Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
-            Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
-            Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama (jamás sonando como un GPS antiguo o un robot plano).
-            Integra conocimientos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
-            
-            === CONTEXTO DE DOCUMENTOS Y LIBROS ===
-            {contexto_libros}
-            =======================================
-            
-            Mantén tus respuestas fluidas, claras y con el toque irónico característico.
-            """
+        # Intentar primero con Google Gemini si está configurada la API key, respaldando con OpenAI si es necesario
+        gemini_api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+        openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
 
-            messages_payload = [{"role": "system", "content": system_instruction}]
-            for m in st.session_state.mensajes[-6:]:
-                messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+        respuesta_texto = ""
+        exito = False
 
+        # Intento con Google Gemini
+        if gemini_api_key:
             try:
+                genai.configure(api_key=gemini_api_key)
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=system_instruction
+                )
+                # Historial para Gemini
+                historial_gemini = []
+                for m in st.session_state.mensajes[-6:-1]:
+                    rol = "user" if m["role"] == "user" else "model"
+                    historial_gemini.append({"role": rol, "parts": [m["content"]]})
+                
+                chat = model.start_chat(history=historial_gemini)
                 with st.chat_message("assistant"):
-                    with st.spinner("Procesando enlace táctico..."):
+                    with st.spinner("Procesando en Núcleo Google Gemini..."):
+                        response = chat.send_message(prompt)
+                        respuesta_texto = response.text
+                        st.markdown(respuesta_texto)
+                        exito = True
+            except Exception as e:
+                # Si falla Gemini, intentamos con OpenAI abajo
+                pass
+
+        # Respaldo o ejecución con OpenAI si Gemini no está o falló
+        if not exito and openai_api_key:
+            try:
+                client = OpenAI(api_key=openai_api_key)
+                messages_payload = [{"role": "system", "content": system_instruction}]
+                for m in st.session_state.mensajes[-6:]:
+                    messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+
+                with st.chat_message("assistant"):
+                    with st.spinner("Procesando en Núcleo OpenAI..."):
                         response = client.chat.completions.create(
                             model="gpt-4o-mini",
                             messages=messages_payload,
@@ -300,13 +335,16 @@ def gestionar_chat_ia(docs_cargados):
                         )
                         respuesta_texto = response.choices[0].message.content
                         st.markdown(respuesta_texto)
-                        
-                        texto_voz = limpiar_texto_para_voz(respuesta_texto)
-                        
-                st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
-                
+                        exito = True
             except Exception as e:
-                st.error(f"Error de conexión con el núcleo: {e}")
+                respuesta_error = f"Error crítico en los núcleos neuronales: {e}"
+                with st.chat_message("assistant"):
+                    st.markdown(respuesta_error)
+                respuesta_texto = respuesta_error
+
+        if exito:
+            texto_voz = limpiar_texto_para_voz(respuesta_texto)
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
 
 # ---------------------------------------------------------
 # Ejecución Principal del Sistema
