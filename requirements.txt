@@ -1,6 +1,1 @@
-streamlit
-streamlit-autorefresh
-pypdf
-openai
-google-generativeai
-gtts
+streamlit run Jarvis.py
