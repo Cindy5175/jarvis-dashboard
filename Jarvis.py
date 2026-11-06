@@ -157,6 +157,12 @@ st.markdown("---")
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
 
+    # Botón de Reinicio Total / Hard Reset de la App
+    if st.button("🔄 Reinicio Total de la App", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
     # Módulo Ojo de Dios (Osiris) - Enlace Directo Seguro
     with st.expander("👁️ Ojo de Dios (Osiris) - En Vivo", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
@@ -202,7 +208,7 @@ if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomio
     
     respuesta_ia = ""
     
-    # Intento de procesamiento con Gemini
+    # Intento de procesamiento con Gemini con timeout/excepción limpia
     if genai:
         try:
             model = genai.GenerativeModel(
@@ -213,9 +219,9 @@ if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomio
             if response and response.text:
                 respuesta_ia = response.text
         except Exception as e:
-            pass # Si falla la red o la llave, pasa de forma limpia al respaldo local
+            pass # Si la red se cuelga o no hay llave válida, salta al respaldo local de inmediato
 
-    # Respaldo local garantizado (evita pantallas negras o bloqueos)
+    # Respaldo local garantizado (evita pantallas congeladas)
     if not respuesta_ia:
         query_lower = prompt_usuario.lower()
         if "hola" in query_lower:
