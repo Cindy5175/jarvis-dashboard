@@ -119,7 +119,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas en línea y calibrados en azul neón absoluto. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. Módulo de Mapa Táctico Satelital GlobeAlert integrado. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -153,11 +153,13 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
-    with st.expander("👁️ Ojo de Dios (Osiris) - En Vivo", expanded=True):
-        st.markdown("Monitoreo planetario en tiempo real:")
-        st.link_button("🚀 Abrir Osiris AI (Pantalla Completa)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
-        st.caption("Acceso directo a la red global satelital.")
+    # Módulo Ojo de Dios / GlobeAlert - Enlace Directo Satelital
+    with st.expander("👁️ Mapa Táctico Satelital (GlobeAlert)", expanded=True):
+        st.markdown("Monitoreo global en tiempo real:")
+        st.link_button("🚀 Abrir GlobeAlert (Pantalla Completa)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+        st.caption("Enlace directo a la red de inteligencia táctica.")
 
+    # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
         st.markdown("Captura óptica directa desde tu dispositivo:")
         foto_usuario = st.camera_input("Activar sensor visual:")
@@ -201,7 +203,7 @@ if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
         try:
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
-                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta de historia, ciencia, matemáticas o conversación cotidiana."
+                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta."
             )
             response = model.generate_content(prompt_usuario)
             if response and response.text:
@@ -209,7 +211,7 @@ if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
         except Exception:
             pass
 
-    # Respaldo local inmediato y conversacional por si la red o la clave demoran
+    # Respaldo local inmediato y conversacional
     if not respuesta_ia:
         query_lower = prompt_usuario.lower()
         if "hola" in query_lower:
