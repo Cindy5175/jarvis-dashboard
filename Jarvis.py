@@ -186,4 +186,35 @@ st_autorefresh(interval=1000, key="reloj_jarvis_top")
 tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
 
 st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA // STARK INDUSTRIES</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual
+st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
+
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
+
+st.divider()
+
+# ---------------------------------------------------------
+# Botones de Protocolos Rápidos
+# ---------------------------------------------------------
+col_p1, col_p2, col_p3 = st.columns(3)
+with col_p1:
+    if st.button("📊 Protocolo Base"):
+        st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
+        st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
+with col_p2:
+    if st.button("🚨 Protocolo Alerta"):
+        st.toast("Activando perímetro y mapa satelital...")
+        st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
+with col_p3:
+    if st.button("⚙️ Protocolo Diagnóstico"):
+        st.toast("Purgando caché temporal del Core LLM...")
+        st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
+
+st.divider()
+
+# ---------------------------------------------------------
+# Chat IA & Protocolo E.D.I.T.H.
+# ---------------------------------------------------------
+st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
+
+if "mensajes" not in st.session
