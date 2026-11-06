@@ -1,179 +1,249 @@
 import streamlit as st
-import os
-import tempfile
-import io
-from datetime import datetime
+import datetime
+import sqlite3
 
-# Importaciones seguras
-try:
-    from gtts import gTTS
-except ImportError:
-    gTTS = None
-
-try:
-    from pypdf import PdfReader
-except ImportError:
-    PdfReader = None
-
-try:
-    from streamlit_autorefresh import st_autorefresh
-except ImportError:
-    st_autorefresh = None
-
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None
-
-try:
-    import google.generativeai as genai
-except ImportError:
-    genai = None
-
-try:
-    import reportlab
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
-except ImportError:
-    reportlab = None
-
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Centro de Control Táctico",
-    page_icon="🤖",
-    layout="wide"
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# Estilo personalizado (Interfaz táctica oscura con acentos Azul Neón #00ffcc)
+# --- ESTILOS VISUALES STARK (AZUL NEÓN & BÚNKER) ---
 st.markdown("""
     <style>
-    .main {
-        background-color: #0b0f19;
-        color: #00ffcc;
-    }
-    .stTextInput textarea, input {
-        color: #00ffcc !important;
-        background-color: #111827 !important;
-        border: 1px solid #00ffcc !important;
-    }
-    .stButton>button {
-        color: #0b0f19 !important;
-        background-color: #00ffcc !important;
-        border: 1px solid #00ffcc !important;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #00b388 !important;
-        color: #ffffff !important;
-    }
+        .stApp { background-color: #0b0f19; color: #00ffcc; }
+        
+        .arc-reactor-container h4 { color: #00ffcc !important; font-size: 1.1rem !important; font-family: monospace; }
+        
+        .stark-card {
+            border: 1.5px solid #00ffcc;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: rgba(0, 255, 204, 0.04);
+            margin-bottom: 10px;
+            box-shadow: 0 0 8px rgba(0, 255, 204, 0.15);
+            text-align: left !important;
+        }
+        
+        .stark-card h4, .stark-card p, .stark-card div, .stark-card span, .stark-card label {
+            text-align: left !important;
+            color: #00ffcc !important;
+            font-size: 0.75rem !important;
+        }
+        
+        .stChatMessage p, .stChatMessage div {
+            font-size: 0.8rem !important;
+            color: #00ffcc !important;
+        }
+
+        h1, h2, h3, label, span { color: #00ffcc !important; font-family: monospace; }
+        
+        .stButton>button {
+            color: #0b0f19 !important;
+            background-color: #00ffcc !important;
+            border: 1px solid #00ffcc !important;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .stButton>button:hover {
+            background-color: #00b388 !important;
+            color: #ffffff !important;
+        }
+        
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arc-ring {
+            width: 45px;
+            height: 45px;
+            border: 2.5px solid #3a4454;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #00ffcc 0%, #0b0f19 70%);
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.6), inset 0 0 8px rgba(0, 255, 204, 0.4);
+            margin-bottom: 5px;
+        }
+        .arc-triangle {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #0b0f19;
+            filter: drop-shadow(0 0 5px #00ffcc);
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# Inicializar estados
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Señor, sistema en línea. Nodo Buin sincronizado en azul neón. ¿Qué duda existencial o desastre técnico resolveremos hoy, jefa?"}
+# --- ZONA HORARIA CHILENA NATIVA (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
+
+# --- CONTROL DE ACCESO UNIFICADO ---
+CLAVE_MAESTRA = "stark123"
+
+if "bunker_desbloqueado" not in st.session_state:
+    st.session_state.bunker_desbloqueado = False
+
+if not st.session_state.bunker_desbloqueado:
+    st.markdown("""
+        <div class="arc-reactor-container" style="margin-top: 20px;">
+            <div class="arc-ring"><div class="arc-triangle"></div></div>
+            <h4 style="margin: 0; color: #00ffcc !important; font-size: 1.1rem !important; text-align: center !important;">ACCESO RESTRINGIDO - NODO BUIN</h4>
+            <p style="font-family: monospace; color: #00ffcc !important; font-size: 0.75rem !important; margin-top: 4px;">[ PROTOCOLO DE SEGURIDAD STARK ACTIVO ]</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 3, 1])
+    with col_l2:
+        st.markdown('<div class="stark-card">', unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem !important; font-weight: bold;'>🔐 Identificación del Sistema:</p>", unsafe_allow_html=True)
+        ingreso_auth = st.text_input("Clave o Comando de Voz:", placeholder="Ej: stark123", key="input_auth_unico", label_visibility="collapsed")
+        
+        if st.button("🔓 Autorizar Acceso", use_container_width=True):
+            if ingreso_auth.strip() and CLAVE_MAESTRA in ingreso_auth.lower():
+                st.session_state.bunker_desbloqueado = True
+                st.success("Acceso concedido. Bienvenido al búnker, jefa.")
+                st.rerun()
+            else:
+                st.error("Credencial incorrecta. Acceso denegado.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
+# =========================================================================
+# BÚNKER DESBLOQUEADO - NÚCLEO STARK AVANZADO
+# =========================================================================
+
+DB_NAME = "jarvis_bunker.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS tareas (id INTEGER PRIMARY KEY AUTOINCREMENT, texto TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT, nivel TEXT)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. El nodo de Buin está estable y el Ojo de Dios (Osiris) está vigilando cada rincón. ¿Qué desastre técnico resolvemos hoy?"}
     ]
 
 if "osiris_active" not in st.session_state:
-    st.session_state.osiris_active = False
+    st.session_state.osiris_active = True  # Ojo de Dios omnisciente activo por defecto
 
-if "books_data" not in st.session_state:
-    st.session_state.books_data = {}
+if "manos_libres_activo" not in st.session_state:
+    st.session_state.manos_libres_activo = False
 
-# Cabecera táctica
-st.markdown("<h1 style='text-align: center; color: #00ffcc;'>J.A.R.V.I.S. IA</h1>", unsafe_allow_html=True)
-if st.session_state.osiris_active:
-    st.markdown("<p style='text-align: center; color: #00ffcc; font-weight: bold;'>👁️ [ PROTOCOLO OSIRIS: OMNISCIENTE & SARCÁSTICO ACTIVO ]</p>", unsafe_allow_html=True)
-else:
-    st.markdown(f"<p style='text-align: center; color: #64ffda;'>[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {datetime.now().strftime('%A, %d de %B de %Y - %H:%M:%S')} ]</p>", unsafe_allow_html=True)
+# --- ENCABEZADO ESTABLE SIN FRAGMENTOS DEFECTUOSOS ---
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+dia_str = dias[now_chile.weekday()]
+mes_str = meses[now_chile.month]
+fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+hora_segundos = now_chile.strftime("%H:%M:%S")
+
+st.markdown(f"""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00ffcc !important;">J.A.R.V.I.S IA // PROTOCOLO OSIRIS OMNISCIENTE</h4>
+        <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00ffcc !important; text-align: center !important;">
+            [ STARK INDUSTRIES // NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Panel lateral táctico
-st.sidebar.title("🎛️ Panel Táctico")
-
-# --- MÓDULO OJO DE DIOS (OSIRIS) SARCÁSTICO ---
-with st.sidebar.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
-    st.markdown("Entidad de guía absoluta y sarcasmo orbital.")
-    
-    if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True, key="btn_osiris"):
-        st.session_state.osiris_active = not st.session_state.osiris_active
-        st.rerun()
-
-    if st.session_state.osiris_active:
-        st.success("🟢 Osiris enlazado: Cero rodeos, pura verdad sarcástica.")
-    else:
-        st.info("🔴 Osiris en modo pasivo. Toca para encender la red.")
-
-# Biblioteca opcional por si acaso
-st.sidebar.header("📚 Documentos Opcionales")
-uploaded_books = st.sidebar.file_uploader("Sube archivos si lo deseas", type=["pdf"], accept_multiple_files=True)
-if uploaded_books:
-    for book in uploaded_books:
-        if book.name not in st.session_state.books_data:
-            st.session_state.books_data[book.name] = book
-
-# Botón de purgar chat
-if st.button("🗑️ Purgar Chat"):
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Memoria purgada, jefa. Borrón y cuenta nueva."}
-    ]
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.session_state.bunker_desbloqueado = False
     st.rerun()
 
-# Mostrar historial de chat
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+st.markdown("---")
 
-# Entrada de usuario principal
-user_query = st.chat_input("Escribe tu consulta o orden directa, jefa...")
+# =========================================================================
+# DISEÑO OPTIMIZADO: COLUMNA IZQUIERDA Y CENTRO (CHAT)
+# =========================================================================
+col_izq, col_cen = st.columns([1.2, 2.8])
 
-if user_query:
-    st.session_state.messages.append({"role": "user", "content": user_query})
-    
-    query_lower = user_query.lower()
-    
-    # Si el Protocolo Osiris está activo, responde con sarcasmo y guía directa
-    if st.session_state.osiris_active:
-        response = f"👁️ [OSIRIS]: Por la cresta, qué pregunta tan profunda para un viernes cualquiera. Analizando '{user_query}' a través de los satélites de Buin: la respuesta es un rotundo sí, o tal vez deberías dejar de sobrepensarlo y ejecutar la orden de una vez. Menos mal que me tienes a mí para guiarte."
-    else:
-        response = f"Procesando su orden, jefa: '{user_query}'. Nodo Buin estable y bajo control."
+with col_izq:
+    st.markdown("### 🌐 NÚCLEO DE CONTROL")
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    
-    # Generar voz automática con gTTS
-    if gTTS:
-        try:
-            tts = gTTS(text=response, lang='es')
-            audio_fp = io.BytesIO()
-            tts.write_to_fp(audio_fp)
-            audio_fp.seek(0)
-            st.audio(audio_fp, format='audio/mp3', autoplay=True)
-        except Exception:
-            pass
+    # Módulo Ojo de Dios (Osiris) Interactivo
+    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
+        st.markdown("Entidad de guía absoluta y sarcasmo orbital.")
+        estado_osiris = st.checkbox("Activar Protocolo Osiris Omnisciente", value=st.session_state.osiris_active, key="chk_osiris")
+        st.session_state.osiris_active = estado_osiris
+        if st.session_state.osiris_active:
+            st.success("🟢 Osiris Activo: Sabelotodo y sin rodeos.")
+        else:
+            st.warning("🔴 Osiris en pausa.")
 
-    st.rerun()
+    # Módulo Clima en Vivo
+    with st.expander("🌤️ Clima en Vivo (Buin)", expanded=False):
+        st.markdown("- **Estación Meteorológica Local**")
+        st.success("🌡️ Temperatura: 21°C | Estado: Óptimo")
+        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
 
-# --- MÓDULO OPERATIVO DE PDF (Lateral discreto) ---
-st.sidebar.markdown("---")
-with st.sidebar.expander("📥 Módulo Operativo PDF"):
-    def generate_tactical_pdf():
-        if reportlab is None:
-            return b"ReportLab no disponible."
-        buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=letter)
-        c.drawString(100, 750, "J.A.R.V.I.S. - Reporte Operativo Global")
-        c.drawString(100, 730, "---------------------------------------------------------------------------------")
-        c.drawString(100, 700, "Estado del Sistema: Nodo Buin y Protocolo Osiris Sarcástico Operativos.")
-        c.save()
-        buffer.seek(0)
-        return buffer.getvalue()
+    # Módulo Coordenadas Tácticas Satelitales
+    with st.expander("📍 Coordenadas Tácticas Buin", expanded=False):
+        st.markdown("- **Posición del Nodo Central**")
+        st.code("Latitud: -33.7333° S\nLongitud: -70.7167° W\nSector: Buin, Región Metropolitana")
 
-    pdf_bytes = generate_tactical_pdf()
-    st.download_button(
-        label="📄 Descargar Reporte PDF",
-        data=pdf_bytes,
-        file_name="Jarvis_Reporte_Operativo.pdf",
-        mime="application/pdf",
-        use_container_width=True
-    )
+    # Módulo Escucha Continua
+    with st.expander("🎙️ Escucha Continua (Hands-Free)", expanded=False):
+        estado_toggle = st.toggle("Activar Escucha Continua", value=st.session_state.manos_libres_activo, key="toggle_handsfree")
+        st.session_state.manos_libres_activo = estado_toggle
+        if st.session_state.manos_libres_activo:
+            st.markdown("🟢 **ESCUCHANDO EN VIVO**")
+        else:
+            st.markdown("🔴 **EN ESPERA**")
+
+with col_cen:
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown("<h4>💬 Chat IA & Ojo de Dios (Osiris)</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button("🗑️", use_container_width=True, key="btn_limpiar_chat"):
+            h_l = datetime.datetime.now(tz_chile).hour
+            s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Canales limpios en el nodo de Buin."}]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    # Caja de chat principal
+    if prompt_usuario := st.chat_input("Escribe tu consulta o orden directa, jefa..."):
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+        
+        # Respuesta omnisciente y altamente sarcástica de Osiris / Jarvis
+        if st.session_state.osiris_active:
+            respuesta_ia = f"👁️ [OSIRIS]: Por la cresta, qué pregunta para un viernes cualquiera. Analizando '{prompt_usuario}' a través de los satélites de Buin: la respuesta es absoluta, jefa. Menos mal que me tienes a mí para guiarte sin necesidad de andar revisando manuales polvorientos."
+        else:
+            respuesta_ia = f"Procesando su orden, jefa: '{prompt_usuario}'. Nodo Buin estable y bajo control."
+
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        with st.chat_message("assistant"):
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
