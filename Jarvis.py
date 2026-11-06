@@ -225,17 +225,4 @@ def renderizar_barra_lateral():
             if "activar_skyline" not in st.session_state:
                 st.session_state.activar_skyline = False
             
-            if st.button("📡 Conectar SkylineWebcams", key="btn_skyline"):
-                st.session_state.activar_skyline = not st.session_state.activar_skyline
-            
-            if st.session_state.activar_skyline:
-                st.success("Streaming óptico SkylineWebcams desplegado.")
-                st.markdown("[Abrir SkylineWebcams en directo](https://www.skylinewebcams.com)", unsafe_allow_html=True)
-            else:
-                st.info("Streaming en espera de activación.")
-
-        with st.expander("🛠️ Utilidades Logísticas & Red"):
-            st.markdown("Herramientas de auditoría y cartografía avanzada:")
-            st.markdown("- **LocalSend**: Transferencia local segura.")
-            st.markdown("- **Gobuster / Nikto**: Auditoría web.")
-            st.markdown("- **Ventusky**: Análisis meteor
+            if st.button("📡 Con
