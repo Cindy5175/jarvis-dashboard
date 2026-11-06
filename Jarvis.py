@@ -38,17 +38,17 @@ st.markdown("""
     }
     .ark-reactor-container {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         margin: 5px 0 5px 0;
     }
     .ark-reactor {
-        width: 65px;
-        height: 65px;
+        width: 55px;
+        height: 55px;
         background: radial-gradient(circle, #00f3ff 0%, #0d1b2a 70%);
         border: 2px solid #00f3ff;
         border-radius: 50%;
-        box-shadow: 0 0 18px #00f3ff, inset 0 0 12px #00f3ff;
+        box-shadow: 0 0 15px #00f3ff, inset 0 0 10px #00f3ff;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -57,10 +57,10 @@ st.markdown("""
     .ark-triangle {
         width: 0;
         height: 0;
-        border-left: 12px solid transparent;
-        border-right: 12px solid transparent;
-        border-bottom: 22px solid #ffffff;
-        filter: drop-shadow(0 0 6px #00f3ff);
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 18px solid #ffffff;
+        filter: drop-shadow(0 0 5px #00f3ff);
     }
     .stark-header {
         color: #00f3ff !important;
@@ -70,14 +70,14 @@ st.markdown("""
         text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
         padding: 2px 0;
         letter-spacing: 1px;
-        text-align: center;
+        text-align: left;
     }
     .stark-sub {
         color: #8be9fd !important;
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.85rem;
         margin-bottom: 15px;
-        text-align: center;
+        text-align: left;
     }
     .stButton>button {
         background-color: #0d1b2a;
@@ -86,6 +86,7 @@ st.markdown("""
         border-radius: 6px;
         box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
         transition: 0.3s ease;
+        width: 100%;
     }
     .stButton>button:hover {
         background-color: #00f3ff;
@@ -158,17 +159,25 @@ def limpiar_texto_para_voz(texto):
 def renderizar_barra_lateral(docs_cargados):
     with st.sidebar:
         st.header("⚙️ Estado del Sistema")
-        st.success("🟢 Sistema Operativo" if docs_cargados else "🟡 Operativo (Sin PDFs)")
         
-        st.subheader("📚 Base de Datos (PDFs)")
-        if docs_cargados:
-            for doc in docs_cargados:
-                st.write(f"📖 {doc['nombre']}")
-        else:
-            st.info("Coloca tus archivos PDF en la carpeta 'documentos/' del proyecto.")
+        # Módulo de Base de Datos con Operatividad y Estado de PDFs incluido
+        with st.expander("📚 Base de Datos (PDFs)", expanded=True):
+            if docs_cargados:
+                st.success("🟢 Operativo (PDFs Activos)")
+                for doc in docs_cargados:
+                    st.write(f"📖 {doc['nombre']}")
+            else:
+                st.warning("🟡 Operativo (Sin PDFs en carpetas)")
+                st.info("Coloca tus archivos PDF en la carpeta 'documentos/'.")
             
         st.divider()
         
+        # Ojo de Dios (Osiris) colocado arriba del Mapa Táctico
+        with st.expander("👁️ Ojo de Dios (Osiris)"):
+            st.markdown("Red de vigilancia global y reconocimiento facial activa.")
+            if st.button("⚠️ Activar Protocolo Osiris", use_container_width=True):
+                st.error("¡Ojo de Dios enlazado a los sensores del Nodo Buin, jefa!")
+
         with st.expander("🗺️ Mapa Táctico Satelital"):
             st.markdown("Nodo Buin sincronizado con satélites de defensa.")
             st.info("Coordenadas: Lat -33.7333, Lon -70.7333")
@@ -250,6 +259,7 @@ def renderizar_encabezado():
 
     tiempo_actual_str = ahora_chile.strftime("%A, %d de %B de %Y – %H:%M:%S")
 
+    # Reactor Ark alineado a la izquierda
     st.markdown("""
         <div class="ark-reactor-container">
             <div class="ark-reactor">
@@ -261,25 +271,25 @@ def renderizar_encabezado():
     st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // HORA OFICIAL 🇨🇱 // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
 
-    if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    if st.button("🔒 Bloquear Búnker", use_container_width=False):
         st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
 
     st.divider()
 
 def renderizar_protocolos_rapidos():
-    col_p1, col_p2, col_p3 = st.columns(3)
-    with col_p1:
-        if st.button("📊 Protocolo Base"):
-            st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
-            st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
-    with col_p2:
-        if st.button("🚨 Protocolo Alerta"):
-            st.toast("Activando perímetro y mapa satelital...")
-            st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
-    with col_p3:
-        if st.button("⚙️ Protocolo Diagnóstico"):
-            st.toast("Purgando caché temporal del Core LLM...")
-            st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
+    # 3 Protocolos a la izquierda en columna vertical
+    st.markdown("### ⚡ Protocolos Rápidos")
+    if st.button("📊 Protocolo Base"):
+        st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
+        st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
+    
+    if st.button("🚨 Protocolo Alerta"):
+        st.toast("Activando perímetro y mapa satelital...")
+        st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
+    
+    if st.button("⚙️ Protocolo Diagnóstico"):
+        st.toast("Purgando caché temporal del Core LLM...")
+        st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
 
     st.divider()
 
