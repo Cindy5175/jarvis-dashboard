@@ -154,7 +154,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón eléctrico. Módulos globales, control de voz, base de datos de misiones y telemetría de armadura en línea. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón eléctrico. Módulos globales, control de voz por IA, base de datos de misiones y telemetría de armadura en línea. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -207,13 +207,28 @@ with st.sidebar:
         st.caption("Feed directo estación espacial.")
 
     st.markdown("---")
-    st.markdown("#### 🎙️ CONTROL DE VOZ")
+    st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
 
-    with st.expander("🎤 Entrada de Audio (Speech-to-Text)", expanded=True):
-        st.markdown("Envía comandos hablados a JARVIS:")
+    prompt_voz = None
+    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
+        st.markdown("Graba tu orden hablada:")
         audio_grabado = st.audio_input("Grabar orden de voz:")
+        
         if audio_grabado:
-            st.success("¡Audio capturado por el Nodo Buin! Procesando comando...")
+            st.warning("⚡ Procesando audio en el Nodo Buin...")
+            audio_bytes = audio_grabado.read()
+            
+            if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                try:
+                    model_audio = genai.GenerativeModel("gemini-1.5-flash")
+                    prompt_audio_res = model_audio.generate_content([
+                        "Escucha este audio y transcribe exactamente lo que se dice en español como una orden o consulta de texto directa, sin rodeos.",
+                        {"mime_type": "audio/wav", "data": audio_bytes}
+                    ])
+                    if prompt_audio_res and prompt_audio_res.text:
+                        prompt_voz = prompt_audio_res.text.strip()
+                except Exception as e:
+                    st.error(f"Error procesando audio: {e}")
 
     st.markdown("---")
     st.markdown("#### 📋 REGISTRO DE MISIONES")
@@ -275,8 +290,11 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-# Caja de chat principal con respaldo de seguridad infalible
-if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
+# Entrada de texto normal por chat o captura automática desde el micrófono lateral
+prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+if prompt_usuario:
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
