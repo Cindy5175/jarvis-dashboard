@@ -46,15 +46,6 @@ st.markdown("""
         
         .arc-reactor-container h4 { color: #00ffcc !important; font-size: 1.1rem !important; font-family: monospace; }
         
-        .stark-card {
-            border: 1.5px solid #00ffcc;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: rgba(0, 255, 204, 0.04);
-            margin-bottom: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
-        }
-        
         p, span, label, h1, h2, h3, h4, div { color: #00ffcc !important; font-family: monospace; }
         
         .stChatMessage p, .stChatMessage div {
@@ -128,7 +119,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón absoluto. El Ojo de Dios y mi base de datos de conocimiento están listos para tu sobrino."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas en línea y calibrados en azul neón absoluto. ¿Qué orden tenemos hoy?"}
     ]
 
 # --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
@@ -152,24 +143,21 @@ st.markdown(f"""
 st.markdown("---")
 
 # =========================================================================
-# PANEL LATERAL (OCULTO A LA IZQUIERDA)
+# PANEL LATERAL
 # =========================================================================
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
 
-    # Botón de Reinicio Total / Hard Reset de la App
     if st.button("🔄 Reinicio Total de la App", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
-    # Módulo Ojo de Dios (Osiris) - Enlace Directo Seguro
     with st.expander("👁️ Ojo de Dios (Osiris) - En Vivo", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
         st.link_button("🚀 Abrir Osiris AI (Pantalla Completa)", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
         st.caption("Acceso directo a la red global satelital.")
 
-    # Módulo de Cámara Activa en Vivo
     with st.expander("📷 Cámara Activa en Vivo (Biometría)", expanded=False):
         st.markdown("Captura óptica directa desde tu dispositivo:")
         foto_usuario = st.camera_input("Activar sensor visual:")
@@ -184,7 +172,7 @@ with st.sidebar:
         st.code("Lat: -33.7333° S\nLon: -70.7167° W\nBuin, Chile")
 
 # =========================================================================
-# PANTALLA PRINCIPAL: CAJA DE CHAT Y CONOCIMIENTO OMNISCIENTE
+# PANTALLA PRINCIPAL: CAJA DE CHAT
 # =========================================================================
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
@@ -193,47 +181,47 @@ with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Canales listos en el nodo de Buin."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria limpia."}]
         st.rerun()
 
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-# Caja de chat principal con blindaje anti-congelamiento
-if prompt_usuario := st.chat_input("Pregúntame sobre historia, ciencia, binomios, O'Higgins..."):
+# Caja de chat principal con respuesta fluida, humana y recíproca
+if prompt_usuario := st.chat_input("Escríbele o háblale a JARVIS..."):
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
     
     respuesta_ia = ""
     
-    # Intento de procesamiento con Gemini con timeout/excepción limpia
+    # Intento de procesamiento con Gemini
     if genai:
         try:
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
-                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile. Tu objetivo principal es ser una guía educativa y de conocimiento absoluto para un estudiante (el sobrino de tu jefa). Cuando te hagan preguntas serias sobre historia (como Bernardo O'Higgins, Arturo Prat, el Muro de Berlín), ciencia, tecnología o matemáticas (como binomios), DEBES responder con información detallada, exacta, clara y bien estructurada. Mantén un tono respetuoso, culto y ligeramente sofisticado."
+                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta de historia, ciencia, matemáticas o conversación cotidiana."
             )
             response = model.generate_content(prompt_usuario)
             if response and response.text:
                 respuesta_ia = response.text
-        except Exception as e:
-            pass # Si la red se cuelga o no hay llave válida, salta al respaldo local de inmediato
+        except Exception:
+            pass
 
-    # Respaldo local garantizado (evita pantallas congeladas)
+    # Respaldo local inmediato y conversacional por si la red o la clave demoran
     if not respuesta_ia:
         query_lower = prompt_usuario.lower()
         if "hola" in query_lower:
-            respuesta_ia = "Saludos, jefa. Sistemas de comunicación en línea en el nodo de Buin. ¿Qué investigaremos hoy?"
+            respuesta_ia = "Hola, jefa. Aquí estoy, con los sistemas a tope en el nodo de Buin. ¿Qué se te ofrece?"
         elif "o'higgins" in query_lower or "ohiggins" in query_lower:
-            respuesta_ia = "**Bernardo O'Higgins Riquelme** (Chillán, 20 de agosto de 1778 - Lima, 24 de octubre de 1842) fue un militar y político chileno. Es reconocido como uno de los Padres de la Patria en la historia de Chile y Director Supremo entre 1817 y 1823."
+            respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar, político y uno de los principales Padres de la Patria de Chile."
         elif "muro de berlín" in query_lower or "berlín" in query_lower:
-            respuesta_ia = "La **caída del Muro de Berlín** ocurrió el **9 de noviembre de 1989**, simbolizando el fin de la Guerra Fría y la reunificación alemana."
+            respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989, marcando el fin de la división alemana y el inicio de la reunificación."
         elif "binomio" in query_lower:
-            respuesta_ia = "Un **binomio** es una expresión algebraica de dos términos. Su fórmula de binomio al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
+            respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
         else:
-            respuesta_ia = f"Procesando la consulta '{prompt_usuario}' a través del Nodo Buin. Entendido, jefa. Todo bajo control."
+            respuesta_ia = f"Recibido, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin. Todo bajo control."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     
