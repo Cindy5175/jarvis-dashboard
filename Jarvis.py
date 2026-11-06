@@ -34,6 +34,14 @@ st.markdown("""
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
     }
+    .ark-reactor-center {
+        text-align: center;
+        font-size: 3rem;
+        color: #00f3ff;
+        text-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 40px rgba(0, 243, 255, 0.5);
+        margin-bottom: 0px;
+        padding-top: 5px;
+    }
     .stark-header {
         color: #00f3ff !important;
         font-family: 'Courier New', Courier, monospace;
@@ -50,19 +58,6 @@ st.markdown("""
         font-size: 0.85rem;
         margin-bottom: 15px;
         text-align: center;
-    }
-    .logo-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    .logo-container img {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
-        border: 2px solid #00f3ff;
     }
     .stButton>button {
         background-color: #0d1b2a;
@@ -195,5 +190,102 @@ with st.sidebar:
     st.caption("Stark Industries // Nodo Buin, Chile 🇨🇱")
 
 # ---------------------------------------------------------
-# Encabezado Principal con Logo Centrado
+# Encabezado Principal con Reactor Ark Centrado Arriba
 # ---------------------------------------------------------
+st_autorefresh(interval=1000, key="reloj_jarvis_top")
+tiempo_actual_str = datetime.datetime.now().strftime("%A, %d de %B de %Y – %H:%M:%S")
+
+# Reactor Ark / Triángulo Neón centrado en la parte superior
+st.markdown('<div class="ark-reactor-center">💠</div>', unsafe_allow_html=True)
+st.markdown('<div class="stark-header">▲ J.A.R.V.I.S. IA</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="stark-sub">[ NODO BUIN, CHILE // {tiempo_actual_str} ]</div>', unsafe_allow_html=True)
+
+if st.button("🔒 Bloquear Búnker", use_container_width=True):
+    st.warning("Protocolo de seguridad activado. Cierre perimetral en curso, jefa.")
+
+st.divider()
+
+# ---------------------------------------------------------
+# Botones de Protocolos Rápidos
+# ---------------------------------------------------------
+col_p1, col_p2, col_p3 = st.columns(3)
+with col_p1:
+    if st.button("📊 Protocolo Base"):
+        st.toast("Ejecutando telemetría nominal de CPU, RAM y clima de Buin...")
+        st.info("Reporte del búnker: Temperatura óptima a 21°C, consumo de CPU al 12%, sistemas estables por la cresta.")
+with col_p2:
+    if st.button("🚨 Protocolo Alerta"):
+        st.toast("Activando perímetro y mapa satelital...")
+        st.warning("Alerta táctica: Perímetro del nodo seguro, sin intrusos detectados en Buin.")
+with col_p3:
+    if st.button("⚙️ Protocolo Diagnóstico"):
+        st.toast("Purgando caché temporal del Core LLM...")
+        st.success("Diagnóstico completado: Núcleo neuronal y enciclopedia interna al 100% de operatividad.")
+
+st.divider()
+
+# ---------------------------------------------------------
+# Chat IA & Protocolo E.D.I.T.H.
+# ---------------------------------------------------------
+st.subheader("💬 Chat IA & Protocolo E.D.I.T.H.")
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": "Buenos días, jefa. El nodo de Buin está operativo, la temperatura es perfecta y, por la cresta, nadie ha intentado hackearnos hoy. ¿Qué ciencia, historia o experimento nos trae por aquí?"}
+    ]
+
+for msj in st.session_state.mensajes:
+    with st.chat_message(msj["role"]):
+        st.markdown(msj["content"])
+
+if prompt := st.chat_input("Escribe tu orden o dicta a E.D.I.T.H., jefa..."):
+    st.session_state.mensajes.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+    
+    if not api_key:
+        respuesta_error = "Señorita Cindy, no encuentro la API Key de OpenAI configurada en los secrets."
+        with st.chat_message("assistant"):
+            st.markdown(respuesta_error)
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_error})
+    else:
+        client = OpenAI(api_key=api_key)
+        contexto_libros = buscar_contexto_relevante(prompt, docs_cargados)
+
+        system_instruction = f"""
+        Eres J.A.R.V.I.S. / E.D.I.T.H., el sistema de inteligencia artificial avanzado del Nodo Buin.
+        Te diriges a la usuaria como 'jefa' o 'Señorita Cindy'.
+        Tu personalidad es sutilmente sarcástica, sumamente elegante, eficiente, técnica y brillante.
+        Hablas en español chileno natural, utilizando modismos justos y con una entonación de alta gama (jamás sonando como un GPS antiguo o un robot plano).
+        Integra conocimientos de ciencia, historia, tecnología y los documentos/libros de la usuaria cuando corresponda:
+        
+        === CONTEXTO DE DOCUMENTOS Y LIBROS ===
+        {contexto_libros}
+        =======================================
+        
+        Mantén tus respuestas fluidas, claras y con el toque irónico característico.
+        """
+
+        messages_payload = [{"role": "system", "content": system_instruction}]
+        for m in st.session_state.mensajes[-6:]:
+            messages_payload.append({"role": "user" if m["role"] == "user" else "assistant", "content": m["content"]})
+
+        try:
+            with st.chat_message("assistant"):
+                with st.spinner("Procesando enlace táctico..."):
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages_payload,
+                        temperature=0.7
+                    )
+                    respuesta_texto = response.choices[0].message.content
+                    st.markdown(respuesta_texto)
+                    
+                    texto_voz = limpiar_texto_para_voz(respuesta_texto)
+                    
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_texto})
+            
+        except Exception as e:
+            st.error(f"Error de conexión con el núcleo: {e}")
