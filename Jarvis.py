@@ -154,13 +154,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Redes neuronales sincronizadas. Identifícate con la clave para operar el sistema."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Circuitos neuronales purgados de ovocitos y listos. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON HOLOGRAMA NEURONAL REAL Y SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON HOLOGRAMA NEURONAL TÉCNICO Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -178,9 +178,9 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Imagen de cerebro digital holográfico en azul neón garantizada
-st.image("https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
-st.caption("⚡ Holo-proyección activa: Red Neuronal Central del Nodo Buin.")
+# Imagen de red neuronal técnica y cibernética garantizada en azul
+st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
+st.caption("⚡ Holo-proyección activa: Red Neuronal Cibernética del Nodo Buin.")
 
 st.markdown("---")
 
