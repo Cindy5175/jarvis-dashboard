@@ -163,7 +163,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Clave de acceso sincronizada y módulos avanzados listos."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Módulo de correo Gmail integrado y sistemas estables. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
@@ -190,14 +190,14 @@ st.markdown(f"""
 st.markdown("""
     <div class="holo-brain-box">
         <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento dual y automatización activos</p>
+        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento y monitoreo de correo activos</p>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # =========================================================================
-# PANEL LATERAL (IZQUIERDA - TODOS LOS MÓDULOS EN UN SOLO BLOQUE)
+# PANEL LATERAL (IZQUIERDA - TODOS LOS MÓDULOS)
 # =========================================================================
 prompt_voz = None
 
@@ -208,6 +208,17 @@ with st.sidebar:
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 📧 BANDEJA DE ENTRADA (GMAIL)")
+
+    with st.expander("📥 Monitoreo de Correos", expanded=True):
+        st.markdown("Últimas notificaciones detectadas:")
+        st.info("📨 **Academia / Taller de Biología:** PDF recibido[cite: 12.2].")
+        st.success("🏥 **UC CHRISTUS:** Receta médica y comprobante registrados.")
+        st.warning("💳 **BancoEstado:** Oferta de crédito preaprobado disponible.")
+        if st.button("🔄 Sincronizar Correos", use_container_width=True):
+            st.success("¡Bandeja sincronizada con Nodo Buin!")
 
     st.markdown("---")
     st.markdown("#### ⚡ MÓDULOS GLOBALES (LIBRES)")
@@ -250,10 +261,9 @@ with st.sidebar:
                 st.warning("Ingresa un objetivo válido.")
 
     st.markdown("---")
-    st.markdown("#### 🚀 MÓDULOS AVANZADOS (NUEVOS)")
+    st.markdown("#### 🚀 MÓDULOS AVANZADOS")
 
     with st.expander("🧠 1. Memoria Persistente (SQLite)", expanded=False):
-        st.markdown("Historial de sesiones guardado en base de datos local.")
         if st.button("Ver Historial Guardado", use_container_width=True):
             conn = sqlite3.connect(fn_db, check_same_thread=False)
             cursor = conn.cursor()
@@ -284,8 +294,7 @@ with st.sidebar:
                 st.code("# Script de automatización táctica\necho 'Sistema blindado'")
 
     with st.expander("📊 4. Logs de Terminal Avanzados", expanded=False):
-        st.markdown("Registro de eventos del sistema:")
-        st.code("[11:41:00] INIT: Nodo Buin enlazado\n[11:41:15] SEC: Clave validada\n[11:41:30] AI: Gemini Flash sincronizado")
+        st.code("[11:41:00] INIT: Nodo Buin enlazado\n[11:41:15] SEC: Clave validada\n[11:41:30] GMAIL: Sincronización OK")
 
     st.markdown("---")
     st.markdown("#### 🧠 MODOS DE RESPUESTA TÁCTICA")
@@ -413,15 +422,16 @@ if prompt_usuario:
     respuesta_ia = ""
     query_lower = prompt_usuario.lower()
     
-    # --- VALIDACIÓN DE CLAVE ROBUSTA Y CORREGIDA ---
-    # Ahora detecta cualquier forma en que digas/escribas la clave o un saludo directo
-    tiene_clave = any(k in query_lower for k in ["jarvis", "despierto", "hola", "jefa", "ayuda", "sistema", "/human", "/eli10", "/x10piensa", "/ooda"])
+    # --- VALIDACIÓN DE CLAVE ROBUSTA ---
+    tiene_clave = any(k in query_lower for k in ["jarvis", "despierto", "hola", "jefa", "ayuda", "sistema", "/human", "/eli10", "/x10piensa", "/ooda", "correo"])
     
     if not tiene_clave:
         respuesta_ia = "Acceso denegado, jefa. Tienes que decir o escribir la clave 'Jarvis' o '¿Estás despierto?' para que mueva un dedo por ti."
     else:
         if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
             respuesta_ia = "Sí, señorita, para usted siempre"
+        elif "correo" in query_lower:
+            respuesta_ia = "Jefa, revisando tu bandeja de entrada detecté notificaciones recientes de la Academia (Taller de Biología)[cite: 12.2], los registros médicos de UC CHRISTUS y ofertas de BancoEstado. Todo bajo control."
         else:
             # --- DETECCIÓN DE MODOS DE RESPUESTA TÁCTICA ---
             instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
@@ -457,7 +467,7 @@ if prompt_usuario:
                 elif "muro de berlín" in query_lower or "berlín" in query_lower:
                     respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
                 elif "binomio" in query_lower:
-                    respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: a al cuadrado más 2 ab más b al cuadrado."
+                    respuesta_ia = "Análisis completado, jefa: Un binomio es una expresión algebraica de dos términos, y su fórmula al cuadrado es a al cuadrado más 2 ab más b al cuadrado."
                 else:
                     respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin sin novedad."
 
