@@ -183,9 +183,12 @@ else:
 # NÚCLEO TÁCTICO & ESTADO DE SESIÓN
 # =========================================================================
 
+if "autorizado" not in st.session_state:
+    st.session_state.autorizado = False
+
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin blindado y operativo. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea. Ingresa la clave o di 'Jarvis' para iniciar sistemas."}
     ]
 
 if "audio_process_key" not in st.session_state:
@@ -442,7 +445,8 @@ with col_h1:
     st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Identifícate con la clave."}]
+        st.session_state.autorizado = False
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Ingresa la clave para iniciar sistemas."}]
         st.session_state.audio_process_key = None
         st.rerun()
 
@@ -483,4 +487,73 @@ if prompt_usuario:
     respuesta_ia = ""
     query_lower = prompt_usuario.lower()
     
-    # --- VALID
+    # --- CONTROL DE ACCESO INTELIGENTE ---
+    if not st.session_state.autorizado:
+        # Palabras clave de acceso
+        es_clave = any(k in query_lower for k in ["jarvis", "estás despierto", "estas despierto", "hola", "jefa", "sistema"])
+        if es_clave:
+            st.session_state.autorizado = True
+            respuesta_ia = "Sí, señorita, para usted siempre. Sistemas operativos al 100%, jefa. ¿Qué hacemos ahora?"
+        else:
+            respuesta_ia = "Acceso denegado, jefa. Tienes que decir o escribir la clave 'Jarvis' o '¿Estás despierto?' para abrir el sistema."
+    else:
+        # --- FUNCAMIENTO NORMAL UNA VEZ AUTORIZADO ---
+        if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
+            respuesta_ia = "Sí, señorita, para usted siempre"
+        elif "correo" in query_lower:
+            respuesta_ia = "Jefa, el centro de alertas indica notificaciones recientes de UC CHRISTUS (Receta médica) y BancoEstado. Todo monitoreado."
+        elif "agenda" in query_lower or "calendario" in query_lower:
+            respuesta_ia = "Jefa, tienes el módulo de agenda integrado en el panel izquierdo para registrar y consultar eventos directamente en SQLite."
+        else:
+            # --- DETECCIÓN DE MODOS DE RESPUESTA TÁCTICA ---
+            instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+            
+            if "/human" in query_lower:
+                instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
+            elif "/eli10" in query_lower:
+                instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
+            elif "/x10piensa" in query_lower:
+                instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
+            elif "/ooda" in query_lower:
+                instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
+
+            # Procesamiento con Gemini bajo la directiva seleccionada
+            if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                try:
+                    model = genai.GenerativeModel(
+                        model_name="gemini-1.5-flash",
+                        system_instruction=instruccion_sistema
+                    )
+                    response = model.generate_content(prompt_usuario)
+                    if response and response.text:
+                        respuesta_ia = response.text
+                except Exception:
+                    pass
+
+            # Respaldo local si falla la API
+            if not respuesta_ia:
+                if "hola" in query_lower:
+                    respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
+                elif "o'higgins" in query_lower or "ohiggins" in query_lower:
+                    respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
+                elif "muro de berlín" in query_lower or "berlín" in query_lower:
+                    respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
+                elif "binomio" in query_lower:
+                    respuesta_ia = "Análisis completado, jefa: Un binomio es una expresión algebraica de dos términos, y su fórmula al cuadrado es a al cuadrado más 2 ab más b al cuadrado."
+                else:
+                    respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin sin novedad."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    
+    # Guardar respuesta en base de datos persistente
+    try:
+        conn_p = sqlite3.connect(fn_db, check_same_thread=False)
+        cur_p = conn_p.cursor()
+        cur_p.execute("INSERT INTO memoria_chat (rol, contenido) VALUES (?, ?)", ("assistant", respuesta_ia))
+        conn_p.commit()
+        conn_p.close()
+    except Exception:
+        pass
+
+    st.session_state.audio_process_key = None
+    st.rerun()
