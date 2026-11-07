@@ -154,13 +154,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Redes neuronales del Nodo Buin sincronizadas y operando al 100%. ¿Qué travesura técnica vamos a ejecutar hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Redes neuronales sincronizadas. Identifícate con la clave para operar el sistema."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON HOLOGRAMA NEURONAL Y SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON HOLOGRAMA NEURONAL REAL Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -178,8 +178,8 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Imagen del cerebro digital integrada de forma holográfica
-st.image("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
+# Imagen de cerebro digital holográfico en azul neón garantizada
+st.image("https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
 st.caption("⚡ Holo-proyección activa: Red Neuronal Central del Nodo Buin.")
 
 st.markdown("---")
@@ -293,7 +293,7 @@ with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Redes neuronales puestas a cero. Memoria limpia."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Identifícate."}]
         st.session_state.audio_process_key = None
         st.rerun()
 
@@ -323,17 +323,17 @@ if prompt_usuario:
     respuesta_ia = ""
     query_lower = prompt_usuario.lower()
     
-    # VALIDACIÓN ESTRICTA DE CLAVE DE ACCESO
+    # --- VALIDACIÓN ESTRICTA DE CLAVE DE ACCESO ---
     tiene_clave = "jarvis" in query_lower or "despierto" in query_lower
     
     if not tiene_clave:
-        respuesta_ia = "Acceso denegado. Identifícate con la clave correspondiente o di 'Jarvis, ¿estás despierto?' para operar los sistemas, jefa."
+        respuesta_ia = "Acceso denegado, jefa. Tienes que decir o escribir la clave 'Jarvis' o '¿Estás despierto?' para que mueva un dedo por ti."
     else:
         # RESPUESTA DIRECTA A LA ACTIVACIÓN DE VOZ
         if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
             respuesta_ia = "Sí, señorita, para usted siempre"
         else:
-            # Procesamiento general con Gemini si se incluye la clave en la frase
+            # Procesamiento general con Gemini si se incluye la clave
             if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
                 try:
                     model = genai.GenerativeModel(
