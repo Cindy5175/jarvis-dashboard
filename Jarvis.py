@@ -219,7 +219,6 @@ with st.sidebar:
         audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
         
         if audio_grabado:
-            # Evitar procesar el mismo audio repetidamente
             audio_bytes = audio_grabado.read()
             if audio_bytes != st.session_state.audio_process_key:
                 st.session_state.audio_process_key = audio_bytes
@@ -297,6 +296,17 @@ with col_h2:
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+        # Si el mensaje es del asistente, generamos y mostramos el reproductor de voz con autoplay
+        if m["role"] == "assistant" and gTTS:
+            try:
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "")
+                tts = gTTS(text=clean_text, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
 
 # Entrada de texto normal por chat o captura automática desde el micrófono lateral
 prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
@@ -338,21 +348,6 @@ if prompt_usuario:
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     
-    with st.chat_message("assistant"):
-        st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-        
-        # Síntesis de voz automática (gTTS)
-        if gTTS:
-            try:
-                clean_text = respuesta_ia.replace("*", "").replace("#", "").replace("$", "")
-                tts = gTTS(text=clean_text, lang='es', slow=False)
-                audio_fp = io.BytesIO()
-                tts.write_to_fp(audio_fp)
-                audio_fp.seek(0)
-                st.audio(audio_fp, format='audio/mp3', autoplay=True)
-            except Exception:
-                pass
-
-    # Limpiar clave de audio procesado y refrescar
+    # Limpiar clave de audio procesado y refrescar para mostrar la respuesta y reproducir la voz
     st.session_state.audio_process_key = None
     st.rerun()
