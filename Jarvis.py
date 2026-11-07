@@ -9,7 +9,6 @@ import datetime
 st.set_page_config(page_title="J.A.R.V.I.S. IA - Nodo Buin", layout="wide")
 
 # --- CONFIGURACIÓN DE LA API DE GEMINI ---
-# Descomenta la siguiente línea y pon tu clave real o usa st.secrets
 # genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -61,7 +60,7 @@ with st.sidebar:
     st.info("Temperatura actual: 22°C // Viento moderado.")
     
     st.markdown("---")
-    st.markdown("### 🗺️ Mapa Táctico Satelital")
+    st.markdown("### 🗺️ mapa táctico satelital")
     st.write("Estado de geolocalización del Nodo: Activo y sincronizado.")
 
 # --- INICIALIZAR HISTORIAL DE CHAT ---
@@ -70,7 +69,6 @@ if "messages" not in st.session_state:
     welcome_msg = "Buenas tardes, jefa. Protocolo de seguridad máxima activo en Nodo Buin."
     st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
     
-    # Generar audio del saludo inicial
     tts = gTTS(text=welcome_msg, lang='es')
     tts.save("welcome.mp3")
 
@@ -83,21 +81,13 @@ for i, message in enumerate(st.session_state.messages):
             if os.path.exists(audio_path):
                 st.audio(audio_path, format="audio/mp3")
 
-# --- CAJA DE ENTRADA PRINCIPAL (Texto y Dictado Win + H) ---
+# --- CAJA DE ENTRADA PRINCIPAL ---
 if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
-    # Registrar mensaje de la usuaria
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # --- PROCESAMIENTO SEGÚN EL PROTOCOLO ACTIVO ---
     try:
-        # Aquí puedes adaptar el prompt con el protocolo seleccionado si usas Gemini:
-        # prompt_con_protocolo = f"[{protocolo_activo}] {prompt}"
-        # response = model.generate_content(prompt_con_protocolo)
-        # response_text = response.text
-        
-        # Respuesta adaptada según el protocolo elegido en la izquierda
         if "HUMAN" in protocolo_activo:
             response_text = f"Entendido, jefa. Hablando de forma más natural y cercana sobre: '{prompt}'."
         elif "ELI10" in protocolo_activo:
@@ -114,7 +104,6 @@ if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
     except Exception as e:
         response_text = f"Error en el núcleo neuronal del Nodo: {e}"
 
-    # Guardar en base de datos SQLite local
     try:
         conn = sqlite3.connect('nodo_buin.db')
         c = conn.cursor()
@@ -124,12 +113,10 @@ if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
     except Exception:
         pass
 
-    # Guardar y mostrar respuesta del asistente
     st.session_state.messages.append({"role": "assistant", "content": response_text})
     with st.chat_message("assistant"):
         st.markdown(response_text)
         
-        # Generar audio de respuesta oral con gTTS para los parlantes
         audio_filename = f"resp_{len(st.session_state.messages) - 1}.mp3"
         tts = gTTS(text=response_text, lang='es')
         tts.save(audio_filename)
