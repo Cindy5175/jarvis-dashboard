@@ -337,4 +337,150 @@ with st.sidebar:
             else:
                 st.caption("Aún no hay registros en la memoria persistente.")
 
-    with st.expander("🌐 2. Búsqueda Web / Datos en
+    with st.expander("🌐 2. Búsqueda Web / Datos en Vivo", expanded=False):
+        consulta_web = st.text_input("Consultar base externa:", placeholder="Ej: Precio Bitcoin, Clima...")
+        if st.button("Buscar Dato Táctico", use_container_width=True):
+            if consulta_web.strip():
+                st.success(f"🔍 Datos recuperados para: {consulta_web}")
+                st.code(f"Estado: En línea\nResultado simulado: Conexión con Nodo Buin OK para '{consulta_web}'.")
+
+    with st.expander("💻 3. Generador de Snippets de Código", expanded=False):
+        tipo_codigo = st.selectbox("Lenguaje:", ["Python", "JavaScript", "HTML/CSS", "Bash"])
+        if st.button("Generar Plantilla Táctica", use_container_width=True):
+            if tipo_codigo == "Python":
+                st.code("import requests\ndef conectar_nodo():\n    print('Nodo Buin operativo.')")
+            elif tipo_codigo == "HTML/CSS":
+                st.code("<style>.neon { color: #00f3ff; }</style><div class='neon'>JARVIS</div>")
+            else:
+                st.code("# Script de automatización táctica\necho 'Sistema blindado'")
+
+    with st.expander("📊 4. Logs de Terminal Avanzados", expanded=False):
+        st.code("[11:41:00] INIT: Nodo Buin enlazado\n[11:41:15] SEC: Clave validada\n[11:41:30] SYSTEM: Todo OK")
+
+    st.markdown("---")
+    st.markdown("#### 🧠 MODOS DE RESPUESTA TÁCTICA")
+    st.markdown("""
+    - **`/human`**: Respuestas naturales y cercanas.
+    - **`/eli10`**: Explicación ultra sencilla.
+    - **`/x10piensa`**: Estrategia profunda.
+    - **`/ooda`**: Plan de acción estructurado.
+    """)
+
+    st.markdown("---")
+    st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
+
+    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
+        st.markdown("Graba tu orden hablada:")
+        audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
+        
+        if audio_grabado:
+            audio_bytes = audio_grabado.read()
+            if audio_bytes != st.session_state.audio_process_key:
+                st.session_state.audio_process_key = audio_bytes
+                st.warning("⚡ Procesando audio...")
+                
+                if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                    try:
+                        model_audio = genai.GenerativeModel("gemini-1.5-flash")
+                        prompt_audio_res = model_audio.generate_content([
+                            "Escucha este audio y transcribe exactamente lo que se dice en español.",
+                            {"mime_type": "audio/wav", "data": audio_bytes}
+                        ])
+                        if prompt_audio_res and prompt_audio_res.text:
+                            prompt_voz = prompt_audio_res.text.strip()
+                    except Exception as e:
+                        st.error(f"Error procesando audio: {e}")
+
+    st.markdown("---")
+    st.markdown("#### 📋 REGISTRO DE MISIONES")
+
+    with st.expander("➕ Registro de Misiones (SQLite)", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar código de nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada en BD!")
+                st.rerun()
+        
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Misiones Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("No hay misiones pendientes.")
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ TELEMETRÍA Y ESTADO")
+
+    with st.expander("🔋 Estado de Sistemas (Armadura)", expanded=False):
+        st.success("⚡ Reactor Arc: 99.8% | Estable")
+        st.info("💻 CPU Nodo Buin: 14% | Óptimo")
+        st.code("Memoria RAM: 4.2 GB / 16 GB\nRed Satelital: Enlazada")
+
+    with st.expander("📷 Cámara Activa (Biometría)", expanded=False):
+        st.markdown("Captura óptica directa:")
+        foto_usuario = st.camera_input("Activar sensor visual:")
+        if foto_usuario:
+            st.success("Fotograma analizado por el Nodo Buin.")
+
+    with st.expander("🌤️ Clima Local (Buin)", expanded=False):
+        st.success("🌡️ Temperatura: 21°C | Óptimo")
+        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
+
+    with st.expander("📍 Coordenadas Nodo", expanded=False):
+        st.code("Lat: -33.7333° S\nLon: -70.7167° W\nBuin, Chile")
+
+# =========================================================================
+# PANTALLA PRINCIPAL: CAJA DE CHAT
+# =========================================================================
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Identifícate con la clave."}]
+        st.session_state.audio_process_key = None
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+        if m["role"] == "assistant" and gTTS:
+            try:
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+                tts = gTTS(text=clean_text, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
+
+# Entrada de texto normal por chat o captura automática desde el micrófono
+prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    # Guardar en base de datos persistente
+    try:
+        conn_p = sqlite3.connect(fn_db, check_same_thread=False)
+        cur_p = conn_p.cursor()
+        cur_p.execute("INSERT INTO memoria_chat (rol, contenido) VALUES (?, ?)", ("user", prompt_usuario))
+        conn_p.commit()
+        conn_p.close()
+    except Exception:
+        pass
+
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+    
+    respuesta_ia = ""
+    query_lower = prompt_usuario.lower()
+    
+    # --- VALID
