@@ -194,17 +194,12 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### ⚡ MÓDULOS GLOBALES")
+    st.markdown("#### ⚡ MÓDULOS GLOBALES (LIBRES)")
 
     with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
         st.markdown("Monitoreo planetario en tiempo real:")
         st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
         st.caption("Red global satelital.")
-
-    with st.expander("🌍 GlobeAlert (Alertas)", expanded=True):
-        st.markdown("Feed de inteligencia y eventos globales:")
-        st.link_button("🚀 Abrir GlobeAlert", "https://www.globealert.ai/", use_container_width=True)
-        st.caption("Monitoreo oficial activo.")
 
     with st.expander("🛰️ ISS Live Feed (NASA)", expanded=True):
         st.markdown("Transmisión orbital en alta definición:")
@@ -222,17 +217,24 @@ with st.sidebar:
             audio_bytes = audio_grabado.read()
             if audio_bytes != st.session_state.audio_process_key:
                 st.session_state.audio_process_key = audio_bytes
-                st.warning("⚡ Procesando audio en el Nodo Buin...")
+                st.warning("⚡ Procesando audio y clave de acceso...")
                 
                 if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
                     try:
                         model_audio = genai.GenerativeModel("gemini-1.5-flash")
                         prompt_audio_res = model_audio.generate_content([
-                            "Escucha este audio y transcribe exactamente lo que se dice en español como una orden o consulta de texto directa, sin rodeos.",
+                            "Escucha este audio y transcribe exactamente lo que se dice en español.",
                             {"mime_type": "audio/wav", "data": audio_bytes}
                         ])
                         if prompt_audio_res and prompt_audio_res.text:
-                            prompt_voz = prompt_audio_res.text.strip()
+                            transcripcion = prompt_audio_res.text.strip()
+                            trans_lower = transcripcion.lower()
+                            
+                            # VALIDACIÓN DE CLAVE DE ACCESO POR VOZ
+                            if "jarvis" in trans_lower or "estás despierto" in trans_lower or "estas despierto" in trans_lower:
+                                prompt_voz = transcripcion
+                            else:
+                                st.warning("⚠️ Clave de voz no detectada. Dibuja o di 'Jarvis' o '¿Estás despierto?'.")
                     except Exception as e:
                         st.error(f"Error procesando audio: {e}")
 
@@ -296,7 +298,6 @@ with col_h2:
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-        # Si el mensaje es del asistente, generamos y mostramos el reproductor de voz con autoplay
         if m["role"] == "assistant" and gTTS:
             try:
                 clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "")
@@ -308,7 +309,7 @@ for m in st.session_state.mensajes:
             except Exception:
                 pass
 
-# Entrada de texto normal por chat o captura automática desde el micrófono lateral
+# Entrada de texto normal por chat o captura automática desde el micrófono con clave de voz
 prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
 prompt_usuario = prompt_voz if prompt_voz else prompt_chat
 
@@ -335,8 +336,8 @@ if prompt_usuario:
     # Respaldo local inmediato
     if not respuesta_ia:
         query_lower = prompt_usuario.lower()
-        if "hola" in query_lower:
-            respuesta_ia = "Hola, jefa. Aquí estoy, con los sistemas a tope en el nodo de Buin. ¿Qué se te ofrece?"
+        if "hola" in query_lower or "jarvis" in query_lower:
+            respuesta_ia = "Sistema activo, jefa. A sus órdenes desde el Nodo Buin."
         elif "o'higgins" in query_lower or "ohiggins" in query_lower:
             respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar, político y uno de los principales Padres de la Patria de Chile."
         elif "muro de berlín" in query_lower or "berlín" in query_lower:
@@ -344,10 +345,8 @@ if prompt_usuario:
         elif "binomio" in query_lower:
             respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
         else:
-            respuesta_ia = f"Recibido, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin. Todo bajo control."
+            respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-    
-    # Limpiar clave de audio procesado y refrescar para mostrar la respuesta y reproducir la voz
     st.session_state.audio_process_key = None
     st.rerun()
