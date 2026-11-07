@@ -3,16 +3,11 @@ import datetime
 import sqlite3
 import io
 
-# Importación segura de gTTS para voz y autorefresh
+# Importación segura de gTTS para voz
 try:
     from gtts import gTTS
 except ImportError:
     gTTS = None
-
-try:
-    from streamlit_autorefresh import st_autorefresh
-except ImportError:
-    st_autorefresh = None
 
 # Importación de Google Generative AI
 try:
@@ -37,10 +32,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# Reloj con segundero en vivo estable (cada 1 segundo)
-if st_autorefresh:
-    st_autorefresh(interval=1000, key="datetimereload")
 
 # --- INICIALIZACIÓN DE BASE DE DATOS SQLITE PARA MISIONES ---
 def init_db():
@@ -132,7 +123,6 @@ st.markdown("""
             border-bottom: 14px solid #060913;
             filter: drop-shadow(0 0 5px #00f3ff);
         }
-        /* Contenedor Holográfico de Red Neuronal Achicado y Estilizado */
         .holo-brain-box {
             border: 1.5px solid #00f3ff;
             background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
@@ -164,26 +154,26 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Chat y protocolos de seguridad listos. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas estables y sin parpadeos. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON J.A.R.V.I.S GRANDE Y CENTRADO ---
+# --- ENCABEZADO FIJO (SIN PARPADEOS) ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
 fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
-hora_segundos = now_chile.strftime("%H:%M:%S")
+hora_estatica = now_chile.strftime("%H:%M:%S")
 
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
         <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>
         <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
-            [ NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
+            [ NODO BUIN, CHILE // {fecha_str} – {hora_estatica} ]
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -192,7 +182,7 @@ st.markdown(f"""
 st.markdown("""
     <div class="holo-brain-box">
         <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento lógico, táctico y de seguridad activos</p>
+        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas estables sin recargas automáticas</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -232,7 +222,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🛡️ MÓDULO DE CIBERSEGURIDAD")
 
-    with st.expander("💀 Herramientas Kali / Pentesting", expanded=True):
+    with st.expander("💀 Herramientas Kali / Pentesting", expanded=False):
         st.markdown("**Nikto (Escáner Web):**")
         target_nikto = st.text_input("Objetivo Nikto:", placeholder="http://192.168.1.X")
         if st.button("Ejecutar Escaneo Nikto", use_container_width=True):
@@ -263,7 +253,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
 
-    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=False):
+    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
         st.markdown("Graba tu orden hablada:")
         audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
         
@@ -271,7 +261,7 @@ with st.sidebar:
             audio_bytes = audio_grabado.read()
             if audio_bytes != st.session_state.audio_process_key:
                 st.session_state.audio_process_key = audio_bytes
-                st.warning("⚡ Procesando audio y clave de acceso...")
+                st.warning("⚡ Procesando audio...")
                 
                 if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
                     try:
