@@ -154,13 +154,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas sincronizados en azul neón eléctrico. Módulos globales, control de voz por IA, base de datos de misiones y telemetría de armadura en línea. ¿Qué orden tenemos hoy?"}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Redes neuronales del Nodo Buin sincronizadas y operando al 100%. ¿Qué travesura técnica vamos a ejecutar hoy?"}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON SEGUNDERO ESTABLE EN VIVO ---
+# --- ENCABEZADO CON HOLOGRAMA NEURONAL Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -177,6 +177,10 @@ st.markdown(f"""
         </p>
     </div>
 """, unsafe_allow_html=True)
+
+# Imagen del cerebro digital integrada de forma holográfica
+st.image("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
+st.caption("⚡ Holo-proyección activa: Red Neuronal Central del Nodo Buin.")
 
 st.markdown("---")
 
@@ -289,7 +293,7 @@ with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria limpia."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Redes neuronales puestas a cero. Memoria limpia."}]
         st.session_state.audio_process_key = None
         st.rerun()
 
