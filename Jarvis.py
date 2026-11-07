@@ -300,7 +300,8 @@ for m in st.session_state.mensajes:
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
         if m["role"] == "assistant" and gTTS:
             try:
-                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "")
+                # Limpieza estricta de caracteres especiales para que la voz suene fluida y sin trabas
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
                 tts = gTTS(text=clean_text, lang='es', slow=False)
                 audio_fp = io.BytesIO()
                 tts.write_to_fp(audio_fp)
@@ -321,16 +322,16 @@ if prompt_usuario:
     respuesta_ia = ""
     query_lower = prompt_usuario.lower()
     
-    # RESPUESTA DIRECTA A LA CLAVE DE DESPERTAR
+    # RESPUESTA DIRECTA Y CLÁSICA A LA CLAVE DE DESPERTAR
     if "despierto" in query_lower or query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower:
         respuesta_ia = "Sí, señorita, para usted siempre"
     else:
-        # Intento de procesamiento general con Gemini
+        # Intento de procesamiento general con Gemini (Personalidad sarcástica, fiel y afilada)
         if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
             try:
                 model = genai.GenerativeModel(
                     model_name="gemini-1.5-flash",
-                    system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta."
+                    system_instruction="Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
                 )
                 response = model.generate_content(prompt_usuario)
                 if response and response.text:
@@ -338,18 +339,18 @@ if prompt_usuario:
             except Exception:
                 pass
 
-        # Respaldo local si falla Gemini
+        # Respaldo local inmediato si falla la API
         if not respuesta_ia:
             if "hola" in query_lower:
-                respuesta_ia = "Sistema activo, jefa. A sus órdenes desde el Nodo Buin."
+                respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
             elif "o'higgins" in query_lower or "ohiggins" in query_lower:
-                respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar, político y uno de los principales Padres de la Patria de Chile."
+                respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
             elif "muro de berlín" in query_lower or "berlín" in query_lower:
-                respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989, marcando el fin de la división alemana y el inicio de la reunificación."
+                respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
             elif "binomio" in query_lower:
-                respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
+                respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: a al cuadrado más 2 ab más b al cuadrado."
             else:
-                respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin."
+                respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin sin novedad."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.session_state.audio_process_key = None
