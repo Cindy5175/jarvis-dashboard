@@ -234,7 +234,7 @@ with st.sidebar:
                             if "jarvis" in trans_lower or "estás despierto" in trans_lower or "estas despierto" in trans_lower:
                                 prompt_voz = transcripcion
                             else:
-                                st.warning("⚠️ Clave de voz no detectada. Dibuja o di 'Jarvis' o '¿Estás despierto?'.")
+                                st.warning("⚠️ Clave de voz no detectada. Di 'Jarvis' o '¿Estás despierto?'.")
                     except Exception as e:
                         st.error(f"Error procesando audio: {e}")
 
@@ -319,33 +319,37 @@ if prompt_usuario:
         st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
     
     respuesta_ia = ""
+    query_lower = prompt_usuario.lower()
     
-    # Intento de procesamiento con Gemini
-    if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
-        try:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta."
-            )
-            response = model.generate_content(prompt_usuario)
-            if response and response.text:
-                respuesta_ia = response.text
-        except Exception:
-            pass
+    # RESPUESTA DIRECTA A LA CLAVE DE DESPERTAR
+    if "despierto" in query_lower or query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower:
+        respuesta_ia = "Sí, señorita, para usted siempre"
+    else:
+        # Intento de procesamiento general con Gemini
+        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction="Eres J.A.R.V.I.S., una inteligencia artificial avanzada inspirada en Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural, humana y recíproca, con un toque sutilmente sarcástico pero sumamente servicial, preciso y claro ante cualquier consulta."
+                )
+                response = model.generate_content(prompt_usuario)
+                if response and response.text:
+                    respuesta_ia = response.text
+            except Exception:
+                pass
 
-    # Respaldo local inmediato
-    if not respuesta_ia:
-        query_lower = prompt_usuario.lower()
-        if "hola" in query_lower or "jarvis" in query_lower:
-            respuesta_ia = "Sistema activo, jefa. A sus órdenes desde el Nodo Buin."
-        elif "o'higgins" in query_lower or "ohiggins" in query_lower:
-            respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar, político y uno de los principales Padres de la Patria de Chile."
-        elif "muro de berlín" in query_lower or "berlín" in query_lower:
-            respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989, marcando el fin de la división alemana y el inicio de la reunificación."
-        elif "binomio" in query_lower:
-            respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
-        else:
-            respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin."
+        # Respaldo local si falla Gemini
+        if not respuesta_ia:
+            if "hola" in query_lower:
+                respuesta_ia = "Sistema activo, jefa. A sus órdenes desde el Nodo Buin."
+            elif "o'higgins" in query_lower or "ohiggins" in query_lower:
+                respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Fue militar, político y uno de los principales Padres de la Patria de Chile."
+            elif "muro de berlín" in query_lower or "berlín" in query_lower:
+                respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989, marcando el fin de la división alemana y el inicio de la reunificación."
+            elif "binomio" in query_lower:
+                respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: $(a + b)^2 = a^2 + 2ab + b^2$."
+            else:
+                respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.session_state.audio_process_key = None
