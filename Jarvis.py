@@ -119,7 +119,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) ---
+# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) & RADAR ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
@@ -180,6 +180,23 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 255, 0.15);
     margin: 0 auto 15px auto;
     max-width: 700px;
+}
+/* Estilo HUD de Radar Satelital Cyber */
+.cyber-radar-screen {
+    background: #03050a;
+    border: 1px solid #00f3ff;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2);
+}
+.radar-blip {
+    animation: pulse-blip 1.5s infinite;
+}
+@keyframes pulse-blip {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; text-shadow: 0 0 8px #ff3333; }
+    100% { opacity: 0.3; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -287,9 +304,25 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+    st.markdown("#### 👁️ OJO DE DIOS: AMENAZAS EN VIVO")
+
+    with st.expander("🌐 Live Cyber Threat Map", expanded=True):
+        st.markdown("""
+        <div class="cyber-radar-screen">
+            <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;">🌍 [ Rastreo Global Activo ]</p>
+            <hr style="border-color: #00f3ff; opacity: 0.3; margin: 5px 0;">
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;">🌐 <b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;">🌐 <b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;">🌐 <b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.link_button("🛰️ Expandir Mapa Global", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=11.00", use_container_width=True)
+
+    st.markdown("---")
     st.markdown("#### 🚨 ALERTAS PROACTIVAS & CORREO")
 
-    with st.expander("🔔 Centro de Alertas", expanded=True):
+    with st.expander("🔔 Centro de Alertas", expanded=False):
         st.warning("⚠️ **Atención:** Correo urgente detectado de UC CHRISTUS (Receta médica).")
         st.info("📨 **BancoEstado:** Oferta preaprobada pendiente de revisión.")
         st.success(f"🌡️ **Nodo Buin:** Temp actual {temp_real}.")
@@ -297,13 +330,12 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🌤️ CLIMA EXTENDIDO (BUIN)")
 
-    with st.expander("🌡️ Pronóstico Estilo Widget", expanded=True):
+    with st.expander("🌡️ Pronóstico Estilo Widget", expanded=False):
         st.markdown(f"**Buin**  \n📍 **{temp_real}** — Parcialmente nublado")
         st.caption(f"Humedad: {hum_real} | Viento: {viento_real}")
         st.markdown("---")
         st.markdown("📅 **Pronóstico Semanal:**")
         
-        # Mapeo limpio y ordenado en una sola línea por día con min y max destacadas
         nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
         for i in range(min(5, len(t_maxs))):
             d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
