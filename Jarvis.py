@@ -133,6 +133,16 @@ st.markdown("""
             border-bottom: 14px solid #060913;
             filter: drop-shadow(0 0 5px #00f3ff);
         }
+        /* Contenedor Holográfico de Red Neuronal CSS Puro (Sin óvulos) */
+        .holo-brain-box {
+            border: 2px solid #00f3ff;
+            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            margin-bottom: 20px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -154,13 +164,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Red neuronal en azul neón sincronizada. Identifícate con la clave para operar los sistemas."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Óvulo erradicado de los servidores. Red neuronal pura en línea. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON HOLOGRAMA DE CEREBRO DIGITAL Y SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -178,9 +188,13 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Holograma de cerebro digital en azul neón eléctrico
-st.image("https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
-st.caption("⚡ Holo-proyección activa: Red Neuronal Central del Nodo Buin.")
+# Panel Holográfico CSS de Red Neuronal (Cero sorpresas biológicas)
+st.markdown("""
+    <div class="holo-brain-box">
+        <h3 style="color: #00f3ff; margin: 0; font-family: monospace; text-shadow: 0 0 10px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h3>
+        <p style="color: #00f3ff; font-size: 0.8rem; margin-top: 5px; font-family: monospace;">Sistemas de procesamiento lógico y táctico activos al 100%</p>
+    </div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
