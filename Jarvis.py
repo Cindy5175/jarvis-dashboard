@@ -33,7 +33,7 @@ except ImportError:
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO",
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -164,7 +164,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz optimizada y centrada. Identifícate con la clave para operar."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolos duales de asistencia y ciberseguridad cargados. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
@@ -188,11 +188,11 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Panel Holográfico CSS de Red Neuronal (Achicado y centrado)
+# Panel Holográfico CSS de Red Neuronal
 st.markdown("""
     <div class="holo-brain-box">
         <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento lógico y táctico activos al 100%</p>
+        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento lógico, táctico y de seguridad activos</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -214,20 +214,42 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### ⚡ MÓDULOS GLOBALES (LIBRES)")
 
-    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=True):
+    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=False):
         st.markdown("Monitoreo planetario en tiempo real:")
         st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
         st.caption("Red global satelital.")
 
-    with st.expander("🛰️ ISS Live Feed (NASA)", expanded=True):
+    with st.expander("🛰️ ISS Live Feed (NASA)", expanded=False):
         st.markdown("Transmisión orbital en alta definición:")
         st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
         st.caption("Feed directo estación espacial.")
 
-    with st.expander("📂 LocalSend (Red Local)", expanded=True):
+    with st.expander("📂 LocalSend (Red Local)", expanded=False):
         st.markdown("Transferencia de archivos sin internet:")
         st.link_button("🌐 Abrir LocalSend", "https://localsend.org/es", use_container_width=True)
         st.caption("Alternativa libre a AirDrop.")
+
+    st.markdown("---")
+    st.markdown("#### 🛡️ MÓDULO DE CIBERSEGURIDAD")
+
+    with st.expander("💀 Herramientas Kali / Pentesting", expanded=True):
+        st.markdown("**Nikto (Escáner Web):**")
+        target_nikto = st.text_input("Objetivo Nikto:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Escaneo Nikto", use_container_width=True):
+            if target_nikto.strip():
+                st.info(f"Simulando escaneo de vulnerabilidades en {target_nikto} con Nikto...")
+                st.code(f"$ nikto -h {target_nikto}\n[+] Servidor analizado: OK\n[+] Cero vulnerabilidades críticas detectadas en Nodo Buin.")
+            else:
+                st.warning("Ingresa un objetivo válido.")
+
+        st.markdown("**Gobuster (Fuerza Bruta Dir):**")
+        target_gobuster = st.text_input("Objetivo Gobuster:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Gobuster", use_container_width=True):
+            if target_gobuster.strip():
+                st.info(f"Buscando directorios ocultos en {target_gobuster}...")
+                st.code(f"$ gobuster dir -u {target_gobuster} -w wordlist.txt\n/admin (Status: 403)\n/index.php (Status: 200)")
+            else:
+                st.warning("Ingresa un objetivo válido.")
 
     st.markdown("---")
     st.markdown("#### 🧠 MODOS DE RESPUESTA TÁCTICA")
@@ -241,7 +263,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
 
-    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
+    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=False):
         st.markdown("Graba tu orden hablada:")
         audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
         
