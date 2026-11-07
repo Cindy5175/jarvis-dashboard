@@ -110,37 +110,37 @@ def obtener_clima_buin():
         hum = res["current"]["relative_humidity_2m"]
         viento = res["current"]["wind_speed_10m"]
         
-        # Pronóstico extendido de 3 días (Punto 2)
         dias_max = res["daily"]["temperature_2m_max"][:3]
         dias_min = res["daily"]["temperature_2m_min"][:3]
         pronostico_3dias = f"Hoy: Máx {dias_max[0]}°C / Mín {dias_min[0]}°C | Mañana: {dias_max[1]}°C | Pasado: {dias_max[2]}°C"
         
         return f"{temp}°C", f"{hum}%", f"{viento} km/h", pronostico_3dias
     except Exception:
-        return "21°C", "45%", "12 km/h", "Pronóstico extendido simulado: Estetable 22°C"
+        return "21°C", "45%", "12 km/h", "Pronóstico extendido simulado: Estable 22°C"
 
 temp_real, hum_real, viento_real, pronostico_ext = obtener_clima_buin()
 
 # --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) ---
-st.markdown(
-    """
-    <style>
-        .stApp { background-color: #060913 !important; color: #00f3ff !important; }
-        p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-        .stChatMessage p, .stChatMessage div {
-            font-size: 0.85rem !important;
-            color: #00f3ff !important;
-        }
-        .stButton>button {
-            color: #060913 !important;
-            background-color: #00f3ff !important;
-            border: 1.5px solid #00f3ff !important;
-            font-weight: bold;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-            width: 100%;
-        }
-        .stButton>button:hover {
-            background-color: #0088cc !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 15px rgba(0, 2
+st.markdown("""
+<style>
+    .stApp { background-color: #060913 !important; color: #00f3ff !important; }
+    p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+    .stChatMessage p, .stChatMessage div {
+        font-size: 0.85rem !important;
+        color: #00f3ff !important;
+    }
+    .stButton>button {
+        color: #060913 !important;
+        background-color: #00f3ff !important;
+        border: 1.5px solid #00f3ff !important;
+        font-weight: bold;
+        font-family: monospace;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #0088cc !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.9);
+    }
+    .
