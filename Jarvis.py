@@ -154,13 +154,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Circuitos neuronales purgados de ovocitos y listos. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Matriz táctica cargada y lista. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON HOLOGRAMA NEURONAL TÉCNICO Y SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON HOLOGRAMA MATRIX Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -178,9 +178,9 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Imagen de red neuronal técnica y cibernética garantizada en azul
+# Imagen de flujo de datos Matrix cibernético
 st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
-st.caption("⚡ Holo-proyección activa: Red Neuronal Cibernética del Nodo Buin.")
+st.caption("⚡ Holo-proyección activa: Matriz de Datos del Nodo Buin.")
 
 st.markdown("---")
 
@@ -214,6 +214,15 @@ with st.sidebar:
         st.markdown("Transferencia de archivos sin internet:")
         st.link_button("🌐 Abrir LocalSend", "https://localsend.org/es", use_container_width=True)
         st.caption("Alternativa libre a AirDrop.")
+
+    st.markdown("---")
+    st.markdown("#### 🧠 MODOS DE RESPUESTA TÁCTICA")
+    st.markdown("""
+    - **`/human`**: Respuestas naturales y cercanas.
+    - **`/eli10`**: Explicación ultra sencilla.
+    - **`/x10piensa`**: Estrategia profunda.
+    - **`/ooda`**: Plan de acción estructurado.
+    """)
 
     st.markdown("---")
     st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
@@ -333,12 +342,24 @@ if prompt_usuario:
         if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
             respuesta_ia = "Sí, señorita, para usted siempre"
         else:
-            # Procesamiento general con Gemini si se incluye la clave
+            # --- DETECCIÓN DE MODOS DE RESPUESTA TÁCTICA ---
+            instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+            
+            if "/human" in query_lower:
+                instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
+            elif "/eli10" in query_lower:
+                instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
+            elif "/x10piensa" in query_lower:
+                instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
+            elif "/ooda" in query_lower:
+                instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
+
+            # Procesamiento con Gemini bajo la directiva seleccionada
             if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
                 try:
                     model = genai.GenerativeModel(
                         model_name="gemini-1.5-flash",
-                        system_instruction="Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+                        system_instruction=instruccion_sistema
                     )
                     response = model.generate_content(prompt_usuario)
                     if response and response.text:
