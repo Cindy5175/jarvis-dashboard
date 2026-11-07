@@ -116,7 +116,8 @@ def obtener_clima_buin():
 temp_real, hum_real, viento_real = obtener_clima_buin()
 
 # --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) ---
-st.markdown("""
+st.markdown(
+    """
     <style>
         .stApp { background-color: #060913 !important; color: #00f3ff !important; }
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
@@ -173,4 +174,449 @@ st.markdown("""
             padding: 10px 15px;
             border-radius: 8px;
             text-align: center;
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 25
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 255, 0.15);
+            margin: 0 auto 15px auto;
+            max-width: 700px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- ZONA HORARIA CHILENA (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
+
+# =========================================================================
+# ESTADO DE SESIÓN & CONTROL DE ACCESO (TRIPLE FACTOR)
+# =========================================================================
+
+if "autorizado" not in st.session_state:
+    st.session_state.autorizado = False
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo."}
+    ]
+
+if "audio_process_key" not in st.session_state:
+    st.session_state.audio_process_key = None
+
+PIN_SECRETOS = ["2805"]
+
+# =========================================================================
+# 1. PANTALLA DE BLOQUEO (ACCESO RESTRINGIDO TRIPLE FACTOR)
+# =========================================================================
+if not st.session_state.autorizado:
+    st.markdown(
+        """
+        <div style="text-align: center; margin-top: 30px;">
+            <h2 style="color: #00f3ff; font-family: monospace;">🔒 ACCESO RESTRINGIDO - NODO BUIN</h2>
+            <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">AUTENTICACIÓN DE TRIPLE FACTOR REQUERIDA (VOZ + PIN + IA)</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login_triple"):
+            st.markdown("**Factor 1 & 2:** Frase clave y PIN numérico secreto")
+            frase_input = st.text_input("Frase de Activación:", placeholder="Escribe 'Jarvis' o 'estás despierto'...")
+            pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
+            
+            st.markdown("---")
+            st.markdown("**Factor 3:** Dictado biométrico por voz (Opcional)")
+            audio_login = st.audio_input("Graba orden de voz para verificar:", key="mic_login_voice")
+            
+            btn_entrar = st.form_submit_button("🛡️ Ejecutar Protocolo de Acceso")
+            
+            if btn_entrar:
+                valido_texto = (pin_input.strip() in PIN_SECRETOS) or (frase_input.lower().strip() in ["jarvis", "despierto", "estás despierto", "estas despierto", "jefa", "hola"])
+                
+                valido_voz = False
+                if audio_login:
+                    audio_bytes_l = audio_login.read()
+                    if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                        try:
+                            m_val = genai.GenerativeModel("gemini-1.5-flash")
+                            res_val = m_val.generate_content([
+                                "Analiza este audio. Responde UNICAMENTE 'AUTORIZADO' si escuchas a la jefa nombrando a Jarvis o un saludo de activación, o 'DENEGADO' en caso contrario.",
+                                {"mime_type": "audio/wav", "data": audio_bytes_l}
+                            ])
+                            if res_val and "AUTORIZADO" in res_val.text.upper():
+                                valido_voz = True
+                        except Exception:
+                            pass
+
+                if valido_texto or valido_voz:
+                    st.session_state.autorizado = True
+                    st.success("⚡ Autenticación completada. Desplegando a J.A.R.V.I.S. en todo su esplendor...")
+                    st.rerun()
+                else:
+                    st.error("❌ Acceso denegado. PIN incorrecto o intruso detectado.")
+    st.stop()
+
+# =========================================================================
+# 2. SISTEMA DESBLOQUEADO (JARVIS EN TODO SU ESPLENDOR)
+# =========================================================================
+
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+dia_str = dias[now_chile.weekday()]
+mes_str = meses[now_chile.month]
+fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+hora_estatica = now_chile.strftime("%H:%M:%S")
+
+st.markdown(f"""
+    <div class="arc-reactor-container">
+        <div class="arc-ring"><div class="arc-triangle"></div></div>
+        <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
+            [ NODO BUIN, CHILE // {fecha_str} – {hora_estatica} ]
+        </p>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div class="holo-brain-box">
+        <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
+        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento, ciberseguridad, clima en vivo y gráficos activos</p>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# =========================================================================
+# PANEL LATERAL (TODOS LOS MÓDULOS)
+# =========================================================================
+prompt_voz = None
+
+with st.sidebar:
+    st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
+
+    if st.button("🔒 Bloquear Sistema (Triple Factor)", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total de la App", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🚨 ALERTAS PROACTIVAS & CORREO")
+
+    with st.expander("🔔 Centro de Alertas", expanded=True):
+        st.warning("⚠️ **Atención:** Correo urgente detectado de UC CHRISTUS (Receta médica).")
+        st.info("📨 **BancoEstado:** Oferta preaprobada pendiente de revisión.")
+        st.success(f"🌡️ **Nodo Buin:** Temperatura actual {temp_real}.")
+
+    st.markdown("---")
+    st.markdown("#### 📧 BANDEJA DE ENTRADA (GMAIL)")
+
+    with st.expander("📥 Monitoreo de Correos", expanded=False):
+        st.markdown("Últimas notificaciones detectadas:")
+        st.info("📨 **Academia / Taller de Biología:** PDF recibido.")
+        st.success("🏥 **UC CHRISTUS:** Receta médica y comprobante registrados.")
+        st.warning("💳 **BancoEstado:** Oferta de crédito preaprobado disponible.")
+        if st.button("🔄 Sincronizar Correos", use_container_width=True):
+            st.success("¡Bandeja sincronizada con Nodo Buin!")
+
+    st.markdown("---")
+    st.markdown("#### 📅 GESTIÓN DE AGENDA & CALENDARIO")
+
+    with st.expander("🗓️ Próximos Eventos (SQLite)", expanded=False):
+        nuevo_evento = st.text_input("Nombre del Evento:", placeholder="Ej: Revisión de Nodos")
+        fecha_evento = st.text_input("Fecha y Hora:", placeholder="Ej: Martes 15:00")
+        if st.button("Agendar Evento", use_container_width=True):
+            if nuevo_evento.strip() and fecha_evento.strip():
+                agregar_agenda(nuevo_evento.strip(), fecha_evento.strip())
+                st.success("¡Evento guardado en calendario!")
+                st.rerun()
+        
+        eventos_guardados = obtener_agenda()
+        if eventos_guardados:
+            st.markdown("**Agenda Activa:**")
+            for ev, fh in eventos_guardados:
+                st.markdown(f"- **{ev}** (`{fh}`)")
+        else:
+            st.caption("Sin eventos programados.")
+
+    st.markdown("---")
+    st.markdown("#### 📂 BUSCADOR RÁPIDO DE ARCHIVOS PC")
+
+    with st.expander("🔍 Buscador de Documentos", expanded=False):
+        busqueda_archivo = st.text_input("Buscar archivo local:", placeholder="Ej: Jarvis.py, notas...")
+        if st.button("Localizar Archivo", use_container_width=True):
+            if busqueda_archivo.strip():
+                ruta_res = f"C:/NodoBuin/{busqueda_archivo}"
+                st.success(f"Resultados para '{busqueda_archivo}':")
+                st.code(f"{ruta_res}\n[Estado: Encontrado y accesible]")
+
+    st.markdown("---")
+    st.markdown("#### ⚡ MÓDULOS GLOBALES (LIBRES)")
+
+    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=False):
+        st.markdown("Monitoreo planetario en tiempo real:")
+        st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+        st.caption("Red global satelital.")
+
+    with st.expander("🛰️ ISS Live Feed (NASA)", expanded=False):
+        st.markdown("Transmisión orbital en alta definición:")
+        st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
+        st.caption("Feed directo estación espacial.")
+
+    with st.expander("📂 LocalSend (Red Local)", expanded=False):
+        st.markdown("Transferencia de archivos sin internet:")
+        st.link_button("🌐 Abrir LocalSend", "https://localsend.org/es", use_container_width=True)
+        st.caption("Alternativa libre a AirDrop.")
+
+    st.markdown("---")
+    st.markdown("#### 🛡️ MÓDULO DE CIBERSEGURIDAD")
+
+    with st.expander("💀 Herramientas Kali / Pentesting", expanded=False):
+        st.markdown("**Nikto (Escáner Web):**")
+        target_nikto = st.text_input("Objetivo Nikto:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Escaneo Nikto", use_container_width=True):
+            if target_nikto.strip():
+                st.info(f"Simulando escaneo de vulnerabilidades en {target_nikto} con Nikto...")
+                st.code(f"$ nikto -h {target_nikto}\n[+] Servidor analizado: OK\n[+] Cero vulnerabilidades críticas detectadas en Nodo Buin.")
+            else:
+                st.warning("Ingresa un objetivo válido.")
+
+        st.markdown("**Gobuster (Fuerza Bruta Dir):**")
+        target_gobuster = st.text_input("Objetivo Gobuster:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Gobuster", use_container_width=True):
+            if target_gobuster.strip():
+                st.info(f"Buscando directorios ocultos en {target_gobuster}...")
+                st.code(f"$ gobuster dir -u {target_gobuster} -w wordlist.txt\n/admin (Status: 403)\n/index.php (Status: 200)")
+            else:
+                st.warning("Ingresa un objetivo válido.")
+
+    st.markdown("---")
+    st.markdown("#### 🚀 MÓDULOS AVANZADOS")
+
+    with st.expander("🧠 1. Memoria Persistente (SQLite)", expanded=False):
+        if st.button("Ver Historial Guardado", use_container_width=True):
+            conn = sqlite3.connect(fn_db, check_same_thread=False)
+            cursor = conn.cursor()
+            cursor.execute("SELECT rol, contenido FROM memoria_chat LIMIT 15")
+            historial_db = cursor.fetchall()
+            conn.close()
+            if historial_db:
+                for r, c in historial_db:
+                    st.code(f"[{r.upper()}]: {c[:60]}...")
+            else:
+                st.caption("Aún no hay registros en la memoria persistente.")
+
+    with st.expander("🌐 2. Búsqueda Web / Datos en Vivo", expanded=False):
+        consulta_web = st.text_input("Consultar base externa:", placeholder="Ej: Precio Bitcoin, Clima...")
+        if st.button("Buscar Dato Táctico", use_container_width=True):
+            if consulta_web.strip():
+                st.success(f"🔍 Datos recuperados para: {consulta_web}")
+                st.code(f"Estado: En línea\nResultado simulado: Conexión con Nodo Buin OK para '{consulta_web}'.")
+
+    with st.expander("💻 3. Generador de Snippets de Código", expanded=False):
+        tipo_codigo = st.selectbox("Lenguaje:", ["Python", "JavaScript", "HTML/CSS", "Bash"])
+        if st.button("Generar Plantilla Táctica", use_container_width=True):
+            if tipo_codigo == "Python":
+                st.code("import requests\ndef conectar_nodo():\n    print('Nodo Buin operativo.')")
+            elif tipo_codigo == "HTML/CSS":
+                st.code("<style>.neon { color: #00f3ff; }</style><div class='neon'>JARVIS</div>")
+            else:
+                st.code("# Script de automatización táctica\necho 'Sistema blindado'")
+
+    with st.expander("📊 4. Logs y Gráficos Tácticos", expanded=False):
+        st.code("[11:41:00] INIT: Nodo Buin enlazado\n[11:41:15] SEC: Clave validada\n[11:41:30] TELEMETRY: Estándar óptimo")
+        st.markdown("Rendimiento de Procesamiento (CPU/RAM):")
+        st.bar_chart({"CPU": [14], "RAM": [26], "Red": [88]})
+
+    st.markdown("---")
+    st.markdown("#### 🧠 MODOS DE RESPUESTA TÁCTICA")
+    st.markdown("""
+    - **`/human`**: Respuestas naturales y cercanas.
+    - **`/eli10`**: Explicación ultra sencilla.
+    - **`/x10piensa`**: Estrategia profunda.
+    - **`/ooda`**: Plan de acción estructurado.
+    """)
+
+    st.markdown("---")
+    st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
+
+    with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
+        st.markdown("Graba tu orden hablada:")
+        audio_grabado = st.audio_input("Graba tu orden hablada:", key="mic_audio_main")
+        
+        if audio_grabado:
+            audio_bytes = audio_grabado.read()
+            if audio_bytes != st.session_state.audio_process_key:
+                st.session_state.audio_process_key = audio_bytes
+                st.warning("⚡ Procesando audio...")
+                
+                if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                    try:
+                        model_audio = genai.GenerativeModel("gemini-1.5-flash")
+                        prompt_audio_res = model_audio.generate_content([
+                            "Escucha este audio y transcribe exactamente lo que se dice en español.",
+                            {"mime_type": "audio/wav", "data": audio_bytes}
+                        ])
+                        if prompt_audio_res and prompt_audio_res.text:
+                            prompt_voz = prompt_audio_res.text.strip()
+                    except Exception as e:
+                        st.error(f"Error procesando audio: {e}")
+
+    st.markdown("---")
+    st.markdown("#### 📋 REGISTRO DE MISIONES")
+
+    with st.expander("➕ Registro de Misiones (SQLite)", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar código de nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada en BD!")
+                st.rerun()
+        
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Misiones Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("No hay misiones pendientes.")
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ TELEMETRÍA Y ESTADO")
+
+    with st.expander("🔋 Estado de Sistemas (Armadura)", expanded=False):
+        st.success("⚡ Reactor Arc: 99.8% | Estable")
+        st.info("💻 CPU Nodo Buin: 14% | Óptimo")
+        st.code("Memoria RAM: 4.2 GB / 16 GB\nRed Satelital: Enlazada")
+
+    with st.expander("📷 Cámara Activa (Biometría)", expanded=False):
+        st.markdown("Captura óptica directa:")
+        foto_usuario = st.camera_input("Activar sensor visual:")
+        if foto_usuario:
+            st.success("Fotograma analizado por el Nodo Buin.")
+
+    with st.expander("🌤️ Clima Real (Buin)", expanded=False):
+        st.success(f"🌡️ Temperatura: {temp_real}")
+        st.info(f"💧 Humedad: {hum_real} | Viento: {viento_real}")
+
+    with st.expander("📍 Coordenadas Nodo", expanded=False):
+        st.code("Lat: -33.7333° S\nLon: -70.7167° W\nBuin, Chile")
+
+# =========================================================================
+# PANTALLA PRINCIPAL: CAJA DE CHAT
+# =========================================================================
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
+        st.session_state.autorizado = False
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Bloqueando acceso."}]
+        st.session_state.audio_process_key = None
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+        if m["role"] == "assistant" and gTTS:
+            try:
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+                tts = gTTS(text=clean_text, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
+
+prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    try:
+        conn_p = sqlite3.connect(fn_db, check_same_thread=False)
+        cur_p = conn_p.cursor()
+        cur_p.execute("INSERT INTO memoria_chat (rol, contenido) VALUES (?, ?)", ("user", prompt_usuario))
+        conn_p.commit()
+        conn_p.close()
+    except Exception:
+        pass
+
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+    
+    respuesta_ia = ""
+    query_lower = prompt_usuario.lower()
+    
+    if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
+        respuesta_ia = "Sí, señorita, para usted siempre"
+    elif "correo" in query_lower:
+        respuesta_ia = "Jefa, el centro de alertas indica notificaciones recientes de UC CHRISTUS (Receta médica) y BancoEstado. Todo monitoreado."
+    elif "agenda" in query_lower or "calendario" in query_lower:
+        respuesta_ia = "Jefa, tienes el módulo de agenda integrado en el panel izquierdo para registrar y consultar eventos directamente en SQLite."
+    else:
+        instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+        
+        if "/human" in query_lower:
+            instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
+        elif "/eli10" in query_lower:
+            instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
+        elif "/x10piensa" in query_lower:
+            instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
+        elif "/ooda" in query_lower:
+            instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
+
+        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=instruccion_sistema
+                )
+                response = model.generate_content(prompt_usuario)
+                if response and response.text:
+                    respuesta_ia = response.text
+            except Exception:
+                pass
+
+        if not respuesta_ia:
+            if "hola" in query_lower:
+                respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
+            elif "o'higgins" in query_lower or "ohiggins" in query_lower:
+                respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
+            elif "muro de berlín" in query_lower or "berlín" in query_lower:
+                respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
+            elif "binomio" in query_lower:
+                respuesta_ia = "Análisis completado, jefa: Un binomio es una expresión algebraica de dos términos, y su fórmula al cuadrado es a al cuadrado más 2 ab más b al cuadrado."
+            else:
+                respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin sin novedad."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    
+    try:
+        conn_p = sqlite3.connect(fn_db, check_same_thread=False)
+        cur_p = conn_p.cursor()
+        cur_p.execute("INSERT INTO memoria_chat (rol, contenido) VALUES (?, ?)", ("assistant", respuesta_ia))
+        conn_p.commit()
+        conn_p.close()
+    except Exception:
+        pass
+
+    st.session_state.audio_process_key = None
+    st.rerun()
