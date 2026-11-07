@@ -9,6 +9,7 @@ import datetime
 st.set_page_config(page_title="J.A.R.V.I.S. IA - Nodo Buin", layout="wide")
 
 # --- CONFIGURACIÓN DE LA API DE GEMINI ---
+# Descomenta la siguiente línea y pon tu clave real o usa st.secrets
 # genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -18,7 +19,7 @@ st.markdown("[ NODO BUIN, CHILE // Sábado, 07 de noviembre de 2026 ]")
 st.markdown("⚡ **NÚCLEO NEURONAL CYBER-GRID** ⚡")
 st.markdown("Sistemas de procesamiento, ciberseguridad, clima en vivo y **mapa táctico satelital**.")
 
-# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE (Módulo del Nodo) ---
+# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
 def init_db():
     conn = sqlite3.connect('nodo_buin.db')
     c = conn.cursor()
@@ -28,7 +29,7 @@ def init_db():
 
 init_db()
 
-# --- PANEL LATERAL TÁCTICO ---
+# --- PANEL LATERAL TÁCTICO COMPLETO ---
 with st.sidebar:
     st.markdown("### 🛡️ NÚCLEO DE CONTROL TÁCTICO")
     pin_ingresado = st.text_input("PIN de Seguridad del Nodo", type="password")
@@ -76,12 +77,13 @@ if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # --- PROCESAMIENTO CON LA IA ---
+    # --- PROCESAMIENTO REAL CON LA API DE GEMINI ---
     try:
+        # Descomenta cuando configures tu clave de Gemini arriba:
         # response = model.generate_content(prompt)
         # response_text = response.text
         
-        # Respuesta con la personalidad sarcástica solicitada
+        # Respuesta por defecto con el tono sarcástico característico
         response_text = f"Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. Procesando tu solicitud: '{prompt}'."
     except Exception as e:
         response_text = f"Error en el núcleo neuronal del Nodo: {e}"
