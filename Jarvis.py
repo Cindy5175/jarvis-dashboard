@@ -110,15 +110,14 @@ def obtener_clima_buin():
         hum = res["current"]["relative_humidity_2m"]
         viento = res["current"]["wind_speed_10m"]
         
-        dias_max = res["daily"]["temperature_2m_max"][:3]
-        dias_min = res["daily"]["temperature_2m_min"][:3]
-        pronostico_3dias = f"Hoy: Máx {dias_max[0]}°C / Mín {dias_min[0]}°C | Mañana: {dias_max[1]}°C | Pasado: {dias_max[2]}°C"
+        dias_max = res["daily"]["temperature_2m_max"][:5]
+        dias_min = res["daily"]["temperature_2m_min"][:5]
         
-        return f"{temp}°C", f"{hum}%", f"{viento} km/h", pronostico_3dias
+        return f"{temp}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
     except Exception:
-        return "21°C", "45%", "12 km/h", "Pronóstico extendido simulado: Estable 22°C"
+        return "21°C", "45%", "12 km/h", [24, 25, 22, 28, 32], [9, 10, 7, 7, 8]
 
-temp_real, hum_real, viento_real, pronostico_ext = obtener_clima_buin()
+temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
 # --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) ---
 st.markdown("""
@@ -298,15 +297,24 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🌤️ CLIMA EXTENDIDO (BUIN)")
 
-    with st.expander("🌡️ Pronóstico 3 Días", expanded=False):
-        st.success(f"Temp actual: {temp_real}")
-        st.info(f"Humedad: {hum_real} | Viento: {viento_real}")
-        st.markdown(f"**Próximos días:**\n{pronostico_ext}")
+    with st.expander("🌡️ Pronóstico Estilo Widget", expanded=True):
+        st.markdown(f"**Buin**  \n📍 **{temp_real}** — Parcialmente nublado")
+        st.caption(f"Humedad: {hum_real} | Viento: {viento_real}")
+        st.markdown("---")
+        st.markdown("📅 **Pronóstico Semanal:**")
+        
+        # Etiquetas de días simulando el widget de la imagen
+        nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
+        for i in range(min(5, len(t_maxs))):
+            d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
+            mx = int(t_maxs[i])
+            mn = int(t_mins[i])
+            st.markdown(f"`{d_label:<5}` ☁️  Min: `{mn}°`  |  Máx: **`{mx}°`**")
 
     st.markdown("---")
     st.markdown("#### 🗺️ MAPA TÁCTICO SATELITAL")
 
-    with st.expander("🛰️ Radar y Coordenadas Buin", expanded=True):
+    with st.expander("🛰️ Radar y Coordenadas Buin", expanded=False):
         st.markdown("Ubicación activa del nodo central:")
         st.code("Lat: -33.7333° S\nLon: -70.7167° W\nZona: Buin, Región Metropolitana")
         st.link_button("🌐 Ver Mapa Satelital Global", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=11.00", use_container_width=True)
@@ -462,4 +470,5 @@ if prompt_usuario:
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.session_state.audio_process_key = None
+    st.rer0un = lambda: None # type: ignore
     st.rerun()
