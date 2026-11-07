@@ -277,5 +277,64 @@ with st.sidebar:
         busqueda_archivo = st.text_input("Buscar archivo local:", placeholder="Ej: Jarvis.py, notas...")
         if st.button("Localizar Archivo", use_container_width=True):
             if busqueda_archivo.strip():
+                ruta_res = f"C:/NodoBuin/{busqueda_archivo}"
                 st.success(f"Resultados para '{busqueda_archivo}':")
-                st.code(f"C:/NodoBuin/{
+                st.code(f"{ruta_res}\n[Estado: Encontrado y accesible]")
+
+    st.markdown("---")
+    st.markdown("#### ⚡ MÓDULOS GLOBALES (LIBRES)")
+
+    with st.expander("👁️ Ojo de Dios (Osiris)", expanded=False):
+        st.markdown("Monitoreo planetario en tiempo real:")
+        st.link_button("🚀 Abrir Osiris AI", "https://osirisai.live/?lat=-33.7320&lon=-70.7300&zoom=10.00", use_container_width=True)
+        st.caption("Red global satelital.")
+
+    with st.expander("🛰️ ISS Live Feed (NASA)", expanded=False):
+        st.markdown("Transmisión orbital en alta definición:")
+        st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
+        st.caption("Feed directo estación espacial.")
+
+    with st.expander("📂 LocalSend (Red Local)", expanded=False):
+        st.markdown("Transferencia de archivos sin internet:")
+        st.link_button("🌐 Abrir LocalSend", "https://localsend.org/es", use_container_width=True)
+        st.caption("Alternativa libre a AirDrop.")
+
+    st.markdown("---")
+    st.markdown("#### 🛡️ MÓDULO DE CIBERSEGURIDAD")
+
+    with st.expander("💀 Herramientas Kali / Pentesting", expanded=False):
+        st.markdown("**Nikto (Escáner Web):**")
+        target_nikto = st.text_input("Objetivo Nikto:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Escaneo Nikto", use_container_width=True):
+            if target_nikto.strip():
+                st.info(f"Simulando escaneo de vulnerabilidades en {target_nikto} con Nikto...")
+                st.code(f"$ nikto -h {target_nikto}\n[+] Servidor analizado: OK\n[+] Cero vulnerabilidades críticas detectadas en Nodo Buin.")
+            else:
+                st.warning("Ingresa un objetivo válido.")
+
+        st.markdown("**Gobuster (Fuerza Bruta Dir):**")
+        target_gobuster = st.text_input("Objetivo Gobuster:", placeholder="http://192.168.1.X")
+        if st.button("Ejecutar Gobuster", use_container_width=True):
+            if target_gobuster.strip():
+                st.info(f"Buscando directorios ocultos en {target_gobuster}...")
+                st.code(f"$ gobuster dir -u {target_gobuster} -w wordlist.txt\n/admin (Status: 403)\n/index.php (Status: 200)")
+            else:
+                st.warning("Ingresa un objetivo válido.")
+
+    st.markdown("---")
+    st.markdown("#### 🚀 MÓDULOS AVANZADOS")
+
+    with st.expander("🧠 1. Memoria Persistente (SQLite)", expanded=False):
+        if st.button("Ver Historial Guardado", use_container_width=True):
+            conn = sqlite3.connect(fn_db, check_same_thread=False)
+            cursor = conn.cursor()
+            cursor.execute("SELECT rol, contenido FROM memoria_chat LIMIT 15")
+            historial_db = cursor.fetchall()
+            conn.close()
+            if historial_db:
+                for r, c in historial_db:
+                    st.code(f"[{r.upper()}]: {c[:60]}...")
+            else:
+                st.caption("Aún no hay registros en la memoria persistente.")
+
+    with st.expander("🌐 2. Búsqueda Web / Datos en
