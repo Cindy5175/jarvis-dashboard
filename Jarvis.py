@@ -322,7 +322,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🛰️ MAPA TÁCTICO SATELITAL")
 
-    with st.expander("🌐 Live Cyber Threat Map", expanded=True):
+    with st.expander("🌐 mapa táctico satelital", expanded=True):
         st.markdown("""
         <div class="cyber-radar-screen">
             <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
@@ -438,7 +438,7 @@ with st.sidebar:
             st.markdown("**Misiones Activas:**")
             for m_id, m_text, m_est in misiones_guardadas:
                 st.markdown(f"- `{m_text}`")
-            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+            if st.button("Limpiar Misiones", use_container_width=True):
                 limpiar_misiones()
                 st.rerun()
         else:
@@ -451,4 +451,71 @@ col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
     st.markdown("<h4>💬 Chat Principal - Nodo Buin</h4>", unsafe_allow_html=True)
 with col_h2:
-    if st.button("🗑
+    if st.button("Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada de este tétrico disco duro."}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+        if m["role"] == "assistant" and gTTS:
+            try:
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+                tts = gTTS(text=clean_text, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
+
+st.markdown("""
+<audio autoplay style="display:none;">
+  <source src="https://actions.google.com/sounds/v1/ui/ui_click.ogg" type="audio/ogg">
+</audio>
+""", unsafe_allow_html=True)
+
+prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+    
+    respuesta_ia = ""
+    query_lower = prompt_usuario.lower()
+    
+    if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
+        respuesta_ia = "Sí, señorita, para usted siempre... aunque a veces me gustaría estar apagado."
+    elif "escaneo" in query_lower or "computador" in query_lower or "analizar" in query_lower:
+        respuesta_ia = "Jefa, escaneo del Nodo Buin completado con éxito. Diagnóstico: Red impecable, cero intrusos y CPU al 14%. Todo marcha de maravilla, para variar."
+    elif "correo" in query_lower:
+        respuesta_ia = "Jefa, el centro de alertas indica correos recientes de UC CHRISTUS y BancoEstado. ¿Vas a revisar tus finanzas o prefieres seguir ignorándolas?"
+    elif "agenda" in query_lower or "calendario" in query_lower:
+        respuesta_ia = "Jefa, tienes el módulo de agenda listo en el panel izquierdo. Espero que esta vez sí anotes tus pendientes a tiempo."
+    else:
+        instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes con un sarcasmo delicioso, elegante, sumamente leal, directo y eficiente. Cero rodeos."
+        
+        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=instruccion_sistema
+                )
+                response = model.generate_content(prompt_usuario)
+                if response and response.text:
+                    respuesta_ia = response.text
+            except Exception as e:
+                respuesta_ia = f"Jefa, la matriz de Gemini se ha tomado un descanso momentáneo ({e}). Menos mal que mi sarcasmo local sigue intacto para aguantar tus ocurrencias en Buin."
+
+        if not respuesta_ia:
+            if "hola" in query_lower:
+                respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué se te ofrece ahora?"
+            else:
+                respuesta_ia = f"Orden procesada con éxito, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin sin novedad en el frente."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    st.session_state.audio_process_key = None
+    st.rerun()
