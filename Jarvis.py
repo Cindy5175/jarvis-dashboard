@@ -33,7 +33,7 @@ except ImportError:
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -84,7 +84,6 @@ def limpiar_misiones():
 st.markdown("""
     <style>
         .stApp { background-color: #060913 !important; color: #00f3ff !important; }
-        .arc-reactor-container h4 { color: #00f3ff !important; font-size: 1.1rem !important; font-family: monospace; }
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
         .stChatMessage p, .stChatMessage div {
             font-size: 0.85rem !important;
@@ -110,7 +109,7 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .arc-ring {
             width: 45px;
@@ -133,15 +132,16 @@ st.markdown("""
             border-bottom: 14px solid #060913;
             filter: drop-shadow(0 0 5px #00f3ff);
         }
-        /* Contenedor Holográfico de Red Neuronal CSS Puro (Sin óvulos) */
+        /* Contenedor Holográfico de Red Neuronal Achicado y Estilizado */
         .holo-brain-box {
-            border: 2px solid #00f3ff;
+            border: 1.5px solid #00f3ff;
             background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
             text-align: center;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
-            margin-bottom: 20px;
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 255, 0.15);
+            margin: 0 auto 15px auto;
+            max-width: 700px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -164,13 +164,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Óvulo erradicado de los servidores. Red neuronal pura en línea. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Interfaz optimizada y centrada. Identifícate con la clave para operar."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON J.A.R.V.I.S GRANDE Y CENTRADO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -181,18 +181,18 @@ hora_segundos = now_chile.strftime("%H:%M:%S")
 st.markdown(f"""
     <div class="arc-reactor-container">
         <div class="arc-ring"><div class="arc-triangle"></div></div>
-        <h4 style="margin: 0; padding: 0; font-size: 1.1rem !important; text-align: center !important; color: #00f3ff !important;">J.A.R.V.I.S IA // NÚCLEO SUPREMO OMNISCIENTE</h4>
-        <p style="margin: 0; font-family: monospace; font-size: 0.7rem !important; color: #00f3ff !important; text-align: center !important;">
+        <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>
+        <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
             [ NODO BUIN, CHILE // {fecha_str} – {hora_segundos} ]
         </p>
     </div>
 """, unsafe_allow_html=True)
 
-# Panel Holográfico CSS de Red Neuronal (Cero sorpresas biológicas)
+# Panel Holográfico CSS de Red Neuronal (Achicado y centrado)
 st.markdown("""
     <div class="holo-brain-box">
-        <h3 style="color: #00f3ff; margin: 0; font-family: monospace; text-shadow: 0 0 10px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h3>
-        <p style="color: #00f3ff; font-size: 0.8rem; margin-top: 5px; font-family: monospace;">Sistemas de procesamiento lógico y táctico activos al 100%</p>
+        <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
+        <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento lógico y táctico activos al 100%</p>
     </div>
 """, unsafe_allow_html=True)
 
