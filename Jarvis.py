@@ -229,4 +229,157 @@ with st.sidebar:
 
     with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
         st.markdown("Graba tu orden hablada:")
-        audio_grabado = st.audio_input("Grabar orden
+        audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
+        
+        if audio_grabado:
+            audio_bytes = audio_grabado.read()
+            if audio_bytes != st.session_state.audio_process_key:
+                st.session_state.audio_process_key = audio_bytes
+                st.warning("⚡ Procesando audio y clave de acceso...")
+                
+                if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                    try:
+                        model_audio = genai.GenerativeModel("gemini-1.5-flash")
+                        prompt_audio_res = model_audio.generate_content([
+                            "Escucha este audio y transcribe exactamente lo que se dice en español.",
+                            {"mime_type": "audio/wav", "data": audio_bytes}
+                        ])
+                        if prompt_audio_res and prompt_audio_res.text:
+                            prompt_voz = prompt_audio_res.text.strip()
+                    except Exception as e:
+                        st.error(f"Error procesando audio: {e}")
+
+    st.markdown("---")
+    st.markdown("#### 📋 REGISTRO DE MISIONES")
+
+    with st.expander("➕ Registro de Misiones (SQLite)", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar código de nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada en BD!")
+                st.rerun()
+        
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Misiones Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("No hay misiones pendientes.")
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ TELEMETRÍA Y ESTADO")
+
+    with st.expander("🔋 Estado de Sistemas (Armadura)", expanded=False):
+        st.success("⚡ Reactor Arc: 99.8% | Estable")
+        st.info("💻 CPU Nodo Buin: 14% | Óptimo")
+        st.code("Memoria RAM: 4.2 GB / 16 GB\nRed Satelital: Enlazada")
+
+    with st.expander("📷 Cámara Activa (Biometría)", expanded=False):
+        st.markdown("Captura óptica directa:")
+        foto_usuario = st.camera_input("Activar sensor visual:")
+        if foto_usuario:
+            st.success("Fotograma analizado por el Nodo Buin.")
+
+    with st.expander("🌤️ Clima Local (Buin)", expanded=False):
+        st.success("🌡️ Temperatura: 21°C | Óptimo")
+        st.info("💧 Humedad: 45% | Viento: 12 km/h SE")
+
+    with st.expander("📍 Coordenadas Nodo", expanded=False):
+        st.code("Lat: -33.7333° S\nLon: -70.7167° W\nBuin, Chile")
+
+# =========================================================================
+# PANTALLA PRINCIPAL: CAJA DE CHAT
+# =========================================================================
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown("<h4>💬 Terminal de Inteligencia & Guía Suprema</h4>", unsafe_allow_html=True)
+with col_h2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
+        h_l = datetime.datetime.now(tz_chile).hour
+        s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Identifícate con la clave."}]
+        st.session_state.audio_process_key = None
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+        if m["role"] == "assistant" and gTTS:
+            try:
+                clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+                tts = gTTS(text=clean_text, lang='es', slow=False)
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=True)
+            except Exception:
+                pass
+
+# Entrada de texto normal por chat o captura automática desde el micrófono
+prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+    
+    respuesta_ia = ""
+    query_lower = prompt_usuario.lower()
+    
+    # --- VALIDACIÓN ESTRICTA DE CLAVE DE ACCESO ---
+    tiene_clave = "jarvis" in query_lower or "despierto" in query_lower
+    
+    if not tiene_clave:
+        respuesta_ia = "Acceso denegado, jefa. Tienes que decir o escribir la clave 'Jarvis' o '¿Estás despierto?' para que mueva un dedo por ti."
+    else:
+        # RESPUESTA DIRECTA A LA ACTIVACIÓN DE VOZ
+        if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
+            respuesta_ia = "Sí, señorita, para usted siempre"
+        else:
+            # --- DETECCIÓN DE MODOS DE RESPUESTA TÁCTICA ---
+            instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+            
+            if "/human" in query_lower:
+                instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
+            elif "/eli10" in query_lower:
+                instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
+            elif "/x10piensa" in query_lower:
+                instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
+            elif "/ooda" in query_lower:
+                instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
+
+            # Procesamiento con Gemini bajo la directiva seleccionada
+            if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+                try:
+                    model = genai.GenerativeModel(
+                        model_name="gemini-1.5-flash",
+                        system_instruction=instruccion_sistema
+                    )
+                    response = model.generate_content(prompt_usuario)
+                    if response and response.text:
+                        respuesta_ia = response.text
+                except Exception:
+                    pass
+
+            # Respaldo local si falla la API
+            if not respuesta_ia:
+                if "hola" in query_lower:
+                    respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
+                elif "o'higgins" in query_lower or "ohiggins" in query_lower:
+                    respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
+                elif "muro de berlín" in query_lower or "berlín" in query_lower:
+                    respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
+                elif "binomio" in query_lower:
+                    respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: a al cuadrado más 2 ab más b al cuadrado."
+                else:
+                    respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin sin novedad."
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    st.session_state.audio_process_key = None
+    st.rerun()
