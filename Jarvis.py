@@ -303,13 +303,13 @@ with st.sidebar:
         st.markdown("---")
         st.markdown("📅 **Pronóstico Semanal:**")
         
-        # Etiquetas de días simulando el widget de la imagen
+        # Mapeo limpio y ordenado en una sola línea por día con min y max destacadas
         nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
         for i in range(min(5, len(t_maxs))):
             d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
             mx = int(t_maxs[i])
             mn = int(t_mins[i])
-            st.markdown(f"`{d_label:<5}` ☁️  Min: `{mn}°`  |  Máx: **`{mx}°`**")
+            st.markdown(f"**`{d_label}`** ☁️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
 
     st.markdown("---")
     st.markdown("#### 🗺️ MAPA TÁCTICO SATELITAL")
@@ -470,5 +470,4 @@ if prompt_usuario:
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.session_state.audio_process_key = None
-    st.rer0un = lambda: None # type: ignore
     st.rerun()
