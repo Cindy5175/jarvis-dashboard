@@ -128,7 +128,6 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     font-size: 0.85rem !important;
     color: #00f3ff !important;
 }
-/* Forzar color de texto negro bien visible dentro de CUALQUIER botón */
 .stButton>button {
     background-color: #00f3ff !important;
     border: 1.5px solid #00f3ff !important;
@@ -308,7 +307,7 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 👁️ OJO DE DIOS: AMENAZAS EN VIVO")
+    st.markdown("#### 🛰️ MAPA TÁCTICO SATELITAL")
 
     with st.expander("🌐 Live Cyber Threat Map", expanded=True):
         st.markdown("""
@@ -348,7 +347,7 @@ with st.sidebar:
             st.markdown(f"**`{d_label}`** ☁️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
 
     st.markdown("---")
-    st.markdown("#### 🗺️ MAPA TÁCTICO SATELITAL")
+    st.markdown("#### 🛰️ COORDENADAS DEL NODO")
 
     with st.expander("🛰️ Radar y Coordenadas Buin", expanded=False):
         st.markdown("Ubicación activa del nodo central:")
