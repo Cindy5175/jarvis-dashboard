@@ -207,8 +207,7 @@ if "mensajes" not in st.session_state:
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# PIN Secreto de la Jefa (puedes cambiarlo cuando quieras)
-PIN_SECRETOS = ["2808", "1978", "0000"] # Puedes ajustar tu PIN numérico aquí
+PIN_SECRETOS = ["2808", "1978", "0000"]
 
 # =========================================================================
 # 1. PANTALLA DE BLOQUEO (ACCESO RESTRINGIDO TRIPLE FACTOR)
@@ -235,7 +234,6 @@ if not st.session_state.autorizado:
             btn_entrar = st.form_submit_button("🛡️ Ejecutar Protocolo de Acceso")
             
             if btn_entrar:
-                # Validar PIN numérico o frase clave escrita
                 valido_texto = (frase_input.lower().strip() in ["jarvis", "despierto", "estás despierto", "estas despierto", "jefa", "hola"]) or (pin_input.strip() in PIN_SECRETOS)
                 
                 valido_voz = False
@@ -368,4 +366,15 @@ with st.sidebar:
 
     with st.expander("🛰️ ISS Live Feed (NASA)", expanded=False):
         st.markdown("Transmisión orbital en alta definición:")
-        st.link_button("🚀 Ver NASA ISS Stream", "
+        st.link_button("🚀 Ver NASA ISS Stream", "https://www.youtube.com/watch?v=ROboUHfPUrU", use_container_width=True)
+        st.caption("Feed directo estación espacial.")
+
+    with st.expander("📂 LocalSend (Red Local)", expanded=False):
+        st.markdown("Transferencia de archivos sin internet:")
+        st.link_button("🌐 Abrir LocalSend", "https://localsend.org/es", use_container_width=True)
+        st.caption("Alternativa libre a AirDrop.")
+
+    st.markdown("---")
+    st.markdown("#### 🛡️ MÓDULO DE CIBERSEGURIDAD")
+
+    with st.expander("💀 Herramientas Kali / Pentesting", expanded=False):
