@@ -154,13 +154,13 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Matriz táctica cargada y lista. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Red neuronal en azul neón sincronizada. Identifícate con la clave para operar los sistemas."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO CON HOLOGRAMA MATRIX Y SEGUNDERO EN VIVO ---
+# --- ENCABEZADO CON HOLOGRAMA DE CEREBRO DIGITAL Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -178,9 +178,9 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Imagen de flujo de datos Matrix cibernético
-st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
-st.caption("⚡ Holo-proyección activa: Matriz de Datos del Nodo Buin.")
+# Holograma de cerebro digital en azul neón eléctrico (sin rastros de óvulos ni verde Matrix)
+st.image("https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1000&auto=format&fit=crop", use_container_width=True)
+st.caption("⚡ Holo-proyección activa: Red Neuronal Central del Nodo Buin.")
 
 st.markdown("---")
 
@@ -302,7 +302,7 @@ with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         h_l = datetime.datetime.now(tz_chile).hour
         s_l = "Buenos días" if 0 <= h_l < 12 else ("Buenas tardes" if 12 <= h_l < 20 else "Buenas noches")
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Identifícate."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{s_l}, jefa. Memoria purgada. Identifícate con la clave."}]
         st.session_state.audio_process_key = None
         st.rerun()
 
@@ -370,16 +370,4 @@ if prompt_usuario:
             # Respaldo local si falla la API
             if not respuesta_ia:
                 if "hola" in query_lower:
-                    respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
-                elif "o'higgins" in query_lower or "ohiggins" in query_lower:
-                    respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
-                elif "muro de berlín" in query_lower or "berlín" in query_lower:
-                    respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
-                elif "binomio" in query_lower:
-                    respuesta_ia = "Un binomio es una expresión algebraica de dos términos. Su fórmula al cuadrado es: a al cuadrado más 2 ab más b al cuadrado."
-                else:
-                    respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el nodo de Buin sin novedad."
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-    st.session_state.audio_process_key = None
-    st.rerun()
+                    respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde
