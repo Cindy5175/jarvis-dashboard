@@ -119,7 +119,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) & RADAR ---
+# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) & BOTONES FORZADOS ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
@@ -128,8 +128,8 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     font-size: 0.85rem !important;
     color: #00f3ff !important;
 }
+/* Forzar color de texto negro bien visible dentro de CUALQUIER botón */
 .stButton>button {
-    color: #060913 !important;
     background-color: #00f3ff !important;
     border: 1.5px solid #00f3ff !important;
     font-weight: bold;
@@ -137,10 +137,15 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
     width: 100%;
 }
+.stButton>button p, .stButton>button span {
+    color: #060913 !important;
+}
 .stButton>button:hover {
     background-color: #0088cc !important;
-    color: #ffffff !important;
     box-shadow: 0 0 15px rgba(0, 243, 255, 0.9);
+}
+.stButton>button:hover p, .stButton>button:hover span {
+    color: #ffffff !important;
 }
 .arc-reactor-container {
     display: flex;
@@ -181,7 +186,6 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     margin: 0 auto 15px auto;
     max-width: 700px;
 }
-/* Estilo HUD de Radar Satelital Cyber */
 .cyber-radar-screen {
     background: #03050a;
     border: 1px solid #00f3ff;
