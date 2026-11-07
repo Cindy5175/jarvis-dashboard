@@ -164,7 +164,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolos duales de asistencia y ciberseguridad cargados. Identifícate con la clave."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Chat y protocolos de seguridad listos. Identifícate con la clave."}
     ]
 
 if "audio_process_key" not in st.session_state:
@@ -333,7 +333,7 @@ with st.sidebar:
 # =========================================================================
 col_h1, col_h2 = st.columns([4, 1])
 with col_h1:
-    st.markdown("<h4>💬 Terminal de Inteligencia & Guía Suprema</h4>", unsafe_allow_html=True)
+    st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
 with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         h_l = datetime.datetime.now(tz_chile).hour
