@@ -185,4 +185,40 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
     margin: 0 auto 15px auto;
     max-width: 700px;
 }
-.cyber
+.cyber-radar-screen {
+    background: #03050a;
+    border: 1px solid #00f3ff;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2);
+}
+.radar-blip {
+    animation: pulse-blip 1.5s infinite;
+}
+@keyframes pulse-blip {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; text-shadow: 0 0 8px #ff3333; }
+    100% { opacity: 0.3; }
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --- ZONA HORARIA CHILENA (UTC-3) ---
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
+
+# =========================================================================
+# ESTADO DE SESIÓN & CONTROL DE ACCESO (PIN: 2805)
+# =========================================================================
+
+if "autorizado" not in st.session_state:
+    st.session_state.autorizado
