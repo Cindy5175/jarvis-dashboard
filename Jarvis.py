@@ -14,7 +14,6 @@ except ImportError:
 try:
     import google.generativeai as genai
     
-    # Tu clave de API activa
     api_key = "AQuí_va_tu_clave_completa" 
     
     if "GOOGLE_API_KEY" in st.secrets:
@@ -34,7 +33,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE (MISIONES, AGENDA Y MEMORIA) ---
+# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
 fn_db = "jarvis_misiones.db"
 
 def init_db():
@@ -103,10 +102,8 @@ def obtener_agenda():
     conn.close()
     return rows
 
-# --- FUNCIÓN DE CLIMA REAL (OPEN-METEO PARA BUIN) ---
 def obtener_clima_buin():
     try:
-        # Coordenadas aproximadas de Buin, Chile
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.7333&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=America%2FSantiago"
         res = requests.get(url, timeout=3).json()
         temp = res["current"]["temperature_2m"]
@@ -196,7 +193,7 @@ else:
     saludo_actual = "Buenas noches"
 
 # =========================================================================
-# NÚCLEO TÁCTICO & ESTADO DE SESIÓN
+# ESTADO DE SESIÓN & CONTROL DE ACCESO
 # =========================================================================
 
 if "autorizado" not in st.session_state:
@@ -204,13 +201,42 @@ if "autorizado" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea. Ingresa la clave o di 'Jarvis' para iniciar sistemas."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Sistemas en línea. Identificación confirmada."}
     ]
 
 if "audio_process_key" not in st.session_state:
     st.session_state.audio_process_key = None
 
-# --- ENCABEZADO FIJO (SIN PARPADEOS) ---
+# =========================================================================
+# 1. PANTALLA DE BLOQUEO (ACCESO RESTRINGIDO)
+# =========================================================================
+if not st.session_state.autorizado:
+    st.markdown("""
+        <div style="text-align: center; margin-top: 40px;">
+            <h2 style="color: #00f3ff; font-family: monospace;">🔒 ACCESO RESTRINGIDO - NODO BUIN</h2>
+            <p style="color: #00f3ff; opacity: 0.8; font-size: 0.9rem;">Introduce la clave de acceso para inicializar a J.A.R.V.I.S.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            clave_ingresada = st.text_input("Clave de Acceso:", type="password", placeholder="Escribe 'Jarvis' o 'estás despierto'...")
+            btn_enviar = st.form_submit_button("🔓 Desbloquear Sistema")
+            
+            if btn_enviar:
+                if any(k in clave_ingresada.lower() for k in ["jarvis", "despierto", "estás despierto", "estas despierto", "jefa", "hola"]):
+                    st.session_state.autorizado = True
+                    st.success("Acceso concedido, jefa. Iniciando sistemas...")
+                    st.rerun()
+                else:
+                    st.error("Clave incorrecta. Intenta nuevamente.")
+    st.stop()
+
+# =========================================================================
+# 2. SISTEMA DESBLOQUEADO (JARVIS EN TODO SU ESPLENDOR)
+# =========================================================================
+
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -238,12 +264,16 @@ st.markdown("""
 st.markdown("---")
 
 # =========================================================================
-# PANEL LATERAL (IZQUIERDA - TODOS LOS MÓDULOS)
+# PANEL LATERAL (TODOS LOS MÓDULOS)
 # =========================================================================
 prompt_voz = None
 
 with st.sidebar:
     st.markdown("### 🌐 NÚCLEO DE CONTROL TÁCTICO")
+
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
 
     if st.button("🔄 Reinicio Total de la App", use_container_width=True):
         for key in list(st.session_state.keys()):
@@ -392,7 +422,7 @@ with st.sidebar:
 
     with st.expander("🎤 Micrófono Táctico (Speech-to-Text)", expanded=True):
         st.markdown("Graba tu orden hablada:")
-        audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_input")
+        audio_grabado = st.audio_input("Grabar orden de voz:", key="mic_audio_main")
         
         if audio_grabado:
             audio_bytes = audio_grabado.read()
@@ -464,14 +494,13 @@ with col_h1:
 with col_h2:
     if st.button("🗑️ Purgar", use_container_width=True, key="btn_limpiar_chat"):
         st.session_state.autorizado = False
-        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Ingresa la clave para iniciar sistemas."}]
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Bloqueando acceso."}]
         st.session_state.audio_process_key = None
         st.rerun()
 
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-        # SÍNTESIS DE VOZ AUTOMÁTICA EN CADA RESPUESTA DE JARVIS
         if m["role"] == "assistant" and gTTS:
             try:
                 clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
@@ -483,14 +512,12 @@ for m in st.session_state.mensajes:
             except Exception:
                 pass
 
-# Entrada de texto normal por chat o captura automática desde el micrófono
 prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
 prompt_usuario = prompt_voz if prompt_voz else prompt_chat
 
 if prompt_usuario:
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     
-    # Guardar en base de datos persistente
     try:
         conn_p = sqlite3.connect(fn_db, check_same_thread=False)
         cur_p = conn_p.cursor()
@@ -506,64 +533,50 @@ if prompt_usuario:
     respuesta_ia = ""
     query_lower = prompt_usuario.lower()
     
-    # --- CONTROL DE ACCESO INTELIGENTE ---
-    if not st.session_state.autorizado:
-        es_clave = any(k in query_lower for k in ["jarvis", "estás despierto", "estas despierto", "hola", "jefa", "sistema"])
-        if es_clave:
-            st.session_state.autorizado = True
-            respuesta_ia = "Sí, señorita, para usted siempre. Sistemas operativos al 100%, jefa. ¿Qué hacemos ahora?"
-        else:
-            respuesta_ia = "Acceso denegado, jefa. Tienes que decir o escribir la clave 'Jarvis' o '¿Estás despierto?' para abrir el sistema."
+    if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
+        respuesta_ia = "Sí, señorita, para usted siempre"
+    elif "correo" in query_lower:
+        respuesta_ia = "Jefa, el centro de alertas indica notificaciones recientes de UC CHRISTUS (Receta médica) y BancoEstado. Todo monitoreado."
+    elif "agenda" in query_lower or "calendario" in query_lower:
+        respuesta_ia = "Jefa, tienes el módulo de agenda integrado en el panel izquierdo para registrar y consultar eventos directamente en SQLite."
     else:
-        # --- FUNCIONAMIENTO NORMAL UNA VEZ AUTORIZADO ---
-        if query_lower.strip() == "jarvis" or "jarvis estas despierto" in query_lower or "jarvis estás despierto" in query_lower or "estás despierto" in query_lower or "estas despierto" in query_lower:
-            respuesta_ia = "Sí, señorita, para usted siempre"
-        elif "correo" in query_lower:
-            respuesta_ia = "Jefa, el centro de alertas indica notificaciones recientes de UC CHRISTUS (Receta médica) y BancoEstado. Todo monitoreado."
-        elif "agenda" in query_lower or "calendario" in query_lower:
-            respuesta_ia = "Jefa, tienes el módulo de agenda integrado en el panel izquierdo para registrar y consultar eventos directamente en SQLite."
-        else:
-            # --- DETECCIÓN DE MODOS DE RESPUESTA TÁCTICA ---
-            instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
-            
-            if "/human" in query_lower:
-                instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
-            elif "/eli10" in query_lower:
-                instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
-            elif "/x10piensa" in query_lower:
-                instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
-            elif "/ooda" in query_lower:
-                instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
+        instruccion_sistema = "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Respondes de forma directa, natural y con un toque sutilmente sarcástico pero sumamente leal y eficiente. Cero rodeos."
+        
+        if "/human" in query_lower:
+            instruccion_sistema += " Modo /HUMAN activado: Responde de forma muy natural, conversacional y cercana, sin formalidades robóticas."
+        elif "/eli10" in query_lower:
+            instruccion_sistema += " Modo ELI10 activado: Explica el concepto o tema de forma sumamente sencilla, como si se lo explicaras a un niño de 10 años, pero manteniendo tu sarcasmo característico."
+        elif "/x10piensa" in query_lower:
+            instruccion_sistema += " Modo X10PIENSA activado: Proporciona una respuesta analítica profunda, estratégica y detallada."
+        elif "/ooda" in query_lower:
+            instruccion_sistema += " Modo OODA activado: Organiza la respuesta estructurándola en un plan de acción táctico paso a paso."
 
-            # Procesamiento con Gemini bajo la directiva seleccionada
-            if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
-                try:
-                    model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
-                        system_instruction=instruccion_sistema
-                    )
-                    response = model.generate_content(prompt_usuario)
-                    if response and response.text:
-                        respuesta_ia = response.text
-                except Exception:
-                    pass
+        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=instruccion_sistema
+                )
+                response = model.generate_content(prompt_usuario)
+                if response and response.text:
+                    respuesta_ia = response.text
+            except Exception:
+                pass
 
-            # Respaldo local si falla la API
-            if not respuesta_ia:
-                if "hola" in query_lower:
-                    respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
-                elif "o'higgins" in query_lower or "ohiggins" in query_lower:
-                    respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
-                elif "muro de berlín" in query_lower or "berlín" in query_lower:
-                    respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
-                elif "binomio" in query_lower:
-                    respuesta_ia = "Análisis completado, jefa: Un binomio es una expresión algebraica de dos términos, y su fórmula al cuadrado es a al cuadrado más 2 ab más b al cuadrado."
-                else:
-                    respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin sin novedad."
+        if not respuesta_ia:
+            if "hola" in query_lower:
+                respuesta_ia = "Aquí sigo, jefa, aguantando tus ocurrencias desde el nodo de Buin. ¿Qué se te ofrece?"
+            elif "o'higgins" in query_lower or "ohiggins" in query_lower:
+                respuesta_ia = "Bernardo O'Higgins Riquelme nació en Chillán el 20 de agosto de 1778. Militar y prócer chileno, por si necesitabas otra clase de historia."
+            elif "muro de berlín" in query_lower or "berlín" in query_lower:
+                respuesta_ia = "La caída del Muro de Berlín ocurrió el 9 de noviembre de 1989. Un hito histórico bastante fácil de recordar, jefa."
+            elif "binomio" in query_lower:
+                respuesta_ia = "Análisis completado, jefa: Un binomio es una expresión algebraica de dos términos, y su fórmula al cuadrado es a al cuadrado más 2 ab más b al cuadrado."
+            else:
+                respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin sin novedad."
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     
-    # Guardar respuesta en base de datos persistente
     try:
         conn_p = sqlite3.connect(fn_db, check_same_thread=False)
         cur_p = conn_p.cursor()
