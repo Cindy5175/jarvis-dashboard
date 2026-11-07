@@ -11,6 +11,32 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# --- INICIALIZACIÓN SEGURA DE SESSION_STATE (PRIMERO) ---
+if "autorizado" not in st.session_state:
+    st.session_state.autorizado = False
+
+# ZONA HORARIA CHILENA (UTC-3)
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin."}
+    ]
+
+if "audio_process_key" not in st.session_state:
+    st.session_state.audio_process_key = None
+
+PIN_SECRETO = "2805"
+
 # Importación segura de gTTS para voz
 try:
     from gtts import gTTS
@@ -204,21 +230,21 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
 </style>
 """, unsafe_allow_html=True)
 
-# --- ZONA HORARIA CHILENA (UTC-3) ---
-tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
-now_chile = datetime.datetime.now(tz_chile)
-hora_actual = now_chile.hour
-
-if 0 <= hora_actual < 12:
-    saludo_actual = "Buenos días"
-elif 12 <= hora_actual < 20:
-    saludo_actual = "Buenas tardes"
-else:
-    saludo_actual = "Buenas noches"
-
 # =========================================================================
-# ESTADO DE SESIÓN & CONTROL DE ACCESO (PIN: 2805)
+# 1. PANTALLA DE BLOQUEO (USANDO .get() PARA EVITAR KEYERROR)
 # =========================================================================
+if not st.session_state.get("autorizado", False):
+    st.markdown("""
+    <div style="text-align: center; margin-top: 30px;">
+        <h2 style="color: #00f3ff; font-family: monospace;">🔒 ACCESO RESTRINGIDO - NODO BUIN</h2>
+        <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-if "autorizado" not in st.session_state:
-    st.session_state.autorizado
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("🛡️ Desbloquear Armadura")
+            
+            if btn_entrar
