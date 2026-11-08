@@ -47,7 +47,7 @@ try:
     import google.generativeai as genai
     
     # PEGA AQUÍ TU CLAVE REAL QUE EMPIEZA CON AQ...
-    api_key = "AQ..." 
+    api_key = "AQ.Ab8RN6LpK2eUGZkgdOR5pKTD-JkN4GsCR6p0JLI7DoLZM-zFRQ" 
     
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
