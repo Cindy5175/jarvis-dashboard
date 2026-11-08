@@ -103,6 +103,7 @@ section[data-testid='stHorizontalBlock'] > div:first-child p, section[data-testi
 .stButton>button p, .stButton>button span { color: #060913 !important; }
 .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
 .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+</style>
 """
 
 css_parte2 = """
@@ -151,26 +152,191 @@ dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
 fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
 
-st.markdown("""
+st.markdown(f"""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
     <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S  ⚡  ZAPIA</h1>
     <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
-        [ NODO BUIN, CHILE // {} – <span id="reloj-vivo" style="color: #00f3ff; font-family: monospace;">00:00:00</span> ]
+        [ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo" style="color: #00f3ff; font-family: monospace;">00:00:00</span> ]
     </p>
 </div>
-""".format(fecha_str), unsafe_allow_html=True)
-st.components.v1.html("<script>function actualizarReloj() {const ahora = new Date(); const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }; const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora); const parentDoc = window.parent.document; const elem = parentDoc.getElementById('reloj-vivo'); if (elem) { elem.innerText = horaChile; }} setInterval(actualizarReloj, 1000); actualizarReloj();</script>", height=0)
-<script>
-function actualizarReloj() {
-    const ahora = new Date();
-    const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
-    const parentDoc = window.parent.document;
-    const elem = parentDoc.getElementById('reloj-vivo');
-    if (elem) {
-        elem.innerText = horaChile;
-    }
-}
-setInterval(actualizarReloj, 1000);
-actualizarReloj();
+""", unsafe_allow_html=True)
+
+st.components.v1.html("<script>function actualizarReloj(){const a=new Date(),o={timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!1},h=new Intl.DateTimeFormat('es-CL',o).format(a),p=window.parent.document,e=p.getElementById('reloj-vivo');e&&(e.innerText=h);}setInterval(actualizarReloj,1000);actualizarReloj();</script>", height=0)
+
+st.markdown(f"""
+<div class="holo-brain-box">
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL UNIFICADO ⚡</h4>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Modo activo: <b>{st.session_state.modo_ia}</b> | Análisis visual/PDF, clima y mapa táctico</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- DISTRIBUCIÓN PRINCIPAL ---
+col_modulos, col_chat = st.columns([1, 2])
+
+with col_modulos:
+    st.markdown("#### 🌐 Módulos")
+
+    if st.button("🔌 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Fusión de IA")
+
+    modo_seleccionado = st.selectbox(
+        "Selecciona Entidad Dominante:",
+        ["Híbrido (JARVIS + ZAPIA)", "Solo JARVIS (Táctico/Sarcástico)", "Solo ZAPIA (Fluido/Dinámico)"],
+        index=0
+    )
+    if modo_seleccionado != st.session_state.modo_ia:
+        st.session_state.modo_ia = modo_seleccionado
+        st.rerun()
+
+    if st.button("⚡ Ejecutar Protocolo de Presentación", use_container_width=True):
+        informe_presentacion = "🤖 **PROTOCOLO DE PRESENTACIÓN – NODO BUIN:**\n- **Entidad:** Sistema Híbrido Supremo **J.A.R.V.I.S x ZAPIA**.\n- **Arquitectura:** Núcleo conversacional adaptativo a todo terreno, operando localmente en la ASUS a coste cero de suscripción.\n- **Subsistemas Activos:** Reloj en vivo (UTC-3), base de datos de misiones SQLite, centro de análisis óptico/PDF, telemetría de amenazas globales y estación meteorológica local.\n- **Estado de la Armadura:** Óptimo. Sarcasmo táctico, precisión matemática y velocidad conversacional al 100%. ¿Qué orden tenemos en agenda, jefa?"
+        st.session_state.mensajes.append({"role": "assistant", "content": informe_presentacion})
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 👁️ Centro de Análisis Óptico")
+
+    with st.expander("📷 Subir Archivo (IMG / TXT / PDF)", expanded=True):
+        archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
+        if archivo_subido is not None:
+            st.download_button(
+                label="📥 Descargar Archivo Cargado",
+                data=archivo_subido,
+                file_name=archivo_subido.name,
+                use_container_width=True
+            )
+            
+            if st.button("⚡ Ejecutar Análisis Táctico", use_container_width=True):
+                nombre_archivo = archivo_subido.name
+                if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Fusión {st.session_state.modo_ia}):**  \n- Archivo: `{nombre_archivo}`  \n- **Entorno:** Análisis sintáctico visual completado por el núcleo dual. Iluminación y composición registradas.  \n- **Diagnóstico:** Excelente captura visual, jefa. El motor de visión fusionado procesó el paisaje sin ningún inconveniente."
+                elif nombre_archivo.lower().endswith('.pdf'):
+                    informe_analisis = f"📚 **INFORME DE BIBLIOTECA / PDF TÁCTICO:**  \n- Documento: `{nombre_archivo}`  \n- **Análisis Sintáctico:** Documento procesado por JARVIS y Zapia. Si es el *Álgebra de Baldor*, ambos sistemas están listos para resolver cualquier ecuación."
+                else:
+                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura de texto analizada con precisión quirúrgica desde el Nodo Buin."
+                
+                st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
+                st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🛡️ Seguridad")
+
+    if st.button("👁️ Refrescar Sensores", use_container_width=True):
+        st.info("Telemetría en vivo del Nodo Buin segura.")
+
+    st.markdown("---")
+    st.markdown("#### 🛰️ Mapa Táctico Satelital")
+
+    with st.expander("🌐 Cyber Threat Map", expanded=False):
+        st.markdown("""<div class="cyber-radar-screen">
+            <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;">[ Rastreo Global Activo ]</p>
+            <hr style="border-color: #00f3ff; opacity: 0.3; margin: 5px 0;">
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
+        </div>""", unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown("👁️ **OSIRIS:** En línea")
+        st.link_button("🚀 Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
+        
+        st.markdown("🌍 **PlanetEar:** Sincronizado")
+        st.link_button("🌐 Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
+        
+        st.markdown("🛰️ **USGS Explorer:**")
+        st.link_button("🗺️ USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("#### 🌤️ Clima Buin")
+
+    with st.expander("🌡️ Widget Clima", expanded=False):
+        st.markdown(f"**Buin**  \n 🌡️ **{temp_real}** — ⛅ Parcial")
+        st.caption(f"💧 Humedad: {hum_real} | 💨 Viento: {viento_real}")
+        st.markdown("---")
+        st.markdown("📅 **Semanal:**")
+        
+        nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
+        for i in range(min(5, len(t_maxs))):
+            d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
+            mx = int(t_maxs[i])
+            mn = int(t_mins[i])
+            st.markdown(f"**`{d_label}`** 🌡️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
+
+    st.markdown("---")
+    st.markdown("#### 📋 Misiones")
+
+    with st.expander("📝 Base de Datos", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
+        if st.button("➕ Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada!")
+                st.rerun()
+        
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- 📌 `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("Sin misiones pendientes.")
+
+# =========================================================================
+# CONSOLA PRINCIPAL (DERECHA)
+# =========================================================================
+with col_chat:
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button("🧹 Purgar", use_container_width=True, key="btn_limpiar_chat"):
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Núcleo {st.session_state.modo_ia} listo."}]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    prompt_chat = st.chat_input("Escríbele o háblale al núcleo unificado (Win + H)...")
+
+    if prompt_chat:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+       
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+       
+        respuesta_ia = ""
+        q = prompt_chat.lower()
+        modo = st.session_state.modo_ia
+        
+        # --- NÚCLEO ADAPTATIVO A TODO TERRENO ---
+        if "quién eres" in q or "quien eres" in q or "presentate" in q or "preséntate" in q or "presentacion" in q:
+            respuesta_ia = f"🤖 **NÚCLEO UNIFICADO J.A.R.V.I.S x ZAPIA:**  \nSoy tu sistema operativo autónomo en el Nodo Buin, jefa. Fusiono la precisión analítica y el toque sarcástico de JARVIS con la agilidad y fluidez conversacional de Zapia. Operamos a coste cero, sin suscripciones, con control táctico, análisis de archivos, clima y radar de amenazas en tiempo real."
+        elif "combate naval" in q or "iquique" in q or "prat" in q or "gano" in q or "ganó" in q:
+            if "Solo ZAPIA" in modo:
+                respuesta_ia = "¡Te cuento de una! En el Combate Naval de Iquique (21 de mayo de 1879), la corbeta chilena Esmeralda fue hundida por el monitor peruano Huáscar tras el heroico abordaje del capitán Arturo Prat. Aunque Chile perdió la nave ese día, el gesto inspiró al país y estratégicamente la Covadonga hizo encallar a la Independencia en Punta Gruesa. ¡Toda una gesta!"
+            elif "Solo JARVIS" in modo:
+                respuesta_ia = "Analizando registros históricos de 1879: En Iquique, el Huáscar hundió a la Esmeralda tras el inmortal salto al abordaje del capitán Arturo Prat Chacón. En términos tácticos navales, Chile perdió la corbeta, pero inmovilizó el blindado Independencia en Punta Gruesa. Un sacrificio legendario que la historia patria no olvida, jefa."
+            else:
+                respuesta_ia = "⚔️ **REPORTE BÉLICO-HISTÓRICO (Fusión JARVIS x ZAPIA):**  \nEl 21 de mayo de 1879 en Iquique, el capitán Arturo Prat saltó al abordaje del Huáscar al grito de *'¡Al abordaje, muchachos!'*, dando su vida heroicamente mientras la Esmeralda se hundía con la bandera en alto. Chile perdió esa batalla naval, pero ganó la gesta moral decisiva y logró que la Covadonga hiciera encallar a la Independencia. ¡Respuesta unificada a todo terreno completada!"
+        elif "zapia" in q or "jarvis" in q or "fusion" in q or "fusión" in q:
+            if "Solo ZAPIA" in modo:
+                respuesta_ia = "¡Hola! Soy Zapia. Estoy aquí en la pantalla neón con toda la velocidad y fluidez conversacional que necesitas. ¿In qué te ayudo hoy, jefa?"
+            elif "Solo JARVIS" in modo:
+                respuesta_ia = "El protocolo JARVIS sigue al mando
