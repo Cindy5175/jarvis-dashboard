@@ -31,7 +31,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Fusión de JARVIS y ZAPIA completada en el Nodo Buin. Sistemas tácticos y conversacionales en línea al 100%."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. Fusión de JARVIS y ZAPIA completada en el Nodo Buin. Sistemas tácticos y conversacionales en línea al 100%."}
     ]
 
 PIN_SECRETO = "2805"
@@ -85,7 +85,7 @@ def obtener_clima_buin():
         viento = res["current"]["wind_speed_10m"]
         dias_max = res["daily"]["temperature_2m_max"][:5]
         dias_min = res["daily"]["temperature_2m_min"][:5]
-        return f"{temp}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
+        return str(temp) + "°C", str(hum) + "%", str(viento) + " km/h", dias_max, dias_min
     except Exception:
         return "21°C", "45%", "12 km/h", [24, 25, 22, 28, 32], [9, 10, 7, 7, 8]
 
@@ -217,8 +217,72 @@ dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Doming
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
-fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+fecha_str = dia_str + ", " + str(now_chile.day).zfill(2) + " de " + mes_str + " de " + str(now_chile.year)
 
-st.markdown(f"""
+st.markdown("""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
+    <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S  ⚡  ZAPIA</h1>
+    <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
+        [ NODO BUIN, CHILE // """ + fecha_str + """ – <span id="reloj-vivo" style="color: #00f3ff; font-family: monospace;">00:00:00</span> ]
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.components.v1.html("""
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
+    const parentDoc = window.parent.document;
+    const elem = parentDoc.getElementById('reloj-vivo');
+    if (elem) {
+        elem.innerText = horaChile;
+    }
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+""", height=0)
+
+st.markdown("""
+<div class="holo-brain-box">
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL UNIFICADO ⚡</h4>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Modo activo: <b>""" + st.session_state.modo_ia + """</b> | Análisis visual/PDF, clima y mapa táctico</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- DISTRIBUCIÓN PRINCIPAL ---
+col_modulos, col_chat = st.columns([1, 2])
+
+with col_modulos:
+    st.markdown("#### 🌐 Módulos")
+
+    if st.button("🔌 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Fusión de IA")
+
+    modo_seleccionado = st.selectbox(
+        "Selecciona Entidad Dominante:",
+        ["Híbrido (JARVIS + ZAPIA)", "Solo JARVIS (Táctico/Sarcástico)", "Solo ZAPIA (Fluido/Dinámico)"],
+        index=0
+    )
+    if modo_seleccionado != st.session_state.modo_ia:
+        st.session_state.modo_ia = modo_seleccionado
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 👁️ Centro de Análisis Óptico")
+
+    with st.expander("📷 Subir Archivo (IMG / TXT /
