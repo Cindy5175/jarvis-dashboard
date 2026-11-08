@@ -4,6 +4,12 @@ import sqlite3
 import io
 import requests
 
+# Importación segura de la librería de voz local (pyttsx3)
+try:
+    import pyttsx3
+except ImportError:
+    pyttsx3 = None
+
 # --- 1. CONFIGURACIÓN DE PÁGINA (SIEMPRE PRIMERO - OBLIGATORIO) ---
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
@@ -37,12 +43,6 @@ if "audio_process_key" not in st.session_state:
 
 PIN_SECRETO = "2805"
 
-# Importación segura de gTTS para voz
-try:
-    from gtts import gTTS
-except ImportError:
-    gTTS = None
-
 # Importación de Google Generative AI
 try:
     import google.generativeai as genai
@@ -58,6 +58,30 @@ try:
         genai.configure(api_key=api_key)
 except ImportError:
     genai = None
+
+# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
+def hablar_como_jarvis(texto_a_decir):
+    if not pyttsx3:
+        return
+    try:
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 175)
+        voices = engine.getProperty('voices')
+        voz_masculina_encontrada = False
+        
+        for voice in voices:
+            if "male" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower() or "es_" in voice.id.lower():
+                engine.setProperty('voice', voice.id)
+                voz_masculina_encontrada = True
+                break
+        
+        if not voz_masculina_encontrada and len(voices) > 1:
+            engine.setProperty('voice', voices[1].id)
+
+        engine.say(texto_a_decir)
+        engine.runAndWait()
+    except Exception as e:
+        print(f"Error en el sintetizador de voz: {e}")
 
 # --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
 fn_db = "jarvis_misiones.db"
@@ -145,7 +169,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO (#00f3ff) & BOTONES FORZADOS ---
+# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
@@ -401,22 +425,6 @@ with col_chat:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-            if m["role"] == "assistant" and gTTS:
-                try:
-                    clean_text = m['content'].replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
-                    tts = gTTS(text=clean_text, lang='es', slow=False)
-                    audio_fp = io.BytesIO()
-                    tts.write_to_fp(audio_fp)
-                    audio_fp.seek(0)
-                    st.audio(audio_fp, format='audio/mp3', autoplay=True)
-                except Exception:
-                    pass
-
-    st.markdown("""
-    <audio autoplay style="display:none;">
-      <source src="https://actions.google.com/sounds/v1/ui/ui_click.ogg" type="audio/ogg">
-    </audio>
-    """, unsafe_allow_html=True)
 
     prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
     prompt_usuario = prompt_voz if prompt_voz else prompt_chat
@@ -459,5 +467,10 @@ with col_chat:
                 respuesta_ia = f"Orden procesada con éxito, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        
+        # 🔊 REPRODUCIR LA VOZ VARONIL LOCALMENTE EN EL COMPUTADOR
+        texto_limpio_voz = respuesta_ia.replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+        hablar_como_jarvis(texto_limpio_voz)
+        
         st.session_state.audio_process_key = None
         st.rerun()
