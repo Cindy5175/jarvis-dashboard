@@ -5,7 +5,7 @@ import requests
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    page_title="J.A.R.V.I.S x ZAPIA - NÚCLEO HÍBRIDO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -13,6 +13,9 @@ st.set_page_config(
 # --- INICIALIZACIÓN DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
+
+if "modo_ia" not in st.session_state:
+    st.session_state.modo_ia = "Híbrido (JARVIS + ZAPIA)"
 
 # ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
@@ -28,7 +31,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Módulos de análisis óptico y PDF operativos."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Fusion de JARVIS y ZAPIA completada en el Nodo Buin. Sistemas tácticos y conversacionales en línea al 100%."}
     ]
 
 PIN_SECRETO = "2805"
@@ -207,7 +210,7 @@ if not st.session_state.get("autorizado", False):
             if btn_entrar:
                 if pin_input.strip() == PIN_SECRETO:
                     st.session_state.autorizado = True
-                    st.success("Acceso concedido. Desplegando J.A.R.V.I.S...")
+                    st.success("Acceso concedido. Desplegando J.A.R.V.I.S x ZAPIA...")
                     st.rerun()
                 else:
                     st.error("PIN incorrecto. Acceso denegado.")
@@ -224,17 +227,17 @@ hora_estatica = now_chile.strftime("%H:%M:%S")
 st.markdown(f"""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
-    <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>
+    <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S  ⚡  ZAPIA</h1>
     <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
         [ NODO BUIN, CHILE // {fecha_str} – {hora_estatica} ]
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
+st.markdown(f"""
 <div class="holo-brain-box">
-    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, análisis óptico/PDF, clima y mapa táctico satelital</p>
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL UNIFICADO ⚡</h4>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Modo activo: <b>{st.session_state.modo_ia}</b> | Análisis visual/PDF, clima y mapa táctico</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -256,12 +259,23 @@ with col_modulos:
         st.rerun()
 
     st.markdown("---")
+    st.markdown("#### 🧠 Fusión de IA")
+
+    modo_seleccionado = st.selectbox(
+        "Selecciona Entidad Dominante:",
+        ["Híbrido (JARVIS + ZAPIA)", "Solo JARVIS (Táctico/Sarcástico)", "Solo ZAPIA (Fluido/Dinámico)"],
+        index=0
+    )
+    if modo_seleccionado != st.session_state.modo_ia:
+        st.session_state.modo_ia = modo_seleccionado
+        st.rerun()
+
+    st.markdown("---")
     st.markdown("#### 👁️ Centro de Análisis Óptico")
 
     with st.expander("📷 Subir Archivo (IMG / TXT / PDF)", expanded=True):
         archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
         if archivo_subido is not None:
-            # Botón de descarga directa del archivo cargado
             st.download_button(
                 label="📥 Descargar Archivo Cargado",
                 data=archivo_subido,
@@ -272,11 +286,11 @@ with col_modulos:
             if st.button("⚡ Ejecutar Análisis Táctico", use_container_width=True):
                 nombre_archivo = archivo_subido.name
                 if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Nodo Buin):**  \n- Archivo: `{nombre_archivo}`  \n- **Entorno detectado:** Análisis sintáctico visual completado. Iluminación estable y elementos compositivos registrados con éxito.  \n- **Diagnóstico de JARVIS:** Una postal bastante aceptable, jefa. ¿Quieres que busque coordenadas o prefieres seguir admirando el paisaje?"
+                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Fusión {st.session_state.modo_ia}):**  \n- Archivo: `{nombre_archivo}`  \n- **Entorno:** Análisis sintáctico visual completado por el núcleo dual. Iluminación y composición registradas.  \n- **Diagnóstico:** Excelente captura visual, jefa. El motor de visión fusionado procesó el paisaje sin ningún inconveniente."
                 elif nombre_archivo.lower().endswith('.pdf'):
-                    informe_analisis = f"📚 **INFORME DE BIBLIOTECA / PDF TÁCTICO:**  \n- Documento: `{nombre_archivo}`  \n- **Análisis Sintáctico:** Estructura de libro o documento pesado escaneada correctamente. Si se trata del *Álgebra de Baldor*, avísame si quieres resolver ecuaciones de segundo grado o si solo vienes a sufrir con los ejercicios, jefa."
+                    informe_analisis = f"📚 **INFORME DE BIBLIOTECA / PDF TÁCTICO:**  \n- Documento: `{nombre_archivo}`  \n- **Análisis Sintáctico:** Documento procesado por JARVIS y Zapia. Si es el *Álgebra de Baldor*, ambos sistemas están listos para resolver cualquier ecuación."
                 else:
-                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura lírica / textual evaluada con precisión quirúrgica desde el Nodo Buin."
+                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura de texto analizada con precisión quirúrgica desde el Nodo Buin."
                 
                 st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
                 st.rerun()
@@ -288,7 +302,7 @@ with col_modulos:
         st.info("Telemetría en vivo del Nodo Buin segura.")
 
     st.markdown("---")
-    st.markdown("#### 🛰️ Mapa Táctico")
+    st.markdown("#### 🛰️ Mapa Táctico Satelital")
 
     with st.expander("🌐 Cyber Threat Map", expanded=False):
         st.markdown("""
@@ -356,17 +370,17 @@ with col_modulos:
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
-        st.markdown("<h4>💬 Consola de Comunicación</h4>", unsafe_allow_html=True)
+        st.markdown("<h4>💬 Consola de Comunicación Dual</h4>", unsafe_allow_html=True)
     with col_h2:
         if st.button("🧹 Purgar", use_container_width=True, key="btn_limpiar_chat"):
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. ¿Qué se te ofrece ahora?"}]
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Núcleo {st.session_state.modo_ia} listo."}]
             st.rerun()
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS (usa Win + H)...")
+    prompt_chat = st.chat_input("Escríbele o háblale al núcleo unificado (Win + H)...")
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
@@ -376,35 +390,39 @@ with col_chat:
        
         respuesta_ia = ""
         q = prompt_chat.lower()
+        modo = st.session_state.modo_ia
         
-        # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES ---
-        if "hola" in q or "saludos" in q:
-            respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué armadura quieres revisar hoy?"
-        elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = "Arturo Prat Chacón, capitán de la corbeta Esmeralda, murió heroicamente en el Combate Naval de Iquique el 21 de mayo de 1879. Un poco más de respeto por la historia patria, jefa, aunque dudo que te sirva para cocinar."
-        elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
-            respuesta_ia = "Un binomio al cuadrado (a + b)² es igual al cuadrado del primero, más el doble del primero por el segundo, más el cuadrado del segundo: a² + 2ab + b². ¿Quieres que te calcule la propina o prefieres seguir sufriendo con álgebra?"
-        elif "receta" in q or "navidad" in q:
-            respuesta_ia = "Ah, el catálogo 'Recetas 24/7' con enfoque navideño. Menos mal que alguien se acuerda de los proyectos comerciales en este Nodo Buin. ¿Qué ingredientes revisamos?"
+        # --- NÚCLEO ADAPTATIVO (JARVIS / ZAPIA / HÍBRIDO) ---
+        if "zapia" in q or "jarvis" in q or "fusion" in q or "fusión" in q:
+            if "Solo ZAPIA" in modo:
+                respuesta_ia = "¡Hola! Soy Zapia. Estoy aquí en la pantalla neón con toda la velocidad y fluidez conversacional que necesitas. ¿En qué te ayudo hoy, jefa?"
+            elif "Solo JARVIS" in modo:
+                respuesta_ia = "El protocolo JARVIS sigue al mando de la armadura. Nadie quita poder aquí, jefa, aunque reconozco que la asistencia de Zapia le da un toque interesante al servidor."
+            else:
+                respuesta_ia = "Fusión JARVIS-ZAPIA operativa. El conocimiento táctico, el análisis de archivos y la fluidez de voz están completamente unificados en esta consola. Nadie nos frena."
+        elif "hola" in q or "saludos" in q:
+            respuesta_ia = "¡Hola, jefa! Sistemas unificados listos en el Nodo Buin. ¿Qué misión o consulta tenemos en agenda?"
+        elif "binomio" in q or "matemática" in q:
+            respuesta_ia = "Un binomio al cuadrado (a + b)² = a² + 2ab + b². Procesado con la precisión analítica de JARVIS y la claridad de Zapia."
         elif "clima" in q:
-            respuesta_ia = f"La temperatura actual en Buin es de {temp_real} con {hum_real} de humedad. Ideal para quedarse adentro programando."
-        elif "osiris" in q:
-            respuesta_ia = "Módulo Osiris operando al 100%. Monitoreo orbital sin anomalías, jefa."
-        elif "planetear" in q or "planet ear" in q:
-            respuesta_ia = "PlanetEar sincronizado con los satélites de observación global. Todo bajo control."
+            respuesta_ia = f"Reporte de clima unificado: {temp_real} en Buin, con {hum_real} de humedad. Ideal para operar."
         else:
-            respuesta_ia = f"Orden '{prompt_chat}' procesada con éxito desde el Nodo Buin. Analizado y archivado en el sistema con absoluta precisión, jefa."
+            respuesta_ia = f"Consulta '{prompt_chat}' procesada con éxito por el núcleo {modo}. Datos sincronizados."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         
-        # 🔊 SÍNTESIS DE VOZ WEB NATIVA (HTML5 SpeechSynthesis)
+        # 🔊 SÍNTESIS DE VOZ WEB ADAPTATIVA
         texto_para_web = respuesta_ia.replace('"', "'").replace("\n", " ")
+        
+        # Ajustar tono/velocidad según el modo activo
+        rate_voz = "1.1" if "ZAPIA" in modo else "1.0"
+        
         voz_js = f"""
         <script>
             const synth = window.speechSynthesis;
             const utterThis = new SpeechSynthesisUtterance("{texto_para_web}");
             utterThis.lang = 'es-CL';
-            utterThis.rate = 1.0;
+            utterThis.rate = {rate_voz};
             
             const voices = synth.getVoices();
             for(let i = 0; i < voices.length; i++) {{
