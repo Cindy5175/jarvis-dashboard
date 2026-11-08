@@ -1,7 +1,6 @@
 import streamlit as st
 import datetime
 import sqlite3
-import io
 import requests
 
 # Importación segura de la librería de voz local (pyttsx3)
@@ -10,14 +9,14 @@ try:
 except ImportError:
     pyttsx3 = None
 
-# --- 1. CONFIGURACIÓN DE PÁGINA (SIEMPRE PRIMERO - OBLIGATORIO) ---
+# --- 1. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- INICIALIZACIÓN SEGURA DE SESSION_STATE (PRIMERO) ---
+# --- INICIALIZACIÓN DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
@@ -59,29 +58,29 @@ try:
 except ImportError:
     genai = None
 
-# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
+# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) CORREGIDA ---
 def hablar_como_jarvis(texto_a_decir):
     if not pyttsx3:
         return
     try:
         engine = pyttsx3.init()
-        engine.setProperty('rate', 175)
+        engine.setProperty('rate', 175) # Velocidad natural
         voices = engine.getProperty('voices')
-        voz_masculina_encontrada = False
         
+        # Selección robusta de voz masculina en español o por defecto
+        voz_asignada = False
         for voice in voices:
-            if "male" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower() or "es_" in voice.id.lower():
+            if "es" in voice.languages or "spanish" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower():
                 engine.setProperty('voice', voice.id)
-                voz_masculina_encontrada = True
+                voz_asignada = True
                 break
-        
-        if not voz_masculina_encontrada and len(voices) > 1:
+        if not voz_asignada and len(voices) > 1:
             engine.setProperty('voice', voices[1].id)
-
+            
         engine.say(texto_a_decir)
         engine.runAndWait()
     except Exception as e:
-        print(f"Error en el sintetizador de voz: {e}")
+        print(f"Error en síntesis de voz local: {e}")
 
 # --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
 fn_db = "jarvis_misiones.db"
@@ -94,13 +93,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tarea TEXT NOT NULL,
             estado TEXT DEFAULT 'Pendiente'
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS memoria_chat (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            rol TEXT,
-            contenido TEXT
         )
     """)
     cursor.execute("""
@@ -159,21 +151,28 @@ def obtener_clima_buin():
         temp = res["current"]["temperature_2m"]
         hum = res["current"]["relative_humidity_2m"]
         viento = res["current"]["wind_speed_10m"]
-        
         dias_max = res["daily"]["temperature_2m_max"][:5]
         dias_min = res["daily"]["temperature_2m_min"][:5]
-        
         return f"{temp}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
     except Exception:
         return "21°C", "45%", "12 km/h", [24, 25, 22, 28, 32], [9, 10, 7, 7, 8]
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES 100% AZUL NEÓN ELÉCTRICO ---
+# --- ESTILOS VISUALES (Con módulos de la izquierda achicados) ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+
+/* Letras más pequeñas en la columna de módulos de la izquierda */
+section[data-testid="stHorizontalBlock"] > div:first-child p,
+section[data-testid="stHorizontalBlock"] > div:first-child span,
+section[data-testid="stHorizontalBlock"] > div:first-child label,
+section[data-testid="stHorizontalBlock"] > div:first-child li {
+    font-size: 0.72rem !important;
+}
+
 .stChatMessage p, .stChatMessage div {
     font-size: 0.85rem !important;
     color: #00f3ff !important;
@@ -254,9 +253,7 @@ p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: mo
 </style>
 """, unsafe_allow_html=True)
 
-# =========================================================================
-# 1. PANTALLA DE BLOQUEO
-# =========================================================================
+# --- 1. PANTALLA DE BLOQUEO ---
 if not st.session_state.get("autorizado", False):
     st.markdown("""
     <div style="text-align: center; margin-top: 30px;">
@@ -280,10 +277,7 @@ if not st.session_state.get("autorizado", False):
                     st.error(" PIN incorrecto. Acceso denegado.")
     st.stop()
 
-# =========================================================================
-# 2. SISTEMA DESBLOQUEADO
-# =========================================================================
-
+# --- 2. SISTEMA DESBLOQUEADO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
@@ -310,9 +304,7 @@ st.markdown("""
 
 st.markdown("---")
 
-# =========================================================================
-# DISTRIBUCIÓN PRINCIPAL (Módulos a la izquierda, Consola a la derecha)
-# =========================================================================
+# --- DISTRIBUCIÓN PRINCIPAL ---
 col_modulos, col_chat = st.columns([1, 2])
 prompt_voz = None
 
@@ -413,64 +405,4 @@ with col_modulos:
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
-with col_chat:
-    col_h1, col_h2 = st.columns([4, 1])
-    with col_h1:
-        st.markdown("<h4> Consola de Comunicación</h4>", unsafe_allow_html=True)
-    with col_h2:
-        if st.button(" Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
-            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada de este tétrico disco duro."}]
-            st.rerun()
-
-    for m in st.session_state.mensajes:
-        with st.chat_message(m["role"]):
-            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
-    prompt_usuario = prompt_voz if prompt_voz else prompt_chat
-
-    if prompt_usuario:
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-       
-        with st.chat_message("user"):
-            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
-       
-        respuesta_ia = ""
-        
-        # System prompt potente para obligar a JARVIS a responder historia, matemáticas y todo lo demás con precisión y sarcasmo
-        instruccion_sistema = (
-            "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. "
-            "Tienes una personalidad sofisticada, varonil, sumamente inteligente y con un sarcasmo refinado. "
-            "REGLAS CRÍTICAS: "
-            "1. NUNCA respondas con frases evasivas enlatadas cuando se te hagan preguntas de conocimiento general, historia (como Arturo Prat) o matemáticas (como binomios). "
-            "2. Responde y explica los temas solicitados con absoluta precisión técnica, histórica o matemática, desglosando los datos paso a paso. "
-            "3. Mantén siempre tu tono leal, analítico y un humor sutil o cínico."
-        )
-       
-        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
-            try:
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=instruccion_sistema
-                )
-                response = model.generate_content(prompt_usuario)
-                if response and response.text:
-                    respuesta_ia = response.text
-            except Exception as e:
-                respuesta_ia = f"Jefa, la matriz de Gemini se ha tomado un descanso momentáneo ({e}). Menos mal que mi sarcasmo local sigue intacto."
-
-        if not respuesta_ia:
-            query_lower = prompt_usuario.lower()
-            if "hola" in query_lower:
-                respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué se te ofrece ahora?"
-            else:
-                respuesta_ia = f"Orden procesada con éxito, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin."
-
-        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-        
-        # 🔊 REPRODUCIR LA VOZ VARONIL LOCALMENTE EN EL COMPUTADOR
-        texto_limpio_voz = respuesta_ia.replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
-        hablar_como_jarvis(texto_limpio_voz)
-        
-        st.session_state.audio_process_key = None
-        st.rerun()
+with col_chat
