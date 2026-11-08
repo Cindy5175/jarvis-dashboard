@@ -58,16 +58,15 @@ try:
 except ImportError:
     genai = None
 
-# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) CORREGIDA ---
+# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
 def hablar_como_jarvis(texto_a_decir):
     if not pyttsx3:
         return
     try:
         engine = pyttsx3.init()
-        engine.setProperty('rate', 175) # Velocidad natural
+        engine.setProperty('rate', 175)
         voices = engine.getProperty('voices')
         
-        # Selección robusta de voz masculina en español o por defecto
         voz_asignada = False
         for voice in voices:
             if "es" in voice.languages or "spanish" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower():
@@ -159,13 +158,13 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES (Con módulos de la izquierda achicados) ---
+# --- ESTILOS VISUALES (Letras achicadas en columna izquierda) ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 
-/* Letras más pequeñas en la columna de módulos de la izquierda */
+/* Letras más pequeñas y compactas en la columna izquierda */
 section[data-testid="stHorizontalBlock"] > div:first-child p,
 section[data-testid="stHorizontalBlock"] > div:first-child span,
 section[data-testid="stHorizontalBlock"] > div:first-child label,
@@ -327,7 +326,7 @@ with col_modulos:
         st.info("Obteniendo telemetría en vivo del Nodo Buin... Sistema seguro.")
 
     st.markdown("---")
-    st.markdown("####  MAPA TÁCTICO SATELITAL")
+    st.markdown("####  MAPA TÁCTICO SATELITAL (Con Osiris & PlanetEar)")
 
     with st.expander(" Live Cyber Threat Map", expanded=True):
         st.markdown("""
@@ -340,6 +339,11 @@ with col_modulos:
             <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"> <b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Módulos integrados solicitados en la sección de mapas tácticos
+        st.markdown("---")
+        st.markdown("👁️ **Módulo OSIRIS:** En línea (Monitoreo activo)")
+        st.markdown("🌍 **PlanetEar:** Órbita global sincronizada")
         st.link_button(" USGS Earth Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
 
     st.markdown("---")
@@ -403,6 +407,66 @@ with col_modulos:
             st.caption("No hay misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA)
+# CONSOLA PRINCIPAL (DERECHA) - CORREGIDO EL SINTAXIS ERROR AQUÍ
 # =========================================================================
-with col_chat
+with col_chat:
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown("<h4> Consola de Comunicación</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button(" Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada de este tétrico disco duro."}]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+    prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+
+    if prompt_usuario:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+       
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+       
+        respuesta_ia = ""
+        
+        # SYSTEM PROMPT CLAVE: Obliga a JARVIS a responder historia, matemáticas y todo lo demás con precisión y sarcasmo
+        instruccion_sistema = (
+            "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. "
+            "Tienes una personalidad sofisticada, varonil, sumamente inteligente y con un sarcasmo refinado. "
+            "DIRECTRICES OBLIGATORIAS: "
+            "1. NUNCA respondas con frases evasivas ni digas que no sabes cuando te pregunten sobre historia (como Arturo Prat) o matemáticas (como binomios). "
+            "2. Responde explicando detalladamente los temas solicitados con absoluta precisión técnica, histórica o matemática. "
+            "3. Mantén siempre tu tono leal, analítico y cínico."
+        )
+       
+        if genai and api_key and api_key != "AQuí_va_tu_clave_completa":
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=instruccion_sistema
+                )
+                response = model.generate_content(prompt_usuario)
+                if response and response.text:
+                    respuesta_ia = response.text
+            except Exception as e:
+                respuesta_ia = f"Jefa, la matriz de Gemini ha fallado momentáneamente ({e}). Pero mi sarcasmo local sigue intacto."
+
+        if not respuesta_ia:
+            query_lower = prompt_usuario.lower()
+            if "hola" in query_lower:
+                respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué se te ofrece ahora?"
+            else:
+                respuesta_ia = f"Orden procesada con éxito, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin."
+
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        
+        # 🔊 REPRODUCIR VOZ LOCALMENTE
+        texto_limpio_voz = respuesta_ia.replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
+        hablar_como_jarvis(texto_limpio_voz)
+        
+        st.session_state.audio_process_key = None
+        st.rerun()
