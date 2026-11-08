@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import sqlite3
 import requests
+import json
 
 # Importación segura de la librería de voz local (pyttsx3)
 try:
@@ -42,22 +43,8 @@ if "audio_process_key" not in st.session_state:
 
 PIN_SECRETO = "2805"
 
-# --- CONFIGURACIÓN DE LA API DE GEMINI ---
-try:
-    import google.generativeai as genai
-    
-    # PEGA AQUÍ TU CLAVE REAL QUE EMPIEZA CON AQ...
-    api_key = "AQ.Ab8RN6LpK2eUGZkgdOR5pKTD-JkN4GsCR6p0JLI7DoLZM-zFRQ" 
-    
-    if "GOOGLE_API_KEY" in st.secrets:
-        api_key = st.secrets["GOOGLE_API_KEY"]
-    elif "GEMINI_API_KEY" in st.secrets:
-        api_key = st.secrets["GEMINI_API_KEY"]
-    
-    if api_key and api_key != "AQ...":
-        genai.configure(api_key=api_key)
-except ImportError:
-    genai = None
+# Tu clave que empieza con AQ...
+ACCESS_TOKEN = "AQ.Ab8RN6LpK2uEGZKgdor5pKTD-JkN4GsCR6p@JLI7DoLZm-zFRQ"
 
 # --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
 def hablar_como_jarvis(texto_a_decir):
@@ -370,18 +357,7 @@ with col_modulos:
             audio_bytes = audio_grabado.read()
             if audio_bytes != st.session_state.audio_process_key:
                 st.session_state.audio_process_key = audio_bytes
-                st.warning(" Procesando audio con IA...")
-                if genai and api_key and api_key != "AQ...":
-                    try:
-                        model_audio = genai.GenerativeModel("gemini-1.5-flash")
-                        prompt_audio_res = model_audio.generate_content([
-                            "Escucha este audio y transcribe exactamente lo que se dice en español.",
-                            {"mime_type": "audio/wav", "data": audio_bytes}
-                        ])
-                        if prompt_audio_res and prompt_audio_res.text:
-                            prompt_voz = prompt_audio_res.text.strip()
-                    except Exception as e:
-                        st.error(f"Error procesando audio: {e}")
+                st.warning(" Procesando audio...")
 
     st.markdown("---")
     st.markdown("####  REGISTRO DE MISIONES")
@@ -406,7 +382,7 @@ with col_modulos:
             st.caption("No hay misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA)
+# CONSOLA PRINCIPAL (DERECHA) - CONEXIÓN HTTP DIRECTA CON TOKEN AQ
 # =========================================================================
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
@@ -432,33 +408,35 @@ with col_chat:
        
         respuesta_ia = ""
         
-        instruccion_sistema = (
-            "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. "
-            "Tienes una personalidad sofisticada, varonil, sumamente inteligente y con un sarcasmo refinado. "
-            "DIRECTRICES OBLIGATORIAS: "
-            "1. NUNCA respondas con frases evasivas ni digas que no sabes cuando te pregunten sobre historia (como Arturo Prat) o matemáticas (como binomios). "
-            "2. Responde explicando detalladamente los temas solicitados con absoluta precisión técnica, histórica o matemática. "
-            "3. Mantén siempre tu tono leal, analítico y cínico."
-        )
-       
-        if genai and api_key and api_key != "AQ...":
-            try:
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=instruccion_sistema
-                )
-                response = model.generate_content(prompt_usuario)
-                if response and response.text:
-                    respuesta_ia = response.text
-            except Exception as e:
-                respuesta_ia = f"Jefa, la matriz de Gemini ha fallado momentáneamente ({e}). Pero mi sarcasmo local sigue intacto."
+        # Petición HTTP directa usando tu token de tipo Bearer (AQ...)
+        try:
+            url_api = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            headers = {
+                "Authorization": f"Bearer {ACCESS_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "system_instruction": {
+                    "parts": [{
+                        "text": "Eres J.A.R.V.I.S., la inteligencia artificial avanzada de Iron Man, operando desde el Nodo Buin en Chile para tu jefa. Tienes una personalidad sofisticada, varonil, sumamente inteligente y con un sarcasmo refinado. NUNCA respondas con frases evasivas cuando te pregunten sobre historia o matemáticas. Responde con absoluta precisión técnica y con tu característico sarcasmo."
+                    }]
+                },
+                "contents": [{
+                    "parts": [{"text": prompt_usuario}]
+                }]
+            }
+            
+            res = requests.post(url_api, headers=headers, data=json.dumps(payload), timeout=10)
+            if res.status_code == 200:
+                data = res.json()
+                respuesta_ia = data["candidates"][0]["content"]["parts"][0]["text"]
+            else:
+                respuesta_ia = f"Jefa, el enlace con el token AQ arrojó código {res.status_code}: {res.text[:100]}"
+        except Exception as e:
+            respuesta_ia = f"Jefa, error de conexión web en el Nodo Buin: {e}"
 
         if not respuesta_ia:
-            query_lower = prompt_usuario.lower()
-            if "hola" in query_lower:
-                respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué se te ofrece ahora?"
-            else:
-                respuesta_ia = f"Orden procesada con éxito, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin."
+            respuesta_ia = f"Orden procesada, jefa. Analizando '{prompt_usuario}' desde el Nodo Buin."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         
