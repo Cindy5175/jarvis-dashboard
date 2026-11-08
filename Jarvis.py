@@ -132,4 +132,87 @@ if not st.session_state.get("autorizado", False):
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
-            pin_input
+            pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("🔓 Desbloquear Armadura")
+            
+            if btn_entrar:
+                if pin_input.strip() == PIN_SECRETO:
+                    st.session_state.autorizado = True
+                    st.success("Acceso concedido. Desplegando J.A.R.V.I.S x ZAPIA...")
+                    st.rerun()
+                else:
+                    st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+# --- 2. SISTEMA DESBLOQUEADO ---
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+dia_str = dias[now_chile.weekday()]
+mes_str = meses[now_chile.month]
+fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+
+st.markdown("""
+<div class="arc-reactor-container">
+    <div class="arc-ring"><div class="arc-triangle"></div></div>
+    <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S  ⚡  ZAPIA</h1>
+    <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
+        [ NODO BUIN, CHILE // {} – <span id="reloj-vivo" style="color: #00f3ff; font-family: monospace;">00:00:00</span> ]
+    </p>
+</div>
+""".format(fecha_str), unsafe_allow_html=True)
+
+st.components.v1.html("""
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
+    const parentDoc = window.parent.document;
+    const elem = parentDoc.getElementById('reloj-vivo');
+    if (elem) {
+        elem.innerText = horaChile;
+    }
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+""", height=0)
+
+st.markdown(f"""
+<div class="holo-brain-box">
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL UNIFICADO ⚡</h4>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Modo activo: <b>{st.session_state.modo_ia}</b> | Análisis visual/PDF, clima y mapa táctico</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- DISTRIBUCIÓN PRINCIPAL ---
+col_modulos, col_chat = st.columns([1, 2])
+
+with col_modulos:
+    st.markdown("#### 🌐 Módulos")
+
+    if st.button("🔌 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Fusión de IA")
+
+    modo_seleccionado = st.selectbox(
+        "Selecciona Entidad Dominante:",
+        ["Híbrido (JARVIS + ZAPIA)", "Solo JARVIS (Táctico/Sarcástico)", "Solo ZAPIA (Fluido/Dinámico)"],
+        index=0
+    )
+    if modo_seleccionado != st.session_state.modo_ia:
+        st.session_state.modo_ia = modo_seleccionado
+        st.rerun()
+
+    if st.button("⚡ Ejecutar Protocolo de Presentación", use_container_width=True):
+        informe_presentacion = "🤖 **PROTOCOLO DE PRESENTACIÓN – NODO BUIN:**  \n- **Entidad:** Sistema Híbrido Supremo **J.A.R.
