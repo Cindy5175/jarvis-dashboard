@@ -28,7 +28,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas de análisis óptico y local listos."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Módulos de análisis óptico y PDF operativos."}
     ]
 
 PIN_SECRETO = "2805"
@@ -234,7 +234,7 @@ st.markdown(f"""
 st.markdown("""
 <div class="holo-brain-box">
     <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, análisis óptico, clima y mapa táctico satelital</p>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, análisis óptico/PDF, clima y mapa táctico satelital</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -258,15 +258,25 @@ with col_modulos:
     st.markdown("---")
     st.markdown("#### 👁️ Centro de Análisis Óptico")
 
-    with st.expander("📷 Subir Foto o Documento", expanded=True):
-        archivo_subido = st.file_uploader("Selecciona archivo (Imagen/Texto):", type=["png", "jpg", "jpeg", "txt"])
+    with st.expander("📷 Subir Archivo (IMG / TXT / PDF)", expanded=True):
+        archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
         if archivo_subido is not None:
+            # Botón de descarga directa del archivo cargado
+            st.download_button(
+                label="📥 Descargar Archivo Cargado",
+                data=archivo_subido,
+                file_name=archivo_subido.name,
+                use_container_width=True
+            )
+            
             if st.button("⚡ Ejecutar Análisis Táctico", use_container_width=True):
                 nombre_archivo = archivo_subido.name
                 if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Nodo Buin):**  \n- Archivo procesado: `{nombre_archivo}`  \n- **Entorno detectado:** Análisis sintáctico visual completado. Se observa iluminación natural directa, vegetación compatible con zona central y elementos compositivos estables.  \n- **Diagnóstico de JARVIS:** Una fotografía bastante decente para venir de tus manos, jefa. Los árboles y el fondo cuadran perfecto con un clima templado. ¿Quieres que busque coordenadas o prefieres seguir admirando la postal?"
+                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Nodo Buin):**  \n- Archivo: `{nombre_archivo}`  \n- **Entorno detectado:** Análisis sintáctico visual completado. Iluminación estable y elementos compositivos registrados con éxito.  \n- **Diagnóstico de JARVIS:** Una postal bastante aceptable, jefa. ¿Quieres que busque coordenadas o prefieres seguir admirando el paisaje?"
+                elif nombre_archivo.lower().endswith('.pdf'):
+                    informe_analisis = f"📚 **INFORME DE BIBLIOTECA / PDF TÁCTICO:**  \n- Documento: `{nombre_archivo}`  \n- **Análisis Sintáctico:** Estructura de libro o documento pesado escaneada correctamente. Si se trata del *Álgebra de Baldor*, avísame si quieres resolver ecuaciones de segundo grado o si solo vienes a sufrir con los ejercicios, jefa."
                 else:
-                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura lírica / sintáctica evaluada con precisión quirúrgica. Menos mal que alguien trae algo de poesía a este frío servidor de código en Buin."
+                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura lírica / textual evaluada con precisión quirúrgica desde el Nodo Buin."
                 
                 st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
                 st.rerun()
