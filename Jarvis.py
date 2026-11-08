@@ -2,13 +2,6 @@ import streamlit as st
 import datetime
 import sqlite3
 import requests
-import base64
-
-# Importación segura de la librería de voz local (pyttsx3)
-try:
-    import pyttsx3
-except ImportError:
-    pyttsx3 = None
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -38,34 +31,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas operando al 100%."}
     ]
 
-if "audio_process_key" not in st.session_state:
-    st.session_state.audio_process_key = None
-
 PIN_SECRETO = "2805"
-
-# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
-def hablar_como_jarvis(texto_a_decir):
-    if not pyttsx3:
-        return
-    try:
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 170)
-        voices = engine.getProperty('voices')
-        
-        voz_asignada = False
-        for voice in voices:
-            if "spanish" in voice.id.lower() or "es-" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower() or "male" in voice.id.lower():
-                engine.setProperty('voice', voice.id)
-                voz_asignada = True
-                break
-        if not voz_asignada and len(voices) > 1:
-            engine.setProperty('voice', voices[1].id)
-            
-        engine.say(texto_a_decir)
-        engine.runAndWait()
-        engine.stop()
-    except Exception as e:
-        print(f"Error en síntesis de voz local: {e}")
 
 # --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
 fn_db = "jarvis_misiones.db"
@@ -129,18 +95,18 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES (Encabezados de módulos más chicos y elegantes) ---
+# --- ESTILOS VISUALES (Encabezados achicados y diseño impecable) ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 
 /* Achicar los encabezados de los módulos de la izquierda */
-section[data-testid="stHorizontalBlock"] > div:first-child h4,
-section[data-testid="stHorizontalBlock"] > div:first-child .stSubheader {
-    font-size: 0.85rem !important;
+section[data-testid="stHorizontalBlock"] > div:first-child h4 {
+    font-size: 0.8rem !important;
     font-weight: bold;
     margin-bottom: 2px !important;
+    margin-top: 10px !important;
 }
 
 section[data-testid="stHorizontalBlock"] > div:first-child p,
@@ -283,10 +249,9 @@ st.markdown("---")
 
 # --- DISTRIBUCIÓN PRINCIPAL ---
 col_modulos, col_chat = st.columns([1, 2])
-prompt_voz = None
 
 with col_modulos:
-    st.markdown("#### 🌐 Módulos del Sistema")
+    st.markdown("#### 🌐 Módulos")
 
     if st.button("🔌 Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
@@ -298,15 +263,15 @@ with col_modulos:
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 🛡️ Control de Seguridad")
+    st.markdown("#### 🛡️ Seguridad")
 
-    if st.button("👁️ Refrescar Cámaras/Sensores", use_container_width=True):
-        st.info("Obteniendo telemetría en vivo del Nodo Buin... Sistema seguro.")
+    if st.button("👁️ Refrescar Sensores", use_container_width=True):
+        st.info("Telemetría en vivo del Nodo Buin segura.")
 
     st.markdown("---")
-    st.markdown("#### 🛰️ Mapa Táctico Satelital")
+    st.markdown("#### 🛰️ Mapa Táctico")
 
-    with st.expander("🌐 Live Cyber Threat Map", expanded=True):
+    with st.expander("🌐 Cyber Threat Map", expanded=True):
         st.markdown("""
         <div class="cyber-radar-screen">
             <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
@@ -319,23 +284,23 @@ with col_modulos:
         """, unsafe_allow_html=True)
         
         st.markdown("---")
-        st.markdown("👁️ **Módulo OSIRIS:** En línea")
-        st.link_button("🚀 Abrir Portal OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
+        st.markdown("👁️ **OSIRIS:** En línea")
+        st.link_button("🚀 Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
         
-        st.markdown("🌍 **PlanetEar:** Órbita sincronizada")
+        st.markdown("🌍 **PlanetEar:** Sincronizado")
         st.link_button("🌐 Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
         
-        st.markdown("🛰️ **USGS Earth Explorer:**")
+        st.markdown("🛰️ **USGS Explorer:**")
         st.link_button("🗺️ USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
 
     st.markdown("---")
-    st.markdown("#### 🌤️ Clima Extendido (Buin)")
+    st.markdown("#### 🌤️ Clima Buin")
 
-    with st.expander("🌡️ Pronóstico Estilo Widget", expanded=False):
-        st.markdown(f"**Buin**  \n 🌡️ **{temp_real}** — ⛅ Parcialmente nublado")
+    with st.expander("🌡️ Widget Clima", expanded=False):
+        st.markdown(f"**Buin**  \n 🌡️ **{temp_real}** — ⛅ Parcial")
         st.caption(f"💧 Humedad: {hum_real} | 💨 Viento: {viento_real}")
         st.markdown("---")
-        st.markdown("📅 **Pronóstico Semanal:**")
+        st.markdown("📅 **Semanal:**")
         
         nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
         for i in range(min(5, len(t_maxs))):
@@ -345,20 +310,9 @@ with col_modulos:
             st.markdown(f"**`{d_label}`** 🌡️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
 
     st.markdown("---")
-    st.markdown("#### 🎙️ Control de Voz")
+    st.markdown("#### 📋 Misiones")
 
-    with st.expander("🎧 Micrófono Táctico", expanded=True):
-        audio_grabado = st.audio_input("Graba tu orden:", key="mic_audio_main")
-        if audio_grabado:
-            audio_bytes = audio_grabado.read()
-            if audio_bytes != st.session_state.audio_process_key:
-                st.session_state.audio_process_key = audio_bytes
-                st.warning("🎧 Audio recibido en Nodo Buin.")
-
-    st.markdown("---")
-    st.markdown("#### 📋 Registro de Misiones")
-
-    with st.expander("📝 Misiones (SQLite)", expanded=False):
+    with st.expander("📝 Base de Datos", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
         if st.button("➕ Registrar Tarea", use_container_width=True):
             if nueva_tarea.strip():
@@ -368,17 +322,17 @@ with col_modulos:
         
         misiones_guardadas = obtener_misiones()
         if misiones_guardadas:
-            st.markdown("**Misiones Activas:**")
+            st.markdown("**Activas:**")
             for m_id, m_text, m_est in misiones_guardadas:
                 st.markdown(f"- 📌 `{m_text}`")
             if st.button("🗑️ Limpiar Misiones", use_container_width=True):
                 limpiar_misiones()
                 st.rerun()
         else:
-            st.caption("No hay misiones pendientes.")
+            st.caption("Sin misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA) - CON REPRODUCTOR DE AUDIO HTML5 INTEGRADO
+# CONSOLA PRINCIPAL (DERECHA) - CON SÍNTESIS DE VOZ WEB NATIVA (HTML5 SPEECH)
 # =========================================================================
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
@@ -392,39 +346,17 @@ with col_chat:
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-            
-            # Si el mensaje es del asistente, le agregamos un reproductor visual directo por si acaso
-            if m["role"] == "assistant" and pyttsx3:
-                try:
-                    # Generamos un archivo temporal de audio hablado para reproducir en pantalla
-                    import tempfile, os
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-                        temp_filename = fp.name
-                    
-                    engine = pyttsx3.init()
-                    engine.save_to_file(m['content'].replace("*", ""), temp_filename)
-                    engine.runAndWait()
-                    engine.stop()
-                    
-                    if os.path.exists(temp_filename) and os.path.getsize(temp_filename) > 0:
-                        with open(temp_filename, "rb") as f:
-                            audio_bytes = f.read()
-                        st.audio(audio_bytes, format="audio/mp3")
-                        os.unlink(temp_filename)
-                except Exception:
-                    pass
 
-    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
-    prompt_usuario = prompt_voz if prompt_voz else prompt_chat
+    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS (usa Win + H)...")
 
-    if prompt_usuario:
-        st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    if prompt_chat:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
        
         with st.chat_message("user"):
-            st.markdown(f"<span>{prompt_usuario}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
        
         respuesta_ia = ""
-        q = prompt_usuario.lower()
+        q = prompt_chat.lower()
         
         # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES ---
         if "hola" in q or "saludos" in q:
@@ -442,13 +374,31 @@ with col_chat:
         elif "planetear" in q or "planet ear" in q:
             respuesta_ia = "PlanetEar sincronizado con los satélites de observación global. Todo bajo control."
         else:
-            respuesta_ia = f"Orden '{prompt_usuario}' procesada con éxito desde el Nodo Buin. Analizado y archivado en el sistema con absoluta precisión, jefa."
+            respuesta_ia = f"Orden '{prompt_chat}' procesada con éxito desde el Nodo Buin. Analizado y archivado en el sistema con absoluta precisión, jefa."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         
-        # 🔊 REPRODUCIR VOZ LOCALMENTE EN LOS PARLANTES Y EN PANTALLA
-        texto_limpio_voz = respuesta_ia.replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
-        hablar_como_jarvis(texto_limpio_voz)
+        # 🔊 LECTOR DE VOZ NATIVO WEB (HTML5 SpeechSynthesis en JavaScript)
+        # Esto obliga al navegador de tu ASUS a reproducir la voz en voz alta de forma inmediata y automática
+        texto_para_web = respuesta_ia.replace('"', "'").replace("\n", " ")
+        voz_js = f"""
+        <script>
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance("{texto_para_web}");
+            utterThis.lang = 'es-CL';
+            utterThis.rate = 1.0;
+            
+            // Buscar una voz masculina en español si está disponible en el computador
+            const voices = synth.getVoices();
+            for(let i = 0; i < voices.length; i++) {{
+                if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) {{
+                    utterThis.voice = voices[i];
+                    break;
+                }}
+            }}
+            synth.speak(utterThis);
+        </script>
+        """
+        st.components.v1.html(voz_js, height=0)
         
-        st.session_state.audio_process_key = None
         st.rerun()
