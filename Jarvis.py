@@ -286,12 +286,11 @@ with col_modulos:
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
-        st.markdown("<h4>💬 Consola de Comunicación Dual</h4>", unsafe_allow_html=True)
+        st.markdown("<h4>💬 Chat</h4>", unsafe_allow_html=True)
     with col_h2:
         if st.button("🧹 Purgar", use_container_width=True, key="btn_limpiar_chat"):
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. Núcleo {st.session_state.modo_ia} listo."}]
             st.rerun()
-
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
