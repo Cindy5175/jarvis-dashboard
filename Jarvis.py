@@ -360,3 +360,4 @@ with col_chat:
         voz_js = "<script>const synth = window.speechSynthesis; const utterThis = new SpeechSynthesisUtterance(\"" + texto_para_web + "\"); utterThis.lang = 'es-CL'; utterThis.rate = " + rate_voz + "; const voices = synth.getVoices(); for(let i = 0; i < voices.length; i++) { if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) { utterThis.voice = voices[i]; break; } } synth.speak(utterThis);</script>"
         st.components.v1.html(voz_js, height=0)
         st.rerun()
+
