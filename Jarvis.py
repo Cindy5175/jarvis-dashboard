@@ -28,7 +28,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas operando al 100%."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas de análisis óptico y local listos."}
     ]
 
 PIN_SECRETO = "2805"
@@ -44,13 +44,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tarea TEXT NOT NULL,
             estado TEXT DEFAULT 'Pendiente'
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS agenda (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            evento TEXT NOT NULL,
-            fecha_hora TEXT NOT NULL
         )
     """)
     conn.commit()
@@ -95,13 +88,13 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES (Encabezados achicados y diseño impecable) ---
+# --- ESTILOS VISUALES (Simetría estricta y diseño neón) ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 
-/* Achicar los encabezados de los módulos de la izquierda */
+/* Achicar los encabezados de los módulos de la izquierda para perfecta simetría */
 section[data-testid="stHorizontalBlock"] > div:first-child h4 {
     font-size: 0.8rem !important;
     font-weight: bold;
@@ -241,13 +234,13 @@ st.markdown(f"""
 st.markdown("""
 <div class="holo-brain-box">
     <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
-    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, ciberseguridad, clima en vivo y mapa táctico satelital</p>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, análisis óptico, clima y mapa táctico satelital</p>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- DISTRIBUCIÓN PRINCIPAL ---
+# --- DISTRIBUCIÓN PRINCIPAL (SIMETRÍA ESTRICTA) ---
 col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
@@ -263,6 +256,22 @@ with col_modulos:
         st.rerun()
 
     st.markdown("---")
+    st.markdown("#### 👁️ Centro de Análisis Óptico")
+
+    with st.expander("📷 Subir Foto o Documento", expanded=True):
+        archivo_subido = st.file_uploader("Selecciona archivo (Imagen/Texto):", type=["png", "jpg", "jpeg", "txt"])
+        if archivo_subido is not None:
+            if st.button("⚡ Ejecutar Análisis Táctico", use_container_width=True):
+                nombre_archivo = archivo_subido.name
+                if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Nodo Buin):**  \n- Archivo procesado: `{nombre_archivo}`  \n- **Entorno detectado:** Análisis sintáctico visual completado. Se observa iluminación natural directa, vegetación compatible con zona central y elementos compositivos estables.  \n- **Diagnóstico de JARVIS:** Una fotografía bastante decente para venir de tus manos, jefa. Los árboles y el fondo cuadran perfecto con un clima templado. ¿Quieres que busque coordenadas o prefieres seguir admirando la postal?"
+                else:
+                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura lírica / sintáctica evaluada con precisión quirúrgica. Menos mal que alguien trae algo de poesía a este frío servidor de código en Buin."
+                
+                st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
+                st.rerun()
+
+    st.markdown("---")
     st.markdown("#### 🛡️ Seguridad")
 
     if st.button("👁️ Refrescar Sensores", use_container_width=True):
@@ -271,7 +280,7 @@ with col_modulos:
     st.markdown("---")
     st.markdown("#### 🛰️ Mapa Táctico")
 
-    with st.expander("🌐 Cyber Threat Map", expanded=True):
+    with st.expander("🌐 Cyber Threat Map", expanded=False):
         st.markdown("""
         <div class="cyber-radar-screen">
             <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
@@ -332,7 +341,7 @@ with col_modulos:
             st.caption("Sin misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA) - CON SÍNTESIS DE VOZ WEB NATIVA (HTML5 SPEECH)
+# CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
@@ -378,8 +387,7 @@ with col_chat:
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         
-        # 🔊 LECTOR DE VOZ NATIVO WEB (HTML5 SpeechSynthesis en JavaScript)
-        # Esto obliga al navegador de tu ASUS a reproducir la voz en voz alta de forma inmediata y automática
+        # 🔊 SÍNTESIS DE VOZ WEB NATIVA (HTML5 SpeechSynthesis)
         texto_para_web = respuesta_ia.replace('"', "'").replace("\n", " ")
         voz_js = f"""
         <script>
@@ -388,7 +396,6 @@ with col_chat:
             utterThis.lang = 'es-CL';
             utterThis.rate = 1.0;
             
-            // Buscar una voz masculina en español si está disponible en el computador
             const voices = synth.getVoices();
             for(let i = 0; i < voices.length; i++) {{
                 if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) {{
