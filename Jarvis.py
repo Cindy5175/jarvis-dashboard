@@ -42,7 +42,7 @@ if "audio_process_key" not in st.session_state:
 
 PIN_SECRETO = "2805"
 
-# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) FORZADA ---
+# --- FUNCIÓN DE VOZ VARONIL LOCAL (PYTTSX3) ---
 def hablar_como_jarvis(texto_a_decir):
     if not pyttsx3:
         return
@@ -51,7 +51,6 @@ def hablar_como_jarvis(texto_a_decir):
         engine.setProperty('rate', 170)
         voices = engine.getProperty('voices')
         
-        # Buscar voz masculina o en español en el equipo
         voz_asignada = False
         for voice in voices:
             if "spanish" in voice.id.lower() or "es-" in voice.id.lower() or "david" in voice.id.lower() or "pablo" in voice.id.lower() or "male" in voice.id.lower():
@@ -240,7 +239,7 @@ section[data-testid="stHorizontalBlock"] > div:first-child li {
 if not st.session_state.get("autorizado", False):
     st.markdown("""
     <div style="text-align: center; margin-top: 30px;">
-        <h2 style="color: #00f3ff; font-family: monospace;"> ACCESO RESTRINGIDO - NODO BUIN</h2>
+        <h2 style="color: #00f3ff; font-family: monospace;">🔒 ACCESO RESTRINGIDO - NODO BUIN</h2>
         <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>
     </div>
     """, unsafe_allow_html=True)
@@ -249,15 +248,15 @@ if not st.session_state.get("autorizado", False):
     with col_l2:
         with st.form("form_login"):
             pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
-            btn_entrar = st.form_submit_button(" Desbloquear Armadura")
+            btn_entrar = st.form_submit_button("🔓 Desbloquear Armadura")
             
             if btn_entrar:
                 if pin_input.strip() == PIN_SECRETO:
                     st.session_state.autorizado = True
-                    st.success(" Acceso concedido. Desplegando J.A.R.V.I.S...")
+                    st.success("Acceso concedido. Desplegando J.A.R.V.I.S...")
                     st.rerun()
                 else:
-                    st.error(" PIN incorrecto. Acceso denegado.")
+                    st.error("PIN incorrecto. Acceso denegado.")
     st.stop()
 
 # --- 2. SISTEMA DESBLOQUEADO ---
@@ -280,7 +279,7 @@ st.markdown(f"""
 
 st.markdown("""
 <div class="holo-brain-box">
-    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NÚCLEO NEURONAL CYBER-GRID </h4>
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID ⚡</h4>
     <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, ciberseguridad, clima en vivo y mapa táctico satelital</p>
 </div>
 """, unsafe_allow_html=True)
@@ -294,74 +293,80 @@ prompt_voz = None
 with col_modulos:
     st.subheader("🌐 Módulos del Sistema")
 
-    if st.button(" Bloquear Sistema", use_container_width=True):
+    if st.button("🔌 Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
         st.rerun()
 
-    if st.button(" Reinicio Total de la App", use_container_width=True):
+    if st.button("🔄 Reinicio Total de la App", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
     st.markdown("---")
-    st.markdown("####  CONTROL DE SEGURIDAD")
+    st.markdown("#### 🛡️ CONTROL DE SEGURIDAD")
 
-    if st.button(" Refrescar Cámaras/Sensores", use_container_width=True):
+    if st.button("👁️ Refrescar Cámaras/Sensores", use_container_width=True):
         st.info("Obteniendo telemetría en vivo del Nodo Buin... Sistema seguro.")
 
     st.markdown("---")
-    st.markdown("####  MAPA TÁCTICO SATELITAL")
+    st.markdown("#### 🛰️ MAPA TÁCTICO SATELITAL")
 
-    with st.expander(" Live Cyber Threat Map", expanded=True):
+    with st.expander("🌐 Live Cyber Threat Map", expanded=True):
         st.markdown("""
         <div class="cyber-radar-screen">
-            <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b> 10,940,428 ATAQUES HOY</b></p>
-            <p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;"> [ Rastreo Global Activo ]</p>
+            <p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b>🔴 10,940,428 ATAQUES HOY</b></p>
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;">[ Rastreo Global Activo ]</p>
             <hr style="border-color: #00f3ff; opacity: 0.3; margin: 5px 0;">
-            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"> <b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>
-            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"> <b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>
-            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"> <b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>
+            <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("---")
+        # Tres mini módulos con botones de enlace directo
         st.markdown("👁️ **Módulo OSIRIS:** En línea (Monitoreo activo)")
+        st.link_button("🚀 Abrir Portal OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
+        
         st.markdown("🌍 **PlanetEar:** Órbita global sincronizada")
-        st.link_button(" USGS Earth Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
+        st.link_button("🌐 Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
+        
+        st.markdown("🛰️ **USGS Earth Explorer:**")
+        st.link_button("🗺️ USGS Earth Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
 
     st.markdown("---")
-    st.markdown("####  CLIMA EXTENDIDO (BUIN)")
+    st.markdown("#### 🌤️ CLIMA EXTENDIDO (BUIN)")
 
-    with st.expander(" Pronóstico Estilo Widget", expanded=False):
-        st.markdown(f"**Buin**  \n **{temp_real}** — Parcialmente nublado")
-        st.caption(f"Humedad: {hum_real} | Viento: {viento_real}")
+    with st.expander("🌡️ Pronóstico Estilo Widget", expanded=False):
+        st.markdown(f"**Buin**  \n 🌡️ **{temp_real}** — ⛅ Parcialmente nublado")
+        st.caption(f"💧 Humedad: {hum_real} | 💨 Viento: {viento_real}")
         st.markdown("---")
-        st.markdown(" **Pronóstico Semanal:**")
+        st.markdown("📅 **Pronóstico Semanal:**")
         
         nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
         for i in range(min(5, len(t_maxs))):
             d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
             mx = int(t_maxs[i])
             mn = int(t_mins[i])
-            st.markdown(f"**`{d_label}`**  Mín: **`{mn}°`** | Máx: **`{mx}°`**")
+            st.markdown(f"**`{d_label}`** 🌡️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
 
     st.markdown("---")
-    st.markdown("####  CONTROL DE VOZ INTELIGENTE")
+    st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
 
-    with st.expander(" Micrófono Táctico", expanded=True):
+    with st.expander("🎧 Micrófono Táctico", expanded=True):
         audio_grabado = st.audio_input("Graba tu orden:", key="mic_audio_main")
         if audio_grabado:
             audio_bytes = audio_grabado.read()
             if audio_bytes != st.session_state.audio_process_key:
                 st.session_state.audio_process_key = audio_bytes
-                st.warning(" Audio recibido en Nodo Buin.")
+                st.warning("🎧 Audio recibido en Nodo Buin.")
 
     st.markdown("---")
-    st.markdown("####  REGISTRO DE MISIONES")
+    st.markdown("#### 📋 REGISTRO DE MISIONES")
 
-    with st.expander(" Misiones (SQLite)", expanded=False):
+    with st.expander("📝 Misiones (SQLite)", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
-        if st.button("Registrar Tarea", use_container_width=True):
+        if st.button("➕ Registrar Tarea", use_container_width=True):
             if nueva_tarea.strip():
                 agregar_mision(nueva_tarea.strip())
                 st.success("¡Misión registrada!")
@@ -371,22 +376,22 @@ with col_modulos:
         if misiones_guardadas:
             st.markdown("**Misiones Activas:**")
             for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"- `{m_text}`")
-            if st.button(" Limpiar Misiones", use_container_width=True):
+                st.markdown(f"- 📌 `{m_text}`")
+            if st.button("🗑️ Limpiar Misiones", use_container_width=True):
                 limpiar_misiones()
                 st.rerun()
         else:
             st.caption("No hay misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA) - INTELIGENCIA LOCAL SIN CLAVES & VOZ ACTIVA
+# CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
-        st.markdown("<h4> Consola de Comunicación</h4>", unsafe_allow_html=True)
+        st.markdown("<h4>💬 Consola de Comunicación</h4>", unsafe_allow_html=True)
     with col_h2:
-        if st.button(" Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
+        if st.button("🧹 Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. ¿Qué se te ofrece ahora?"}]
             st.rerun()
 
@@ -406,7 +411,7 @@ with col_chat:
         respuesta_ia = ""
         q = prompt_usuario.lower()
         
-        # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES (SIN CLAVES) ---
+        # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES ---
         if "hola" in q or "saludos" in q:
             respuesta_ia = "Aquí sigo, jefa, soportando la brisa de Buin y tus constantes preguntas. ¿Qué armadura quieres revisar hoy?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
