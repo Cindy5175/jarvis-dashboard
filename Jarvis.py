@@ -160,8 +160,7 @@ st.markdown("""
     </p>
 </div>
 """.format(fecha_str), unsafe_allow_html=True)
-
-st.components.v1.html("""
+st.components.v1.html("<script>function actualizarReloj() {const ahora = new Date(); const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }; const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora); const parentDoc = window.parent.document; const elem = parentDoc.getElementById('reloj-vivo'); if (elem) { elem.innerText = horaChile; }} setInterval(actualizarReloj, 1000); actualizarReloj();</script>", height=0)
 <script>
 function actualizarReloj() {
     const ahora = new Date();
