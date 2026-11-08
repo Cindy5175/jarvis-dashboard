@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import sqlite3
 import requests
+import base64
 
 # Importación segura de la librería de voz local (pyttsx3)
 try:
@@ -34,7 +35,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas operando sin dependencias externas."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Protocolo de seguridad máxima activo en Nodo Buin. Sistemas operando al 100%."}
     ]
 
 if "audio_process_key" not in st.session_state:
@@ -62,6 +63,7 @@ def hablar_como_jarvis(texto_a_decir):
             
         engine.say(texto_a_decir)
         engine.runAndWait()
+        engine.stop()
     except Exception as e:
         print(f"Error en síntesis de voz local: {e}")
 
@@ -112,21 +114,6 @@ def limpiar_misiones():
     conn.commit()
     conn.close()
 
-def agregar_agenda(evento, fecha_hora):
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO agenda (evento, fecha_hora) VALUES (?, ?)", (evento, fecha_hora))
-    conn.commit()
-    conn.close()
-
-def obtener_agenda():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT evento, fecha_hora FROM agenda")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
 def obtener_clima_buin():
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.7333&current=temperature_2m,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSantiago"
@@ -142,17 +129,25 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES ---
+# --- ESTILOS VISUALES (Encabezados de módulos más chicos y elegantes) ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 
+/* Achicar los encabezados de los módulos de la izquierda */
+section[data-testid="stHorizontalBlock"] > div:first-child h4,
+section[data-testid="stHorizontalBlock"] > div:first-child .stSubheader {
+    font-size: 0.85rem !important;
+    font-weight: bold;
+    margin-bottom: 2px !important;
+}
+
 section[data-testid="stHorizontalBlock"] > div:first-child p,
 section[data-testid="stHorizontalBlock"] > div:first-child span,
 section[data-testid="stHorizontalBlock"] > div:first-child label,
 section[data-testid="stHorizontalBlock"] > div:first-child li {
-    font-size: 0.72rem !important;
+    font-size: 0.7rem !important;
 }
 
 .stChatMessage p, .stChatMessage div {
@@ -291,25 +286,25 @@ col_modulos, col_chat = st.columns([1, 2])
 prompt_voz = None
 
 with col_modulos:
-    st.subheader("🌐 Módulos del Sistema")
+    st.markdown("#### 🌐 Módulos del Sistema")
 
     if st.button("🔌 Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
         st.rerun()
 
-    if st.button("🔄 Reinicio Total de la App", use_container_width=True):
+    if st.button("🔄 Reinicio Total", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 🛡️ CONTROL DE SEGURIDAD")
+    st.markdown("#### 🛡️ Control de Seguridad")
 
     if st.button("👁️ Refrescar Cámaras/Sensores", use_container_width=True):
         st.info("Obteniendo telemetría en vivo del Nodo Buin... Sistema seguro.")
 
     st.markdown("---")
-    st.markdown("#### 🛰️ MAPA TÁCTICO SATELITAL")
+    st.markdown("#### 🛰️ Mapa Táctico Satelital")
 
     with st.expander("🌐 Live Cyber Threat Map", expanded=True):
         st.markdown("""
@@ -324,18 +319,17 @@ with col_modulos:
         """, unsafe_allow_html=True)
         
         st.markdown("---")
-        # Tres mini módulos con botones de enlace directo
-        st.markdown("👁️ **Módulo OSIRIS:** En línea (Monitoreo activo)")
+        st.markdown("👁️ **Módulo OSIRIS:** En línea")
         st.link_button("🚀 Abrir Portal OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
         
-        st.markdown("🌍 **PlanetEar:** Órbita global sincronizada")
+        st.markdown("🌍 **PlanetEar:** Órbita sincronizada")
         st.link_button("🌐 Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
         
         st.markdown("🛰️ **USGS Earth Explorer:**")
-        st.link_button("🗺️ USGS Earth Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
+        st.link_button("🗺️ USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
 
     st.markdown("---")
-    st.markdown("#### 🌤️ CLIMA EXTENDIDO (BUIN)")
+    st.markdown("#### 🌤️ Clima Extendido (Buin)")
 
     with st.expander("🌡️ Pronóstico Estilo Widget", expanded=False):
         st.markdown(f"**Buin**  \n 🌡️ **{temp_real}** — ⛅ Parcialmente nublado")
@@ -351,7 +345,7 @@ with col_modulos:
             st.markdown(f"**`{d_label}`** 🌡️ Mín: **`{mn}°`** | Máx: **`{mx}°`**")
 
     st.markdown("---")
-    st.markdown("#### 🎙️ CONTROL DE VOZ INTELIGENTE")
+    st.markdown("#### 🎙️ Control de Voz")
 
     with st.expander("🎧 Micrófono Táctico", expanded=True):
         audio_grabado = st.audio_input("Graba tu orden:", key="mic_audio_main")
@@ -362,7 +356,7 @@ with col_modulos:
                 st.warning("🎧 Audio recibido en Nodo Buin.")
 
     st.markdown("---")
-    st.markdown("#### 📋 REGISTRO DE MISIONES")
+    st.markdown("#### 📋 Registro de Misiones")
 
     with st.expander("📝 Misiones (SQLite)", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
@@ -384,20 +378,41 @@ with col_modulos:
             st.caption("No hay misiones pendientes.")
 
 # =========================================================================
-# CONSOLA PRINCIPAL (DERECHA)
+# CONSOLA PRINCIPAL (DERECHA) - CON REPRODUCTOR DE AUDIO HTML5 INTEGRADO
 # =========================================================================
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
         st.markdown("<h4>💬 Consola de Comunicación</h4>", unsafe_allow_html=True)
     with col_h2:
-        if st.button("🧹 Purgar Chat", use_container_width=True, key="btn_limpiar_chat"):
+        if st.button("🧹 Purgar", use_container_width=True, key="btn_limpiar_chat"):
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria purgada. ¿Qué se te ofrece ahora?"}]
             st.rerun()
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+            
+            # Si el mensaje es del asistente, le agregamos un reproductor visual directo por si acaso
+            if m["role"] == "assistant" and pyttsx3:
+                try:
+                    # Generamos un archivo temporal de audio hablado para reproducir en pantalla
+                    import tempfile, os
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+                        temp_filename = fp.name
+                    
+                    engine = pyttsx3.init()
+                    engine.save_to_file(m['content'].replace("*", ""), temp_filename)
+                    engine.runAndWait()
+                    engine.stop()
+                    
+                    if os.path.exists(temp_filename) and os.path.getsize(temp_filename) > 0:
+                        with open(temp_filename, "rb") as f:
+                            audio_bytes = f.read()
+                        st.audio(audio_bytes, format="audio/mp3")
+                        os.unlink(temp_filename)
+                except Exception:
+                    pass
 
     prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
     prompt_usuario = prompt_voz if prompt_voz else prompt_chat
@@ -431,7 +446,7 @@ with col_chat:
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         
-        # 🔊 DISPARAR LA VOZ LOCAL DE VARÓN INMEDIATAMENTE
+        # 🔊 REPRODUCIR VOZ LOCALMENTE EN LOS PARLANTES Y EN PANTALLA
         texto_limpio_voz = respuesta_ia.replace("*", "").replace("#", "").replace("$", "").replace("`", "").replace("_", "")
         hablar_como_jarvis(texto_limpio_voz)
         
