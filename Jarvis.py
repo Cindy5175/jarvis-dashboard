@@ -188,6 +188,8 @@ with col_modulos:
         st.session_state.modo_ia = modo_seleccionado
         st.rerun()
 
-    # --- BOTÓN DE PROTOCOLO DE PRESENTACIÓN ---
+ # --- BOTÓN DE PROTOCOLO DE PRESENTACIÓN ---
     if st.button("⚡ Ejecutar Protocolo de Presentación", use_container_width=True):
-        informe_presentacion = """🤖 **PROTOCOLO DE PRESENTACIÓN – NODO BUIN:**
+        informe_presentacion = "🤖 **PROTOCOLO DE PRESENTACIÓN – NODO BUIN:**  \n- **Entidad:** Sistema Híbrido Supremo **J.A.R.V.I.S x ZAPIA**.  \n- **Arquitectura:** Núcleo conversacional adaptativo a todo terreno, operando localmente en la ASUS a coste cero de suscripción.  \n- **Subsistemas Activos:** Reloj en vivo (UTC-3), base de datos de misiones SQLite, centro de análisis óptico/PDF, telemetría de amenazas globales y estación meteorológica local.  \n- **Estado de la Armadura:** Óptimo. Sarcasmo táctico, precisión matemática y velocidad conversacional al 100%. ¿Qué orden tenemos en agenda, jefa?"
+        st.session_state.mensajes.append({"role": "assistant", "content": informe_presentacion})
+        st.rerun()
