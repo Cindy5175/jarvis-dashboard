@@ -91,5 +91,45 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES BLINDADOS EN UNA SOLA LÍNEA ---
-st.markdown("<style>.stApp { background-color: #060913 !important; color: #00f3ff !important; } p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; } section[data-testid='stHorizontalBlock'] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; } section[data-testid='stHorizontalBlock'] > div:first-child p, section[data-testid='stHorizontalBlock'] > div:first-child span, section[data-testid='stHorizontalBlock'] > div:first-child label, section[data-testid='stHorizontalBlock'] > div:first-child li { font-size: 0.7rem !important; } .stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; } .stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; } .stButton>button p, .stButton>button span { color: #060913 !important; } .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); } .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; } .arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; } .arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex
+# --- ESTILOS VISUALES BLINDADOS ---
+css_parte1 = """
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+section[data-testid='stHorizontalBlock'] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }
+section[data-testid='stHorizontalBlock'] > div:first-child p, section[data-testid='stHorizontalBlock'] > div:first-child span, section[data-testid='stHorizontalBlock'] > div:first-child label, section[data-testid='stHorizontalBlock'] > div:first-child li { font-size: 0.7rem !important; }
+.stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }
+.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }
+.stButton>button p, .stButton>button span { color: #060913 !important; }
+.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+"""
+
+css_parte2 = """
+<style>
+.arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; }
+.arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), inset 0 0 8px rgba(0, 243, 255, 0.5); margin-bottom: 5px; }
+.arc-triangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #060913; filter: drop-shadow(0 0 5px #00f3ff); }
+.holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 10px 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 255, 0.15); margin: 0 auto 15px auto; max-width: 700px; }
+.cyber-radar-screen { background: #03050a; border: 1px solid #00f3ff; border-radius: 6px; padding: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2); }
+.radar-blip { animation: pulse-blip 1.5s infinite; }
+@keyframes pulse-blip { 0% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 8px #ff3333; } 100% { opacity: 0.3; } }
+</style>
+"""
+
+st.markdown(css_parte1, unsafe_allow_html=True)
+st.markdown(css_parte2, unsafe_allow_html=True)
+
+# --- 1. PANTALLA DE BLOQUEO ---
+if not st.session_state.get("autorizado", False):
+    st.markdown("""
+    <div style="text-align: center; margin-top: 30px;">
+        <h2 style="color: #00f3ff; font-family: monospace;">🔒 ACCESO RESTRINGIDO - NODO BUIN</h2>
+        <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input
