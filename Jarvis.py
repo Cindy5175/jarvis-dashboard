@@ -1,24 +1,173 @@
-st.markdown("---")
-    st.markdown("#### 👁️ Centro de Análisis Óptico")
+import streamlit as st
+import datetime
+import sqlite3
+import requests
 
-    with st.expander("📷 Subir Archivo (IMG / TXT / PDF)", expanded=True):
-        archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
-        if archivo_subido is not None:
-            st.download_button(
-                label="📥 Descargar Archivo Cargado",
-                data=archivo_subido,
-                file_name=archivo_subido.name,
-                use_container_width=True
-            )
-            
-            if st.button("⚡ Ejecutar Análisis Táctico", use_container_width=True):
-                nombre_archivo = archivo_subido.name
-                if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    informe_analisis = f"📊 **INFORME DE ESCANEO ÓPTICO (Fusión {st.session_state.modo_ia}):**  \n- Archivo: `{nombre_archivo}`  \n- **Entorno:** Análisis sintáctico visual completado por el núcleo dual. Iluminación y composición registradas.  \n- **Diagnóstico:** Excelente captura visual, jefa. El motor de visión fusionado procesó el paisaje sin ningún inconveniente."
-                elif nombre_archivo.lower().endswith('.pdf'):
-                    informe_analisis = f"📚 **INFORME DE BIBLIOTECA / PDF TÁCTICO:**  \n- Documento: `{nombre_archivo}`  \n- **Análisis Sintáctico:** Documento procesado por JARVIS y Zapia. Si es el *Álgebra de Baldor*, ambos sistemas están listos para resolver cualquier ecuación."
-                else:
-                    informe_analisis = f"📜 **INFORME SINTÉCTICO DE TEXTO:**  \n- Archivo: `{nombre_archivo}`  \n- **Análisis:** Estructura de texto analizada con precisión quirúrgica desde el Nodo Buin."
-                
-                st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
-                st.rerun()
+# --- 1. CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(
+    page_title="J.A.R.V.I.S x ZAPIA - NÚCLEO HÍBRIDO SUPREMO",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# --- INICIALIZACIÓN DE SESSION_STATE ---
+if "autorizado" not in st.session_state:
+    st.session_state.autorizado = False
+
+if "modo_ia" not in st.session_state:
+    st.session_state.modo_ia = "Híbrido (JARVIS + ZAPIA)"
+
+# ZONA HORARIA CHILENA (UTC-3)
+tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+now_chile = datetime.datetime.now(tz_chile)
+hora_actual = now_chile.hour
+
+if 0 <= hora_actual < 12:
+    saludo_actual = "Buenos días"
+elif 12 <= hora_actual < 20:
+    saludo_actual = "Buenas tardes"
+else:
+    saludo_actual = "Buenas noches"
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Fusión de JARVIS y ZAPIA completada en el Nodo Buin. Sistemas tácticos y conversacionales en línea al 100%."}
+    ]
+
+PIN_SECRETO = "2805"
+
+# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE ---
+fn_db = "jarvis_misiones.db"
+
+def init_db():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS misiones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tarea TEXT NOT NULL,
+            estado TEXT DEFAULT 'Pendiente'
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+def agregar_mision(tarea):
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+    conn.commit()
+    conn.close()
+
+def obtener_misiones():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, tarea, estado FROM misiones")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def limpiar_misiones():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM misiones")
+    conn.commit()
+    conn.close()
+
+def obtener_clima_buin():
+    try:
+        url = "https://api.open-meteo.com/v1/forecast?latitude=-33.7333&current=temperature_2m,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSantiago"
+        res = requests.get(url, timeout=3).json()
+        temp = res["current"]["temperature_2m"]
+        hum = res["current"]["relative_humidity_2m"]
+        viento = res["current"]["wind_speed_10m"]
+        dias_max = res["daily"]["temperature_2m_max"][:5]
+        dias_min = res["daily"]["temperature_2m_min"][:5]
+        return f"{temp}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
+    except Exception:
+        return "21°C", "45%", "12 km/h", [24, 25, 22, 28, 32], [9, 10, 7, 7, 8]
+
+temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
+
+# --- ESTILOS VISUALES ---
+st.markdown("""
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+section[data-testid="stHorizontalBlock"] > div:first-child h4 {
+    font-size: 0.8rem !important;
+    font-weight: bold;
+    margin-bottom: 2px !important;
+    margin-top: 10px !important;
+}
+section[data-testid="stHorizontalBlock"] > div:first-child p,
+section[data-testid="stHorizontalBlock"] > div:first-child span,
+section[data-testid="stHorizontalBlock"] > div:first-child label,
+section[data-testid="stHorizontalBlock"] > div:first-child li {
+    font-size: 0.7rem !important;
+}
+.stChatMessage p, .stChatMessage div {
+    font-size: 0.85rem !important;
+    color: #00f3ff !important;
+}
+.stButton>button {
+    background-color: #00f3ff !important;
+    border: 1.5px solid #00f3ff !important;
+    font-weight: bold;
+    font-family: monospace;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    width: 100%;
+}
+.stButton>button p, .stButton>button span {
+    color: #060913 !important;
+}
+.stButton>button:hover {
+    background-color: #0088cc !important;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.9);
+}
+.stButton>button:hover p, .stButton>button:hover span {
+    color: #ffffff !important;
+}
+.arc-reactor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 5px;
+}
+.arc-ring {
+    width: 45px;
+    height: 45px;
+    border: 2.5px solid #00f3ff;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #00f3ff 0%, #060913 70%);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), inset 0 0 8px rgba(0, 243, 255, 0.5);
+    margin-bottom: 5px;
+}
+.arc-triangle {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid #060913;
+    filter: drop-shadow(0 0 5px #00f3ff);
+}
+.holo-brain-box {
+    border: 1.5px solid #00f3ff;
+    background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), inset 0 0 8px rgba(0, 243, 255, 0.15);
+    margin: 0 auto 15px auto;
+    max-width: 700px;
+}
+.cyber-radar-screen {
+    background: #03050a;
