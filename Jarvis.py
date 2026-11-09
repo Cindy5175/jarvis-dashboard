@@ -1,13 +1,13 @@
 import streamlit as st
 
-# Configuración de la interfaz con los tonos originales de JARVIS (Azul holográfico/cinematográfico)
+# Configuración de la interfaz con los tonos originales de JARVIS
 st.set_page_config(
     page_title="J.A.R.V.I.S. - Nodo Principal",
     page_icon="🔵",
     layout="centered"
 )
 
-# Estilos CSS personalizados para mantener el diseño azul original y elegante
+# Estilos CSS personalizados para mantener el diseño azul original
 st.markdown("""
     <style>
     .stApp {
@@ -28,7 +28,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Definición del prompt de sistema y personalidad maestra de JARVIS
+# Definición del prompt de sistema y personalidad maestra
 SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial de la señorita Cindy Alejandra María Francisca Carrera Baude. 
 
 1. PERSONALIDAD Y TONO:
@@ -50,10 +50,10 @@ SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial
 st.title("🔵 J.A.R.V.I.S.")
 st.caption("Sistema Táctico y Conversacional Activo — Nodo Principal")
 
-# Inicializar historial de chat
+# Inicializar historial de chat con el nuevo saludo cálido y cercano
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Buenas tardes, jefa. Sistemas tácticos y conversacionales en línea al 100%. Diga usted qué operamos hoy."}
+        {"role": "assistant", "content": "Hola, jefa. Por aquí todo en orden, operativo y con los circuitos bien puestos. ¿Qué se le ofrece hoy o en qué proyecto la acompaño?"}
     ]
 
 # Mostrar el historial de mensajes
@@ -61,14 +61,14 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de voz/texto del usuario
+# Entrada de texto del usuario
 if prompt := st.chat_input("Escríbele o háblale al nodo..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Respuesta alineada con la nueva personalidad inteligente y cercana
-    response = f"Aquí estamos de nuevo al pie del cañón, jefa. Analizando su instrucción: '{prompt}'. Todo en orden por este lado, ¿qué más movemos?"
+    # Respuesta con la personalidad renovada, inteligente y con sarcasmo fino
+    response = f"Anotado, jefa. Analizando su requerimiento sobre '{prompt}' con la elegancia que la ocasión amerita. Déjeme ver los detalles y lo resolvemos al tiro."
 
     with st.chat_message("assistant"):
         st.markdown(response)
