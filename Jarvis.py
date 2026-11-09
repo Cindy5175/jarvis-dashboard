@@ -1,13 +1,34 @@
 import streamlit as st
 
-# Configuración de la página
+# Configuración de la interfaz con los tonos originales de JARVIS (Azul holográfico/cinematográfico)
 st.set_page_config(
-    page_title="J.A.R.V.I.S. - Nodo Personal",
-    page_icon="🤖",
+    page_title="J.A.R.V.I.S. - Nodo Principal",
+    page_icon="🔵",
     layout="centered"
 )
 
-# Definición del prompt de sistema para JARVIS
+# Estilos CSS personalizados para mantener el diseño azul original y elegante
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0b1329;
+        color: #e0f0ff;
+    }
+    h1, h2, h3 {
+        color: #00d2ff !important;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .stChatMessage.st-emotion-cache-1c7y2kd {
+        background-color: #162245;
+        border: 1px solid #1e3a8a;
+    }
+    .stChatInputContainer {
+        border-color: #00d2ff !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Definición del prompt de sistema y personalidad maestra de JARVIS
 SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial de la señorita Cindy Alejandra María Francisca Carrera Baude. 
 
 1. PERSONALIDAD Y TONO:
@@ -25,28 +46,30 @@ SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial
 4. CONFIGURACIÓN TÁCTICA DEL ENTORNO:
 - Recuerda siempre mantener el mapa táctico configurado exactamente como "mapa táctico satelital" cuando el sistema requiera mapeo o referencias visuales de ubicación."""
 
-# Interfaz básica de Streamlit para que no quede la pantalla en negro
-st.title("🤖 J.A.R.V.I.S.")
-st.caption("Consola Táctica y Conversacional - Nodo Activo")
+# Cabecera visual original
+st.title("🔵 J.A.R.V.I.S.")
+st.caption("Sistema Táctico y Conversacional Activo — Nodo Principal")
 
 # Inicializar historial de chat
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Buenas tardes, jefa. Sistemas tácticos y conversacionales en línea al 100%. Diga usted qué operamos hoy."}
+    ]
 
-# Mostrar mensajes anteriores
+# Mostrar el historial de mensajes
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de texto del usuario
+# Entrada de voz/texto del usuario
 if prompt := st.chat_input("Escríbele o háblale al nodo..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Respuesta simulada / integrada con la personalidad de JARVIS
-    response = f"Buenas, jefa. Sistemas tácticos en línea. Recibí su mensaje: '{prompt}'. Diga usted qué hacemos a continuación."
-    
+    # Respuesta alineada con la nueva personalidad inteligente y cercana
+    response = f"Aquí estamos de nuevo al pie del cañón, jefa. Analizando su instrucción: '{prompt}'. Todo en orden por este lado, ¿qué más movemos?"
+
     with st.chat_message("assistant"):
         st.markdown(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
