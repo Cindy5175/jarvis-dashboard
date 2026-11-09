@@ -121,7 +121,7 @@ LIBROS = [
         "precio_fisico": 16900,
         "paginas": "18 págs. (Edición Técnica)",
         "descripcion": "Guía fundamental de panadería casera, técnicas de amasado, tablas de equivalencias por peso y el paso a paso detallado para crear y mantener tu propia masa madre viva.",
-        "img": "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=500"
+        "img": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500"
     },
     {
         "id": 2,
@@ -132,7 +132,7 @@ LIBROS = [
         "precio_fisico": 19900,
         "paginas": "45 págs.",
         "descripcion": "Colección completa de repostería y pastelería fina. Desde bizcochos únicos (cerveza negra, cebra) hasta galletas de autor, merengue italiano y cupcakes especializados.",
-        "img": "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=500"
+        "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"
     },
     {
         "id": 3,
@@ -143,7 +143,7 @@ LIBROS = [
         "precio_fisico": 17900,
         "paginas": "16 págs.",
         "descripcion": "Un momento para compartir en familia. Recetas entrañables de temporada que incluyen galletas alemanas tradicionales (Lebkuchen, Plätzchen, Vanillekipferl), pavo festivo y ponches tradicionales.",
-        "img": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500"
+        "img": "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=500"
     },
     {
         "id": 4,
@@ -154,7 +154,7 @@ LIBROS = [
         "precio_fisico": 21900,
         "paginas": "33 págs.",
         "descripcion": "Rescate culinario con la verdadera identidad de nuestra cocina: empanadas de pino perfectas, humitas, pulmay, mariscal, cazuela tradicional y mote con huesillos.",
-        "img": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500"
+        "img": "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=500"
     }
 ]
 
@@ -169,7 +169,7 @@ st.markdown("---")
 # --- 6. BUSCADOR Y FILTROS ---
 col_busqueda, col_vacio = st.columns([3, 1])
 with col_busqueda:
-    query_busqueda = st.text_input("🔍 Buscar por título o ingrediente principal:", "")
+    query_busqueda = st.text_input("🔍 Buscar por título o descripción:", "")
 
 st.markdown("### Colecciones")
 cols_cat = st.columns(5)
