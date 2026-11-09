@@ -198,13 +198,13 @@ for libro in libros_filtrados:
     lid = libro["id"]
     with st.container():
         st.markdown(f"""
-        <div class="book-card">
-            <span class="badge-format">{libro['categoria']}</span> • <small>{libro['paginas']}</small>
-            <h3 style="margin-top: 8px; margin-bottom: 4px;">{libro['titulo']}</h3>
-            <p style="color: #777; font-size: 0.85rem; margin-bottom: 8px;">Por: <strong>{libro['autor']}</strong></p>
-            <p style="color: #555; font-size: 0.95rem;">{libro['descripcion']}</p>
-        </div>
-        """, unsafe_allow_html=True)
+<div class="book-card">
+    <span class="badge-format">{libro['categoria']}</span> • <small>{libro['paginas']}</small>
+    <h3 style="margin-top: 8px; margin-bottom: 4px;">{libro['titulo']}</h3>
+    <p style="color: #777; font-size: 0.85rem; margin-bottom: 8px;">Por: <strong>{libro['autor']}</strong></p>
+    <p style="color: #555; font-size: 0.95rem;">{libro['descripcion']}</p>
+</div>
+""", unsafe_allow_html=True)
         
         col_img, col_opciones = st.columns([1, 2])
         with col_img:
