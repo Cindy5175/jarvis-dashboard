@@ -1,4 +1,13 @@
-# Definición del prompt de sistema para JARVIS en Streamlit
+import streamlit as st
+
+# Configuración de la página
+st.set_page_config(
+    page_title="J.A.R.V.I.S. - Nodo Personal",
+    page_icon="🤖",
+    layout="centered"
+)
+
+# Definición del prompt de sistema para JARVIS
 SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial de la señorita Cindy Alejandra María Francisca Carrera Baude. 
 
 1. PERSONALIDAD Y TONO:
@@ -15,3 +24,29 @@ SYSTEM_PROMPT = """Eres JARVIS, el asistente personal de inteligencia artificial
 
 4. CONFIGURACIÓN TÁCTICA DEL ENTORNO:
 - Recuerda siempre mantener el mapa táctico configurado exactamente como "mapa táctico satelital" cuando el sistema requiera mapeo o referencias visuales de ubicación."""
+
+# Interfaz básica de Streamlit para que no quede la pantalla en negro
+st.title("🤖 J.A.R.V.I.S.")
+st.caption("Consola Táctica y Conversacional - Nodo Activo")
+
+# Inicializar historial de chat
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Mostrar mensajes anteriores
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Entrada de texto del usuario
+if prompt := st.chat_input("Escríbele o háblale al nodo..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Respuesta simulada / integrada con la personalidad de JARVIS
+    response = f"Buenas, jefa. Sistemas tácticos en línea. Recibí su mensaje: '{prompt}'. Diga usted qué hacemos a continuación."
+    
+    with st.chat_message("assistant"):
+        st.markdown(response)
+    st.session_state.messages.append({"role": "assistant", "content": response})
