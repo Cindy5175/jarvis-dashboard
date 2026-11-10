@@ -219,16 +219,31 @@ meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'ag
 dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
 fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
-hora_estatica = now_chile.strftime("%H:%M:%S")
 
+# Contenedor del Reactor con ID para que el segundero camine en vivo
 st.markdown(f"""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
     <h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>
     <p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">
-        [ NODO BUIN, CHILE // {fecha_str} – {hora_estatica} ]
+        [ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]
     </p>
 </div>
+
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    // Ajuste a hora chilena UTC-3 aprox o hora local del equipo
+    const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
+    const relojEl = document.getElementById('reloj-vivo');
+    if (relojEl) {
+        relojEl.innerText = horaChile;
+    }
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
 """, unsafe_allow_html=True)
 
 st.markdown("""
