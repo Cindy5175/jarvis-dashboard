@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-# Configuración de página con la misma estética original
+# Configuración de página
 st.set_page_config(
     page_title="JARVIS Dashboard", 
     layout="wide", 
@@ -18,7 +18,7 @@ if "stitch_mode" not in st.session_state:
     st.session_state.stitch_mode = False
 
 # ==========================================
-# SIDEBAR / MÓDULOS (Idéntico al original)
+# SIDEBAR / MÓDULOS (Estética intacta)
 # ==========================================
 with st.sidebar:
     st.markdown("### ⚙️ Módulos")
@@ -44,18 +44,18 @@ col_title, col_btn = st.columns([4, 1])
 with col_title:
     st.title("💬 Consola de Comunicación")
 with col_btn:
-    st.write("") # Espaciador vertical para alinear con el título
+    st.write("") 
     if st.button("🧹 Purgar"):
         st.session_state.messages = []
         st.rerun()
 
-# Mostrar historial de chat con los globos originales de Streamlit
+# Mostrar historial de chat
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
 # ==========================================
-# MOTOR DE COMANDOS Y LOGICA REAL
+# MOTOR DE COMANDOS Y LÓGICA REAL
 # ==========================================
 def resolver_comando(user_input):
     cmd = user_input.lower().strip()
@@ -88,7 +88,7 @@ def resolver_comando(user_input):
     elif "mapa táctico" in cmd or "mapa" in cmd:
         return "🗺️ Cargando mapa táctico satelital... Coordenadas fijadas en el Nodo Buin."
     
-    # Respuesta estándar inteligente (evitando el eco aburrido)
+    # Respuesta estándar inteligente
     else:
         respuestas_jarvis = [
             f"Comando '{user_input}' registrado y procesado. Sin novedad en el frente, jefa.",
@@ -99,15 +99,12 @@ def resolver_comando(user_input):
 
 # Entrada de chat inferior
 if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
-    # Registrar mensaje del usuario
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
 
-    # Generar respuesta inteligente y real
     respuesta = resolver_comando(prompt)
     
-    # Registrar y mostrar respuesta del asistente
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
         st.write(respuesta)
