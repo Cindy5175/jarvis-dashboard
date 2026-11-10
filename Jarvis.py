@@ -108,3 +108,4 @@ if prompt := st.chat_input("Escríbele o háblale a JARVIS..."):
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
     with st.chat_message("assistant"):
         st.write(respuesta)
+
