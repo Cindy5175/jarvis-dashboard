@@ -220,7 +220,7 @@ dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
 fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
 
-# Contenedor del Reactor con ID para que el segundero camine en vivo
+# Contenedor del Reactor con el reloj estático base
 st.markdown(f"""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
@@ -229,14 +229,16 @@ st.markdown(f"""
         [ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]
     </p>
 </div>
+""", unsafe_allow_html=True)
 
+# Componente seguro para hacer correr el segundero en vivo mediante JS
+reloj_js = """
 <script>
 function actualizarReloj() {
     const ahora = new Date();
-    // Ajuste a hora chilena UTC-3 aprox o hora local del equipo
     const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
-    const relojEl = document.getElementById('reloj-vivo');
+    const relojEl = window.parent.document.getElementById('reloj-vivo');
     if (relojEl) {
         relojEl.innerText = horaChile;
     }
@@ -244,7 +246,8 @@ function actualizarReloj() {
 setInterval(actualizarReloj, 1000);
 actualizarReloj();
 </script>
-""", unsafe_allow_html=True)
+"""
+st.components.v1.html(reloj_js, height=0)
 
 st.markdown("""
 <div class="holo-brain-box">
