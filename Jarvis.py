@@ -327,7 +327,7 @@ st.markdown("---")
 col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
-    st.markdown("####  Módulos")
+    st.markdown("#### Módulos")
    
     if st.button(" Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
@@ -339,7 +339,7 @@ with col_modulos:
         st.rerun()
        
     st.markdown("---")
-    st.markdown("####  Memoria y Autonomía (JARVIS)")
+    st.markdown("#### Memoria y Autonomía (JARVIS)")
    
     with st.expander(" Gestionar Núcleo Técnico", expanded=False):
         dato_mem = st.text_input("Dato a guardar en memoria:", placeholder="Ej: Preferencia de diseño...")
@@ -355,7 +355,7 @@ with col_modulos:
                 st.info(res_exec)
 
     st.markdown("---")
-    st.markdown("####  Centro de Análisis Óptico")
+    st.markdown("#### Centro de Análisis Óptico")
    
     with st.expander(" Subir Archivo (IMG / TXT / PDF)", expanded=True):
         archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
@@ -380,13 +380,13 @@ with col_modulos:
             st.rerun()
            
     st.markdown("---")
-    st.markdown("####  Seguridad")
+    st.markdown("#### Seguridad")
    
     if st.button(" Refrescar Sensores", use_container_width=True):
         st.info("Sensores del Nodo Buin estables y seguros.")
        
     st.markdown("---")
-    st.markdown("####  Mapa Táctico")
+    st.markdown("#### Mapa Táctico")
    
     with st.expander(" mapa táctico satelital", expanded=False):
         st.markdown("""
@@ -411,11 +411,11 @@ with col_modulos:
     st.link_button(" USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
    
     st.markdown("---")
-    st.markdown("####  Clima Buin")
+    st.markdown("#### Clima Buin")
    
     with st.expander(" Widget Clima", expanded=False):
-        st.markdown(f"**Buin** \n  **{temp_real}** —  Parcial")
-        st.caption(f" Humedad: {hum_real} |  Viento: {viento_real}")
+        st.markdown(f"**Buin** \n **{temp_real}** — Parcial")
+        st.caption(f" Humedad: {hum_real} | Viento: {viento_real}")
         st.markdown("---")
         st.markdown(" **Semanal:**")
        
@@ -424,10 +424,10 @@ with col_modulos:
             d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
             mx = int(t_maxs[i])
             mn = int(t_mins[i])
-            st.markdown(f"**`{d_label}`**  Mín: **`{mn}°`** |  Máx: **`{mx}°`**")
+            st.markdown(f"**`{d_label}`** Mín: **`{mn}°`** | Máx: **`{mx}°`**")
            
     st.markdown("---")
-    st.markdown("####  Misiones")
+    st.markdown("#### Misiones")
    
     with st.expander(" Base de Datos", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
@@ -441,7 +441,7 @@ with col_modulos:
         if misiones_guardadas:
             st.markdown("**Activas:**")
             for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"-  `{m_text}`")
+                st.markdown(f"- `{m_text}`")
             if st.button(" Limpiar Misiones", use_container_width=True):
                 limpiar_misiones()
                 st.rerun()
@@ -460,15 +460,14 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # Botón nativo de Streamlit para evitar cualquier llave HTML errante
-    if st.button("🎙️ Activar Escucha Manos Libres", use_container_width=True):
+    if st.button(" Activar Escucha Manos Libres", use_container_width=True):
         st.info("Modo de escucha nativo activado en el Nodo Buin.")
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    prompt_chat = st.chat_input("Escribe tu orden...")
+    prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, X10PIENSA)...")
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
@@ -478,17 +477,32 @@ with col_chat:
 
         respuesta_ia = ""
         q = prompt_chat.lower()
-
         contexto_memoria = jarvis_mem.recall_context(q)
 
-        if "hola" in q or "saludos" in q or "como estas" in q:
-            respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, escucha continua y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
+        # --- EVALUACIÓN DE PROTOCOLOS DE RESPUESTA ---
+        if q.startswith("/human") or " /human" in q:
+            contenido_libre = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+            respuesta_ia = f"Entendido, jefa. Dejando la formalidad de lado y hablando de tú a tú: analizando '{contenido_libre or 'su solicitud'}', te diré que por aquí todo fluye de manera natural y sin rodeos."
+        elif q.startswith("eli10") or " eli10" in q:
+            tema_eli10 = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+            respuesta_ia = f"Protocolo ELI10 activado, jefa. Explicando '{tema_eli10 or 'el concepto'}' en fácil: imagina que es como armar un circuito con piezas de juguete; conectas una parte con otra y ¡listo, funciona sin enredos!"
+        elif q.startswith("x10piensa") or " x10piensa" in q:
+            estrategia = prompt_chat.replace("X10PIENSA", "").replace("x10piensa", "").strip()
+            respuesta_ia = f"Protocolo X10PIENSA en ejecución, jefa. Estrategia profunda para '{estrategia or 'el proyecto'}': 1) Optimizar recursos al 100%, 2) Escalar con base local sólida, y 3) Mantener la estética visual impecable en cada módulo."
+        elif q.startswith("killcritic") or " killcritic" in q:
+            critica = prompt_chat.replace("KILLCRITIC", "").replace("killcritic", "").strip()
+            respuesta_ia = f"Protocolo KILLCRITIC activo, jefa. Auditoría de riesgos para '{critica or 'su idea'}': Evaluando vulnerabilidades... Cuidado con descuidar la optimización móvil y los respaldos de seguridad en SQLite. ¿Corregimos el rumbo?"
+        elif q.startswith("ooda") or " ooda" in q:
+            meta_ooda = prompt_chat.replace("OODA", "").replace("ooda", "").strip()
+            respuesta_ia = f"Protocolo OODA desplegado, jefa. Plan de acción táctico para '{meta_ooda or 'la meta'}':\n- **Observar:** Monitorear estado actual del Nodo Buin.\n- **Orientar:** Alinear prioridades del catálogo y la interfaz.\n- **Decidir:** Ejecutar optimización directa.\n- **Actuar:** Desplegar cambios sin errores."
+        elif "hola" in q or "saludos" in q or "como estas" in q:
+            respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, protocolos de voz activos y circuitos brillantes. ¿Qué movemos hoy en el Nodo Buin?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el diseño de la web."
+            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el catálogo de Sabor Casero."
         elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
             respuesta_ia = "Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
         elif "receta" in q or "navidad" in q or "sabor casero" in q:
-            respuesta_ia = "Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial muy superior a los intentos anteriores. ¿Ajustamos detalles de la plataforma?"
+            respuesta_ia = "Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial excelente. ¿Procedemos a pulir el catálogo tal como acordamos?"
         elif "clima" in q:
             respuesta_ia = f"La temperatura actual en Buin es de {temp_real} con un {hum_real} de humedad. Un clima más que razonable para seguir creando."
         elif "osiris" in q:
