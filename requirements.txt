@@ -1,9 +1,1 @@
-streamlit
-gtts
-reportlab
-pypdf
-streamlit-autorefresh
-openai
-google-generativeai
-requests
-pandas
+chromadb
