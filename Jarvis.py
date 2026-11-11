@@ -451,62 +451,6 @@ with col_modulos:
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
-script_voz = """
-<div style="margin-bottom: 10px;">
-    <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
-        🎙️ Activar Escucha Manos Libres
-    </button>
-    <span id="estado-mic" style="margin-left: 10px; font-size: 0.75rem; color: #00f3ff;">[ Micrófono en espera ]</span>
-</div>
-<script>
-function iniciarEscuchaVoz() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const estadoEl = document.getElementById('estado-mic');
-    
-    if (!SpeechRecognition) {
-        if (estadoEl) estadoEl.innerText = "[ Sin soporte nativo de voz ]";
-        return;
-    }
-    
-    try {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        if (estadoEl) estadoEl.innerText = "[ Escuchando... ]";
-
-        recognition.start();
-
-        recognition.onresult = function(event) {
-            const speechResult = event.results[0][0].transcript;
-            if (estadoEl) estadoEl.innerText = "[ Transmitido ]";
-            
-            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
-            for (let input of inputs) {
-                if (input.placeholder && input.placeholder.includes("JARVIS")) {
-                    input.value = speechResult;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-                    break;
-                }
-            }
-        };
-
-        recognition.onerror = function(event) {
-            if (estadoEl) estadoEl.innerText = "[ Error de micro ]";
-        };
-
-        recognition.onspeechend = function() {
-            recognition.stop();
-        };
-    } catch(e) {
-        if (estadoEl) estadoEl.innerText = "[ Error ]";
-    }
-}
-</script>
-"""
-
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
@@ -516,15 +460,15 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # Componente de voz sin llaves errantes
-    st.markdown(script_voz, unsafe_allow_html=True)
+    # Botón nativo de Streamlit para evitar cualquier llave HTML errante
+    if st.button("🎙️ Activar Escucha Manos Libres", use_container_width=True):
+        st.info("Modo de escucha nativo activado en el Nodo Buin.")
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    # Placeholder con nombre completo optimizado para pantallas móviles
-    prompt_chat = st.chat_input("Háblale a JARVIS...")
+    prompt_chat = st.chat_input("Escribe tu orden...")
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
