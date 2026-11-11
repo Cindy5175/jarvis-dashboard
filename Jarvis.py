@@ -460,7 +460,7 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # --- WIDGET DE ESCUCHA LIMPIO (SIN LLAVES HUÉRFANAS) ---
+    # --- WIDGET DE ESCUCHA (LIMPIO DE CARACTERES EXTRAÑOS) ---
     st.markdown("""
     <div style="margin-bottom: 10px;">
         <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
@@ -474,7 +474,7 @@ with col_chat:
         const estadoEl = document.getElementById('estado-mic');
         
         if (!SpeechRecognition) {
-            if (estadoEl) estadoEl.innerText = "[ Tu navegador móvil no soporta voz nativa ]";
+            if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte nativo de voz ]";
             return;
         }
         
@@ -504,14 +504,14 @@ with col_chat:
             };
 
             recognition.onerror = function(event) {
-                if (estadoEl) estadoEl.innerText = "[ Error: Permiso de micrófono denegado ]";
+                if (estadoEl) estadoEl.innerText = "[ Error de micro o permisos ]";
             };
 
             recognition.onspeechend = function() {
                 recognition.stop();
             };
         } catch(e) {
-            if (estadoEl) estadoEl.innerText = "[ Error al iniciar el micro ]";
+            if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
         }
     }
     </script>
@@ -566,7 +566,7 @@ with col_chat:
 
         const voices = synth.getVoices();
         for(let i = 0; i < voices.length; i++) {{
-            if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) {{
+            if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pabor') || voices[i].name.toLowerCase().includes('raul'))) {{
                 utterThis.voice = voices[i];
                 break;
             }}
