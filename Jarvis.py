@@ -2,8 +2,13 @@ import os
 import sys
 import asyncio
 import subprocess
-import chromadb
-from chromadb.config import Settings
+import sqlite3
+from datetime import datetime
+
+# ==============================================================================
+# CONFIGURACIÓN DE PÁGINA (STREAMLIT)
+# ==============================================================================
+st.set_page_config(page_title="JARVIS Dashboard", layout="wide")
 
 # ==============================================================================
 # ARCHITECTURAL MODULE: HIGH-SPEED & LOW LATENCY CORE (Punto 3)
@@ -11,48 +16,50 @@ from chromadb.config import Settings
 class JarvisCore:
     def __init__(self, name="JARVIS"):
         self.name = name
-        self.system_prompt = (
-            "Eres JARVIS, un asistente de IA de alta precisión. "
-            "Responde de forma concisa, fluida, eficiente y con un toque sutil "
-            "de sarcasmo británico refinado."
-        )
 
     async def process_voice_input(self, text_command: str) -> str:
-        """
-        Procesamiento de baja latencia simulado para respuesta inmediata.
-        Aquí se conecta tu motor local (como Ollama/vLLM) o API directa.
-        """
-        # Flujo asíncrono para garantizar respuesta sin congelar la ejecución
         await asyncio.sleep(0.05) 
         return f"Procesado de inmediato, señorita. Ejecutando: '{text_command}'."
 
 
 # ==============================================================================
-# ARCHITECTURAL MODULE: LONG-TERM VECTOR MEMORY (Punto 1)
+# ARCHITECTURAL MODULE: LONG-TERM SQL MEMORY (Punto 1 - Compatible Cloud)
 # ==============================================================================
 class JarvisMemory:
-    def __init__(self, db_path="./jarvis_memory_db"):
-        # Base de datos vectorial local e independiente
-        self.client = chromadb.PersistentClient(path=db_path)
-        self.collection = self.client.get_or_create_collection(
-            name="user_preferences_and_history"
-        )
+    def __init__(self, db_path="jarvis_memory.db"):
+        self.db_path = db_path
+        self._init_db()
 
-    def remember_fact(self, key_id: str, fact_text: str, metadata: dict = None):
-        """Guarda preferencias, rutinas y datos de proyectos a largo plazo."""
-        self.collection.upsert(
-            documents=[fact_text],
-            metadatas=[metadata or {"category": "general"}],
-            ids=[key_id]
-        )
+    def _init_db(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS memory (
+                key_id TEXT PRIMARY KEY,
+                fact_text TEXT,
+                category TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
 
-    def recall_context(self, query: str, n_results: int = 2) -> list:
-        """Recupera el contexto relevante antes de formular la respuesta."""
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=n_results
-        )
-        return results.get("documents", [[]])[0]
+    def remember_fact(self, key_id: str, fact_text: str, category: str = "general"):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT OR REPLACE INTO memory (key_id, fact_text, category)
+            VALUES (?, ?, ?)
+        """, (key_id, fact_text, category))
+        conn.commit()
+        conn.close()
+
+    def recall_context(self, query: str) -> list:
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT fact_text FROM memory")
+        rows = cursor.fetchall()
+        conn.close()
+        return [row[0] for row in rows if query.lower() in row[0].lower()]
 
 
 # ==============================================================================
@@ -61,10 +68,8 @@ class JarvisMemory:
 class JarvisSystemExecutor:
     @staticmethod
     def open_application(app_name: str) -> str:
-        """Ejecuta aplicaciones y procesos del sistema operativo por voz."""
         try:
             if sys.platform == "win32":
-                # Comandos de ejecución rápida para Windows
                 subprocess.Popen(f"start {app_name}", shell=True)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", "-a", app_name])
@@ -74,59 +79,39 @@ class JarvisSystemExecutor:
         except Exception as e:
             return f"No se pudo iniciar {app_name}: {str(e)}"
 
-    @staticmethod
-    def execute_custom_script(script_path: str) -> str:
-        """Automatiza scripts o tareas locales en segundo plano."""
-        if os.path.exists(script_path):
-            subprocess.Popen([sys.executable, script_path])
-            return f"Script {os.path.basename(script_path)} puesto en marcha."
-        return "El archivo especificado no existe en el sistema."
-
 
 # ==============================================================================
-# MAIN INTEGRATION ENGINE (Estructura Simétrica y Limpia)
+# MAIN INTEGRATION ENGINE & UI
 # ==============================================================================
-class JarvisSystem:
-    def __init__(self):
-        self.core = JarvisCore()
-        self.memory = JarvisMemory()
-        self.executor = JarvisSystemExecutor()
+st.title("🤖 JARVIS - Tactical Assistant")
+st.caption("Sistema operativo local y control de comandos de alta velocidad")
+st.markdown("---")
 
-    async def handle_pipeline(self, user_input: str):
-        print(f"\n[ENTRADA DE VOZ]: {user_input}")
+memory = JarvisMemory()
+executor = JarvisSystemExecutor()
+core = JarvisCore()
 
-        # 1. Búsqueda en memoria vectorial (Punto 1)
-        context = self.memory.recall_context(user_input)
-        if context:
-            print(f"[MEMORIA RETENIDA]: Contexto localizado -> {context}")
+# Interfaz visual limpia en Streamlit
+user_input = st.text_input("Ingrese comando para JARVIS:", "Analizar estado del sistema")
 
-        # 2. Evaluación de comandos del sistema (Punto 2)
-        lowered = user_input.lower()
-        if "abrir" in lowered:
-            app = lowered.replace("abrir", "").strip()
-            status = self.executor.open_application(app)
-            print(f"[ACCION EJECUTADA]: {status}")
-
-        # 3. Respuesta de baja latencia con voz/sarcasmo (Punto 3)
-        response = await self.core.process_voice_input(user_input)
-        print(f"[JARVIS]: {response}")
-
-
-# ==============================================================================
-# PRUEBA DE EJECUCIÓN DEL MÓDULO UNIFICADO
-# ==============================================================================
-if __name__ == "__main__":
-    jarvis = JarvisSystem()
-
-    # Guardar preferencia inicial en memoria a largo plazo
-    jarvis.memory.remember_fact(
-        key_id="pref_01", 
-        fact_text="A la usuaria le gusta la arquitectura limpia, simétrica y proyectos de alta velocidad.",
-        metadata={"proyecto": "JARVIS"}
-    )
-
-    # Bucle asíncrono para respuesta instantánea
-    async def main():
-        await jarvis.handle_pipeline("Recordar mis preferencias y abrir notepad")
-
-    asyncio.run(main())
+if st.button("Enviar Comando"):
+    st.write(f"**Entrada:** {user_input}")
+    
+    # Memoria
+    context = memory.recall_context(user_input)
+    if context:
+        st.info(f"Contexto recuperado: {context}")
+        
+    # Acciones
+    if "abrir" in user_input.lower():
+        app = user_input.lower().replace("abrir", "").strip()
+        res_sys = executor.open_application(app)
+        st.warning(res_sys)
+        
+    # Respuesta Core
+    # Como Streamlit corre síncronamente, manejamos la ejecución asíncrona limpia
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    response = loop.run_until_complete(core.process_voice_input(user_input))
+    
+    st.success(f"**JARVIS:** {response}")
