@@ -62,7 +62,7 @@ def init_db():
 
 init_db()
 
-# --- CLASES MAESTRAS JARVIS (LOS 3 PUNTOS + AUTOMATIZACIÓN AVANZADA) ---
+# --- CLASES MAESTRAS JARVIS ---
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
@@ -88,7 +88,6 @@ class JarvisMemory:
 class JarvisSystemExecutor:
     @staticmethod
     def open_application(target: str) -> str:
-        """Ejecuta aplicaciones del sistema o scripts locales avanzados (Python/Bat/Bash)"""
         try:
             target_lower = target.lower()
             if target_lower.endswith(('.py', '.bat', '.sh', '.ps1')) and os.path.exists(target):
@@ -96,7 +95,7 @@ class JarvisSystemExecutor:
                     subprocess.Popen(f'start cmd /k "{sys.executable} {target}"', shell=True)
                 else:
                     subprocess.Popen([sys.executable, target])
-                return f"Script automatizado '{os.path.basename(target)}' puesto en marcha en segundo plano, jefa."
+                return f"Script automatizado '{os.path.basename(target)}' puesto en marcha, jefa."
             
             if sys.platform == "win32":
                 subprocess.Popen(f"start {target}", shell=True)
@@ -157,7 +156,7 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES (Simetría estricta y diseño neón) ---
+# --- ESTILOS VISUALES ---
 st.markdown("""
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
@@ -324,7 +323,7 @@ st.markdown("""
 
 st.markdown("---")
 
-# --- DISTRIBUCIÓN PRINCIPAL (SIMETRÍA ESTRICTA) ---
+# --- DISTRIBUCIÓN PRINCIPAL ---
 col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
@@ -461,7 +460,7 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # --- WIDGET DE ESCUCHA CONTINUA / MANOS LIBRES (SpeechRecognition JS) ---
+    # --- WIDGET DE ESCUCHA (SIN LLAVES SUELTAS Y COMPATIBLE CON MÓVIL) ---
     st.markdown("""
     <div style="margin-bottom: 10px;">
         <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
@@ -472,42 +471,49 @@ with col_chat:
     <script>
     function iniciarEscuchaVoz() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const estadoEl = document.getElementById('estado-mic');
+        
         if (!SpeechRecognition) {
-            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            if (estadoEl) estadoEl.innerText = "[ Tu navegador móvil no soporta voz nativa ]";
+            alert("Tu navegador móvil bloquea o no soporta el reconocimiento de voz por seguridad.");
             return;
         }
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
+        
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
 
-        const estadoEl = document.getElementById('estado-mic');
-        estadoEl.innerText = "[ Escuchando... Habla ahora ]";
+            if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora ]";
 
-        recognition.start();
+            recognition.start();
 
-        recognition.onresult = function(event) {
-            const speechResult = event.results[0][0].transcript;
-            estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
-            
-            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
-            for (let input of inputs) {
-                if (input.placeholder && input.placeholder.includes("Escríbele")) {
-                    input.value = speechResult;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-                    break;
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                if (estadoEl) estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
+                
+                const inputs = window.parent.document.querySelectorAll('input[type="text"]');
+                for (let input of inputs) {
+                    if (input.placeholder && input.placeholder.includes("Escríbele")) {
+                        input.value = speechResult;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+                        break;
+                    }
                 }
-            }
-        };
+            };
 
-        recognition.onerror = function(event) {
-            estadoEl.innerText = "[ Error de audio o sin permisos ]";
-        };
+            recognition.onerror = function(event) {
+                if (estadoEl) estadoEl.innerText = "[ Error: Permiso de micrófono denegado ]";
+            };
 
-        recognition.onspeechend = function() {
-            recognition.stop();
-        };
+            recognition.onspeechend = function() {
+                recognition.stop();
+            };
+        } catch(e) {
+            if (estadoEl) estadoEl.innerText = "[ Error al iniciar el micro ]";
+        }
     }
     </script>
     """, unsafe_allow_html=True)
