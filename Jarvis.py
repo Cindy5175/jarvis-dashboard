@@ -577,3 +577,4 @@ with col_chat:
         st.components.v1.html(voz_js, height=0)
 
         st.rerun()
+
