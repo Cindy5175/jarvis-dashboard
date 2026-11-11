@@ -451,6 +451,65 @@ with col_modulos:
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
+
+# --- SCRIPT HTML DE RECONOCIMIENTO DE VOZ REAL PARA MANOS LIBRES ---
+script_voz_real = """
+<div style="margin-bottom: 10px;">
+    <button onclick="iniciarEscuchaVozReal()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
+        🎙️ Activar Escucha Manos Libres
+    </button>
+    <div id="estado-mic-real" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Micrófono en espera ]</div>
+</div>
+<script>
+function iniciarEscuchaVozReal() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const estadoEl = document.getElementById('estado-mic-real');
+    
+    if (!SpeechRecognition) {
+        if (estadoEl) estadoEl.innerText = "[ Tu navegador no soporta voz nativa ]";
+        return;
+    }
+    
+    try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora, jefa ]";
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const speechResult = event.results[0][0].transcript;
+            if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";
+            
+            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
+            for (let input of inputs) {
+                if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {
+                    input.value = speechResult;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+                    break;
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            if (estadoEl) estadoEl.innerText = "[ Error: Permiso de micrófono denegado ]";
+        };
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+            if (estadoEl) estadoEl.innerText = "[ Procesando comando... ]";
+        };
+    } catch(e) {
+        if (estadoEl) estadoEl.innerText = "[ Error al activar micrófono ]";
+    }
+}
+</script>
+"""
+
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
@@ -460,8 +519,8 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    if st.button(" Activar Escucha Manos Libres", use_container_width=True):
-        st.info("Modo de escucha nativo activado en el Nodo Buin.")
+    # Inyección limpia del componente de voz real (sin llaves extrañas)
+    st.components.v1.html(script_voz_real, height=75)
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
