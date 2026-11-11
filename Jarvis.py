@@ -460,7 +460,7 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # --- WIDGET DE ESCUCHA (SIN LLAVES SUELTAS Y COMPATIBLE CON MÓVIL) ---
+    # --- WIDGET DE ESCUCHA LIMPIO (SIN LLAVES HUÉRFANAS) ---
     st.markdown("""
     <div style="margin-bottom: 10px;">
         <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
@@ -475,7 +475,6 @@ with col_chat:
         
         if (!SpeechRecognition) {
             if (estadoEl) estadoEl.innerText = "[ Tu navegador móvil no soporta voz nativa ]";
-            alert("Tu navegador móvil bloquea o no soporta el reconocimiento de voz por seguridad.");
             return;
         }
         
@@ -578,4 +577,3 @@ with col_chat:
         st.components.v1.html(voz_js, height=0)
 
         st.rerun()
-
