@@ -98,7 +98,6 @@ class JarvisSystemExecutor:
                     subprocess.Popen([sys.executable, target])
                 return f"Script automatizado '{os.path.basename(target)}' puesto en marcha en segundo plano, jefa."
             
-            # Apertura estándar de aplicaciones
             if sys.platform == "win32":
                 subprocess.Popen(f"start {target}", shell=True)
             elif sys.platform == "darwin":
@@ -164,7 +163,6 @@ st.markdown("""
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 
-/* Achicar los encabezados de los módulos de la izquierda para perfecta simetría */
 section[data-testid="stHorizontalBlock"] > div:first-child h4 {
     font-size: 0.8rem !important;
     font-weight: bold;
@@ -290,7 +288,6 @@ dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
 fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
 
-# Contenedor del Reactor con el reloj estático base
 st.markdown(f"""
 <div class="arc-reactor-container">
     <div class="arc-ring"><div class="arc-triangle"></div></div>
@@ -301,7 +298,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Componente seguro para hacer correr el segundero en vivo mediante JS
 reloj_js = """
 <script>
 function actualizarReloj() {
@@ -494,13 +490,11 @@ with col_chat:
             const speechResult = event.results[0][0].transcript;
             estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
             
-            // Buscar el input de chat de Streamlit e inyectar el texto
             const inputs = window.parent.document.querySelectorAll('input[type="text"]');
             for (let input of inputs) {
                 if (input.placeholder && input.placeholder.includes("Escríbele")) {
                     input.value = speechResult;
                     input.dispatchEvent(new Event('input', { bubbles: true }));
-                    // Simular enter
                     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
                     break;
                 }
@@ -533,10 +527,8 @@ with col_chat:
         respuesta_ia = ""
         q = prompt_chat.lower()
 
-        # Comprobación de contexto de memoria previa
         contexto_memoria = jarvis_mem.recall_context(q)
 
-        # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES CON PERSONALIDAD CÁLIDA Y SARCASMO FINO ---
         if "hola" in q or "saludos" in q or "como estas" in q:
             respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, escucha continua y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
@@ -559,7 +551,6 @@ with col_chat:
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
 
-        #  SÍNTESIS DE VOZ WEB NATIVA (HTML5 SpeechSynthesis)
         texto_para_web = respuesta_ia.replace('"', "'").replace("\n", " ")
         voz_js = f"""
         <script>
