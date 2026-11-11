@@ -1,30 +1,11 @@
-import streamlit as st
 import os
 import sys
 import asyncio
 import subprocess
 import sqlite3
-from datetime import datetime
 
 # ==============================================================================
-# CONFIGURACIÓN DE PÁGINA (STREAMLIT)
-# ==============================================================================
-st.set_page_config(page_title="JARVIS Dashboard", layout="wide")
-
-# ==============================================================================
-# ARCHITECTURAL MODULE: HIGH-SPEED & LOW LATENCY CORE (Punto 3)
-# ==============================================================================
-class JarvisCore:
-    def __init__(self, name="JARVIS"):
-        self.name = name
-
-    async def process_voice_input(self, text_command: str) -> str:
-        await asyncio.sleep(0.05) 
-        return f"Procesado de inmediato, señorita. Ejecutando: '{text_command}'."
-
-
-# ==============================================================================
-# ARCHITECTURAL MODULE: LONG-TERM SQL MEMORY (Punto 1 - Compatible Cloud)
+# MÓDULO 1: MEMORIA A LARGO PLAZO (SQLite liviano y compatible)
 # ==============================================================================
 class JarvisMemory:
     def __init__(self, db_path="jarvis_memory.db"):
@@ -64,7 +45,7 @@ class JarvisMemory:
 
 
 # ==============================================================================
-# ARCHITECTURAL MODULE: SYSTEM AUTOMATION & ACTIONS (Punto 2)
+# MÓDULO 2: AUTONOMÍA Y EJECUCIÓN DE ACCIONES EN EL SISTEMA
 # ==============================================================================
 class JarvisSystemExecutor:
     @staticmethod
@@ -76,42 +57,48 @@ class JarvisSystemExecutor:
                 subprocess.Popen(["open", "-a", app_name])
             else:
                 subprocess.Popen([app_name])
-            return f"Abriendo {app_name} de inmediato."
+            return f"Abriendo {app_name} de inmediato, señorita."
         except Exception as e:
             return f"No se pudo iniciar {app_name}: {str(e)}"
 
 
 # ==============================================================================
-# MAIN INTEGRATION ENGINE & UI
+# MÓDULO 3: NÚCLEO DE BAJA LATENCIA (Optimización de respuesta)
 # ==============================================================================
-st.title("🤖 JARVIS - Tactical Assistant")
-st.caption("Sistema operativo local y control de comandos de alta velocidad")
-st.markdown("---")
+class JarvisCore:
+    def __init__(self, name="JARVIS"):
+        self.name = name
 
-memory = JarvisMemory()
-executor = JarvisSystemExecutor()
-core = JarvisCore()
+    async def process_voice_input(self, text_command: str) -> str:
+        # Simulación de respuesta inmediata optimizada
+        await asyncio.sleep(0.01) 
+        return f"Procesado al instante. Ejecutando orden: '{text_command}'."
 
-# Interfaz visual limpia en Streamlit
-user_input = st.text_input("Ingrese comando para JARVIS:", "Analizar estado del sistema")
 
-if st.button("Enviar Comando"):
-    st.write(f"**Entrada:** {user_input}")
-    
-    # Memoria
-    context = memory.recall_context(user_input)
-    if context:
-        st.info(f"Contexto recuperado: {context}")
+# ==============================================================================
+# CLASE INTEGRADORA UNIFICADA (Los 3 puntos en un solo bloque)
+# ==============================================================================
+class JarvisEngine:
+    def __init__(self):
+        self.memory = JarvisMemory()
+        self.executor = JarvisSystemExecutor()
+        self.core = JarvisCore()
+
+    async def run_pipeline(self, user_input: str):
+        # 1. Consulta en memoria
+        context = self.memory.recall_context(user_input)
         
-    # Acciones
-    if "abrir" in user_input.lower():
-        app = user_input.lower().replace("abrir", "").strip()
-        res_sys = executor.open_application(app)
-        st.warning(res_sys)
+        # 2. Acciones del sistema si aplica
+        action_result = None
+        if "abrir" in user_input.lower():
+            app = user_input.lower().replace("abrir", "").strip()
+            action_result = self.executor.open_application(app)
+            
+        # 3. Respuesta rápida del núcleo
+        response = await self.core.process_voice_input(user_input)
         
-    # Respuesta Core
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    response = loop.run_until_complete(core.process_voice_input(user_input))
-    
-    st.success(f"**JARVIS:** {response}")
+        return {
+            "contexto": context,
+            "accion": action_result,
+            "respuesta": response
+        }
