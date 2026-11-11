@@ -451,71 +451,73 @@ with col_modulos:
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
+script_voz = """
+<div style="margin-bottom: 10px;">
+    <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
+        🎙️ Activar Escucha Manos Libres
+    </button>
+    <span id="estado-mic" style="margin-left: 10px; font-size: 0.75rem; color: #00f3ff;">[ Micrófono en espera ]</span>
+</div>
+<script>
+function iniciarEscuchaVoz() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const estadoEl = document.getElementById('estado-mic');
+    
+    if (!SpeechRecognition) {
+        if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte nativo de voz ]";
+        return;
+    }
+    
+    try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora ]";
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const speechResult = event.results[0][0].transcript;
+            if (estadoEl) estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
+            
+            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
+            for (let input of inputs) {
+                if (input.placeholder && input.placeholder.includes("Escríbele")) {
+                    input.value = speechResult;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+                    break;
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            if (estadoEl) estadoEl.innerText = "[ Error de micro o permisos ]";
+        };
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+        };
+    } catch(e) {
+        if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
+    }
+}
+</script>
+"""
+
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
-        st.markdown("<h4>Chat </h4>", unsafe_allow_html=True)
+        st.markdown("<h4>Chat</h4>", unsafe_allow_html=True)
     with col_h2:
         if st.button(" Purgar", use_container_width=True, key="btn_limpiar_chat"):
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # --- WIDGET DE ESCUCHA (LIMPIO DE CARACTERES EXTRAÑOS) ---
-    st.markdown("""
-    <div style="margin-bottom: 10px;">
-        <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
-            🎙️ Activar Escucha Manos Libres
-        </button>
-        <span id="estado-mic" style="margin-left: 10px; font-size: 0.75rem; color: #00f3ff;">[ Micrófono en espera ]</span>
-    </div>
-    <script>
-    function iniciarEscuchaVoz() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const estadoEl = document.getElementById('estado-mic');
-        
-        if (!SpeechRecognition) {
-            if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte nativo de voz ]";
-            return;
-        }
-        
-        try {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora ]";
-
-            recognition.start();
-
-            recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                if (estadoEl) estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
-                
-                const inputs = window.parent.document.querySelectorAll('input[type="text"]');
-                for (let input of inputs) {
-                    if (input.placeholder && input.placeholder.includes("Escríbele")) {
-                        input.value = speechResult;
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-                        break;
-                    }
-                }
-            };
-
-            recognition.onerror = function(event) {
-                if (estadoEl) estadoEl.innerText = "[ Error de micro o permisos ]";
-            };
-
-            recognition.onspeechend = function() {
-                recognition.stop();
-            };
-        } catch(e) {
-            if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
-        }
-    }
-    </script>
-    """, unsafe_allow_html=True)
+    # Renderizado limpio del componente de voz
+    st.markdown(script_voz, unsafe_allow_html=True)
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
@@ -537,9 +539,9 @@ with col_chat:
         if "hola" in q or "saludos" in q or "como estas" in q:
             respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, escucha continua y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el diseño de la web."
+            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nossa historia, jefa, aunque dudo que te ayude con el diseño de la web."
         elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
-            respuesta_ia = "Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
+            respuesta_ia = "Un binomio al cuadrado (a + b)² is igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
         elif "receta" in q or "navidad" in q or "sabor casero" in q:
             respuesta_ia = "Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial muy superior a los intentos anteriores. ¿Ajustamos detalles de la plataforma?"
         elif "clima" in q:
@@ -566,7 +568,7 @@ with col_chat:
 
         const voices = synth.getVoices();
         for(let i = 0; i < voices.length; i++) {{
-            if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pabor') || voices[i].name.toLowerCase().includes('raul'))) {{
+            if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) {{
                 utterThis.voice = voices[i];
                 break;
             }}
@@ -577,4 +579,3 @@ with col_chat:
         st.components.v1.html(voz_js, height=0)
 
         st.rerun()
-
