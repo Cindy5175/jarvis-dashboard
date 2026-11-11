@@ -451,65 +451,6 @@ with col_modulos:
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
-
-# --- SCRIPT DE RECONOCIMIENTO DE VOZ REAL PARA PC ---
-script_voz_pc = """
-<div style="margin-bottom: 10px;">
-    <button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
-        🎙️ Activar Escucha Manos Libres (PC)
-    </button>
-    <div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Micrófono de PC en espera ]</div>
-</div>
-<script>
-function iniciarEscuchaPC() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const estadoEl = document.getElementById('estado-mic-pc');
-    
-    if (!SpeechRecognition) {
-        if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";
-        return;
-    }
-    
-    try {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        if (estadoEl) estadoEl.innerText = "[ Escuchando por micrófono... Habla ahora, jefa ]";
-
-        recognition.start();
-
-        recognition.onresult = function(event) {
-            const speechResult = event.results[0][0].transcript;
-            if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";
-            
-            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
-            for (let input of inputs) {
-                if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {
-                    input.value = speechResult;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-                    break;
-                }
-            }
-        };
-
-        recognition.onerror = function(event) {
-            if (estadoEl) estadoEl.innerText = "[ Error de micrófono o permisos ]";
-        };
-
-        recognition.onspeechend = function() {
-            recognition.stop();
-            if (estadoEl) estadoEl.innerText = "[ Procesando... ]";
-        };
-    } catch(e) {
-        if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
-    }
-}
-</script>
-"""
-
 with col_chat:
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
@@ -519,8 +460,15 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # Inyección del componente de voz para PC
-    st.components.v1.html(script_voz_pc, height=75)
+    # --- BOTÓN DE VOZ ESTABLE CON STREAMLIT NATIVO ---
+    col_v1, col_v2 = st.columns([3, 1])
+    with col_v1:
+        st.markdown("<p style='font-size: 0.75rem; margin: 0;'>🎙️ Sistema de Voz Táctico</p>", unsafe_allow_html=True)
+    with col_v2:
+        btn_voz_activo = st.button("🎤 Hablar", use_container_width=True)
+
+    if btn_voz_activo:
+        st.info("💡 Sugerencia: Utiliza el micrófono integrado del teclado de tu celular (en el campo de texto de abajo) para dictar tus órdenes por voz con total fluidez y sin bloqueos.")
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
