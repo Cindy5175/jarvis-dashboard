@@ -1,3 +1,4 @@
+import streamlit as st
 import os
 import sys
 import asyncio
@@ -109,7 +110,6 @@ if st.button("Enviar Comando"):
         st.warning(res_sys)
         
     # Respuesta Core
-    # Como Streamlit corre síncronamente, manejamos la ejecución asíncrona limpia
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     response = loop.run_until_complete(core.process_voice_input(user_input))
