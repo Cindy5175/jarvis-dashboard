@@ -62,7 +62,7 @@ def init_db():
 
 init_db()
 
-# --- CLASES MAESTRAS JARVIS (LOS 3 PUNTOS INTEGRADOS) ---
+# --- CLASES MAESTRAS JARVIS (LOS 3 PUNTOS + AUTOMATIZACIÓN AVANZADA) ---
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
@@ -87,24 +87,34 @@ class JarvisMemory:
 
 class JarvisSystemExecutor:
     @staticmethod
-    def open_application(app_name: str) -> str:
+    def open_application(target: str) -> str:
+        """Ejecuta aplicaciones del sistema o scripts locales avanzados (Python/Bat/Bash)"""
         try:
+            target_lower = target.lower()
+            if target_lower.endswith(('.py', '.bat', '.sh', '.ps1')) and os.path.exists(target):
+                if sys.platform == "win32":
+                    subprocess.Popen(f'start cmd /k "{sys.executable} {target}"', shell=True)
+                else:
+                    subprocess.Popen([sys.executable, target])
+                return f"Script automatizado '{os.path.basename(target)}' puesto en marcha en segundo plano, jefa."
+            
+            # Apertura estándar de aplicaciones
             if sys.platform == "win32":
-                subprocess.Popen(f"start {app_name}", shell=True)
+                subprocess.Popen(f"start {target}", shell=True)
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", "-a", app_name])
+                subprocess.Popen(["open", "-a", target])
             else:
-                subprocess.Popen([app_name])
-            return f"Abriendo {app_name} de inmediato, señorita."
+                subprocess.Popen([target])
+            return f"Ejecutando proceso '{target}' de inmediato, señorita."
         except Exception as e:
-            return f"No se pudo iniciar {app_name}: {str(e)}"
+            return f"Error ejecutando el proceso '{target}': {str(e)}"
 
 class JarvisCore:
     def __init__(self, name="JARVIS"):
         self.name = name
 
     async def process_voice_input(self, text_command: str) -> str:
-        await asyncio.sleep(0.01) 
+        await asyncio.sleep(0.01)
         return f"Procesado al instante con baja latencia. Ejecutando orden: '{text_command}'."
 
 jarvis_mem = JarvisMemory()
@@ -257,13 +267,13 @@ if not st.session_state.get("autorizado", False):
         <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>
     </div>
     """, unsafe_allow_html=True)
-    
+   
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
             pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
             btn_entrar = st.form_submit_button(" Desbloquear Armadura")
-        
+       
         if btn_entrar:
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
@@ -323,27 +333,27 @@ col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
     st.markdown("####  Módulos")
-    
+   
     if st.button(" Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
         st.rerun()
-        
+       
     if st.button(" Reinicio Total", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
-        
+       
     st.markdown("---")
     st.markdown("####  Memoria y Autonomía (JARVIS)")
-    
+   
     with st.expander(" Gestionar Núcleo Técnico", expanded=False):
         dato_mem = st.text_input("Dato a guardar en memoria:", placeholder="Ej: Preferencia de diseño...")
         if st.button(" Guardar Memoria Larga", use_container_width=True):
             if dato_mem.strip():
                 jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
                 st.success("¡Información retenida en bases locales!")
-        
-        app_sys = st.text_input("Ejecutar comando/App:", placeholder="notepad")
+       
+        app_sys = st.text_input("Ejecutar comando/App o script:", placeholder="notepad o script.py")
         if st.button(" Lanzar Sistema", use_container_width=True):
             if app_sys.strip():
                 res_exec = jarvis_exec.open_application(app_sys.strip())
@@ -351,7 +361,7 @@ with col_modulos:
 
     st.markdown("---")
     st.markdown("####  Centro de Análisis Óptico")
-    
+   
     with st.expander(" Subir Archivo (IMG / TXT / PDF)", expanded=True):
         archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
         if archivo_subido is not None:
@@ -361,7 +371,7 @@ with col_modulos:
                 file_name=archivo_subido.name,
                 use_container_width=True
             )
-            
+           
         if st.button(" Ejecutar Análisis Táctico", use_container_width=True):
             nombre_archivo = archivo_subido.name
             if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -370,19 +380,19 @@ with col_modulos:
                 informe_analisis = f" **ANÁLISIS DE DOCUMENTO:** \n- Documento: `{nombre_archivo}` \n- **Diagnóstico:** Estructura leída sin contratiempos. Avísame si quieres extraer datos o si solo vienes a hacerme leer documentos largos, jefa."
             else:
                 informe_analisis = f" **ANÁLISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Texto procesado y comprendido a la perfección."
-            
+           
             st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
             st.rerun()
-            
+           
     st.markdown("---")
     st.markdown("####  Seguridad")
-    
+   
     if st.button(" Refrescar Sensores", use_container_width=True):
         st.info("Sensores del Nodo Buin estables y seguros.")
-        
+       
     st.markdown("---")
     st.markdown("####  Mapa Táctico")
-    
+   
     with st.expander(" mapa táctico satelital", expanded=False):
         st.markdown("""
         <div class="cyber-radar-screen">
@@ -394,36 +404,36 @@ with col_modulos:
             <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
         </div>
         """, unsafe_allow_html=True)
-        
+       
     st.markdown("---")
     st.markdown(" **OSIRIS:** En línea")
     st.link_button(" Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
-    
+   
     st.markdown(" **PlanetEar:** Sincronizado")
     st.link_button(" Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
-    
+   
     st.markdown(" **USGS Explorer:**")
     st.link_button(" USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
-    
+   
     st.markdown("---")
     st.markdown("####  Clima Buin")
-    
+   
     with st.expander(" Widget Clima", expanded=False):
         st.markdown(f"**Buin** \n  **{temp_real}** —  Parcial")
         st.caption(f" Humedad: {hum_real} |  Viento: {viento_real}")
         st.markdown("---")
         st.markdown(" **Semanal:**")
-        
+       
         nombres_dias = ["Hoy", "Vie", "Sáb", "Dom", "Lun"]
         for i in range(min(5, len(t_maxs))):
             d_label = nombres_dias[i] if i < len(nombres_dias) else f"Día {i+1}"
             mx = int(t_maxs[i])
             mn = int(t_mins[i])
             st.markdown(f"**`{d_label}`**  Mín: **`{mn}°`** |  Máx: **`{mx}°`**")
-            
+           
     st.markdown("---")
     st.markdown("####  Misiones")
-    
+   
     with st.expander(" Base de Datos", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
         if st.button(" Registrar Tarea", use_container_width=True):
@@ -431,7 +441,7 @@ with col_modulos:
                 agregar_mision(nueva_tarea.strip())
                 st.success("¡Misión registrada con éxito!")
                 st.rerun()
-                
+               
         misiones_guardadas = obtener_misiones()
         if misiones_guardadas:
             st.markdown("**Activas:**")
@@ -455,6 +465,59 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
+    # --- WIDGET DE ESCUCHA CONTINUA / MANOS LIBRES (SpeechRecognition JS) ---
+    st.markdown("""
+    <div style="margin-bottom: 10px;">
+        <button onclick="iniciarEscuchaVoz()" style="background-color: #00f3ff; color: #060913; border: none; padding: 8px 12px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.5);">
+            🎙️ Activar Escucha Manos Libres
+        </button>
+        <span id="estado-mic" style="margin-left: 10px; font-size: 0.75rem; color: #00f3ff;">[ Micrófono en espera ]</span>
+    </div>
+    <script>
+    function iniciarEscuchaVoz() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Tu navegador no soporta reconocimiento de voz nativo.");
+            return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        const estadoEl = document.getElementById('estado-mic');
+        estadoEl.innerText = "[ Escuchando... Habla ahora ]";
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const speechResult = event.results[0][0].transcript;
+            estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
+            
+            // Buscar el input de chat de Streamlit e inyectar el texto
+            const inputs = window.parent.document.querySelectorAll('input[type="text"]');
+            for (let input of inputs) {
+                if (input.placeholder && input.placeholder.includes("Escríbele")) {
+                    input.value = speechResult;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    // Simular enter
+                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+                    break;
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            estadoEl.innerText = "[ Error de audio o sin permisos ]";
+        };
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+        };
+    }
+    </script>
+    """, unsafe_allow_html=True)
+
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
@@ -463,7 +526,7 @@ with col_chat:
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-        
+       
         with st.chat_message("user"):
             st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
@@ -475,7 +538,7 @@ with col_chat:
 
         # --- NÚCLEO DE RESPUESTAS INTELIGENTES LOCALES CON PERSONALIDAD CÁLIDA Y SARCASMO FINO ---
         if "hola" in q or "saludos" in q or "como estas" in q:
-            respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
+            respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, escucha continua y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
             respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el diseño de la web."
         elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
