@@ -464,7 +464,7 @@ function iniciarEscuchaVoz() {
     const estadoEl = document.getElementById('estado-mic');
     
     if (!SpeechRecognition) {
-        if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte nativo de voz ]";
+        if (estadoEl) estadoEl.innerText = "[ Sin soporte nativo de voz ]";
         return;
     }
     
@@ -474,17 +474,17 @@ function iniciarEscuchaVoz() {
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora ]";
+        if (estadoEl) estadoEl.innerText = "[ Escuchando... ]";
 
         recognition.start();
 
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
-            if (estadoEl) estadoEl.innerText = "[ Transmitido: " + speechResult + " ]";
+            if (estadoEl) estadoEl.innerText = "[ Transmitido ]";
             
             const inputs = window.parent.document.querySelectorAll('input[type="text"]');
             for (let input of inputs) {
-                if (input.placeholder && input.placeholder.includes("Escríbele")) {
+                if (input.placeholder && input.placeholder.includes("JARVIS")) {
                     input.value = speechResult;
                     input.dispatchEvent(new Event('input', { bubbles: true }));
                     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
@@ -494,14 +494,14 @@ function iniciarEscuchaVoz() {
         };
 
         recognition.onerror = function(event) {
-            if (estadoEl) estadoEl.innerText = "[ Error de micro o permisos ]";
+            if (estadoEl) estadoEl.innerText = "[ Error de micro ]";
         };
 
         recognition.onspeechend = function() {
             recognition.stop();
         };
     } catch(e) {
-        if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
+        if (estadoEl) estadoEl.innerText = "[ Error ]";
     }
 }
 </script>
@@ -516,14 +516,15 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # Renderizado limpio del componente de voz
+    # Componente de voz sin llaves errantes
     st.markdown(script_voz, unsafe_allow_html=True)
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    prompt_chat = st.chat_input("Escríbele o háblale a JARVIS...")
+    # Placeholder con nombre completo optimizado para pantallas móviles
+    prompt_chat = st.chat_input("Háblale a JARVIS...")
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
@@ -539,9 +540,9 @@ with col_chat:
         if "hola" in q or "saludos" in q or "como estas" in q:
             respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, escucha continua y circuitos brillantes. ¿Qué te trae por el Nodo Buin hoy?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nossa historia, jefa, aunque dudo que te ayude con el diseño de la web."
+            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el diseño de la web."
         elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
-            respuesta_ia = "Un binomio al cuadrado (a + b)² is igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
+            respuesta_ia = "Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
         elif "receta" in q or "navidad" in q or "sabor casero" in q:
             respuesta_ia = "Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial muy superior a los intentos anteriores. ¿Ajustamos detalles de la plataforma?"
         elif "clima" in q:
