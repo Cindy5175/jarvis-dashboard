@@ -452,21 +452,21 @@ with col_modulos:
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
 
-# --- SCRIPT HTML DE RECONOCIMIENTO DE VOZ REAL PARA MANOS LIBRES ---
-script_voz_real = """
+# --- SCRIPT DE RECONOCIMIENTO DE VOZ REAL PARA PC ---
+script_voz_pc = """
 <div style="margin-bottom: 10px;">
-    <button onclick="iniciarEscuchaVozReal()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
-        🎙️ Activar Escucha Manos Libres
+    <button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
+        🎙️ Activar Escucha Manos Libres (PC)
     </button>
-    <div id="estado-mic-real" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Micrófono en espera ]</div>
+    <div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Micrófono de PC en espera ]</div>
 </div>
 <script>
-function iniciarEscuchaVozReal() {
+function iniciarEscuchaPC() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const estadoEl = document.getElementById('estado-mic-real');
+    const estadoEl = document.getElementById('estado-mic-pc');
     
     if (!SpeechRecognition) {
-        if (estadoEl) estadoEl.innerText = "[ Tu navegador no soporta voz nativa ]";
+        if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";
         return;
     }
     
@@ -476,7 +476,7 @@ function iniciarEscuchaVozReal() {
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        if (estadoEl) estadoEl.innerText = "[ Escuchando... Habla ahora, jefa ]";
+        if (estadoEl) estadoEl.innerText = "[ Escuchando por micrófono... Habla ahora, jefa ]";
 
         recognition.start();
 
@@ -496,15 +496,15 @@ function iniciarEscuchaVozReal() {
         };
 
         recognition.onerror = function(event) {
-            if (estadoEl) estadoEl.innerText = "[ Error: Permiso de micrófono denegado ]";
+            if (estadoEl) estadoEl.innerText = "[ Error de micrófono o permisos ]";
         };
 
         recognition.onspeechend = function() {
             recognition.stop();
-            if (estadoEl) estadoEl.innerText = "[ Procesando comando... ]";
+            if (estadoEl) estadoEl.innerText = "[ Procesando... ]";
         };
     } catch(e) {
-        if (estadoEl) estadoEl.innerText = "[ Error al activar micrófono ]";
+        if (estadoEl) estadoEl.innerText = "[ Error de inicialización ]";
     }
 }
 </script>
@@ -519,8 +519,8 @@ with col_chat:
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
             st.rerun()
 
-    # Inyección limpia del componente de voz real (sin llaves extrañas)
-    st.components.v1.html(script_voz_real, height=75)
+    # Inyección del componente de voz para PC
+    st.components.v1.html(script_voz_pc, height=75)
 
     for m in st.session_state.mensajes:
         with st.chat_message(m["role"]):
