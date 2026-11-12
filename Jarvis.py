@@ -432,4 +432,74 @@ with col_modulos:
     st.markdown("---")
     st.markdown("#### Seguridad")
     
-    if st.button(" Refrescar Sensores", use_container
+    if st.button(" Refrescar Sensores", use_container_width=True):
+        st.info("Sensores del Nodo Buin estables y seguros.")
+        
+    st.markdown("---")
+    st.markdown("#### Mapa Tactico")
+    
+    with st.expander(" mapa tactico satelital", expanded=False):
+        st.markdown(
+            '<div class="cyber-radar-screen">'
+            '<p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b> 10,940,428 ATAQUES HOY</b></p>'
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;">[ Rastreo Global Activo ]</p>'
+            '<hr style="border-color: #00f3ff; opacity: 0.3; margin: 5px 0;">'
+            '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>'
+            '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>'
+            '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+    st.markdown("#### Red Neuronal & Skills (Open Source)")
+    with st.expander(" Inspector de Repositorios", expanded=False):
+        st.markdown(
+            '<div class="cyber-radar-screen" style="text-align: left;">'
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>01 / mattpocock / skills</b><br><span style="color:#00ff88;">[307K Estrellas // 18M Installs]</span></p>'
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>02 / addyosmani / agent-skills</b><br><span style="color:#bf7fff;">[Claude Code Engineering]</span></p>'
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>03 / cloudflare / security-audit</b><br><span style="color:#ff3333;">[128 Repos Scanned]</span></p>'
+            '</div>',
+            unsafe_allow_html=True
+        )
+        if st.button(" Ejecutar Escaneo de Skills", use_container_width=True):
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Escaneo de Skills y Auditoria completado.")
+            st.success("¡Red neuronal de skills sincronizada con exito!")
+
+    st.markdown("---")
+    st.markdown("#### Videovigilancia Global")
+    with st.expander(" Camaras en Vivo / Satelite", expanded=False):
+        st.link_button(" Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
+        st.link_button(" Concepcion Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
+        st.link_button(" Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
+        st.link_button(" Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
+        st.link_button(" Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
+    
+    st.markdown("---")
+    st.markdown(" **OSIRIS:** En linea")
+    st.link_button(" Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
+   
+    st.markdown(" **PlanetEar:** Sincronizado")
+    st.link_button(" Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
+   
+    st.markdown(" **USGS Explorer:**")
+    st.link_button(" USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
+   
+    st.markdown("---")
+    st.markdown("#### Clima Buin (Panel Dinamico)")
+   
+    with st.expander(" Widget Clima En Vivo", expanded=False):
+        st.markdown(f"**Buin (CASA)** \n ☀️ **{temp_real}** — Mayormente soleado")
+        st.caption(f" Humedad: {hum_real} | Viento: {viento_real}")
+        st.markdown("---")
+        st.markdown(" **Pronostico Diario (Avanzando):**")
+       
+        dia_actual_idx = now_chile.weekday()
+        nombres_dias_semana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']
+        
+        for i in range(min(6, len(t_maxs))):
+            d_idx = (dia_actual_idx + i) % 7
+            d_label = "Hoy" if i == 0 else nombres_dias_semana[d_idx]
+            mx = int(t_maxs[i])
+            mn = int(t_mins[i])
+            st.markdown(f"**`{d_label}`** ➔ Mín: **`{mn}°`** | Máx
