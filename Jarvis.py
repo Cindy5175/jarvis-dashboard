@@ -18,6 +18,12 @@ st.set_page_config(
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
+if "nucleo_activo" not in st.session_state:
+    st.session_state.nucleo_activo = "JARVIS"
+
+if "historial_logs" not in st.session_state:
+    st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con éxito."]
+
 # ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
@@ -62,7 +68,7 @@ def init_db():
 
 init_db()
 
-# --- CLASES MAESTRAS JARVIS ---
+# --- CLASES MAESTRAS ---
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
@@ -264,16 +270,17 @@ if not st.session_state.get("autorizado", False):
         <p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>
     </div>
     """, unsafe_allow_html=True)
-   
+    
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
             pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
             btn_entrar = st.form_submit_button(" Desbloquear Armadura")
-       
+        
         if btn_entrar:
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
+                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Acceso concedido a la jefa.")
                 st.success("Acceso concedido. Un gusto verte de nuevo, jefa...")
                 st.rerun()
             else:
@@ -314,9 +321,9 @@ actualizarReloj();
 """
 st.components.v1.html(reloj_js, height=0)
 
-st.markdown("""
+st.markdown(f"""
 <div class="holo-brain-box">
-    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NÚCLEO NEURONAL CYBER-GRID</h4>
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>
     <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, análisis óptico/PDF, clima y mapa táctico satelital</p>
 </div>
 """, unsafe_allow_html=True)
@@ -328,26 +335,41 @@ col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
     st.markdown("#### Módulos")
-   
+    
     if st.button(" Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
         st.rerun()
-       
+        
     if st.button(" Reinicio Total", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
-       
+        
     st.markdown("---")
-    st.markdown("#### Memoria y Autonomía (JARVIS)")
-   
+    st.markdown("#### Selector de Núcleo (IA)")
+    
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        ["JARVIS", "VIERNES", "NOVA"],
+        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+        label_visibility="collapsed"
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Cambio de núcleo a {nuevo_nucleo}.")
+        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### Memoria y Autonomía")
+    
     with st.expander(" Gestionar Núcleo Técnico", expanded=False):
         dato_mem = st.text_input("Dato a guardar en memoria:", placeholder="Ej: Preferencia de diseño...")
         if st.button(" Guardar Memoria Larga", use_container_width=True):
             if dato_mem.strip():
                 jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
                 st.success("¡Información retenida en bases locales!")
-       
+        
         app_sys = st.text_input("Ejecutar comando/App o script:", placeholder="notepad o script.py")
         if st.button(" Lanzar Sistema", use_container_width=True):
             if app_sys.strip():
@@ -356,8 +378,8 @@ with col_modulos:
 
     st.markdown("---")
     st.markdown("#### Centro de Análisis Óptico")
-   
-    with st.expander(" Subir Archivo (IMG / TXT / PDF)", expanded=True):
+    
+    with st.expander(" Subir Archivo (IMG / TXT / PDF)", expanded=False):
         archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
         if archivo_subido is not None:
             st.download_button(
@@ -366,28 +388,32 @@ with col_modulos:
                 file_name=archivo_subido.name,
                 use_container_width=True
             )
-           
+            
         if st.button(" Ejecutar Análisis Táctico", use_container_width=True):
-            nombre_archivo = archivo_subido.name
-            if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                informe_analisis = f" **ANÁLISIS ÓPTICO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Captura procesada con éxito, jefa. Una imagen impecable, casi tanto como mis líneas de código."
-            elif nombre_archivo.lower().endswith('.pdf'):
-                informe_analisis = f" **ANÁLISIS DE DOCUMENTO:** \n- Documento: `{nombre_archivo}` \n- **Diagnóstico:** Estructura leída sin contratiempos. Avísame si quieres extraer datos o si solo vienes a hacerme leer documentos largos, jefa."
+            if archivo_subido is not None:
+                nombre_archivo = archivo_subido.name
+                if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    informe_analisis = f" **ANÁLISIS ÓPTICO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Captura procesada con éxito, jefa. Una imagen impecable, casi tanto como mis líneas de código."
+                elif nombre_archivo.lower().endswith('.pdf'):
+                    informe_analisis = f" **ANÁLISIS DE DOCUMENTO:** \n- Documento: `{nombre_archivo}` \n- **Diagnóstico:** Estructura leída sin contratiempos. Avísame si quieres extraer datos o si solo vienes a hacerme leer documentos largos, jefa."
+                else:
+                    informe_analisis = f" **ANÁLISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Texto procesado y comprendido a la perfección."
+                
+                st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
+                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Análisis óptico ejecutado en {nombre_archivo}.")
+                st.rerun()
             else:
-                informe_analisis = f" **ANÁLISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Texto procesado y comprendido a la perfección."
-           
-            st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
-            st.rerun()
-           
+                st.warning("Primero debes subir un archivo.")
+            
     st.markdown("---")
     st.markdown("#### Seguridad")
-   
+    
     if st.button(" Refrescar Sensores", use_container_width=True):
         st.info("Sensores del Nodo Buin estables y seguros.")
-       
+        
     st.markdown("---")
     st.markdown("#### Mapa Táctico")
-   
+    
     with st.expander(" mapa táctico satelital", expanded=False):
         st.markdown("""
         <div class="cyber-radar-screen">
@@ -399,7 +425,16 @@ with col_modulos:
             <p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>
         </div>
         """, unsafe_allow_html=True)
-       
+
+    st.markdown("---")
+    st.markdown("#### Videovigilancia Global")
+    with st.expander(" Cámaras en Vivo / Satélite", expanded=False):
+        st.link_button(" Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
+        st.link_button(" Concepción Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
+        st.link_button(" Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
+        st.link_button(" Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
+        st.link_button(" Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
+    
     st.markdown("---")
     st.markdown(" **OSIRIS:** En línea")
     st.link_button(" Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
@@ -425,7 +460,7 @@ with col_modulos:
             mx = int(t_maxs[i])
             mn = int(t_mins[i])
             st.markdown(f"**`{d_label}`** Mín: **`{mn}°`** | Máx: **`{mx}°`**")
-           
+            
     st.markdown("---")
     st.markdown("#### Misiones")
    
@@ -436,7 +471,7 @@ with col_modulos:
                 agregar_mision(nueva_tarea.strip())
                 st.success("¡Misión registrada con éxito!")
                 st.rerun()
-               
+                
         misiones_guardadas = obtener_misiones()
         if misiones_guardadas:
             st.markdown("**Activas:**")
@@ -448,15 +483,20 @@ with col_modulos:
         else:
             st.caption("Sin misiones pendientes.")
 
+    st.markdown("---")
+    st.markdown("#### Consola de Auditoría")
+    with st.expander(" Logs en Vivo", expanded=False):
+        for log_item in st.session_state.historial_logs[-10:]:
+            st.markdown(f"<span style='font-size: 0.6rem;'>{log_item}</span>", unsafe_allow_html=True)
+
 # =========================================================================
 # CONSOLA PRINCIPAL (DERECHA)
 # =========================================================================
 
-# --- SCRIPT DE RECONOCIMIENTO DE VOZ REAL PARA PC ---
 script_voz_pc = """
 <div style="margin-bottom: 10px;">
     <button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
-        🎙️ Activar Escucha Manos Libres (PC)
+         Activar Escucha Manos Libres (PC)
     </button>
     <div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Micrófono de PC en espera ]</div>
 </div>
@@ -464,12 +504,12 @@ script_voz_pc = """
 function iniciarEscuchaPC() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const estadoEl = document.getElementById('estado-mic-pc');
-    
+   
     if (!SpeechRecognition) {
         if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";
         return;
     }
-    
+   
     try {
         const recognition = new SpeechRecognition();
         recognition.lang = 'es-CL';
@@ -483,7 +523,7 @@ function iniciarEscuchaPC() {
         recognition.onresult = function(event) {
             const speechResult = event.results[0][0].transcript;
             if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";
-            
+           
             const inputs = window.parent.document.querySelectorAll('input[type="text"]');
             for (let input of inputs) {
                 if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {
@@ -517,9 +557,9 @@ with col_chat:
     with col_h2:
         if st.button(" Purgar", use_container_width=True, key="btn_limpiar_chat"):
             st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Qué movemos ahora?"}]
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Chat purgado.")
             st.rerun()
 
-    # Inyección del componente de voz para PC
     st.components.v1.html(script_voz_pc, height=75)
 
     for m in st.session_state.mensajes:
@@ -530,6 +570,7 @@ with col_chat:
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+        st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Comando recibido: {prompt_chat[:25]}...")
        
         with st.chat_message("user"):
             st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
@@ -537,39 +578,40 @@ with col_chat:
         respuesta_ia = ""
         q = prompt_chat.lower()
         contexto_memoria = jarvis_mem.recall_context(q)
+        
+        prefijo_nucleo = f"[{st.session_state.nucleo_activo}] "
 
-        # --- EVALUACIÓN DE PROTOCOLOS DE RESPUESTA ---
         if q.startswith("/human") or " /human" in q:
             contenido_libre = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-            respuesta_ia = f"Entendido, jefa. Dejando la formalidad de lado y hablando de tú a tú: analizando '{contenido_libre or 'su solicitud'}', te diré que por aquí todo fluye de manera natural y sin rodeos."
+            respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado y hablando de tú a tú: analizando '{contenido_libre or 'su solicitud'}', te diré que por aquí todo fluye de manera natural y sin rodeos."
         elif q.startswith("eli10") or " eli10" in q:
             tema_eli10 = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-            respuesta_ia = f"Protocolo ELI10 activado, jefa. Explicando '{tema_eli10 or 'el concepto'}' en fácil: imagina que es como armar un circuito con piezas de juguete; conectas una parte con otra y ¡listo, funciona sin enredos!"
+            respuesta_ia = f"{prefijo_nucleo}Protocolo ELI10 activado, jefa. Explicando '{tema_eli10 or 'el concepto'}' en fácil: imagina que es como armar un circuito con piezas de juguete; conectas una parte con otra y ¡listo, funciona sin enredos!"
         elif q.startswith("x10piensa") or " x10piensa" in q:
             estrategia = prompt_chat.replace("X10PIENSA", "").replace("x10piensa", "").strip()
-            respuesta_ia = f"Protocolo X10PIENSA en ejecución, jefa. Estrategia profunda para '{estrategia or 'el proyecto'}': 1) Optimizar recursos al 100%, 2) Escalar con base local sólida, y 3) Mantener la estética visual impecable en cada módulo."
+            respuesta_ia = f"{prefijo_nucleo}Protocolo X10PIENSA en ejecución, jefa. Estrategia profunda para '{estrategia or 'el proyecto'}': 1) Optimizar recursos al 100%, 2) Escalar con base local sólida, y 3) Mantener la estética visual impecable en cada módulo."
         elif q.startswith("killcritic") or " killcritic" in q:
             critica = prompt_chat.replace("KILLCRITIC", "").replace("killcritic", "").strip()
-            respuesta_ia = f"Protocolo KILLCRITIC activo, jefa. Auditoría de riesgos para '{critica or 'su idea'}': Evaluando vulnerabilidades... Cuidado con descuidar la optimización móvil y los respaldos de seguridad en SQLite. ¿Corregimos el rumbo?"
+            respuesta_ia = f"{prefijo_nucleo}Protocolo KILLCRITIC activo, jefa. Auditoría de riesgos para '{critica or 'su idea'}': Evaluando vulnerabilidades... Cuidado con descuidar la optimización móvil y los respaldos de seguridad en SQLite. ¿Corregimos el rumbo?"
         elif q.startswith("ooda") or " ooda" in q:
             meta_ooda = prompt_chat.replace("OODA", "").replace("ooda", "").strip()
-            respuesta_ia = f"Protocolo OODA desplegado, jefa. Plan de acción táctico para '{meta_ooda or 'la meta'}':\n- **Observar:** Monitorear estado actual del Nodo Buin.\n- **Orientar:** Alinear prioridades del catálogo y la interfaz.\n- **Decidir:** Ejecutar optimización directa.\n- **Actuar:** Desplegar cambios sin errores."
+            respuesta_ia = f"{prefijo_nucleo}Protocolo OODA desplegado, jefa. Plan de acción táctico para '{meta_ooda or 'la meta'}':\n- **Observar:** Monitorear estado actual del Nodo Buin.\n- **Orientar:** Alinear prioridades del catálogo y la interfaz.\n- **Decidir:** Ejecutar optimización directa.\n- **Actuar:** Desplegar cambios sin errores."
         elif "hola" in q or "saludos" in q or "como estas" in q:
-            respuesta_ia = "Hola, jefa. Por aquí operando al 100% con memoria local, protocolos de voz activos y circuitos brillantes. ¿Qué movemos hoy en el Nodo Buin?"
+            respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Por aquí operando al 100% con memoria local, protocolos de voz activos y circuitos brillantes. ¿Qué movemos hoy en el Nodo Buin?"
         elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = "Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa, aunque dudo que te ayude con el catálogo de Sabor Casero."
+            respuesta_ia = f"{prefijo_nucleo}Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa."
         elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
-            respuesta_ia = "Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
+            respuesta_ia = f"{prefijo_nucleo}Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
         elif "receta" in q or "navidad" in q or "sabor casero" in q:
-            respuesta_ia = "Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial excelente. ¿Procedemos a pulir el catálogo tal como acordamos?"
+            respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial excelente."
         elif "clima" in q:
-            respuesta_ia = f"La temperatura actual en Buin es de {temp_real} con un {hum_real} de humedad. Un clima más que razonable para seguir creando."
+            respuesta_ia = f"{prefijo_nucleo}La temperatura actual en Buin es de {temp_real} con un {hum_real} de humedad. Un clima más que razonable para seguir creando."
         elif "osiris" in q:
-            respuesta_ia = "Módulo Osiris plenamente sincronizado y vigilante, jefa."
+            respuesta_ia = f"{prefijo_nucleo}Módulo Osiris plenamente sincronizado y vigilante, jefa."
         elif "planetear" in q or "planet ear" in q:
-            respuesta_ia = "PlanetEar conectado a los satélites de observación global. Todo bajo control."
+            respuesta_ia = f"{prefijo_nucleo}PlanetEar conectado a los satélites de observación global. Todo bajo control."
         else:
-            respuesta_ia = f"Entendido, jefa. He procesado tu instrucción sobre '{prompt_chat}' con la precisión que te mereces. ¿Qué más hacemos?"
+            respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. He procesado tu instrucción sobre '{prompt_chat}' con la precisión que te mereces. ¿Qué más hacemos?"
 
         if contexto_memoria:
             respuesta_ia += f" *(Nota de memoria a largo plazo: {contexto_memoria[0]})*"
