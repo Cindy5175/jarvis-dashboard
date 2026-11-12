@@ -283,7 +283,7 @@ st.markdown(
 st.markdown("---")
 
 # --- NAVEGACIÓN POR PESTAÑAS ---
-tab_principal, tab_financiero = st.tabs(["🖥️ Panel Principal & IA", "📈 Centro Financiero & Mercados (Finviz)"])
+tab_principal, tab_financiero = st.tabs(["🖥️ Panel Principal & IA", "📈 Centro Financiero & Mercados"])
 
 with tab_principal:
     col_modulos, col_chat = st.columns([1, 2])
@@ -682,27 +682,19 @@ with tab_principal:
             st.rerun()
 
 # =========================================================================
-# PESTAÑA 2: CENTRO FINANCIERO & MERCADOS (ENLACE DIRECTO SEGURO)
+# PESTAÑA 2: CENTRO FINANCIERO & MERCADOS (FINVIZ & INVESTING.COM)
 # =========================================================================
 with tab_financiero:
     st.markdown("### 📈 Centro de Inteligencia Financiera & Mercados Globales")
-    st.markdown("<p style='font-size: 0.8rem; opacity: 0.8;'>Visualización táctica de mercados, futuros y flujos bursátiles en tiempo real (Finviz).</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; opacity: 0.8;'>Visualización táctica de activos, futuros, divisas y mercados tradicionales.</p>", unsafe_allow_html=True)
     
-    col_f1, col_f2 = st.columns([2, 2])
+    col_f1, col_f2, col_f3 = st.columns([2, 2, 2])
     with col_f1:
-        st.link_button("🌐 Abrir Finviz (Pantalla Completa)", "https://finviz.com/", use_container_width=True)
+        st.link_button("🌐 Abrir Finviz (Acciones & Mapas)", "https://finviz.com/", use_container_width=True)
     with col_f2:
-        if st.button("🔄 Actualizar Sincronización Bursátil", use_container_width=True):
-            st.success("¡Flujos de mercado sincronizados con éxito, jefa!")
+        st.link_button("📊 Abrir Investing.com (Activos & Divisas)", "https://es.investing.com/", use_container_width=True)
+    with col_f3:
+        if st.button("🔄 Sincronizar Mercados", use_container_width=True):
+            st.success("¡Flujos sincronizados con éxito, jefa!")
 
     st.markdown("---")
-    st.markdown(
-        '<div class="cyber-radar-screen" style="padding: 30px; text-align: center;">'
-        '<h4 style="color: #00f3ff; margin-bottom: 10px;">ACCESO A TERMINAL FINANCIERO EXTERNO</h4>'
-        '<p style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 20px;">'
-        'Por protocolos de seguridad de los servidores de Finviz, las conexiones de marcos incrustados (iframes) están restringidas externamente. '
-        'Haga clic en el botón superior para desplegar los mapas de calor, futuros y criptomonedas directamente en una pestaña limpia de alta velocidad.'
-        '</p>'
-        '</div>',
-        unsafe_allow_html=True
-    )
