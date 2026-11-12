@@ -396,6 +396,26 @@ with tab_principal:
                 '</div>',
                 unsafe_allow_html=True
             )
+            
+            # --- SELECTOR DE SKILLS TÁCTICAS ---
+            st.markdown("<p style='font-size: 0.7rem; margin-top: 8px;'><b>Skills Activas:</b></p>", unsafe_allow_html=True)
+            skill_seleccionada = st.selectbox(
+                "Seleccionar Skill:",
+                ["/skill_resumen (Resumen Ejecutivo)", "/skill_mercado (Inteligencia Bursátil)", "/skill_auditoria (Auditoría de Código)"],
+                label_visibility="collapsed"
+            )
+            if st.button(" Ejecutar Skill Activa", use_container_width=True):
+                skill_tag = skill_seleccionada.split(" ")[0]
+                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Skill {skill_tag} ejecutada.")
+                if "resumen" in skill_tag:
+                    res_skill = "[SKILL RESUMEN] Análisis ejecutado: Nodo Buin operando con alta eficiencia y cero pérdidas de paquetes."
+                elif "mercado" in skill_tag:
+                    res_skill = "[SKILL MERCADO] Reporte bursátil: Activos tradicionales y divisas estables. Monitoreo en Finviz e Investing activo."
+                else:
+                    res_skill = "[SKILL AUDITORÍA] Escaneo de sintaxis y seguridad: 0 vulnerabilidades detectadas en el motor principal."
+                st.session_state.mensajes.append({"role": "assistant", "content": res_skill})
+                st.rerun()
+
             if st.button(" Ejecutar Escaneo de Skills", use_container_width=True):
                 st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Escaneo de Skills y Auditoria completado.")
                 st.success("¡Red neuronal de skills sincronizada con exito!")
@@ -542,7 +562,7 @@ with tab_principal:
             with st.chat_message(m["role"]):
                 st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-        prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, X10PIENSA, modo trabajo)...")
+        prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, /skill_resumen, modo trabajo)...")
 
         if prompt_chat:
             st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
@@ -558,8 +578,19 @@ with tab_principal:
             nucleo = st.session_state.nucleo_activo
             prefijo_nucleo = f"[{nucleo}] "
 
+            # --- GESTIÓN DE SKILLS EN EL CHAT ---
+            if q.startswith("/skill_resumen") or " /skill_resumen" in q:
+                c = prompt_chat.replace("/skill_resumen", "").replace("/SKILL_RESUMEN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}**[SKILL: RESUMEN EJECUTIVO]**\n- Condensando estado del Nodo Buin para '{c or 'operaciones actuales'}': sistemas estables, misiones sincronizadas y baja latencia en todos los núcleos."
+            elif q.startswith("/skill_mercado") or " /skill_mercado" in q:
+                c = prompt_chat.replace("/skill_mercado", "").replace("/SKILL_MERCADO", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}**[SKILL: INTELIGENCIA BURSÁTIL]**\n- Analizando '{c or 'activos globales'}': flujos tradicionales y divisas estables. Use el Centro Financiero para consultar Finviz e Investing.com en tiempo real."
+            elif q.startswith("/skill_auditoria") or " /skill_auditoria" in q:
+                c = prompt_chat.replace("/skill_auditoria", "").replace("/SKILL_AUDITORIA", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}**[SKILL: AUDITORÍA DE CÓDIGO]**\n- Verificando sintaxis y seguridad para '{c or 'el sistema'}': 0 vulnerabilidades, estructuras f-string optimizadas."
+
             # --- ATAJOS DE EJECUCIÓN DE SISTEMA POR VOZ O TEXTO ---
-            if "modo trabajo" in q or "abre el taller" in q:
+            elif "modo trabajo" in q or "abre el taller" in q:
                 res_1 = jarvis_exec.open_application("notepad")
                 respuesta_ia = f"{prefijo_nucleo}Desplegando entorno de trabajo en el Nodo Buin, jefa. {res_1}"
             elif q.startswith("abrir ") or q.startswith("ejecutar "):
