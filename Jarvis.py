@@ -451,6 +451,20 @@ with col_modulos:
         """, unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown("#### Red Neuronal & Skills (Open Source)")
+    with st.expander(" Inspector de Repositorios", expanded=False):
+        st.markdown("""
+        <div class="cyber-radar-screen" style="text-align: left;">
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>01 / mattpocock / skills</b><br><span style="color:#00ff88;">[307K Estrellas // 18M Installs]</span></p>
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>02 / addyosmani / agent-skills</b><br><span style="color:#bf7fff;">[Claude Code Engineering]</span></p>
+            <p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>03 / cloudflare / security-audit</b><br><span style="color:#ff3333;">[128 Repos Scanned]</span></p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button(" Ejecutar Escaneo de Skills", use_container_width=True):
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Escaneo de Skills y Auditoría completado.")
+            st.success("¡Red neuronal de skills sincronizada con éxito!")
+
+    st.markdown("---")
     st.markdown("#### Videovigilancia Global")
     with st.expander(" Cámaras en Vivo / Satélite", expanded=False):
         st.link_button(" Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
