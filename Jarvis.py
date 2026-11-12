@@ -24,6 +24,9 @@ if "nucleo_activo" not in st.session_state:
 if "historial_logs" not in st.session_state:
     st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con exito."]
 
+if "offset_clima" not in st.session_state:
+    st.session_state.offset_clima = 0  # Para calibración manual si lo desea
+
 # ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
@@ -172,14 +175,16 @@ def obtener_clima_buin():
     try:
         url = "https://api.open-meteo.com/v1/forecast?latitude=-33.7333&longitude=-70.7417&current=temperature_2m,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSantiago"
         res = requests.get(url, timeout=5).json()
-        temp = res["current"]["temperature_2m"]
+        temp_base = res["current"]["temperature_2m"]
+        temp_calibrada = temp_base + st.session_state.offset_clima
         hum = res["current"]["relative_humidity_2m"]
         viento = res["current"]["wind_speed_10m"]
-        dias_max = res["daily"]["temperature_2m_max"][:6]
-        dias_min = res["daily"]["temperature_2m_min"][:6]
-        return f"{temp}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
+        dias_max = [m + st.session_state.offset_clima for m in res["daily"]["temperature_2m_max"][:6]]
+        dias_min = [m + st.session_state.offset_clima for m in res["daily"]["temperature_2m_min"][:6]]
+        return f"{temp_calibrada}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
     except Exception:
-        return "22°C", "50%", "10 km/h", [25, 26, 24, 27, 29, 21], [10, 11, 9, 10, 12, 14]
+        fallback_t = 31 + st.session_state.offset_clima
+        return f"{fallback_t}°C", "50%", "10 km/h", [31, 30, 26, 21, 18, 21], [14, 14, 15, 14, 13, 11]
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
@@ -417,6 +422,13 @@ with col_modulos:
     with st.expander(" Widget Clima En Vivo", expanded=False):
         st.markdown(f"**Buin (CASA)** \n ☀️ **{temp_real}** — Mayormente soleado")
         st.caption(f" Humedad: {hum_real} | Viento: {viento_real}")
+        
+        # --- CALIBRACIÓN MANUAL HÍBRIDA ---
+        nuevo_offset = st.slider("Calibrar Temp (°C):", -10, 10, st.session_state.offset_clima, key="slider_calibracion")
+        if nuevo_offset != st.session_state.offset_clima:
+            st.session_state.offset_clima = nuevo_offset
+            st.rerun()
+
         st.markdown("---")
         st.markdown(" **Pronostico Diario (Avanzando):**")
        
@@ -545,4 +557,123 @@ with col_chat:
 
         # --- ATAJOS DE EJECUCIÓN DE SISTEMA POR VOZ O TEXTO ---
         if "modo trabajo" in q or "abre el taller" in q:
-            res_1 = jarvis
+            res_1 = jarvis_exec.open_application("notepad")
+            respuesta_ia = f"{prefijo_nucleo}Desplegando entorno de trabajo en el Nodo Buin, jefa. {res_1}"
+        elif q.startswith("abrir ") or q.startswith("ejecutar "):
+            app_objetivo = q.replace("abrir ", "").replace("ejecutar ", "").strip()
+            res_app = jarvis_exec.open_application(app_objetivo)
+            respuesta_ia = f"{prefijo_nucleo}{res_app}"
+
+        # --- LÓGICA DIFERENCIADA POR NÚCLEO ---
+        elif nucleo == "JARVIS":
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos y con la precisión de siempre."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Operando al 100% con sarcasmo fino y circuitos estables en el Nodo Buin. ¿Qué dominamos hoy?"
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}En Buin tenemos {temp_real} y {hum_real} de humedad, jefa. Telemetría meteorológica sincronizada."
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto 'Sabor Casero'. Un toque cálido y comercial excelente, jefa. ¿Retomamos la vitrina cuando gustes?"
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, jefa. ¿Cuál es nuestro siguiente movimiento?"
+
+        elif nucleo == "VIERNES":
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}¡Claro que sí, jefa! Sin vueltas: sobre '{c or 'lo que pediste'}', te aseguro que lo resolvemos al instante y sin complicaciones."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Te lo explico flash, jefa: '{t or 'esto'}' funciona igual que un atajo en la pantalla; directo al grano y sin perder tiempo."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}¡Hola, jefa! VIERNES en línea y lista para la acción rápida. ¿Qué emergencia táctica resolvemos ahora?"
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}Reporte rápido: {temp_real} en Buin, viento a {viento_real}. Condiciones óptimas."
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}¡Perfecto! Sabor Casero listo para entrar en combate comercial. ¿Escribimos más código o revisamos ventas?"
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Orden '{prompt_chat}' recibida y ejecutada al vuelo, jefa. ¿Qué más hacemos?"
+
+        else: # NOVA
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Hablando de colega a colega, jefa: examinando '{c or 'el escenario'}', veo un potencial enorme para automatizarlo todo desde el núcleo."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}En modo análisis profundo para '{t or 'el tema'}': imagina una red neuronal conectando datos invisibles hasta que todo encaja."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}Saludos, jefa. NOVA activa, escaneando frecuencias y monitoreando el mapa táctico global. Todo en orden."
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}Telemetría atmosférica en Buin: {temp_real}, humedad del {hum_real}. Sensores estables."
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}Analizando la estructura de Sabor Casero... Excelente arquitectura de negocio local, jefa."
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Patrón '{prompt_chat}' integrado a los registros de NOVA. ¿Analizamos otra variable?"
+
+        if contexto_memoria:
+            respuesta_ia += f" *(Nota de memoria a largo plazo: {contexto_memoria[0]})*"
+
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+
+        # --- SÍNTESIS DE VOZ DIFERENCIADA ---
+        texto_para_web = respuesta_ia.replace(prefijo_nucleo, "").replace('"', "'").replace("\n", " ")
+        
+        voz_js = (
+            '<script>'
+            'function hablarNucleo() {'
+            'const synth = window.speechSynthesis;'
+            'synth.cancel();'
+            'const utterThis = new SpeechSynthesisUtterance("' + texto_para_web + '");'
+            'utterThis.lang = "es-CL";'
+            'const nucleo = "' + nucleo + '";'
+            'const voices = synth.getVoices();'
+            'if (nucleo === "JARVIS") {'
+            'utterThis.pitch = 0.78;'
+            'utterThis.rate = 0.98;'
+            'const maleKeywords = ["pablo", "raul", "jorge", "diego", "carlos", "alvaro", "male", "hombre"];'
+            'for (let v of voices) {'
+            'const name = v.name.toLowerCase();'
+            'if (v.lang.includes("es") && maleKeywords.some(k => name.includes(k))) {'
+            'utterThis.voice = v;'
+            'utterThis.pitch = 0.92;'
+            'break;'
+            '}'
+            '}'
+            '} else if (nucleo === "VIERNES") {'
+            'utterThis.pitch = 1.12;'
+            'utterThis.rate = 1.15;'
+            'const femaleKeywords = ["helena", "sabina", "paulina", "monica", "laura", "female", "mujer"];'
+            'for (let v of voices) {'
+            'const name = v.name.toLowerCase();'
+            'if (v.lang.includes("es") && femaleKeywords.some(k => name.includes(k))) {'
+            'utterThis.voice = v;'
+            'break;'
+            '}'
+            '}'
+            '} else {'
+            'utterThis.pitch = 1.05;'
+            'utterThis.rate = 1.02;'
+            'const femaleKeywords = ["sabina", "paulina", "helena", "monica", "female", "mujer"];'
+            'for (let v of voices) {'
+            'const name = v.name.toLowerCase();'
+            'if (v.lang.includes("es") && femaleKeywords.some(k => name.includes(k))) {'
+            'utterThis.voice = v;'
+            'break;'
+            '}'
+            '}'
+            '}'
+            'synth.speak(utterThis);'
+            '}'
+            'if (window.speechSynthesis.getVoices().length === 0) {'
+            'window.speechSynthesis.onvoiceschanged = hablarNucleo;'
+            '} else {'
+            'hablarNucleo();'
+            '}'
+            '</script>'
+        )
+        st.components.v1.html(voz_js, height=0)
+
+        st.rerun()
