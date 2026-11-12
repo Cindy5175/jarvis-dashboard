@@ -579,39 +579,51 @@ with col_chat:
         q = prompt_chat.lower()
         contexto_memoria = jarvis_mem.recall_context(q)
         
-        prefijo_nucleo = f"[{st.session_state.nucleo_activo}] "
+        nucleo = st.session_state.nucleo_activo
+        prefijo_nucleo = f"[{nucleo}] "
 
-        if q.startswith("/human") or " /human" in q:
-            contenido_libre = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-            respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado y hablando de tú a tú: analizando '{contenido_libre or 'su solicitud'}', te diré que por aquí todo fluye de manera natural y sin rodeos."
-        elif q.startswith("eli10") or " eli10" in q:
-            tema_eli10 = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-            respuesta_ia = f"{prefijo_nucleo}Protocolo ELI10 activado, jefa. Explicando '{tema_eli10 or 'el concepto'}' en fácil: imagina que es como armar un circuito con piezas de juguete; conectas una parte con otra y ¡listo, funciona sin enredos!"
-        elif q.startswith("x10piensa") or " x10piensa" in q:
-            estrategia = prompt_chat.replace("X10PIENSA", "").replace("x10piensa", "").strip()
-            respuesta_ia = f"{prefijo_nucleo}Protocolo X10PIENSA en ejecución, jefa. Estrategia profunda para '{estrategia or 'el proyecto'}': 1) Optimizar recursos al 100%, 2) Escalar con base local sólida, y 3) Mantener la estética visual impecable en cada módulo."
-        elif q.startswith("killcritic") or " killcritic" in q:
-            critica = prompt_chat.replace("KILLCRITIC", "").replace("killcritic", "").strip()
-            respuesta_ia = f"{prefijo_nucleo}Protocolo KILLCRITIC activo, jefa. Auditoría de riesgos para '{critica or 'su idea'}': Evaluando vulnerabilidades... Cuidado con descuidar la optimización móvil y los respaldos de seguridad en SQLite. ¿Corregimos el rumbo?"
-        elif q.startswith("ooda") or " ooda" in q:
-            meta_ooda = prompt_chat.replace("OODA", "").replace("ooda", "").strip()
-            respuesta_ia = f"{prefijo_nucleo}Protocolo OODA desplegado, jefa. Plan de acción táctico para '{meta_ooda or 'la meta'}':\n- **Observar:** Monitorear estado actual del Nodo Buin.\n- **Orientar:** Alinear prioridades del catálogo y la interfaz.\n- **Decidir:** Ejecutar optimización directa.\n- **Actuar:** Desplegar cambios sin errores."
-        elif "hola" in q or "saludos" in q or "como estas" in q:
-            respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Por aquí operando al 100% con memoria local, protocolos de voz activos y circuitos brillantes. ¿Qué movemos hoy en el Nodo Buin?"
-        elif "prat" in q or "arturo prat" in q or "combate naval de iquique" in q:
-            respuesta_ia = f"{prefijo_nucleo}Arturo Prat Chacón, capitán de la Esmeralda, dejó su vida en el Combate Naval de Iquique el 21 de mayo de 1879. Un héroe indiscutible de nuestra historia, jefa."
-        elif "binomio" in q or "matemática" in q or "al cuadrado" in q:
-            respuesta_ia = f"{prefijo_nucleo}Un binomio al cuadrado (a + b)² es igual a a² + 2ab + b². Bastante básico, jefa, pero supongo que sirve para mantener la mente activa."
-        elif "receta" in q or "navidad" in q or "sabor casero" in q:
-            respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto de los recetarios digitales 'Sabor Casero'. Excelente elección, jefa; tiene un toque cálido y comercial excelente."
-        elif "clima" in q:
-            respuesta_ia = f"{prefijo_nucleo}La temperatura actual en Buin es de {temp_real} con un {hum_real} de humedad. Un clima más que razonable para seguir creando."
-        elif "osiris" in q:
-            respuesta_ia = f"{prefijo_nucleo}Módulo Osiris plenamente sincronizado y vigilante, jefa."
-        elif "planetear" in q or "planet ear" in q:
-            respuesta_ia = f"{prefijo_nucleo}PlanetEar conectado a los satélites de observación global. Todo bajo control."
-        else:
-            respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. He procesado tu instrucción sobre '{prompt_chat}' con la precisión que te mereces. ¿Qué más hacemos?"
+        # --- LÓGICA DIFERENCIADA POR NÚCLEO ---
+        if nucleo == "JARVIS":
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos y con la precisión de siempre."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Operando al 100% con sarcasmo fino y circuitos estables en el Nodo Buin. ¿Qué dominamos hoy?"
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto 'Sabor Casero'. Un toque cálido y comercial excelente, jefa. ¿Retomamos la vitrina cuando gustes?"
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, jefa. ¿Cuál es nuestro siguiente movimiento?"
+
+        elif nucleo == "VIERNES":
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}¡Claro que sí, jefa! Sin vueltas: sobre '{c or 'lo que pediste'}', te aseguro que lo resolvemos al instante y sin complicaciones."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Te lo explico flash, jefa: '{t or 'esto'}' funciona igual que un atajo en la pantalla; directo al grano y sin perder tiempo."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}¡Hola, jefa! VIERNES en línea y lista para la acción rápida. ¿Qué emergencia táctica resolvemos ahora?"
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}¡Perfecto! Sabor Casero listo para entrar en combate comercial. ¿Escribimos más código o revisamos ventas?"
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Orden '{prompt_chat}' recibida y ejecutada al vuelo, jefa. ¿Qué más hacemos?"
+
+        else: # NOVA
+            if q.startswith("/human") or " /human" in q:
+                c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}Hablando de colega a colega, jefa: examinando '{c or 'el escenario'}', veo un potencial enorme para automatizarlo todo desde el núcleo."
+            elif q.startswith("eli10") or " eli10" in q:
+                t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+                respuesta_ia = f"{prefijo_nucleo}En modo análisis profundo para '{t or 'el tema'}': imagina una red neuronal conectando datos invisibles hasta que todo encaja."
+            elif "hola" in q or "saludos" in q or "como estas" in q:
+                respuesta_ia = f"{prefijo_nucleo}Saludos, jefa. NOVA activa, escaneando frecuencias y monitoreando el mapa táctico global. Todo en orden."
+            elif "receta" in q or "navidad" in q or "sabor casero" in q:
+                respuesta_ia = f"{prefijo_nucleo}Analizando la estructura de Sabor Casero... Excelente arquitectura de negocio local, jefa."
+            else:
+                respuesta_ia = f"{prefijo_nucleo}Patrón '{prompt_chat}' integrado a los registros de NOVA. ¿Analizamos otra variable?"
 
         if contexto_memoria:
             respuesta_ia += f" *(Nota de memoria a largo plazo: {contexto_memoria[0]})*"
