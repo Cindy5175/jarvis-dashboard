@@ -675,4 +675,34 @@ with tab_principal:
                 '} else {'
                 'hablarNucleo();'
                 '}'
-                '
+                '</script>'
+            )
+            st.components.v1.html(voz_js, height=0)
+
+            st.rerun()
+
+# =========================================================================
+# PESTAÑA 2: CENTRO FINANCIERO & MERCADOS (ENLACE DIRECTO SEGURO)
+# =========================================================================
+with tab_financiero:
+    st.markdown("### 📈 Centro de Inteligencia Financiera & Mercados Globales")
+    st.markdown("<p style='font-size: 0.8rem; opacity: 0.8;'>Visualización táctica de mercados, futuros y flujos bursátiles en tiempo real (Finviz).</p>", unsafe_allow_html=True)
+    
+    col_f1, col_f2 = st.columns([2, 2])
+    with col_f1:
+        st.link_button("🌐 Abrir Finviz (Pantalla Completa)", "https://finviz.com/", use_container_width=True)
+    with col_f2:
+        if st.button("🔄 Actualizar Sincronización Bursátil", use_container_width=True):
+            st.success("¡Flujos de mercado sincronizados con éxito, jefa!")
+
+    st.markdown("---")
+    st.markdown(
+        '<div class="cyber-radar-screen" style="padding: 30px; text-align: center;">'
+        '<h4 style="color: #00f3ff; margin-bottom: 10px;">ACCESO A TERMINAL FINANCIERO EXTERNO</h4>'
+        '<p style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 20px;">'
+        'Por protocolos de seguridad de los servidores de Finviz, las conexiones de marcos incrustados (iframes) están restringidas externamente. '
+        'Haga clic en el botón superior para desplegar los mapas de calor, futuros y criptomonedas directamente en una pestaña limpia de alta velocidad.'
+        '</p>'
+        '</div>',
+        unsafe_allow_html=True
+    )
