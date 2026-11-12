@@ -383,4 +383,166 @@ with col_modulos:
         st.markdown(
             '<div class="cyber-radar-screen" style="text-align: left;">'
             '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>01 / mattpocock / skills</b><br><span style="color:#00ff88;">[307K Estrellas // 18M Installs]</span></p>'
-            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>02 / addyosmani / agent-skills</b><br><span style="color:#bf7fff
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>02 / addyosmani / agent-skills</b><br><span style="color:#bf7fff;">[Claude Code Engineering]</span></p>'
+            '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>03 / cloudflare / security-audit</b><br><span style="color:#ff3333;">[128 Repos Scanned]</span></p>'
+            '</div>',
+            unsafe_allow_html=True
+        )
+        if st.button(" Ejecutar Escaneo de Skills", use_container_width=True):
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Escaneo de Skills y Auditoria completado.")
+            st.success("¡Red neuronal de skills sincronizada con exito!")
+
+    st.markdown("---")
+    st.markdown("#### Videovigilancia Global")
+    with st.expander(" Camaras en Vivo / Satelite", expanded=False):
+        st.link_button(" Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
+        st.link_button(" Concepcion Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
+        st.link_button(" Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
+        st.link_button(" Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
+        st.link_button(" Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
+    
+    st.markdown("---")
+    st.markdown(" **OSIRIS:** En linea")
+    st.link_button(" Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
+   
+    st.markdown(" **PlanetEar:** Sincronizado")
+    st.link_button(" Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
+   
+    st.markdown(" **USGS Explorer:**")
+    st.link_button(" USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
+   
+    st.markdown("---")
+    st.markdown("#### Clima Buin (Panel Dinamico)")
+   
+    with st.expander(" Widget Clima En Vivo", expanded=False):
+        st.markdown(f"**Buin (CASA)** \n ☀️ **{temp_real}** — Mayormente soleado")
+        st.caption(f" Humedad: {hum_real} | Viento: {viento_real}")
+        st.markdown("---")
+        st.markdown(" **Pronostico Diario (Avanzando):**")
+       
+        dia_actual_idx = now_chile.weekday()
+        nombres_dias_semana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']
+        
+        for i in range(min(6, len(t_maxs))):
+            d_idx = (dia_actual_idx + i) % 7
+            d_label = "Hoy" if i == 0 else nombres_dias_semana[d_idx]
+            mx = int(t_maxs[i])
+            mn = int(t_mins[i])
+            st.markdown(f"**`{d_label}`** ➔ Min: **`{mn}°`** | Max: **`{mx}°`**")
+            
+    st.markdown("---")
+    st.markdown("#### Misiones")
+   
+    with st.expander(" Base de Datos", expanded=False):
+        nueva_tarea = st.text_input("Nueva Mision Tactica:", placeholder="Ej: Revisar nodos...")
+        if st.button(" Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Mision registrada con exito!")
+                st.rerun()
+                
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            st.markdown("**Activas:**")
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button(" Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+        else:
+            st.caption("Sin misiones pendientes.")
+
+    st.markdown("---")
+    st.markdown("#### Consola de Auditoria")
+    with st.expander(" Logs en Vivo", expanded=False):
+        for log_item in st.session_state.historial_logs[-10:]:
+            st.markdown(f"<span style='font-size: 0.6rem;'>{log_item}</span>", unsafe_allow_html=True)
+
+# =========================================================================
+# CONSOLA PRINCIPAL (DERECHA)
+# =========================================================================
+
+script_voz_pc = (
+    '<div style="margin-bottom: 10px;">'
+    '<button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">'
+    ' Activar Escucha Manos Libres (PC)'
+    '</button>'
+    '<div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Microfono de PC en espera ]</div>'
+    '</div>'
+    '<script>'
+    'function iniciarEscuchaPC() {'
+    'const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;'
+    'const estadoEl = document.getElementById("estado-mic-pc");'
+    'if (!SpeechRecognition) {'
+    'if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";'
+    'return;'
+    '}'
+    'try {'
+    'const recognition = new SpeechRecognition();'
+    'recognition.lang = "es-CL";'
+    'recognition.interimResults = false;'
+    'recognition.maxAlternatives = 1;'
+    'if (estadoEl) estadoEl.innerText = "[ Escuchando por microfono... Habla ahora, jefa ]";'
+    'recognition.start();'
+    'recognition.onresult = function(event) {'
+    'const speechResult = event.results[0][0].transcript;'
+    'if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";'
+    'const inputs = window.parent.document.querySelectorAll("input[type=\'text\']");'
+    'for (let input of inputs) {'
+    'if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {'
+    'input.value = speechResult;'
+    'input.dispatchEvent(new Event("input", { bubbles: true }));'
+    'input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true }));'
+    'break;'
+    '}'
+    '}'
+    '};'
+    'recognition.onerror = function(event) {'
+    'if (estadoEl) estadoEl.innerText = "[ Error de microfono o permisos ]";'
+    '};'
+    'recognition.onspeechend = function() {'
+    'recognition.stop();'
+    'if (estadoEl) estadoEl.innerText = "[ Procesando... ]";'
+    '};'
+    '} catch(e) {'
+    'if (estadoEl) estadoEl.innerText = "[ Error de inicializacion ]";'
+    '}'
+    '}'
+    '</script>'
+)
+
+with col_chat:
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown("<h4>Chat</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button(" Purgar", use_container_width=True, key="btn_limpiar_chat"):
+            st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Que movemos ahora?"}]
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Chat purgado.")
+            st.rerun()
+
+    st.components.v1.html(script_voz_pc, height=75)
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+    prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, X10PIENSA, modo trabajo)...")
+
+    if prompt_chat:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+        st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Comando recibido: {prompt_chat[:25]}...")
+       
+        with st.chat_message("user"):
+            st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+
+        respuesta_ia = ""
+        q = prompt_chat.lower().strip()
+        contexto_memoria = jarvis_mem.recall_context(q)
+        
+        nucleo = st.session_state.nucleo_activo
+        prefijo_nucleo = f"[{nucleo}] "
+
+        # --- ATAJOS DE EJECUCIÓN DE SISTEMA POR VOZ O TEXTO ---
+        if "modo trabajo" in q or "abre el taller" in q:
+            res_1 = jarvis
