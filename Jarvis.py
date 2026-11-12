@@ -7,14 +7,14 @@ import sys
 import asyncio
 import subprocess
 
-# --- 1. CONFIGURACIÓN DE PÁGINA ---
+# --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S IA - NÚCLEO TÁCTICO SUPREMO",
+    page_title="J.A.R.V.I.S IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- INICIALIZACIÓN DE SESSION_STATE ---
+# --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
@@ -22,7 +22,7 @@ if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
 
 if "historial_logs" not in st.session_state:
-    st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con éxito."]
+    st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con exito."]
 
 # ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
@@ -30,7 +30,7 @@ now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
 
 if 0 <= hora_actual < 12:
-    saludo_actual = "Buenos días"
+    saludo_actual = "Buenos dias"
 elif 12 <= hora_actual < 20:
     saludo_actual = "Buenas tardes"
 else:
@@ -38,12 +38,12 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Por aquí todo en orden en el Nodo Buin, con los circuitos bien puestos y listo para ayudarte con lo que necesites."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Por aqui todo en orden en el Nodo Buin, con los circuitos bien puestos y listo para ayudarte con lo que necesites."}
     ]
 
 PIN_SECRETO = "2805"
 
-# --- INICIALIZACIÓN DE BASE DE DATOS SQLITE (Misiones & Memoria) ---
+# --- INICIALIZACION DE BASE DE DATOS SQLITE (Misiones & Memoria) ---
 fn_db = "jarvis_misiones.db"
 
 def init_db():
@@ -161,7 +161,7 @@ def extraer_texto_archivo(archivo):
                 for page in reader.pages[:2]:
                     texto += (page.extract_text() or "") + " "
                 texto = texto.strip()
-                return texto[:450] + ("..." if len(texto) > 450 else "") if texto else "PDF escaneado o sin capa de texto extraíble."
+                return texto[:450] + ("..." if len(texto) > 450 else "") if texto else "PDF escaneado o sin capa de texto extraible."
             except ImportError:
                 return "Instala 'pypdf' (pip install pypdf) en tu entorno para lectura profunda de PDFs; estructura verificada."
     except Exception as e:
@@ -295,7 +295,7 @@ if not st.session_state.get("autorizado", False):
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
-            pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
+            pin_input = st.text_input("PIN Secreto Numerico:", type="password", placeholder="Ingresa tu PIN...")
             btn_entrar = st.form_submit_button(" Desbloquear Armadura")
         
         if btn_entrar:
@@ -344,14 +344,14 @@ st.components.v1.html(reloj_js, height=0)
 
 st.markdown(f"""
 <div class="holo-brain-box">
-    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NUCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>
     <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, analisis optico/PDF, clima y mapa tactico satelital</p>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- DISTRIBUCIÓN PRINCIPAL ---
+# --- DISTRIBUCION PRINCIPAL ---
 col_modulos, col_chat = st.columns([1, 2])
 
 with col_modulos:
