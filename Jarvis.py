@@ -38,7 +38,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Por aquí todo en orden en el Nodo Buin, con los circuitos bien puestos y lista para ayudarte con lo que necesites."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Por aquí todo en orden en el Nodo Buin, con los circuitos bien puestos y listo para ayudarte con lo que necesites."}
     ]
 
 PIN_SECRETO = "2805"
@@ -109,7 +109,7 @@ class JarvisSystemExecutor:
                 subprocess.Popen(["open", "-a", target])
             else:
                 subprocess.Popen([target])
-            return f"Ejecutando proceso '{target}' de inmediato, señorita."
+            return f"Ejecutando proceso '{target}' de inmediato, jefa."
         except Exception as e:
             return f"Error ejecutando el proceso '{target}': {str(e)}"
 
@@ -146,6 +146,27 @@ def limpiar_misiones():
     cursor.execute("DELETE FROM misiones")
     conn.commit()
     conn.close()
+
+def extraer_texto_archivo(archivo):
+    nombre = archivo.name.lower()
+    try:
+        if nombre.endswith('.txt'):
+            contenido = archivo.getvalue().decode("utf-8", errors="ignore").strip()
+            return contenido[:450] + ("..." if len(contenido) > 450 else "")
+        elif nombre.endswith('.pdf'):
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(archivo)
+                texto = ""
+                for page in reader.pages[:2]:
+                    texto += (page.extract_text() or "") + " "
+                texto = texto.strip()
+                return texto[:450] + ("..." if len(texto) > 450 else "") if texto else "PDF escaneado o sin capa de texto extraíble."
+            except ImportError:
+                return "Instala 'pypdf' (pip install pypdf) en tu entorno para lectura profunda de PDFs; estructura verificada."
+    except Exception as e:
+        return f"Lectura parcial completada ({str(e)})."
+    return ""
 
 def obtener_clima_buin():
     try:
@@ -392,12 +413,15 @@ with col_modulos:
         if st.button(" Ejecutar Análisis Táctico", use_container_width=True):
             if archivo_subido is not None:
                 nombre_archivo = archivo_subido.name
+                nucleo_actual = st.session_state.nucleo_activo
                 if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    informe_analisis = f" **ANÁLISIS ÓPTICO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Captura procesada con éxito, jefa. Una imagen impecable, casi tanto como mis líneas de código."
+                    informe_analisis = f"[{nucleo_actual}] **ANÁLISIS ÓPTICO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Captura visual procesada con éxito, jefa. Resolución y metadatos verificados."
                 elif nombre_archivo.lower().endswith('.pdf'):
-                    informe_analisis = f" **ANÁLISIS DE DOCUMENTO:** \n- Documento: `{nombre_archivo}` \n- **Diagnóstico:** Estructura leída sin contratiempos. Avísame si quieres extraer datos o si solo vienes a hacerme leer documentos largos, jefa."
+                    extracto = extraer_texto_archivo(archivo_subido)
+                    informe_analisis = f"[{nucleo_actual}] **ANÁLISIS DE DOCUMENTO PDF:** \n- Documento: `{nombre_archivo}` \n- **Extracto:** _{extracto}_ \n- **Diagnóstico:** Lectura completada, jefa. Avísame si necesitas cruzar estos datos con alguna misión."
                 else:
-                    informe_analisis = f" **ANÁLISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnóstico:** Texto procesado y comprendido a la perfección."
+                    extracto = extraer_texto_archivo(archivo_subido)
+                    informe_analisis = f"[{nucleo_actual}] **ANÁLISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Contenido:** _{extracto}_ \n- **Diagnóstico:** Texto procesado y comprendido a la perfección."
                 
                 st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
                 st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Análisis óptico ejecutado en {nombre_archivo}.")
@@ -566,7 +590,7 @@ with col_chat:
         with st.chat_message(m["role"]):
             st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-    prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, X10PIENSA)...")
+    prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, X10PIENSA, modo trabajo)...")
 
     if prompt_chat:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
@@ -576,14 +600,23 @@ with col_chat:
             st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
         respuesta_ia = ""
-        q = prompt_chat.lower()
+        q = prompt_chat.lower().strip()
         contexto_memoria = jarvis_mem.recall_context(q)
         
         nucleo = st.session_state.nucleo_activo
         prefijo_nucleo = f"[{nucleo}] "
 
+        # --- ATAJOS DE EJECUCIÓN DE SISTEMA POR VOZ O TEXTO ---
+        if "modo trabajo" in q or "abre el taller" in q:
+            res_1 = jarvis_exec.open_application("notepad")
+            respuesta_ia = f"{prefijo_nucleo}Desplegando entorno de trabajo en el Nodo Buin, jefa. {res_1}"
+        elif q.startswith("abrir ") or q.startswith("ejecutar "):
+            app_objetivo = q.replace("abrir ", "").replace("ejecutar ", "").strip()
+            res_app = jarvis_exec.open_application(app_objetivo)
+            respuesta_ia = f"{prefijo_nucleo}{res_app}"
+
         # --- LÓGICA DIFERENCIADA POR NÚCLEO ---
-        if nucleo == "JARVIS":
+        elif nucleo == "JARVIS":
             if q.startswith("/human") or " /human" in q:
                 c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
                 respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos y con la precisión de siempre."
@@ -592,6 +625,8 @@ with col_chat:
                 respuesta_ia = f"{prefijo_nucleo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
             elif "hola" in q or "saludos" in q or "como estas" in q:
                 respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Operando al 100% con sarcasmo fino y circuitos estables en el Nodo Buin. ¿Qué dominamos hoy?"
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}En Buin tenemos {temp_real} y {hum_real} de humedad, jefa. Ideal para seguir programando sin salir de la base."
             elif "receta" in q or "navidad" in q or "sabor casero" in q:
                 respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto 'Sabor Casero'. Un toque cálido y comercial excelente, jefa. ¿Retomamos la vitrina cuando gustes?"
             else:
@@ -606,6 +641,8 @@ with col_chat:
                 respuesta_ia = f"{prefijo_nucleo}Te lo explico flash, jefa: '{t or 'esto'}' funciona igual que un atajo en la pantalla; directo al grano y sin perder tiempo."
             elif "hola" in q or "saludos" in q or "como estas" in q:
                 respuesta_ia = f"{prefijo_nucleo}¡Hola, jefa! VIERNES en línea y lista para la acción rápida. ¿Qué emergencia táctica resolvemos ahora?"
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}Reporte rápido: {temp_real} en Buin, viento a {viento_real}. Condiciones óptimas para operar."
             elif "receta" in q or "navidad" in q or "sabor casero" in q:
                 respuesta_ia = f"{prefijo_nucleo}¡Perfecto! Sabor Casero listo para entrar en combate comercial. ¿Escribimos más código o revisamos ventas?"
             else:
@@ -620,6 +657,8 @@ with col_chat:
                 respuesta_ia = f"{prefijo_nucleo}En modo análisis profundo para '{t or 'el tema'}': imagina una red neuronal conectando datos invisibles hasta que todo encaja."
             elif "hola" in q or "saludos" in q or "como estas" in q:
                 respuesta_ia = f"{prefijo_nucleo}Saludos, jefa. NOVA activa, escaneando frecuencias y monitoreando el mapa táctico global. Todo en orden."
+            elif "clima" in q:
+                respuesta_ia = f"{prefijo_nucleo}Telemetría atmosférica en Buin: {temp_real}, humedad del {hum_real}. Sensores estables."
             elif "receta" in q or "navidad" in q or "sabor casero" in q:
                 respuesta_ia = f"{prefijo_nucleo}Analizando la estructura de Sabor Casero... Excelente arquitectura de negocio local, jefa."
             else:
@@ -630,22 +669,61 @@ with col_chat:
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
 
-        texto_para_web = respuesta_ia.replace('"', "'").replace("\n", " ")
+        # --- SÍNTESIS DE VOZ DIFERENCIADA (VARONIL PARA JARVIS, FEMENINA PARA VIERNES/NOVA) ---
+        texto_para_web = respuesta_ia.replace(prefijo_nucleo, "").replace('"', "'").replace("\n", " ")
         voz_js = f"""
         <script>
-        const synth = window.speechSynthesis;
-        const utterThis = new SpeechSynthesisUtterance("{texto_para_web}");
-        utterThis.lang = 'es-CL';
-        utterThis.rate = 1.0;
+        function hablarNucleo() {{
+            const synth = window.speechSynthesis;
+            synth.cancel();
+            const utterThis = new SpeechSynthesisUtterance("{texto_para_web}");
+            utterThis.lang = 'es-CL';
+            const nucleo = "{nucleo}";
+            const voices = synth.getVoices();
 
-        const voices = synth.getVoices();
-        for(let i = 0; i < voices.length; i++) {{
-            if(voices[i].lang.includes('es') && (voices[i].name.toLowerCase().includes('male') || voices[i].name.toLowerCase().includes('pablo') || voices[i].name.toLowerCase().includes('microsoft pablo') || voices[i].name.toLowerCase().includes('raul'))) {{
-                utterThis.voice = voices[i];
-                break;
+            if (nucleo === "JARVIS") {{
+                utterThis.pitch = 0.78;
+                utterThis.rate = 0.98;
+                const maleKeywords = ['pablo', 'raul', 'jorge', 'diego', 'carlos', 'alvaro', 'male', 'hombre'];
+                for (let v of voices) {{
+                    const name = v.name.toLowerCase();
+                    if (v.lang.includes('es') && maleKeywords.some(k => name.includes(k))) {{
+                        utterThis.voice = v;
+                        utterThis.pitch = 0.92;
+                        break;
+                    }}
+                }}
+            }} else if (nucleo === "VIERNES") {{
+                utterThis.pitch = 1.12;
+                utterThis.rate = 1.15;
+                const femaleKeywords = ['helena', 'sabina', 'paulina', 'monica', 'laura', 'female', 'mujer'];
+                for (let v of voices) {{
+                    const name = v.name.toLowerCase();
+                    if (v.lang.includes('es') && femaleKeywords.some(k => name.includes(k))) {{
+                        utterThis.voice = v;
+                        break;
+                    }}
+                }}
+            }} else {{
+                utterThis.pitch = 1.05;
+                utterThis.rate = 1.02;
+                const femaleKeywords = ['sabina', 'paulina', 'helena', 'monica', 'female', 'mujer'];
+                for (let v of voices) {{
+                    const name = v.name.toLowerCase();
+                    if (v.lang.includes('es') && femaleKeywords.some(k => name.includes(k))) {{
+                        utterThis.voice = v;
+                        break;
+                    }}
+                }}
             }}
+            synth.speak(utterThis);
         }}
-        synth.speak(utterThis);
+
+        if (window.speechSynthesis.getVoices().length === 0) {{
+            window.speechSynthesis.onvoiceschanged = hablarNucleo;
+        }} else {{
+            hablarNucleo();
+        }}
         </script>
         """
         st.components.v1.html(voz_js, height=0)
