@@ -46,24 +46,36 @@ if "mensajes" not in st.session_state:
 
 PIN_SECRETO = "2805"
 
-# --- INICIALIZACION DE BASE DE DATOS SQLITE (Misiones & Memoria) ---
+# --- INICIALIZACION DE BASE DE DATOS SQLITE (Las 7 Memorias) ---
 fn_db = "jarvis_misiones.db"
 
 def init_db():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     cursor = conn.cursor()
+    # 1. Prospective Memory (Misiones futuras y recordatorios)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS misiones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tarea TEXT NOT NULL,
-        estado TEXT DEFAULT 'Pendiente'
+        estado TEXT DEFAULT 'Pendiente',
+        fecha_creacion TEXT
     )
     """)
+    # 2. Semantic Memory (Hechos duraderos sobre el usuario)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS memory (
         key_id TEXT PRIMARY KEY,
         fact_text TEXT,
         category TEXT
+    )
+    """)
+    # 3. Episodic Memory (Historial persistente de eventos y auditoría)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS episodic_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT,
+        event_type TEXT,
+        details TEXT
     )
     """)
     conn.commit()
@@ -93,6 +105,31 @@ class JarvisMemory:
         rows = cursor.fetchall()
         conn.close()
         return [row[0] for row in rows if query.lower() in row[0].lower()]
+
+    def log_episode(self, event_type: str, details: str):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            cursor = conn.cursor()
+            timestamp = datetime.datetime.now(tz_chile).strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute("""
+                INSERT INTO episodic_logs (timestamp, event_type, details)
+                VALUES (?, ?, ?)
+            """, (timestamp, event_type, details))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+    def get_recent_episodes(self, limit=15) -> list:
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            cursor = conn.cursor()
+            cursor.execute("SELECT timestamp, event_type, details FROM episodic_logs ORDER BY id DESC LIMIT ?", (limit,))
+            rows = cursor.fetchall()
+            conn.close()
+            return rows
+        except Exception:
+            return []
 
 class JarvisSystemExecutor:
     @staticmethod
@@ -131,9 +168,11 @@ jarvis_core = JarvisCore()
 def agregar_mision(tarea):
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+    ts = datetime.datetime.now(tz_chile).strftime('%Y-%m-%d %H:%M')
+    cursor.execute("INSERT INTO misiones (tarea, fecha_creacion) VALUES (?, ?)", (tarea, ts))
     conn.commit()
     conn.close()
+    jarvis_mem.log_episode("MISSION_ADD", f"Nueva misión registrada: {tarea}")
 
 def obtener_misiones():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
@@ -149,6 +188,7 @@ def limpiar_misiones():
     cursor.execute("DELETE FROM misiones")
     conn.commit()
     conn.close()
+    jarvis_mem.log_episode("MISSION_PURGE", "Base de misiones purgada.")
 
 def extraer_texto_archivo(archivo):
     nombre = archivo.name.lower()
@@ -231,6 +271,7 @@ if not st.session_state.get("autorizado", False):
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
                 st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Acceso concedido a la jefa.")
+                jarvis_mem.log_episode("SYSTEM_LOGIN", "Acceso concedido a la jefa exitosamente.")
                 st.success("Acceso concedido. Un gusto verte de nuevo, jefa...")
                 st.rerun()
             else:
@@ -274,458 +315,4 @@ st.components.v1.html(reloj_js, height=0)
 
 st.markdown(
     '<div class="holo-brain-box">'
-    f'<h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NUCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>'
-    '<p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; font-family: monospace; opacity: 0.8;">Sistemas de procesamiento local, analisis optico/PDF, clima, mapa tactico y finanzas</p>'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-# --- NAVEGACIÓN POR PESTAÑAS ---
-tab_principal, tab_financiero = st.tabs(["🖥️ Panel Principal & IA", "📈 Centro Financiero & Mercados"])
-
-with tab_principal:
-    col_modulos, col_chat = st.columns([1, 2])
-
-    with col_modulos:
-        st.markdown("#### Modulos")
-        
-        if st.button(" Bloquear Sistema", use_container_width=True):
-            st.session_state.autorizado = False
-            st.rerun()
-            
-        if st.button(" Reinicio Total", use_container_width=True):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-            
-        st.markdown("---")
-        st.markdown("#### Selector de Nucleo (IA)")
-        
-        nuevo_nucleo = st.radio(
-            "Seleccionar Asistente Activo:",
-            ["JARVIS", "VIERNES", "NOVA"],
-            index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
-            label_visibility="collapsed"
-        )
-        if nuevo_nucleo != st.session_state.nucleo_activo:
-            st.session_state.nucleo_activo = nuevo_nucleo
-            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Cambio de nucleo a {nuevo_nucleo}.")
-            st.success(f"Nucleo cambiado a {nuevo_nucleo}.")
-            st.rerun()
-
-        st.markdown("---")
-        st.markdown("#### Memoria y Autonomia")
-        
-        with st.expander(" Gestionar Nucleo Tecnico", expanded=False):
-            dato_mem = st.text_input("Dato a guardar en memoria:", placeholder="Ej: Preferencia de diseno...")
-            if st.button(" Guardar Memoria Larga", use_container_width=True):
-                if dato_mem.strip():
-                    jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
-                    st.success("¡Informacion retenida en bases locales!")
-            
-            app_sys = st.text_input("Ejecutar comando/App o script:", placeholder="notepad o script.py")
-            if st.button(" Lanzar Sistema", use_container_width=True):
-                if app_sys.strip():
-                    res_exec = jarvis_exec.open_application(app_sys.strip())
-                    st.info(res_exec)
-
-        st.markdown("---")
-        st.markdown("#### Centro de Analisis Optico")
-        
-        with st.expander(" Subir Archivo (IMG / TXT / PDF)", expanded=False):
-            archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
-            if archivo_subido is not None:
-                st.download_button(
-                    label=" Descargar Archivo Cargado",
-                    data=archivo_subido,
-                    file_name=archivo_subido.name,
-                    use_container_width=True
-                )
-                
-            if st.button(" Ejecutar Analisis Tactico", use_container_width=True):
-                if archivo_subido is not None:
-                    nombre_archivo = archivo_subido.name
-                    nucleo_actual = st.session_state.nucleo_activo
-                    if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        informe_analisis = f"[{nucleo_actual}] **ANALISIS OPTICO:** \n- Archivo: `{nombre_archivo}` \n- **Diagnostico:** Captura visual procesada con exito, jefa. Resolucion y metadatos verificados."
-                    elif nombre_archivo.lower().endswith('.pdf'):
-                        extracto = extraer_texto_archivo(archivo_subido)
-                        informe_analisis = f"[{nucleo_actual}] **ANALISIS DE DOCUMENTO PDF:** \n- Documento: `{nombre_archivo}` \n- **Extracto:** _{extracto}_ \n- **Diagnostico:** Lectura completada, jefa. Avisame si necesitas cruzar estos datos con alguna mision."
-                    else:
-                        extracto = extraer_texto_archivo(archivo_subido)
-                        informe_analisis = f"[{nucleo_actual}] **ANALISIS DE TEXTO:** \n- Archivo: `{nombre_archivo}` \n- **Contenido:** _{extracto}_ \n- **Diagnostico:** Texto procesado y comprendido a la perfeccion."
-                    
-                    st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
-                    st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Analisis optico ejecutado en {nombre_archivo}.")
-                    st.rerun()
-                else:
-                    st.warning("Primero debes subir un archivo.")
-                
-        st.markdown("---")
-        st.markdown("#### Seguridad")
-        
-        if st.button(" Refrescar Sensores", use_container_width=True):
-            st.info("Sensores del Nodo Buin estables y seguros.")
-            
-        st.markdown("---")
-        st.markdown("#### Mapa Tactico")
-        
-        with st.expander(" mapa tactico satelital", expanded=False):
-            st.markdown(
-                '<div class="cyber-radar-screen">'
-                '<p style="color: #ff3333; font-size: 0.75rem; margin: 0;" class="radar-blip"><b> 10,940,428 ATAQUES HOY</b></p>'
-                '<p style="color: #00f3ff; font-size: 0.65rem; margin: 3px 0;">[ Rastreo Global Activo ]</p>'
-                '<hr style="border-color: #00f3ff; opacity: 0.3; margin: 5px 0;">'
-                '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Japan ➔ Germany</b><br><span style="color:#ff3333;">[Exploit detectado]</span></p>'
-                '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>United States ➔ Honduras</b><br><span style="color:#bf7fff;">[Phishing activo]</span></p>'
-                '<p style="font-size: 0.65rem; text-align: left; margin: 2px 0;"><b>Nodo Buin ➔ Seguro</b><br><span style="color:#00ff88;">[0 intrusiones]</span></p>'
-                '</div>',
-                unsafe_allow_html=True
-            )
-
-        st.markdown("---")
-        st.markdown("#### Red Neuronal & Skills (Open Source)")
-        with st.expander(" Inspector de Repositorios", expanded=False):
-            st.markdown(
-                '<div class="cyber-radar-screen" style="text-align: left;">'
-                '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>01 / mattpocock / skills</b><br><span style="color:#00ff88;">[307K Estrellas // 18M Installs]</span></p>'
-                '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>02 / addyosmani / agent-skills</b><br><span style="color:#bf7fff;">[Claude Code Engineering]</span></p>'
-                '<p style="color: #00f3ff; font-size: 0.65rem; margin: 2px 0;"><b>03 / cloudflare / security-audit</b><br><span style="color:#ff3333;">[128 Repos Scanned]</span></p>'
-                '</div>',
-                unsafe_allow_html=True
-            )
-            
-            # --- SELECTOR DE SKILLS TÁCTICAS ---
-            st.markdown("<p style='font-size: 0.7rem; margin-top: 8px;'><b>Skills Activas:</b></p>", unsafe_allow_html=True)
-            skill_seleccionada = st.selectbox(
-                "Seleccionar Skill:",
-                ["/skill_resumen (Resumen Ejecutivo)", "/skill_mercado (Inteligencia Bursátil)", "/skill_auditoria (Auditoría de Código)"],
-                label_visibility="collapsed"
-            )
-            if st.button(" Ejecutar Skill Activa", use_container_width=True):
-                skill_tag = skill_seleccionada.split(" ")[0]
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Skill {skill_tag} ejecutada.")
-                if "resumen" in skill_tag:
-                    res_skill = "[SKILL RESUMEN] Análisis ejecutado: Nodo Buin operando con alta eficiencia y cero pérdidas de paquetes."
-                elif "mercado" in skill_tag:
-                    res_skill = "[SKILL MERCADO] Reporte bursátil: Activos tradicionales y divisas estables. Monitoreo en Finviz e Investing activo."
-                else:
-                    res_skill = "[SKILL AUDITORÍA] Escaneo de sintaxis y seguridad: 0 vulnerabilidades detectadas en el motor principal."
-                st.session_state.mensajes.append({"role": "assistant", "content": res_skill})
-                st.rerun()
-
-            if st.button(" Ejecutar Escaneo de Skills", use_container_width=True):
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Escaneo de Skills y Auditoria completado.")
-                st.success("¡Red neuronal de skills sincronizada con exito!")
-
-        st.markdown("---")
-        st.markdown("#### Videovigilancia Global")
-        with st.expander(" Camaras en Vivo / Satelite", expanded=False):
-            st.link_button(" Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
-            st.link_button(" Concepcion Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
-            st.link_button(" Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
-            st.link_button(" Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
-            st.link_button(" Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
-        
-        st.markdown("---")
-        st.markdown(" **OSIRIS:** En linea")
-        st.link_button(" Abrir OSIRIS", "https://osiris.mclaren.com/", use_container_width=True)
-       
-        st.markdown(" **PlanetEar:** Sincronizado")
-        st.link_button(" Abrir PlanetEar", "https://www.planet.com/", use_container_width=True)
-       
-        st.markdown(" **USGS Explorer:**")
-        st.link_button(" USGS Explorer", "https://earthexplorer.usgs.gov/", use_container_width=True)
-       
-        st.markdown("---")
-        st.markdown("#### Clima Buin (Panel Dinamico)")
-       
-        with st.expander(" Widget Clima En Vivo", expanded=False):
-            st.markdown(f"**Buin (CASA)** \n ☀️ **{temp_real}** — Mayormente soleado")
-            st.caption(f" Humedad: {hum_real} | Viento: {viento_real}")
-            
-            # --- CALIBRACIÓN MANUAL HÍBRIDA ---
-            nuevo_offset = st.slider("Calibrar Temp (°C):", -10, 10, st.session_state.offset_clima, key="slider_calibracion")
-            if nuevo_offset != st.session_state.offset_clima:
-                st.session_state.offset_clima = nuevo_offset
-                st.rerun()
-
-            st.markdown("---")
-            st.markdown(" **Pronostico Diario (Avanzando):**")
-           
-            dia_actual_idx = now_chile.weekday()
-            nombres_dias_semana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']
-            
-            for i in range(min(6, len(t_maxs))):
-                d_idx = (dia_actual_idx + i) % 7
-                d_label = "Hoy" if i == 0 else nombres_dias_semana[d_idx]
-                mx = int(t_maxs[i])
-                mn = int(t_mins[i])
-                st.markdown(f"**`{d_label}`** ➔ Min: **`{mn}°`** | Max: **`{mx}°`**")
-                
-        st.markdown("---")
-        st.markdown("#### Misiones")
-       
-        with st.expander(" Base de Datos", expanded=False):
-            nueva_tarea = st.text_input("Nueva Mision Tactica:", placeholder="Ej: Revisar nodos...")
-            if st.button(" Registrar Tarea", use_container_width=True):
-                if nueva_tarea.strip():
-                    agregar_mision(nueva_tarea.strip())
-                    st.success("¡Mision registrada con exito!")
-                    st.rerun()
-                    
-            misiones_guardadas = obtener_misiones()
-            if misiones_guardadas:
-                st.markdown("**Activas:**")
-                for m_id, m_text, m_est in misiones_guardadas:
-                    st.markdown(f"- `{m_text}`")
-                if st.button(" Limpiar Misiones", use_container_width=True):
-                    limpiar_misiones()
-                    st.rerun()
-            else:
-                st.caption("Sin misiones pendientes.")
-
-        st.markdown("---")
-        st.markdown("#### Consola de Auditoria")
-        with st.expander(" Logs en Vivo", expanded=False):
-            for log_item in st.session_state.historial_logs[-10:]:
-                st.markdown(f"<span style='font-size: 0.6rem;'>{log_item}</span>", unsafe_allow_html=True)
-
-    # =========================================================================
-    # CONSOLA PRINCIPAL (DERECHA)
-    # =========================================================================
-
-    script_voz_pc = (
-        '<div style="margin-bottom: 10px;">'
-        '<button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">'
-        ' Activar Escucha Manos Libres (PC)'
-        '</button>'
-        '<div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Microfono de PC en espera ]</div>'
-        '</div>'
-        '<script>'
-        'function iniciarEscuchaPC() {'
-        'const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;'
-        'const estadoEl = document.getElementById("estado-mic-pc");'
-        'if (!SpeechRecognition) {'
-        'if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";'
-        'return;'
-        '}'
-        'try {'
-        'const recognition = new SpeechRecognition();'
-        'recognition.lang = "es-CL";'
-        'recognition.interimResults = false;'
-        'recognition.maxAlternatives = 1;'
-        'if (estadoEl) estadoEl.innerText = "[ Escuchando por microfono... Habla ahora, jefa ]";'
-        'recognition.start();'
-        'recognition.onresult = function(event) {'
-        'const speechResult = event.results[0][0].transcript;'
-        'if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";'
-        'const inputs = window.parent.document.querySelectorAll("input[type=\'text\']");'
-        'for (let input of inputs) {'
-        'if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {'
-        'input.value = speechResult;'
-        'input.dispatchEvent(new Event("input", { bubbles: true }));'
-        'input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true }));'
-        'break;'
-        '}'
-        '}'
-        '};'
-        'recognition.onerror = function(event) {'
-        'if (estadoEl) estadoEl.innerText = "[ Error de microfono o permisos ]";'
-        '};'
-        'recognition.onspeechend = function() {'
-        'recognition.stop();'
-        'if (estadoEl) estadoEl.innerText = "[ Procesando... ]";'
-        '};'
-        '} catch(e) {'
-        'if (estadoEl) estadoEl.innerText = "[ Error de inicializacion ]";'
-        '}'
-        '}'
-        '</script>'
-    )
-
-    with col_chat:
-        col_h1, col_h2 = st.columns([4, 1])
-        with col_h1:
-            st.markdown("<h4>Chat</h4>", unsafe_allow_html=True)
-        with col_h2:
-            if st.button(" Purgar", use_container_width=True, key="btn_limpiar_chat"):
-                st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria limpia. ¿Que movemos ahora?"}]
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Chat purgado.")
-                st.rerun()
-
-        st.components.v1.html(script_voz_pc, height=75)
-
-        for m in st.session_state.mensajes:
-            with st.chat_message(m["role"]):
-                st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-        prompt_chat = st.chat_input("Escribe tu orden o protocolo (ej: /human, ELI10, /skill_resumen, modo trabajo)...")
-
-        if prompt_chat:
-            st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Comando recibido: {prompt_chat[:25]}...")
-           
-            with st.chat_message("user"):
-                st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
-
-            respuesta_ia = ""
-            q = prompt_chat.lower().strip()
-            contexto_memoria = jarvis_mem.recall_context(q)
-            
-            nucleo = st.session_state.nucleo_activo
-            prefijo_nucleo = f"[{nucleo}] "
-
-            # --- GESTIÓN DE SKILLS EN EL CHAT ---
-            if q.startswith("/skill_resumen") or " /skill_resumen" in q:
-                c = prompt_chat.replace("/skill_resumen", "").replace("/SKILL_RESUMEN", "").strip()
-                respuesta_ia = f"{prefijo_nucleo}**[SKILL: RESUMEN EJECUTIVO]**\n- Condensando estado del Nodo Buin para '{c or 'operaciones actuales'}': sistemas estables, misiones sincronizadas y baja latencia en todos los núcleos."
-            elif q.startswith("/skill_mercado") or " /skill_mercado" in q:
-                c = prompt_chat.replace("/skill_mercado", "").replace("/SKILL_MERCADO", "").strip()
-                respuesta_ia = f"{prefijo_nucleo}**[SKILL: INTELIGENCIA BURSÁTIL]**\n- Analizando '{c or 'activos globales'}': flujos tradicionales y divisas estables. Use el Centro Financiero para consultar Finviz e Investing.com en tiempo real."
-            elif q.startswith("/skill_auditoria") or " /skill_auditoria" in q:
-                c = prompt_chat.replace("/skill_auditoria", "").replace("/SKILL_AUDITORIA", "").strip()
-                respuesta_ia = f"{prefijo_nucleo}**[SKILL: AUDITORÍA DE CÓDIGO]**\n- Verificando sintaxis y seguridad para '{c or 'el sistema'}': 0 vulnerabilidades, estructuras f-string optimizadas."
-
-            # --- ATAJOS DE EJECUCIÓN DE SISTEMA POR VOZ O TEXTO ---
-            elif "modo trabajo" in q or "abre el taller" in q:
-                res_1 = jarvis_exec.open_application("notepad")
-                respuesta_ia = f"{prefijo_nucleo}Desplegando entorno de trabajo en el Nodo Buin, jefa. {res_1}"
-            elif q.startswith("abrir ") or q.startswith("ejecutar "):
-                app_objetivo = q.replace("abrir ", "").replace("ejecutar ", "").strip()
-                res_app = jarvis_exec.open_application(app_objetivo)
-                respuesta_ia = f"{prefijo_nucleo}{res_app}"
-
-            # --- LÓGICA DIFERENCIADA POR NÚCLEO ---
-            elif nucleo == "JARVIS":
-                if q.startswith("/human") or " /human" in q:
-                    c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos y con la precisión de siempre."
-                elif q.startswith("eli10") or " eli10" in q:
-                    t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
-                elif "hola" in q or "saludos" in q or "como estas" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Hola, jefa. Operando al 100% con sarcasmo fino y circuitos estables en el Nodo Buin. ¿Qué dominamos hoy?"
-                elif "clima" in q:
-                    respuesta_ia = f"{prefijo_nucleo}En Buin tenemos {temp_real} y {hum_real} de humedad, jefa. Telemetría meteorológica sincronizada."
-                elif "receta" in q or "navidad" in q or "sabor casero" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Ah, el proyecto 'Sabor Casero'. Un toque cálido y comercial excelente, jefa. ¿Retomamos la vitrina cuando gustes?"
-                else:
-                    respuesta_ia = f"{prefijo_nucleo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, jefa. ¿Cuál es nuestro siguiente movimiento?"
-
-            elif nucleo == "VIERNES":
-                if q.startswith("/human") or " /human" in q:
-                    c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}¡Claro que sí, jefa! Sin vueltas: sobre '{c or 'lo que pediste'}', te aseguro que lo resolvemos al instante y sin complicaciones."
-                elif q.startswith("eli10") or " eli10" in q:
-                    t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}Te lo explico flash, jefa: '{t or 'esto'}' funciona igual que un atajo en la pantalla; directo al grano y sin perder tiempo."
-                elif "hola" in q or "saludos" in q or "como estas" in q:
-                    respuesta_ia = f"{prefijo_nucleo}¡Hola, jefa! VIERNES en línea y lista para la acción rápida. ¿Qué emergencia táctica resolvemos ahora?"
-                elif "clima" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Reporte rápido: {temp_real} en Buin, viento a {viento_real}. Condiciones óptimas."
-                elif "receta" in q or "navidad" in q or "sabor casero" in q:
-                    respuesta_ia = f"{prefijo_nucleo}¡Perfecto! Sabor Casero listo para entrar en combate comercial. ¿Escribimos más código o revisamos ventas?"
-                else:
-                    respuesta_ia = f"{prefijo_nucleo}Orden '{prompt_chat}' recibida y ejecutada al vuelo, jefa. ¿Qué más hacemos?"
-
-            else: # NOVA
-                if q.startswith("/human") or " /human" in q:
-                    c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}Hablando de colega a colega, jefa: examinando '{c or 'el escenario'}', veo un potencial enorme para automatizarlo todo desde el núcleo."
-                elif q.startswith("eli10") or " eli10" in q:
-                    t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-                    respuesta_ia = f"{prefijo_nucleo}En modo análisis profundo para '{t or 'el tema'}': imagina una red neuronal conectando datos invisibles hasta que todo encaja."
-                elif "hola" in q or "saludos" in q or "como estas" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Saludos, jefa. NOVA activa, escaneando frecuencias y monitoreando el mapa táctico global. Todo en orden."
-                elif "clima" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Telemetría atmosférica en Buin: {temp_real}, humedad del {hum_real}. Sensores estables."
-                elif "receta" in q or "navidad" in q or "sabor casero" in q:
-                    respuesta_ia = f"{prefijo_nucleo}Analizando la estructura de Sabor Casero... Excelente arquitectura de negocio local, jefa."
-                else:
-                    respuesta_ia = f"{prefijo_nucleo}Patrón '{prompt_chat}' integrado a los registros de NOVA. ¿Analizamos otra variable?"
-
-            if contexto_memoria:
-                respuesta_ia += f" *(Nota de memoria a largo plazo: {contexto_memoria[0]})*"
-
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-
-            # --- SÍNTESIS DE VOZ DIFERENCIADA ---
-            texto_para_web = respuesta_ia.replace(prefijo_nucleo, "").replace('"', "'").replace("\n", " ")
-            
-            voz_js = (
-                '<script>'
-                'function hablarNucleo() {'
-                'const synth = window.speechSynthesis;'
-                'synth.cancel();'
-                'const utterThis = new SpeechSynthesisUtterance("' + texto_para_web + '");'
-                'utterThis.lang = "es-CL";'
-                'const nucleo = "' + nucleo + '";'
-                'const voices = synth.getVoices();'
-                'if (nucleo === "JARVIS") {'
-                'utterThis.pitch = 0.78;'
-                'utterThis.rate = 0.98;'
-                'const maleKeywords = ["pablo", "raul", "jorge", "diego", "carlos", "alvaro", "male", "hombre"];'
-                'for (let v of voices) {'
-                'const name = v.name.toLowerCase();'
-                'if (v.lang.includes("es") && maleKeywords.some(k => name.includes(k))) {'
-                'utterThis.voice = v;'
-                'utterThis.pitch = 0.92;'
-                'break;'
-                '}'
-                '}'
-                '} else if (nucleo === "VIERNES") {'
-                'utterThis.pitch = 1.12;'
-                'utterThis.rate = 1.15;'
-                'const femaleKeywords = ["helena", "sabina", "paulina", "monica", "laura", "female", "mujer"];'
-                'for (let v of voices) {'
-                'const name = v.name.toLowerCase();'
-                'if (v.lang.includes("es") && femaleKeywords.some(k => name.includes(k))) {'
-                'utterThis.voice = v;'
-                'break;'
-                '}'
-                '}'
-                '} else {'
-                'utterThis.pitch = 1.05;'
-                'utterThis.rate = 1.02;'
-                'const femaleKeywords = ["sabina", "paulina", "helena", "monica", "female", "mujer"];'
-                'for (let v of voices) {'
-                'const name = v.name.toLowerCase();'
-                'if (v.lang.includes("es") && femaleKeywords.some(k => name.includes(k))) {'
-                'utterThis.voice = v;'
-                'break;'
-                '}'
-                '}'
-                '}'
-                'synth.speak(utterThis);'
-                '}'
-                'if (window.speechSynthesis.getVoices().length === 0) {'
-                'window.speechSynthesis.onvoiceschanged = hablarNucleo;'
-                '} else {'
-                'hablarNucleo();'
-                '}'
-                '</script>'
-            )
-            st.components.v1.html(voz_js, height=0)
-
-            st.rerun()
-
-# =========================================================================
-# PESTAÑA 2: CENTRO FINANCIERO & MERCADOS (FINVIZ & INVESTING.COM)
-# =========================================================================
-with tab_financiero:
-    st.markdown("### 📈 Centro de Inteligencia Financiera & Mercados Globales")
-    st.markdown("<p style='font-size: 0.8rem; opacity: 0.8;'>Visualización táctica de activos, futuros, divisas y mercados tradicionales.</p>", unsafe_allow_html=True)
-    
-    col_f1, col_f2, col_f3 = st.columns([2, 2, 2])
-    with col_f1:
-        st.link_button("🌐 Abrir Finviz (Acciones & Mapas)", "https://finviz.com/", use_container_width=True)
-    with col_f2:
-        st.link_button("📊 Abrir Investing.com (Activos & Divisas)", "https://es.investing.com/", use_container_width=True)
-    with col_f3:
-        if st.button("🔄 Sincronizar Mercados", use_container_width=True):
-            st.success("¡Flujos sincronizados con éxito, jefa!")
-
-    st.markdown("---")
+    f'<h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;"> NUCLEO NEURONAL CYBER-GRID [{
