@@ -52,7 +52,6 @@ fn_db = "jarvis_misiones.db"
 def init_db():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     cursor = conn.cursor()
-    # 1. Prospective Memory (Misiones futuras y recordatorios)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS misiones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +60,6 @@ def init_db():
         fecha_creacion TEXT
     )
     """)
-    # 2. Semantic Memory (Hechos duraderos sobre el usuario)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS memory (
         key_id TEXT PRIMARY KEY,
@@ -69,7 +67,6 @@ def init_db():
         category TEXT
     )
     """)
-    # 3. Episodic Memory (Historial persistente de eventos y auditoría)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS episodic_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -249,44 +246,3 @@ estilos_css = (
     "</style>"
 )
 st.markdown(estilos_css, unsafe_allow_html=True)
-
-# --- 1. PANTALLA DE BLOQUEO ---
-if not st.session_state.get("autorizado", False):
-    st.markdown(
-        '<div style="text-align: center; margin-top: 30px;">'
-        '<h2 style="color: #00f3ff; font-family: monospace;"> ACCESO RESTRINGIDO - NODO BUIN</h2>'
-        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD</p>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-    
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
-    with col_l2:
-        with st.form("form_login"):
-            pin_input = st.text_input("PIN Secreto Numerico:", type="password", placeholder="Ingresa tu PIN...")
-            btn_entrar = st.form_submit_button(" Desbloquear Armadura")
-        
-        if btn_entrar:
-            if pin_input.strip() == PIN_SECRETO:
-                st.session_state.autorizado = True
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Acceso concedido a la jefa.")
-                jarvis_mem.log_episode("SYSTEM_LOGIN", "Acceso concedido a la jefa exitosamente.")
-                st.success("Acceso concedido. Un gusto verte de nuevo, jefa...")
-                st.rerun()
-            else:
-                st.error("PIN incorrecto. Acceso denegado.")
-    st.stop()
-
-# --- 2. SISTEMA DESBLOQUEADO ---
-dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
-meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-dia_str = dias[now_chile.weekday()]
-mes_str = meses[now_chile.month]
-fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
-
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle"></div></div>'
-    f'<h1 style="margin: 0; padding: 0; font-size: 2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); font-family: monospace;">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-family: monospace; font-size: 0.75rem !important; color: #00f3ff !important; text-align: center !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CH
