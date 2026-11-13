@@ -229,25 +229,25 @@ def obtener_clima_buin():
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
 # --- ESTILOS VISUALES BLINDADOS ---
-estilos_css = (
-    "<style>"
-    ".stApp { background-color: #060913 !important; color: #00f3ff !important; }"
-    "p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }"
-    "section[data-testid='stHorizontalBlock'] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }"
-    "section[data-testid='stHorizontalBlock'] > div:first-child p { font-size: 0.7rem !important; }"
-    ".stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }"
-    ".stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }"
-    ".stButton>button p { color: #060913 !important; }"
-    ".stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }"
-    ".arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; }"
-    ".arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7); margin-bottom: 5px; }"
-    ".arc-triangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #060913; filter: drop-shadow(0 0 5px #00f3ff); }"
-    ".holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 10px 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 12px rgba(0, 243, 255, 0.3); margin: 0 auto 15px auto; max-width: 700px; }"
-    ".cyber-radar-screen { background: #03050a; border: 1px solid #00f3ff; border-radius: 6px; padding: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2); }"
-    ".radar-blip { animation: pulse-blip 1.5s infinite; }"
-    "@keyframes pulse-blip { 0% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 8px #ff3333; } 100% { opacity: 0.3; } }"
-    "</style>"
-)
+estilos_css = """
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+section[data-testid="stHorizontalBlock"] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }
+section[data-testid="stHorizontalBlock"] > div:first-child p { font-size: 0.7rem !important; }
+.stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }
+.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }
+.stButton>button p { color: #060913 !important; }
+.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+.arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; }
+.arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7); margin-bottom: 5px; }
+.arc-triangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #060913; filter: drop-shadow(0 0 5px #00f3ff); }
+.holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 10px 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 12px rgba(0, 243, 255, 0.3); margin: 0 auto 15px auto; max-width: 700px; }
+.cyber-radar-screen { background: #03050a; border: 1px solid #00f3ff; border-radius: 6px; padding: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2); }
+.radar-blip { animation: pulse-blip 1.5s infinite; }
+@keyframes pulse-blip { 0% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 8px #ff3333; } 100% { opacity: 0.3; } }
+</style>
+"""
 st.markdown(estilos_css, unsafe_allow_html=True)
 
 # --- 1. PANTALLA DE BLOQUEO ---
@@ -295,21 +295,21 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-reloj_js = (
-    '<script>'
-    'function actualizarReloj() {'
-    'const ahora = new Date();'
-    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
-    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
-    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
-    'if (relojEl) {'
-    'relojEl.innerText = horaChile;'
-    '}'
-    '}'
-    'setInterval(actualizarReloj, 1000);'
-    'actualizarReloj();'
-    '</script>'
-)
+reloj_js = """
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+    const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
+    const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);
+    const relojEl = window.parent.document.getElementById("reloj-vivo");
+    if (relojEl) {
+        relojEl.innerText = horaChile;
+    }
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+"""
 st.components.v1.html(reloj_js, height=0)
 
 nucleo_actual_txt = st.session_state.nucleo_activo
@@ -553,6 +553,40 @@ with tab_principal:
     # CONSOLA PRINCIPAL (DERECHA)
     # =========================================================================
 
-    script_voz_pc = (
-        '<div style="margin-bottom: 10px;">'
-        '<button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border
+    script_voz_pc = """
+    <div style="margin-bottom: 10px;">
+    <button onclick="iniciarEscuchaPC()" style="background-color: #00f3ff; color: #060913; border: none; padding: 10px 14px; font-weight: bold; font-family: monospace; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px rgba(0,243,255,0.6); width: 100%;">
+     Activar Escucha Manos Libres (PC)
+    </button>
+    <div id="estado-mic-pc" style="margin-top: 5px; font-size: 0.75rem; color: #00f3ff; text-align: center;">[ Microfono de PC en espera ]</div>
+    </div>
+    <script>
+    function iniciarEscuchaPC() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const estadoEl = document.getElementById("estado-mic-pc");
+        if (!SpeechRecognition) {
+            if (estadoEl) estadoEl.innerText = "[ Navegador sin soporte de voz ]";
+            return;
+        }
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "es-CL";
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            if (estadoEl) estadoEl.innerText = "[ Escuchando por microfono... Habla ahora, jefa ]";
+            recognition.start();
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                if (estadoEl) estadoEl.innerText = "[ Orden capturada: " + speechResult + " ]";
+                const inputs = window.parent.document.querySelectorAll("input[type='text']");
+                for (let input of inputs) {
+                    if (input.placeholder && input.placeholder.includes("Escribe tu orden")) {
+                        input.value = speechResult;
+                        input.dispatchEvent(new Event("input", { bubbles: true }));
+                        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true }));
+                        break;
+                    }
+                }
+            };
+            recognition.onerror = function(event) {
+                if (estadoEl) estadoEl.innerText = "[ Error de micro
