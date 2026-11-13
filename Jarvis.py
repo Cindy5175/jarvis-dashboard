@@ -228,16 +228,18 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES ---
-estilos_css = (
-    '<style>'
-    '.stApp { background-color: #060913 !important; color: #00f3ff !important; }'
-    'p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }'
-    'section[data-testid="stHorizontalBlock"] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }'
-    'section[data-testid="stHorizontalBlock"] > div:first-child p, section[data-testid="stHorizontalBlock"] > div:first-child span, section[data-testid="stHorizontalBlock"] > div:first-child label, section[data-testid="stHorizontalBlock"] > div:first-child li { font-size: 0.7rem !important; }'
-    '.stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }'
-    '.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }'
-    '.stButton>button p, .stButton>button span { color: #060913 !important; }'
-    '.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }'
-    '.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }'
-    '.arc-reactor-container { display: flex; flex-direction: column; align-items: center;
+# --- ESTILOS VISUALES BLINDADOS CON TRIPLE COMILLA ---
+estilos_css = """
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+section[data-testid="stHorizontalBlock"] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }
+section[data-testid="stHorizontalBlock"] > div:first-child p, section[data-testid="stHorizontalBlock"] > div:first-child span, section[data-testid="stHorizontalBlock"] > div:first-child label, section[data-testid="stHorizontalBlock"] > div:first-child li { font-size: 0.7rem !important; }
+.stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }
+.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }
+.stButton>button p, .stButton>button span { color: #060913 !important; }
+.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+.arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; }
+.arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), inset 0 0 8px rgba(0, 243, 255, 0.5); margin-bottom: 5px; }
+.arc-triangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #060913; filter: drop-shadow(0 0 5px #00f3
