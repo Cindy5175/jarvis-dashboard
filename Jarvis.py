@@ -509,9 +509,11 @@ with tab_principal:
                     recuerdos_extra = " [Memoria: " + ", ".join(contexto_memoria) + "]" if contexto_memoria else ""
                     respuesta_ia = prefijo_nucleo + "Orden procesada al 100%." + recuerdos_extra + " ¿Qué otra directriz ejecutamos, jefa?"
             elif nucleo == "VIERNES":
-                respuesta_ia = prefijo_nucleo + "Protocolo táctico secundario desplegado con eficiencia estricta, jefa."
+                recuerdos_extra = " [Memoria: " + ", ".join(contexto_memoria) + "]" if contexto_memoria else ""
+                respuesta_ia = prefijo_nucleo + "Protocolo táctico secundario activo. Analizando su consulta: '" + prompt_chat + "'. Eficiencia estricta garantizada en el Nodo Buin." + recuerdos_extra
             elif nucleo == "NOVA":
-                respuesta_ia = prefijo_nucleo + "Núcleo cuántico NOVA en línea. Patrones analizados."
+                recuerdos_extra = " [Memoria: " + ", ".join(contexto_memoria) + "]" if contexto_memoria else ""
+                respuesta_ia = prefijo_nucleo + "Núcleo cuántico NOVA en línea. Patrones evaluados para: '" + prompt_chat + "'. Todo calibrado y listo." + recuerdos_extra
 
             st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
             jarvis_mem.log_episode("JARVIS_RESPONSE", "Respuesta emitida por " + nucleo)
