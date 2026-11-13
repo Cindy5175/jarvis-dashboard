@@ -25,7 +25,7 @@ if "historial_logs" not in st.session_state:
     st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con exito."]
 
 if "offset_clima" not in st.session_state:
-    st.session_state.offset_clima = 0  # Para calibración manual si lo desea
+    st.session_state.offset_clima = 0
 
 # ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
@@ -203,7 +203,7 @@ def extraer_texto_archivo(archivo):
                 texto = texto.strip()
                 return texto[:450] + ("..." if len(texto) > 450 else "") if texto else "PDF escaneado o sin capa de texto extraible."
             except ImportError:
-                return "Instala 'pypdf' (pip install pypdf) en tu entorno para lectura profunda de PDFs; estructura verificada."
+                return "Instala 'pypdf' (pip install pypdf) en tu entorno para lectura profunda de PDFs."
     except Exception as e:
         return f"Lectura parcial completada ({str(e)})."
     return ""
@@ -225,24 +225,45 @@ def obtener_clima_buin():
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES BLINDADOS ---
-estilos_css = (
-    "<style>"
-    ".stApp { background-color: #060913 !important; color: #00f3ff !important; }"
-    "p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }"
-    "section[data-testid='stHorizontalBlock'] > div:first-child h4 { font-size: 0.8rem !important; font-weight: bold; margin-bottom: 2px !important; margin-top: 10px !important; }"
-    "section[data-testid='stHorizontalBlock'] > div:first-child p { font-size: 0.7rem !important; }"
-    ".stChatMessage p, .stChatMessage div { font-size: 0.85rem !important; color: #00f3ff !important; }"
-    ".stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; }"
-    ".stButton>button p { color: #060913 !important; }"
-    ".stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }"
-    ".arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 5px; }"
-    ".arc-ring { width: 45px; height: 45px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7); margin-bottom: 5px; }"
-    ".arc-triangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #060913; filter: drop-shadow(0 0 5px #00f3ff); }"
-    ".holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 10px 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 12px rgba(0, 243, 255, 0.3); margin: 0 auto 15px auto; max-width: 700px; }"
-    ".cyber-radar-screen { background: #03050a; border: 1px solid #00f3ff; border-radius: 6px; padding: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2); }"
-    ".radar-blip { animation: pulse-blip 1.5s infinite; }"
-    "@keyframes pulse-blip { 0% { opacity: 0.3; } 50% { opacity: 1; text-shadow: 0 0 8px #ff3333; } 100% { opacity: 0.3; } }"
-    "</style>"
-)
+# --- ESTILOS VISUALES LIMPIOS ---
+estilos_css = """
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+.stButton>button { background-color: #00f3ff !important; color: #060913 !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; width: 100%; }
+.stButton>button:hover { background-color: #0088cc !important; }
+</style>
+"""
 st.markdown(estilos_css, unsafe_allow_html=True)
+
+# --- 1. PANTALLA DE BLOQUEO ---
+if not st.session_state.get("autorizado", False):
+    st.markdown("<h2 style='text-align: center;'>ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>INGRESE PIN DE SEGURIDAD</p>", unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto Numerico:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Armadura")
+        
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Acceso concedido a la jefa.")
+                jarvis_mem.log_episode("SYSTEM_LOGIN", "Acceso concedido a la jefa exitosamente.")
+                st.success("Acceso concedido. Un gusto verte de nuevo, jefa...")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+# --- 2. SISTEMA DESBLOQUEADO ---
+dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+dia_str = dias[now_chile.weekday()]
+mes_str = meses[now_chile.month]
+fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+
+st.markdown(f"<h1 style='text-align: center;'>J.A.R.V.I.S IA</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'>[ NODO BUIN,
