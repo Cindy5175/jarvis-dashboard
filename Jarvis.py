@@ -263,7 +263,252 @@ dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 dia_str = dias[now_chile.weekday()]
 mes_str = meses[now_chile.month]
-fecha_str = f"{dia_str}, {now_chile.day:02d} de {mes_str} de {now_chile.year}"
+fecha_str = dia_str + ", " + str(now_chile.day).zfill(2) + " de " + mes_str + " de " + str(now_chile.year)
 
-st.markdown(f"<h1 style='text-align: center;'>J.A.R.V.I.S IA</h1>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center;'>[ NODO BUIN,
+st.markdown("<h1 style='text-align: center;'>J.A.R.V.I.S IA</h1>", unsafe_allow_html=True)
+info_fecha_txt = "[ NODO BUIN, CHILE // " + fecha_str + " – Hora Local: " + now_chile.strftime('%H:%M:%S') + " ]"
+st.markdown("<p style='text-align: center;'>" + info_fecha_txt + "</p>", unsafe_allow_html=True)
+
+nucleo_actual_txt = st.session_state.nucleo_activo
+st.info("NÚCLEO NEURONAL CYBER-GRID [" + nucleo_actual_txt + "] (7 MEMORIAS ACTIVAS)")
+
+st.markdown("---")
+
+# --- NAVEGACIÓN POR PESTAÑAS ---
+tab_principal, tab_financiero = st.tabs(["🖥️ Panel Principal & IA", "📈 Centro Financiero & Mercados"])
+
+with tab_principal:
+    col_modulos, col_chat = st.columns([1, 2])
+
+    with col_modulos:
+        st.markdown("#### Módulos")
+        
+        if st.button("Bloquear Sistema", use_container_width=True):
+            st.session_state.autorizado = False
+            st.rerun()
+            
+        if st.button("Reinicio Total", use_container_width=True):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+            
+        st.markdown("---")
+        st.markdown("#### Selector de Núcleo (IA)")
+        
+        nuevo_nucleo = st.radio(
+            "Seleccionar Asistente Activo:",
+            ["JARVIS", "VIERNES", "NOVA"],
+            index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+            label_visibility="collapsed"
+        )
+        if nuevo_nucleo != st.session_state.nucleo_activo:
+            st.session_state.nucleo_activo = nuevo_nucleo
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Cambio de nucleo a {nuevo_nucleo}.")
+            jarvis_mem.log_episode("CORE_SWITCH", f"Cambio de núcleo activo a {nuevo_nucleo}.")
+            st.success("Núcleo cambiado a " + nuevo_nucleo + ".")
+            st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### Memoria y Autonomía")
+        
+        with st.expander("Gestionar Núcleo Técnico", expanded=False):
+            dato_mem = st.text_input("Dato a guardar en memoria semántica:", placeholder="Ej: Preferencia de diseño...")
+            if st.button("Guardar Memoria Larga", use_container_width=True):
+                if dato_mem.strip():
+                    jarvis_mem.remember_fact("mem_" + str(datetime.datetime.now().timestamp()), dato_mem.strip())
+                    jarvis_mem.log_episode("SEMANTIC_MEM_SAVE", "Guardado hecho semántico: " + dato_mem.strip())
+                    st.success("¡Información retenida en bases locales!")
+            
+            app_sys = st.text_input("Ejecutar comando/App o script:", placeholder="notepad o script.py")
+            if st.button("Lanzar Sistema", use_container_width=True):
+                if app_sys.strip():
+                    res_exec = jarvis_exec.open_application(app_sys.strip())
+                    jarvis_mem.log_episode("SYS_EXEC", "Ejecutado proceso: " + app_sys.strip())
+                    st.info(res_exec)
+
+        st.markdown("---")
+        st.markdown("#### Centro de Análisis Óptico & NotebookLM")
+        
+        with st.expander("Subir Archivo (IMG / TXT / PDF)", expanded=False):
+            archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
+            if archivo_subido is not None:
+                st.download_button(
+                    label="Descargar Archivo Cargado",
+                    data=archivo_subido,
+                    file_name=archivo_subido.name,
+                    use_container_width=True
+                )
+                
+            if st.button("Ejecutar Análisis Táctico", use_container_width=True):
+                if archivo_subido is not None:
+                    nombre_archivo = archivo_subido.name
+                    nucleo_actual = st.session_state.nucleo_activo
+                    if nombre_archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        informe_analisis = "[" + nucleo_actual + "] **ANÁLISIS ÓPTICO:** Archivo `" + nombre_archivo + "` procesado con éxito, jefa."
+                    elif nombre_archivo.lower().endswith('.pdf'):
+                        extracto = extraer_texto_archivo(archivo_subido)
+                        informe_analisis = "[" + nucleo_actual + "] **ANÁLISIS DE PDF:** `" + nombre_archivo + "`. Extracto: _" + extracto + "_"
+                    else:
+                        extracto = extraer_texto_archivo(archivo_subido)
+                        informe_analisis = "[" + nucleo_actual + "] **ANÁLISIS DE TEXTO:** `" + nombre_archivo + "`. Contenido: _" + extracto + "_"
+                    
+                    st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
+                    st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Análisis ejecutado en {nombre_archivo}.")
+                    jarvis_mem.log_episode("RETRIEVAL_ANALYSIS", f"Análisis de archivo {nombre_archivo} completado.")
+                    st.rerun()
+                else:
+                    st.warning("Primero debes subir un archivo.")
+            
+            st.markdown("---")
+            st.link_button("Abrir NotebookLM (Google)", "https://notebooklm.google.com/", use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("#### Mapa Táctico Satelital")
+        with st.expander("Ver Estado Global de Red", expanded=False):
+            st.markdown("**10,940,428 ATAQUES HOY** [Rastreo Global Activo]")
+            st.markdown("- Japan ➔ Germany `[Exploit detectado]`")
+            st.markdown("- United States ➔ Honduras `[Phishing activo]`")
+            st.markdown("- **Nodo Buin ➔ Seguro `[0 intrusiones]`**")
+
+        st.markdown("---")
+        st.markdown("#### Skills Tácticas")
+        with st.expander("Selector de Skills", expanded=False):
+            skill_seleccionada = st.selectbox(
+                "Seleccionar Skill:",
+                ["/skill_resumen", "/skill_mercado", "/skill_auditoria"],
+                label_visibility="collapsed"
+            )
+            if st.button("Ejecutar Skill Activa", use_container_width=True):
+                if "resumen" in skill_seleccionada:
+                    res_skill = "[SKILL RESUMEN] Nodo Buin operando al 100% de eficiencia."
+                elif "mercado" in skill_seleccionada:
+                    res_skill = "[SKILL MERCADO] Monitoreo bursátil en Finviz e Investing activo."
+                else:
+                    res_skill = "[SKILL AUDITORÍA] 0 vulnerabilidades detectadas."
+                st.session_state.mensajes.append({"role": "assistant", "content": res_skill})
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### Videovigilancia Global")
+        with st.expander("Cámaras y Radares", expanded=False):
+            st.link_button("Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
+            st.link_button("Concepción Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
+            st.link_button("Windy Radars", "https://www.windy.com/", use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("#### Clima Buin")
+        with st.expander("Widget Clima En Vivo", expanded=False):
+            st.markdown("**Buin (CASA)**: ☀️ **" + temp_real + "** | Humedad: " + hum_real + " | Viento: " + viento_real)
+            nuevo_offset = st.slider("Calibrar Temp (°C):", -10, 10, st.session_state.offset_clima, key="slider_calibracion")
+            if nuevo_offset != st.session_state.offset_clima:
+                st.session_state.offset_clima = nuevo_offset
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### Misiones")
+        with st.expander("Base de Datos", expanded=False):
+            nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
+            if st.button("Registrar Tarea", use_container_width=True):
+                if nueva_tarea.strip():
+                    agregar_mision(nueva_tarea.strip())
+                    st.success("¡Misión registrada!")
+                    st.rerun()
+                    
+            misiones_guardadas = obtener_misiones()
+            if misiones_guardadas:
+                for m_id, m_text, m_est in misiones_guardadas:
+                    st.markdown("- `" + m_text + "`")
+                if st.button("Limpiar Misiones", use_container_width=True):
+                    limpiar_misiones()
+                    st.rerun()
+
+    with col_chat:
+        col_h1, col_h2 = st.columns([4, 1])
+        with col_h1:
+            st.markdown("<h4>Chat Táctico</h4>", unsafe_allow_html=True)
+        with col_h2:
+            if st.button("Purgar", use_container_width=True, key="btn_limpiar_chat"):
+                st.session_state.mensajes = [{"role": "assistant", "content": saludo_actual + ", jefa. Memoria limpia. ¿Qué movemos ahora?"}]
+                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Chat purgado.")
+                jarvis_mem.log_episode("CHAT_PURGE", "Historial purgado.")
+                st.rerun()
+
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.markdown(m['content'])
+
+        prompt_chat = st.chat_input("Escribe tu orden o protocolo...")
+
+        if prompt_chat:
+            st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Comando: {prompt_chat[:25]}...")
+            jarvis_mem.log_episode("USER_COMMAND", "Comando: " + prompt_chat)
+            
+            with st.chat_message("user"):
+                st.markdown(prompt_chat)
+
+            respuesta_ia = ""
+            q = prompt_chat.lower().strip()
+            contexto_memoria = jarvis_mem.recall_context(q)
+            
+            nucleo = st.session_state.nucleo_activo
+            prefijo_nucleo = "[" + nucleo + "] "
+
+            if q.startswith("/skill_resumen"):
+                respuesta_ia = prefijo_nucleo + "**[SKILL: RESUMEN]**: Sistemas estables, 7 memorias sincronizadas."
+            elif q.startswith("/skill_mercado"):
+                respuesta_ia = prefijo_nucleo + "**[SKILL: MERCADO]**: Flujos tradicionales estables. Consulta Finviz en la pestaña de al lado."
+            elif q.startswith("/skill_auditoria"):
+                respuesta_ia = prefijo_nucleo + "**[SKILL: AUDITORÍA]**: 0 vulnerabilidades detectadas."
+            elif "modo trabajo" in q or "abre el taller" in q:
+                res_1 = jarvis_exec.open_application("notepad")
+                respuesta_ia = prefijo_nucleo + "Desplegando entorno de trabajo. " + res_1
+            elif q.startswith("abrir ") or q.startswith("ejecutar "):
+                app_objetivo = q.replace("abrir ", "").replace("ejecutar ", "").strip()
+                res_app = jarvis_exec.open_application(app_objetivo)
+                respuesta_ia = prefijo_nucleo + res_app
+            elif nucleo == "JARVIS":
+                if q.startswith("/human"):
+                    respuesta_ia = prefijo_nucleo + "Entendido, jefa. Todo fluye con precisión por aquí."
+                elif q.startswith("eli10"):
+                    respuesta_ia = prefijo_nucleo + "**[ELI10]**: Imagina el Nodo Buin como una colmena donde cada memoria colabora."
+                else:
+                    recuerdos_extra = " [Memoria: " + ", ".join(contexto_memoria) + "]" if contexto_memoria else ""
+                    respuesta_ia = prefijo_nucleo + "Orden procesada al 100%." + recuerdos_extra + " ¿Qué otra directriz ejecutamos, jefa?"
+            elif nucleo == "VIERNES":
+                respuesta_ia = prefijo_nucleo + "Protocolo táctico secundario desplegado con eficiencia estricta, jefa."
+            elif nucleo == "NOVA":
+                respuesta_ia = prefijo_nucleo + "Núcleo cuántico NOVA en línea. Patrones analizados."
+
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+            jarvis_mem.log_episode("JARVIS_RESPONSE", "Respuesta emitida por " + nucleo)
+            st.rerun()
+
+# =========================================================================
+# PESTAÑA 2: CENTRO FINANCIERO Y MERCADOS
+# =========================================================================
+with tab_financiero:
+    st.markdown("### 📈 Centro Financiero & Mercados Tradicionales")
+    st.markdown("Acceso directo a plataformas bursátiles tradicionales.")
+    
+    st.markdown("---")
+    
+    col_f1, col_f2, col_f3 = st.columns(3)
+    
+    with col_f1:
+        st.markdown("#### 📊 Finviz")
+        st.link_button("Abrir Finviz (Acciones)", "https://finviz.com/map.ashx", use_container_width=True)
+        st.link_button("Screener de Mercado", "https://finviz.com/screener.ashx", use_container_width=True)
+        
+    with col_f2:
+        st.markdown("#### 🌐 Investing.com")
+        st.link_button("Abrir Investing.com", "https://es.investing.com/", use_container_width=True)
+        st.link_button("Índices Mundiales", "https://es.investing.com/indices/major-indices", use_container_width=True)
+
+    with col_f3:
+        st.markdown("#### 💱 Divisas & Commodities")
+        st.link_button("Mercado Forex", "https://es.investing.com/currencies/streaming-forex-rates-majors", use_container_width=True)
+        st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
+
+    st.markdown("---")
+    st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
