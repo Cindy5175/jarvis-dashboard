@@ -41,7 +41,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Por aqui todo en orden en el Nodo Buin, con los circuitos bien puestos y listo para ayudarte con lo que necesites."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. Por aqui todo en orden en el Nodo Buin, con los circuitos bien puestos y listo para ayudarte con lo que necesites."}
     ]
 
 PIN_SECRETO = "2805"
@@ -135,20 +135,20 @@ class JarvisSystemExecutor:
             target_lower = target.lower()
             if target_lower.endswith(('.py', '.bat', '.sh', '.ps1')) and os.path.exists(target):
                 if sys.platform == "win32":
-                    subprocess.Popen(f'start cmd /k "{sys.executable} {target}"', shell=True)
+                    subprocess.Popen('start cmd /k "' + sys.executable + ' ' + target + '"', shell=True)
                 else:
                     subprocess.Popen([sys.executable, target])
-                return f"Script automatizado '{os.path.basename(target)}' puesto en marcha, jefa."
+                return "Script automatizado '" + os.path.basename(target) + "' puesto en marcha, jefa."
             
             if sys.platform == "win32":
-                subprocess.Popen(f"start {target}", shell=True)
+                subprocess.Popen("start " + target, shell=True)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", "-a", target])
             else:
                 subprocess.Popen([target])
-            return f"Ejecutando proceso '{target}' de inmediato, jefa."
+            return "Ejecutando proceso '" + target + "' de inmediato, jefa."
         except Exception as e:
-            return f"Error ejecutando el proceso '{target}': {str(e)}"
+            return "Error ejecutando el proceso '" + target + "': " + str(e)
 
 class JarvisCore:
     def __init__(self, name="JARVIS"):
@@ -156,7 +156,7 @@ class JarvisCore:
 
     async def process_voice_input(self, text_command: str) -> str:
         await asyncio.sleep(0.01)
-        return f"Procesado al instante con baja latencia. Ejecutando orden: '{text_command}'."
+        return "Procesado al instante con baja latencia. Ejecutando orden: '" + text_command + "'."
 
 jarvis_mem = JarvisMemory()
 jarvis_exec = JarvisSystemExecutor()
@@ -169,7 +169,7 @@ def agregar_mision(tarea):
     cursor.execute("INSERT INTO misiones (tarea, fecha_creacion) VALUES (?, ?)", (tarea, ts))
     conn.commit()
     conn.close()
-    jarvis_mem.log_episode("MISSION_ADD", f"Nueva misión registrada: {tarea}")
+    jarvis_mem.log_episode("MISSION_ADD", "Nueva misión registrada: " + tarea)
 
 def obtener_misiones():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
@@ -201,11 +201,11 @@ def extraer_texto_archivo(archivo):
                 for page in reader.pages[:2]:
                     texto += (page.extract_text() or "") + " "
                 texto = texto.strip()
-                return texto[:450] + ("..." if len(texto) > 450 else "") if texto else "PDF escaneado o sin capa de texto extraible."
+                return (texto[:450] + ("..." if len(texto) > 450 else "")) if texto else "PDF sin texto extraíble."
             except ImportError:
-                return "Instala 'pypdf' (pip install pypdf) en tu entorno para lectura profunda de PDFs."
+                return "Instala 'pypdf' en tu entorno para lectura profunda de PDFs."
     except Exception as e:
-        return f"Lectura parcial completada ({str(e)})."
+        return "Lectura parcial completada (" + str(e) + ")."
     return ""
 
 def obtener_clima_buin():
@@ -218,20 +218,22 @@ def obtener_clima_buin():
         viento = res["current"]["wind_speed_10m"]
         dias_max = [m + st.session_state.offset_clima for m in res["daily"]["temperature_2m_max"][:6]]
         dias_min = [m + st.session_state.offset_clima for m in res["daily"]["temperature_2m_min"][:6]]
-        return f"{temp_calibrada}°C", f"{hum}%", f"{viento} km/h", dias_max, dias_min
+        return str(temp_calibrada) + "°C", str(hum) + "%", str(viento) + " km/h", dias_max, dias_min
     except Exception:
         fallback_t = 31 + st.session_state.offset_clima
-        return f"{fallback_t}°C", "50%", "10 km/h", [31, 30, 26, 21, 18, 21], [14, 14, 15, 14, 13, 11]
+        return str(fallback_t) + "°C", "50%", "10 km/h", [31, 30, 26, 21, 18, 21], [14, 14, 15, 14, 13, 11]
 
 temp_real, hum_real, viento_real, t_maxs, t_mins = obtener_clima_buin()
 
-# --- ESTILOS VISUALES LIMPIOS ---
+# --- ESTILOS VISUALES CORREGIDOS (ALTA VISIBILIDAD EN MÓDULOS) ---
 estilos_css = """
 <style>
 .stApp { background-color: #060913 !important; color: #00f3ff !important; }
 p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
 .stButton>button { background-color: #00f3ff !important; color: #060913 !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; width: 100%; }
 .stButton>button:hover { background-color: #0088cc !important; }
+/* Forzar alto contraste en los expanders y títulos de módulos para que se lean perfecto */
+[data-testid="stExpander"] summary span { color: #00f3ff !important; font-weight: bold; }
 </style>
 """
 st.markdown(estilos_css, unsafe_allow_html=True)
@@ -250,7 +252,7 @@ if not st.session_state.get("autorizado", False):
         if btn_entrar:
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Acceso concedido a la jefa.")
+                st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Acceso concedido a la jefa.")
                 jarvis_mem.log_episode("SYSTEM_LOGIN", "Acceso concedido a la jefa exitosamente.")
                 st.success("Acceso concedido. Un gusto verte de nuevo, jefa...")
                 st.rerun()
@@ -266,11 +268,42 @@ mes_str = meses[now_chile.month]
 fecha_str = dia_str + ", " + str(now_chile.day).zfill(2) + " de " + mes_str + " de " + str(now_chile.year)
 
 st.markdown("<h1 style='text-align: center;'>J.A.R.V.I.S IA</h1>", unsafe_allow_html=True)
-info_fecha_txt = "[ NODO BUIN, CHILE // " + fecha_str + " – Hora Local: " + now_chile.strftime('%H:%M:%S') + " ]"
-st.markdown("<p style='text-align: center;'>" + info_fecha_txt + "</p>", unsafe_allow_html=True)
 
+# Reloj en vivo con segundos dinámicos usando JavaScript incrustado de alta precisión
+reloj_html_vivo = """
+<div style="text-align: center; font-family: monospace; font-size: 0.85rem; color: #00f3ff; margin-bottom: 15px;">
+    [ NODO BUIN, CHILE // """ + fecha_str + """ – <span id="reloj-dinamico">Calculando hora...</span> ]
+</div>
+<script>
+function iniciarRelojVivo() {
+    const el = document.getElementById("reloj-dinamico");
+    if (!el) return;
+    function actualizar() {
+        const ahora = new Date();
+        const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        el.innerText = "Hora Local: " + new Intl.DateTimeFormat('es-CL', opciones).format(ahora);
+    }
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarRelojVivo);
+} else {
+    iniciarRelojVivo();
+}
+</script>
+"""
+st.components.v1.html(reloj_html_vivo, height=35)
+
+# NÚCLEO NEURONAL CENTRADO Y DESTACADO
 nucleo_actual_txt = st.session_state.nucleo_activo
-st.info("NÚCLEO NEURONAL CYBER-GRID [" + nucleo_actual_txt + "] (7 MEMORIAS ACTIVAS)")
+nucleo_centrado_html = """
+<div style="text-align: center; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); border: 1.5px solid #00f3ff; padding: 10px; border-radius: 8px; margin: 10px auto 20px auto; max-width: 800px; box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);">
+    <h4 style="color: #00f3ff; margin: 0; font-size: 0.95rem; font-family: monospace; text-shadow: 0 0 8px #00f3ff;">NÚCLEO NEURONAL CYBER-GRID [""" + nucleo_actual_txt + """] (7 MEMORIAS ACTIVAS)</h4>
+    <p style="color: #00f3ff; font-size: 0.7rem; margin: 3px 0 0 0; opacity: 0.8;">Working, Semantic, Episodic, Procedural, Retrieval, Parametric & Prospective Systems</p>
+</div>
+"""
+st.markdown(nucleo_centrado_html, unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -281,7 +314,7 @@ with tab_principal:
     col_modulos, col_chat = st.columns([1, 2])
 
     with col_modulos:
-        st.markdown("#### Módulos")
+        st.markdown("#### 📂 Módulos del Sistema")
         
         if st.button("Bloquear Sistema", use_container_width=True):
             st.session_state.autorizado = False
@@ -303,15 +336,15 @@ with tab_principal:
         )
         if nuevo_nucleo != st.session_state.nucleo_activo:
             st.session_state.nucleo_activo = nuevo_nucleo
-            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Cambio de nucleo a {nuevo_nucleo}.")
-            jarvis_mem.log_episode("CORE_SWITCH", f"Cambio de núcleo activo a {nuevo_nucleo}.")
+            st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Cambio de nucleo a " + nuevo_nucleo + ".")
+            jarvis_mem.log_episode("CORE_SWITCH", "Cambio de núcleo activo a " + nuevo_nucleo + ".")
             st.success("Núcleo cambiado a " + nuevo_nucleo + ".")
             st.rerun()
 
         st.markdown("---")
         st.markdown("#### Memoria y Autonomía")
         
-        with st.expander("Gestionar Núcleo Técnico", expanded=False):
+        with st.expander("💾 Gestionar Núcleo Técnico", expanded=False):
             dato_mem = st.text_input("Dato a guardar en memoria semántica:", placeholder="Ej: Preferencia de diseño...")
             if st.button("Guardar Memoria Larga", use_container_width=True):
                 if dato_mem.strip():
@@ -327,9 +360,9 @@ with tab_principal:
                     st.info(res_exec)
 
         st.markdown("---")
-        st.markdown("#### Centro de Análisis Óptico & NotebookLM")
+        st.markdown("#### Análisis Óptico & NotebookLM")
         
-        with st.expander("Subir Archivo (IMG / TXT / PDF)", expanded=False):
+        with st.expander("📁 Subir Archivo (IMG / TXT / PDF)", expanded=False):
             archivo_subido = st.file_uploader("Selecciona archivo:", type=["png", "jpg", "jpeg", "txt", "pdf"])
             if archivo_subido is not None:
                 st.download_button(
@@ -353,8 +386,8 @@ with tab_principal:
                         informe_analisis = "[" + nucleo_actual + "] **ANÁLISIS DE TEXTO:** `" + nombre_archivo + "`. Contenido: _" + extracto + "_"
                     
                     st.session_state.mensajes.append({"role": "assistant", "content": informe_analisis})
-                    st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Análisis ejecutado en {nombre_archivo}.")
-                    jarvis_mem.log_episode("RETRIEVAL_ANALYSIS", f"Análisis de archivo {nombre_archivo} completado.")
+                    st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Análisis ejecutado en " + nombre_archivo + ".")
+                    jarvis_mem.log_episode("RETRIEVAL_ANALYSIS", "Análisis de archivo " + nombre_archivo + " completado.")
                     st.rerun()
                 else:
                     st.warning("Primero debes subir un archivo.")
@@ -364,7 +397,7 @@ with tab_principal:
 
         st.markdown("---")
         st.markdown("#### Mapa Táctico Satelital")
-        with st.expander("Ver Estado Global de Red", expanded=False):
+        with st.expander("🌐 Ver Estado Global de Red", expanded=False):
             st.markdown("**10,940,428 ATAQUES HOY** [Rastreo Global Activo]")
             st.markdown("- Japan ➔ Germany `[Exploit detectado]`")
             st.markdown("- United States ➔ Honduras `[Phishing activo]`")
@@ -372,7 +405,7 @@ with tab_principal:
 
         st.markdown("---")
         st.markdown("#### Skills Tácticas")
-        with st.expander("Selector de Skills", expanded=False):
+        with st.expander("⚡ Selector de Skills", expanded=False):
             skill_seleccionada = st.selectbox(
                 "Seleccionar Skill:",
                 ["/skill_resumen", "/skill_mercado", "/skill_auditoria"],
@@ -390,14 +423,14 @@ with tab_principal:
 
         st.markdown("---")
         st.markdown("#### Videovigilancia Global")
-        with st.expander("Cámaras y Radares", expanded=False):
+        with st.expander("📷 Cámaras y Radares", expanded=False):
             st.link_button("Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
             st.link_button("Concepción Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
             st.link_button("Windy Radars", "https://www.windy.com/", use_container_width=True)
 
         st.markdown("---")
         st.markdown("#### Clima Buin")
-        with st.expander("Widget Clima En Vivo", expanded=False):
+        with st.expander("☀️ Widget Clima En Vivo", expanded=False):
             st.markdown("**Buin (CASA)**: ☀️ **" + temp_real + "** | Humedad: " + hum_real + " | Viento: " + viento_real)
             nuevo_offset = st.slider("Calibrar Temp (°C):", -10, 10, st.session_state.offset_clima, key="slider_calibracion")
             if nuevo_offset != st.session_state.offset_clima:
@@ -406,7 +439,7 @@ with tab_principal:
 
         st.markdown("---")
         st.markdown("#### Misiones")
-        with st.expander("Base de Datos", expanded=False):
+        with st.expander("🎯 Base de Datos", expanded=False):
             nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
             if st.button("Registrar Tarea", use_container_width=True):
                 if nueva_tarea.strip():
@@ -429,7 +462,7 @@ with tab_principal:
         with col_h2:
             if st.button("Purgar", use_container_width=True, key="btn_limpiar_chat"):
                 st.session_state.mensajes = [{"role": "assistant", "content": saludo_actual + ", jefa. Memoria limpia. ¿Qué movemos ahora?"}]
-                st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Chat purgado.")
+                st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Chat purgado.")
                 jarvis_mem.log_episode("CHAT_PURGE", "Historial purgado.")
                 st.rerun()
 
@@ -441,7 +474,7 @@ with tab_principal:
 
         if prompt_chat:
             st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-            st.session_state.historial_logs.append(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Comando: {prompt_chat[:25]}...")
+            st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Comando: " + prompt_chat[:25] + "...")
             jarvis_mem.log_episode("USER_COMMAND", "Comando: " + prompt_chat)
             
             with st.chat_message("user"):
