@@ -104,6 +104,34 @@
             box-shadow: 0 0 6px var(--green-ok);
         }
 
+        .controls-box {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .btn-hud-action {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            padding: 7px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-hud-action:hover {
+            background: var(--cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--cyan);
+            font-weight: bold;
+        }
+
         .telemetry-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -230,12 +258,17 @@
             </div>
         </div>
 
-        <div class="telemetry-grid">
+        <div class="controls-box">
+            <div class="btn-hud-action">🔒 Bloquear Sistema</div>
+            <div class="btn-hud-action">🔄 Reinicio Total</div>
+        </div>
+
+        <div class="telemetry-grid" style="margin-top: 10px;">
             <div class="tele-item"><span class="label">CPU NÚCLEO</span><span class="val" id="cpuVal">27%</span></div>
             <div class="tele-item"><span class="label">MEMORIA RAM</span><span class="val" id="ramVal">4.2 GB</span></div>
             <div class="tele-item"><span class="label">REACTOR ARC</span><span class="val" id="reactorOut">3.2 GJ/s</span></div>
             <div class="tele-clock">
-                <div class="time" id="hudClock">10:56:00</div>
+                <div class="time" id="hudClock">17:30:39</div>
                 <div class="loc">CHILE (UTC-3)</div>
             </div>
         </div>
@@ -304,4 +337,3 @@
 </script>
 </body>
 </html>
-
