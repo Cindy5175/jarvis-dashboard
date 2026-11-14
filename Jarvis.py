@@ -46,7 +46,7 @@ if "nucleo_activo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo y base de datos operando al 100% en el Nodo Buin."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo unificado y base de datos operando al 100% en el Nodo Buin."}
     ]
 
 PIN_SECRETO = "2805"
@@ -148,16 +148,6 @@ with tab_hud:
 
     col_ctrl, col_chat = st.columns([1, 2])
     with col_ctrl:
-        st.markdown("#### 🛠️ Controles del Sistema")
-        if st.button("🔒 Bloquear Sistema", use_container_width=True):
-            st.session_state.autorizado = False
-            st.rerun()
-        if st.button("🔄 Reinicio Total", use_container_width=True):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-
-        st.markdown("---")
         st.markdown("#### 🧠 Selector de Núcleo (IA)")
         nuevo_nucleo = st.radio("Seleccionar Asistente Activo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
         if nuevo_nucleo != st.session_state.nucleo_activo:
