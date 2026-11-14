@@ -41,7 +41,7 @@ hud_part1 = """
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-            padding: 12px 12px 35px 12px;
+            padding: 12px 12px 40px 12px;
             background-image:
                 radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.08) 0%, transparent 55%),
                 linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
@@ -127,14 +127,14 @@ hud_part1 = """
         </div>
 """
 
-# Parte 2: Mapa Táctico Satelital y Mapa Orbital
+# Parte 2: Mapa Táctico, Mapa Orbital y Caja de Chat Interactiva
 hud_part2 = """
         <div class="hud-card">
             <div class="section-tag">
                 <span>MAPA TÁCTICO SATELITAL</span>
                 <span style="color: var(--green); font-size: 0.65rem;">● NODO BUIN</span>
             </div>
-            <div style="position: relative; height: 190px; border-radius: 12px; border: 1px solid var(--cyan); background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(2, 6, 14, 0.96) 75%), repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px); overflow: hidden; margin-top: 10px;">
+            <div style="position: relative; height: 180px; border-radius: 12px; border: 1px solid var(--cyan); background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(2, 6, 14, 0.96) 75%), repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px); overflow: hidden; margin-top: 10px;">
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 50%; pointer-events: none;"></div>
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 50%; pointer-events: none;"></div>
                 <div style="position: absolute; top: 50%; left: 50%; width: 240px; height: 240px; margin-top: -120px; margin-left: -120px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(0, 229, 255, 0.32) 0deg, transparent 65deg); animation: spinRadar 4s linear infinite; pointer-events: none;"></div>
@@ -148,155 +148,4 @@ hud_part2 = """
 
         <div class="hud-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h2 style="font-size: 0.9rem; letter-spacing: 1.5px; color: var(--text-main); line-height: 1.3;">MAPA ORBITAL DE<br>PROYECTOS</h2>
-                <div style="font-size: 0.65rem; color: var(--gold); background: rgba(245, 176, 39, 0.12); border: 1px solid rgba(245, 176, 39, 0.5); padding: 5px 10px; border-radius: 8px; text-align: center; font-weight: bold; line-height: 1.25;">4 ÓRBITAS<br>ACTIVAS</div>
-            </div>
-            <div style="position: relative; width: 100%; height: 260px; border-radius: 12px; background: radial-gradient(circle at 50% 50%, rgba(0, 180, 255, 0.14) 0%, rgba(3, 6, 14, 0.95) 75%); border: 1px solid rgba(0, 229, 255, 0.12); overflow: hidden;">
-                <canvas id="solarCanvas" style="width: 100%; height: 100%; display: block; cursor: pointer;"></canvas>
-            </div>
-            <div style="margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.18); font-size: 0.72rem; color: var(--cyan); display: flex; justify-content: space-between; align-items: center;">
-                <span id="selected-node-info">NÚCLEO: J.A.R.V.I.S. // OPERATIVO</span>
-                <button onclick="speakJarvis('Órbitas sincronizadas, jefa.')" style="background: rgba(0, 229, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 4px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: bold; cursor: pointer;">VOZ HUD</button>
-            </div>
-        </div>
-    </div>
-"""
-
-# Parte 3: JavaScript y Cierre
-hud_part3 = """
-    <script>
-        function updateTelemetry() {
-            const now = new Date();
-            document.getElementById('hud-clock').innerText = now.toTimeString().split(' ')[0];
-            document.getElementById('cpu-val').innerText = (22 + Math.floor(Math.random() * 7)) + '%';
-            document.getElementById('ping-val').innerText = 14 + Math.floor(Math.random() * 5);
-        }
-        setInterval(updateTelemetry, 1000);
-        updateTelemetry();
-
-        function speakJarvis(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'es-ES';
-                msg.pitch = 0.85;
-                msg.rate = 1.02;
-                window.speechSynthesis.speak(msg);
-            }
-        }
-
-        const canvas = document.getElementById('solarCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        const nodes = [
-            { name: 'J.A.R.V.I.S.', rx: 65, ry: 28, angle: 0.35, speed: 0.008, color: '#f5b027', ring: true, radius: 8, info: 'NÚCLEO: J.A.R.V.I.S. // ACTIVO' },
-            { name: 'Agente', rx: 100, ry: 44, angle: 3.65, speed: 0.006, color: '#10e88a', ring: false, radius: 6, info: 'ÓRBITA 02: AGENTE AUTÓNOMO' },
-            { name: 'Isla Números', rx: 135, ry: 60, angle: 2.1, speed: 0.0045, color: '#00e5ff', ring: false, radius: 6, info: 'ÓRBITA 03: ISLA DE LOS NÚMEROS' },
-            { name: 'Nodo Buin', rx: 165, ry: 74, angle: 5.1, speed: 0.0035, color: '#a855f7', ring: false, radius: 6, info: 'ÓRBITA 04: NODO BUIN' }
-        ];
-
-        let renderedPositions = [];
-
-        function drawSolarSystem() {
-            const w = canvas.parentElement.clientWidth;
-            const h = canvas.parentElement.clientHeight;
-            ctx.clearRect(0, 0, w, h);
-
-            const cx = w * 0.5;
-            const cy = h * 0.5;
-
-            nodes.forEach((n, idx) => {
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(-0.15);
-                ctx.beginPath();
-                ctx.ellipse(0, 0, n.rx, n.ry, 0, 0, Math.PI * 2);
-                ctx.strokeStyle = idx === 0 ? 'rgba(245, 176, 39, 0.32)' : 'rgba(0, 229, 255, 0.22)';
-                ctx.lineWidth = 1.1;
-                ctx.stroke();
-                ctx.restore();
-            });
-
-            const sunGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 30);
-            sunGrad.addColorStop(0, '#ffffff');
-            sunGrad.addColorStop(0.3, '#67f3ff');
-            sunGrad.addColorStop(0.65, 'rgba(0, 180, 255, 0.35)');
-            sunGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = sunGrad;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 30, 0, Math.PI * 2);
-            ctx.fill();
-
-            renderedPositions = [];
-            nodes.forEach(n => {
-                n.angle += n.speed;
-                const tilt = -0.15;
-                const rawX = Math.cos(n.angle) * n.rx;
-                const rawY = Math.sin(n.angle) * n.ry;
-
-                const px = cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt);
-                const py = cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt);
-
-                renderedPositions.push({ x: px, y: py, node: n });
-
-                const pGrad = ctx.createRadialGradient(px, py, 1, px, py, n.radius * 2.5);
-                pGrad.addColorStop(0, n.color);
-                pGrad.addColorStop(1, 'transparent');
-                ctx.fillStyle = pGrad;
-                ctx.beginPath();
-                ctx.arc(px, py, n.radius * 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(px, py, n.radius * 0.55, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (n.ring) {
-                    ctx.strokeStyle = '#f5b027';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.arc(px, py, n.radius + 8, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-
-                ctx.font = 'bold 11px "Courier New", monospace';
-                ctx.fillStyle = n.ring ? '#f5b027' : '#eaf6ff';
-                ctx.fillText(n.name, px + (n.ring ? 20 : 10), py + 4);
-            });
-
-            requestAnimationFrame(drawSolarSystem);
-        }
-        drawSolarSystem();
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-
-            for (const item of renderedPositions) {
-                const dist = Math.hypot(clickX - item.x, clickY - item.y);
-                if (dist < 26) {
-                    document.getElementById('selected-node-info').innerText = item.node.info;
-                    speakJarvis('Nodo ' + item.node.name);
-                    break;
-                }
-            }
-        });
-    </script>
-</body>
-</html>
-"""
-
-# Unir todas las partes de forma segura
-jarvis_hud_html = hud_part1 + hud_part2 + hud_part3
-components.html(jarvis_hud_html, height=1120, scrolling=True)
+                <h2 style="font-size: 0.9rem; letter-spacing: 1.5px; color: var
