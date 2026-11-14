@@ -435,3 +435,9 @@ jarvis_hud_html = """
 
             <div class="node-status-bar">
                 <span id="selected
+    </script>
+</body>
+</html>
+"""
+
+components.html(jarvis_hud_html, height=760, scrolling=False)
