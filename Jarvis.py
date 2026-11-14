@@ -76,7 +76,6 @@ jarvis_hud_html = """
             -webkit-backdrop-filter: blur(14px);
         }
 
-        /* Cabecera con Orbe Izquierdo */
         .header-top {
             display: flex;
             align-items: center;
@@ -143,7 +142,6 @@ jarvis_hud_html = """
             50% { opacity: 0.35; }
         }
 
-        /* Selector de Modo */
         .mode-bar {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -180,7 +178,6 @@ jarvis_hud_html = """
             box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
         }
 
-        /* Telemetría 4 Columnas */
         .telemetry-grid {
             display: grid;
             grid-template-columns: 0.85fr 0.95fr 0.95fr 1.25fr;
@@ -225,7 +222,6 @@ jarvis_hud_html = """
             line-height: 1.3;
         }
 
-        /* Vista Mapa Táctico Satelital */
         #tactical-panel {
             display: none;
             margin-top: 14px;
@@ -284,7 +280,6 @@ jarvis_hud_html = """
             animation: blink 1.2s infinite;
         }
 
-        /* Tarjeta Mapa Orbital */
         .orbital-header {
             display: flex;
             justify-content: space-between;
@@ -355,10 +350,9 @@ jarvis_hud_html = """
 </head>
 <body>
     <div class="hud-wrapper">
-        <!-- BLOQUE SUPERIOR -->
         <div class="hud-card">
             <div class="header-top">
-                <div class="arc-orb" onclick="speakJarvis('Sistemas en línea, jefa. Todos los parámetros del Nodo Buin están estables.')">
+                <div class="arc-orb" onclick="speakJarvis('Sistemas en línea, jefa. Nodo Buin estable.')">
                     <div class="arc-orb-core"></div>
                 </div>
                 <div class="title-block">
@@ -400,7 +394,6 @@ jarvis_hud_html = """
                 </div>
             </div>
 
-            <!-- PANEL DESPLEGABLE DEL MAPA TÁCTICO SATELITAL -->
             <div id="tactical-panel">
                 <div class="sat-screen">
                     <div class="radar-ring" style="width: 70px; height: 70px;"></div>
@@ -422,7 +415,6 @@ jarvis_hud_html = """
             </div>
         </div>
 
-        <!-- BLOQUE INFERIOR: MAPA ORBITAL DE PROYECTOS -->
         <div class="hud-card">
             <div class="orbital-header">
                 <h2>MAPA ORBITAL DE<br>PROYECTOS</h2>
@@ -434,10 +426,144 @@ jarvis_hud_html = """
             </div>
 
             <div class="node-status-bar">
-                <span id="selected
-    </script>
-</body>
-</html>
-"""
+                <span id="selected-node-info">NÚCLEO: J.A.R.V.I.S. // OPERATIVO</span>
+                <button class="voice-btn" onclick="speakJarvis('Órbitas sincronizadas, jefa.')">VOZ HUD</button>
+            </div>
+        </div>
+    </div>
 
-components.html(jarvis_hud_html, height=760, scrolling=False)
+    <script>
+        function updateTelemetry() {
+            const now = new Date();
+            document.getElementById('hud-clock').innerText = now.toTimeString().split(' ')[0];
+            document.getElementById('cpu-val').innerText = (22 + Math.floor(Math.random() * 7)) + '%';
+            document.getElementById('ping-val').innerText = 14 + Math.floor(Math.random() * 5);
+        }
+        setInterval(updateTelemetry, 1000);
+        updateTelemetry();
+
+        function setMode(mode) {
+            const btnNeural = document.getElementById('btn-neural');
+            const btnTactical = document.getElementById('btn-tactical');
+            const tacticalPanel = document.getElementById('tactical-panel');
+
+            if (mode === 'tactical') {
+                btnTactical.classList.add('active');
+                btnNeural.classList.remove('active');
+                tacticalPanel.style.display = 'block';
+                speakJarvis('Desplegando mapa táctico satelital.');
+            } else {
+                btnNeural.classList.add('active');
+                btnTactical.classList.remove('active');
+                tacticalPanel.style.display = 'none';
+            }
+        }
+
+        function speakJarvis(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'es-ES';
+                msg.pitch = 0.85;
+                msg.rate = 1.02;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        const canvas = document.getElementById('solarCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const nodes = [
+            { name: 'J.A.R.V.I.S.', rx: 72, ry: 34, angle: 0.35, speed: 0.008, color: '#f5b027', ring: true, radius: 9, info: 'NÚCLEO: J.A.R.V.I.S. // ACTIVO' },
+            { name: 'Agente', rx: 112, ry: 52, angle: 3.65, speed: 0.006, color: '#10e88a', ring: false, radius: 7, info: 'ÓRBITA 02: AGENTE AUTÓNOMO' },
+            { name: 'Isla Números', rx: 148, ry: 68, angle: 2.1, speed: 0.0045, color: '#00e5ff', ring: false, radius: 6.5, info: 'ÓRBITA 03: ISLA DE LOS NÚMEROS' },
+            { name: 'Nodo Buin', rx: 180, ry: 82, angle: 5.1, speed: 0.0035, color: '#a855f7', ring: false, radius: 6, info: 'ÓRBITA 04: NODO BUIN' }
+        ];
+
+        let renderedPositions = [];
+
+        function drawSolarSystem() {
+            const w = canvas.parentElement.clientWidth;
+            const h = canvas.parentElement.clientHeight;
+            ctx.clearRect(0, 0, w, h);
+
+            const cx = w * 0.56;
+            const cy = h * 0.64;
+
+            nodes.forEach((n, idx) => {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(-0.18);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, n.rx, n.ry, 0, 0, Math.PI * 2);
+                ctx.strokeStyle = idx === 0 ? 'rgba(245, 176, 39, 0.32)' : 'rgba(0, 229, 255, 0.22)';
+                ctx.lineWidth = 1.1;
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            const sunGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 32);
+            sunGrad.addColorStop(0, '#ffffff');
+            sunGrad.addColorStop(0.3, '#67f3ff');
+            sunGrad.addColorStop(0.65, 'rgba(0, 180, 255, 0.35)');
+            sunGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = sunGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+            ctx.fill();
+
+            renderedPositions = [];
+            nodes.forEach(n => {
+                n.angle += n.speed;
+                const tilt = -0.18;
+                const rawX = Math.cos(n.angle) * n.rx;
+                const rawY = Math.sin(n.angle) * n.ry;
+
+                const px = cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt);
+                const py = cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt);
+
+                renderedPositions.push({ x: px, y: py, node: n });
+
+                const pGrad = ctx.createRadialGradient(px, py, 1, px, py, n.radius * 2.5);
+                pGrad.addColorStop(0, n.color);
+                pGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = pGrad;
+                ctx.beginPath();
+                ctx.arc(px, py, n.radius * 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(px, py, n.radius * 0.55, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (n.ring) {
+                    ctx.strokeStyle = '#f5b027';
+                    ctx.lineWidth = 1.6;
+                    ctx.beginPath();
+                    ctx.arc(px, py, n.radius + 9, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.font = 'bold 11px "Courier New", monospace';
+                ctx.fillStyle = n.ring ? '#f5b027' : '#eaf6ff';
+                ctx.fillText(n.name, px + (n.ring ? 22 : 12), py + 4);
+            });
+
+            requestAnimationFrame(drawSolarSystem);
+        }
+        drawSolarSystem();
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY
