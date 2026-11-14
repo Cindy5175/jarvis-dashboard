@@ -217,3 +217,4 @@ with tab_financiero:
         st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
     st.markdown("---")
     st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
+
