@@ -2,7 +2,6 @@ import streamlit as st
 import datetime
 import sqlite3
 import os
-import sys
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
@@ -12,18 +11,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos globales y blindaje de la caja de chat inferior para que el teclado no la tape
+# Estilos limpios sin forzar posiciones flotantes raras en la caja de chat
 st.markdown("""
     <style>
-        .block-container { padding: 0.5rem 1rem 7rem 1rem !important; max-width: 100% !important; }
+        .block-container { padding: 0.5rem 1rem 3rem 1rem !important; max-width: 100% !important; }
         header, footer, #MainMenu {visibility: hidden;}
         body, .stApp {background-color: #040711; color: #00f3ff; font-family: monospace;}
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff; font-family: monospace; }
         .stButton>button { background-color: rgba(0, 243, 255, 0.15) !important; color: #00f3ff !important; border: 1px solid #00f3ff !important; font-weight: bold; font-family: monospace; width: 100%; border-radius: 6px; }
         .stButton>button:hover { background-color: #00f3ff !important; color: #040711 !important; box-shadow: 0 0 10px #00f3ff; }
         [data-testid="stExpander"] summary span { color: #00f3ff !important; font-weight: bold; }
-        /* Margen inferior amplio para la barra de chat */
-        [data-testid="stChatInput"] { position: fixed; bottom: 20px; z-index: 999999; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -187,7 +184,7 @@ with tab_hud:
 
     st.markdown("---")
 
-    # Canal Neuronal (Caja de chat con inteligencia real y respuesta coherente)
+    # Canal Neuronal (Caja de chat natural y sin solapamientos)
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
         st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
@@ -205,7 +202,6 @@ with tab_hud:
         st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
         jarvis_mem.log_episode("USER_CMD", prompt_chat)
         
-        # Inteligencia contextual para responder de manera coherente y con personalidad
         texto_usuario = prompt_chat.lower()
         nucleo = st.session_state.nucleo_activo
         
