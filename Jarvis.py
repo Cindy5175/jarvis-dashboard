@@ -330,3 +330,100 @@ with tab_principal:
         st.markdown("---")
         st.markdown("#### Clima Buin (Sensores Ambientales)")
         with st.expander("🌤️ Widget Clima En Vivo", expanded=False):
+            st.markdown("**Buin (CASA)**: **" + temp_real + "** | Humedad: " + hum_real + " | Viento: " + viento_real)
+            nuevo_offset = st.slider("Calibrar Temp (°C):", -10, 10, st.session_state.offset_clima, key="slider_calibracion")
+            if nuevo_offset != st.session_state.offset_clima:
+                st.session_state.offset_clima = nuevo_offset
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### Misiones Tácticas")
+        with st.expander("📋 Base de Datos", expanded=False):
+            nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar nodos...")
+            if st.button("Registrar Tarea", use_container_width=True):
+                if nueva_tarea.strip():
+                    agregar_mision(nueva_tarea.strip())
+                    st.success("¡Misión registrada!")
+                    st.rerun()
+
+            misiones_guardadas = obtener_misiones()
+            if misiones_guardadas:
+                for m_id, m_text, m_est in misiones_guardadas:
+                    st.markdown("- `" + m_text + "`")
+            if st.button("Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+
+    with col_chat:
+        col_h1, col_h2 = st.columns([4, 1])
+        with col_h1:
+            st.markdown("<h4>💬 Chat Táctico Neuronal</h4>", unsafe_allow_html=True)
+        with col_h2:
+            if st.button("Purgar", use_container_width=True, key="btn_limpiar_chat"):
+                st.session_state.mensajes = [{"role": "assistant", "content": saludo_actual + ", jefa. Memoria limpia. ¿Qué movemos ahora?"}]
+                st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Chat purgado.")
+                jarvis_mem.log_episode("CHAT_PURGE", "Historial purgado.")
+                st.rerun()
+
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.markdown(m['content'])
+
+        prompt_chat = st.chat_input("Escribe tu orden o protocolo...")
+
+        if prompt_chat:
+            st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+            st.session_state.historial_logs.append("[" + datetime.datetime.now().strftime('%H:%M:%S') + "] Comando: " + prompt_chat[:25] + "...")
+            jarvis_mem.log_episode("USER_COMMAND", "Comando: " + prompt_chat)
+
+            with st.chat_message("user"):
+                st.markdown(prompt_chat)
+
+            respuesta_ia = ""
+            q = prompt_chat.lower().strip()
+            contexto_memoria = jarvis_mem.recall_context(q)
+
+            nucleo = st.session_state.nucleo_activo
+            prefijo_nucleo = "[" + nucleo + "] "
+
+            if q.startswith("/skill_resumen"):
+                respuesta_ia = prefijo_nucleo + "**[SKILL: RESUMEN]**: Sistemas estables, sensores térmicos y 7 memorias sincronizadas."
+            elif "modo trabajo" in q or "abre el taller" in q:
+                res_1 = jarvis_exec.open_application("notepad")
+                respuesta_ia = prefijo_nucleo + "Desplegando entorno de trabajo. " + res_1
+            else:
+                recuerdos_extra = " [Memoria: " + ", ".join(contexto_memoria) + "]" if contexto_memoria else ""
+                respuesta_ia = prefijo_nucleo + "Orden procesada al 100% con los sensores al máximo." + recuerdos_extra + " ¿Qué otra directriz ejecutamos, jefa?"
+
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+            jarvis_mem.log_episode("JARVIS_RESPONSE", "Respuesta emitida por " + nucleo)
+            st.rerun()
+
+# =========================================================================
+# PESTAÑA 2: CENTRO FINANCIERO Y MERCADOS
+# =========================================================================
+with tab_financiero:
+    st.markdown("### 📈 Centro Financiero & Mercados Tradicionales")
+    st.markdown("Acceso directo a plataformas bursátiles tradicionales.")
+
+    st.markdown("---")
+
+    col_f1, col_f2, col_f3 = st.columns(3)
+
+    with col_f1:
+        st.markdown("#### 📊 Finviz")
+        st.link_button("Abrir Finviz (Acciones)", "https://finviz.com/map.ashx", use_container_width=True)
+        st.link_button("Screener de Mercado", "https://finviz.com/screener.ashx", use_container_width=True)
+
+    with col_f2:
+        st.markdown("#### 📉 Investing.com")
+        st.link_button("Abrir Investing.com", "https://es.investing.com/", use_container_width=True)
+        st.link_button("Índices Mundiales", "https://es.investing.com/indices/major-indices", use_container_width=True)
+
+    with col_f3:
+        st.markdown("#### 💱 Divisas & Commodities")
+        st.link_button("Mercado Forex", "https://es.investing.com/currencies/streaming-forex-rates-majors", use_container_width=True)
+        st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
+
+    st.markdown("---")
+    st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
