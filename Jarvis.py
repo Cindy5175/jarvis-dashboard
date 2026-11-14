@@ -15,15 +15,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Estilos globales optimizados para evitar que elementos flotantes tapan el chat en móviles
 st.markdown("""
     <style>
-        .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
+        .block-container { padding: 0.5rem 1rem 5rem 1rem !important; max-width: 100% !important; }
         header, footer, #MainMenu {visibility: hidden;}
         body, .stApp {background-color: #040711; color: #00f3ff; font-family: monospace;}
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff; font-family: monospace; }
         .stButton>button { background-color: rgba(0, 243, 255, 0.15) !important; color: #00f3ff !important; border: 1px solid #00f3ff !important; font-weight: bold; font-family: monospace; width: 100%; border-radius: 6px; }
         .stButton>button:hover { background-color: #00f3ff !important; color: #040711 !important; box-shadow: 0 0 10px #00f3ff; }
         [data-testid="stExpander"] summary span { color: #00f3ff !important; font-weight: bold; }
+        /* Espaciado extra inferior para que el teclado y la barra flotante no estorben el chat */
+        .stChatInput { margin-bottom: 20px !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -46,7 +49,7 @@ if "nucleo_activo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo, base de datos y canal de chat listos en el Nodo Buin."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. Sistema unificado y canal de chat desplegado sin obstrucciones en el Nodo Buin."}
     ]
 
 PIN_SECRETO = "2805"
@@ -143,13 +146,23 @@ with tab_hud:
     except Exception:
         jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
 
+    # Renderizamos el HUD gráfico superior
     st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
     st.markdown("---")
 
-    # Controles a la izquierda, Caja de Chat a la derecha
-    col_ctrl, col_chat = st.columns([1, 2])
-    
-    with col_ctrl:
+    # Controles y Selector de Núcleo
+    col_ctrl1, col_ctrl2 = st.columns(2)
+    with col_ctrl1:
+        st.markdown("#### 🛠️ Controles del Sistema")
+        if st.button("🔒 Bloquear Sistema", use_container_width=True):
+            st.session_state.autorizado = False
+            st.rerun()
+        if st.button("🔄 Reinicio Total", use_container_width=True):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+
+    with col_ctrl2:
         st.markdown("#### 🧠 Selector de Núcleo (IA)")
         nuevo_nucleo = st.radio("Seleccionar Asistente Activo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
         if nuevo_nucleo != st.session_state.nucleo_activo:
@@ -158,45 +171,47 @@ with tab_hud:
             st.success("Núcleo activo: " + nuevo_nucleo)
             st.rerun()
 
-        st.markdown("---")
-        st.markdown("#### 📋 Gestión de Misiones")
-        with st.expander("Base de Datos (7 Memorias)", expanded=False):
-            nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar despliegue...")
-            if st.button("Registrar Tarea", use_container_width=True):
-                if nueva_tarea.strip():
-                    agregar_mision(nueva_tarea.strip())
-                    st.success("¡Misión guardada!")
-                    st.rerun()
-            misiones = obtener_misiones()
-            if misiones:
-                for m_id, m_text, m_est in misiones:
-                    st.markdown(f"- `{m_text}`")
-            if st.button("Purgar Misiones", use_container_width=True):
-                limpiar_misiones()
+    st.markdown("---")
+    st.markdown("#### 📋 Gestión de Misiones")
+    with st.expander("Base de Datos (7 Memorias)", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar despliegue...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión guardada!")
                 st.rerun()
-
-    with col_chat:
-        col_h1, col_h2 = st.columns([4, 1])
-        with col_h1:
-            st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
-        with col_h2:
-            if st.button("Limpiar", use_container_width=True):
-                st.session_state.mensajes = [{"role": "assistant", "content": "Memoria de chat purgada. ¿Qué orden ejecutamos, jefa?"}]
-                st.rerun()
-
-        for m in st.session_state.mensajes:
-            with st.chat_message(m["role"]):
-                st.markdown(m['content'])
-
-        prompt_chat = st.chat_input("Escribe tu orden o consulta...")
-        if prompt_chat:
-            st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-            jarvis_mem.log_episode("USER_CMD", prompt_chat)
-            nucleo = st.session_state.nucleo_activo
-            respuesta_ia = f"[{nucleo}]: Orden procesada con éxito en el Nodo Buin. Todo operando al 100%, jefa."
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-            jarvis_mem.log_episode("AI_RESP", respuesta_ia)
+        misiones = obtener_misiones()
+        if misiones:
+            for m_id, m_text, m_est in misiones:
+                st.markdown(f"- `{m_text}`")
+        if st.button("Purgar Misiones", use_container_width=True):
+            limpiar_misiones()
             st.rerun()
+
+    st.markdown("---")
+
+    # Canal Neuronal / Caja de Chat totalmente libre y visible
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
+    with col_h2:
+        if st.button("Limpiar", use_container_width=True):
+            st.session_state.mensajes = [{"role": "assistant", "content": "Memoria de chat purgada. ¿Qué orden ejecutamos, jefa?"}]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(m['content'])
+
+    prompt_chat = st.chat_input("Escribe tu orden o consulta...")
+    if prompt_chat:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+        jarvis_mem.log_episode("USER_CMD", prompt_chat)
+        nucleo = st.session_state.nucleo_activo
+        respuesta_ia = f"[{nucleo}]: Orden procesada con éxito en el Nodo Buin. Todo operando al 100%, jefa."
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        jarvis_mem.log_episode("AI_RESP", respuesta_ia)
+        st.rerun()
 
 with tab_financiero:
     st.markdown("### 📈 Centro Financiero & Mercados Tradicionales")
@@ -217,4 +232,3 @@ with tab_financiero:
         st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
     st.markdown("---")
     st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
-
