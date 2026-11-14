@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Configuración de página completa en Streamlit
 st.set_page_config(
     page_title="J.A.R.V.I.S. // Núcleo de Comando",
     page_icon="🤖",
@@ -9,14 +8,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Ocultar márgenes y barras por defecto de Streamlit para inmersión total
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 0rem;
-            padding-bottom: 0rem;
-            padding-left: 0rem;
-            padding-right: 0rem;
+            padding: 0rem;
             max-width: 100%;
         }
         header, footer, #MainMenu {visibility: hidden;}
@@ -24,7 +19,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Interfaz completa de J.A.R.V.I.S. con Esfera 3D y 4 Órbitas
 jarvis_hud_html = """
 <!DOCTYPE html>
 <html lang="es">
@@ -182,7 +176,6 @@ jarvis_hud_html = """
             border-radius: 4px;
         }
 
-        /* Contenedor del Núcleo Neuronal con Esfera 3D */
         .core-visual-container {
             display: flex;
             flex-direction: column;
@@ -197,7 +190,6 @@ jarvis_hud_html = """
             height: 100px;
         }
 
-        /* Mapa Orbital de Proyectos (4 Órbitas) */
         .orbit-container {
             position: relative;
             height: 200px;
@@ -219,3 +211,179 @@ jarvis_hud_html = """
             animation: rotate-orbit 20s linear infinite;
         }
 
+        @keyframes rotate-orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .planet {
+            position: absolute;
+            padding: 4px 8px;
+            background: rgba(5, 8, 20, 0.9);
+            border: 1px solid var(--neon-blue);
+            border-radius: 6px;
+            font-size: 0.65rem;
+            color: var(--neon-blue);
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .planet:hover {
+            transform: scale(1.1);
+            border-color: var(--neon-gold);
+            color: var(--neon-gold);
+        }
+
+        .tactical-map-view {
+            display: none;
+            height: 220px;
+            background: #020408;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--neon-blue);
+        }
+
+        .radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            margin-top: -150px;
+            margin-left: -150px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg at 50% 50%, rgba(0, 243, 255, 0.2) 0deg, transparent 60deg, transparent 360deg);
+            animation: sweep 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <div class="header-title">J.A.R.V.I.S. // NÚCLEO DE COMANDO</div>
+            <div class="status-line">
+                <span class="status-dot"></span>
+                En línea // Escucha Continua Activa
+            </div>
+
+            <div class="nav-grid">
+                <div class="nav-btn active" id="btn-neural" onclick="switchView('neural')">NÚCLEO NEURONAL</div>
+                <div class="nav-btn" id="btn-tactical" onclick="switchView('tactical')">MAPA TÁCTICO SATELITAL</div>
+            </div>
+
+            <div id="view-neural">
+                <div class="core-visual-container">
+                    <canvas id="wireframeSphere" width="100" height="100"></canvas>
+                    <div style="font-size: 0.7rem; color: var(--neon-blue); letter-spacing: 1px; margin-top: 5px;">ESTABILIZADOR ACTIVO</div>
+                </div>
+
+                <div class="telemetry-row" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
+                    <div>CPU: <span class="telemetry-val">25%</span></div>
+                    <div>RAM: <span class="telemetry-val">4.2 / 16 GB</span></div>
+                    <div>RED: <span class="telemetry-val">16 ms</span></div>
+                </div>
+                <div class="telemetry-row" style="margin-top: 6px;">
+                    <div class="timestamp" id="live-clock">23:33:00</div>
+                    <div style="color: var(--text-dim);">NODO BUIN</div>
+                </div>
+            </div>
+
+            <div id="view-tactical" class="tactical-map-view">
+                <div class="radar-sweep"></div>
+                <div style="position: absolute; top: 10px; left: 10px; font-size: 0.7rem; color: var(--neon-blue); letter-spacing: 1px;">
+                    [SAT-FEED: NODO BUIN SECTOR 01]
+                </div>
+                <div style="position: absolute; bottom: 10px; left: 10px; font-size: 0.65rem; color: var(--text-dim);">
+                    COORD: -33.7312° S, 70.7415° W
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">
+                MAPA ORBITAL DE PROYECTOS
+                <span class="badge-orbits">4 ÓRBITAS ACTIVAS</span>
+            </div>
+            
+            <div class="orbit-container">
+                <div class="orbit-ring"></div>
+                <div class="planet" style="top: 20px; left: 30px;" onclick="alert('JARVIS Core: Operativo y Sarcástico')">JARVIS</div>
+                <div class="planet" style="top: 20px; right: 25px; border-color: var(--neon-gold); color: var(--neon-gold);" onclick="alert('La Isla de los Números: Freemium $3.99 USD')">Isla Números</div>
+                <div class="planet" style="bottom: 25px; left: 25px;" onclick="alert('Agente de Soporte 24/7: Enrutando canales')">Soporte 24/7</div>
+                <div class="planet" style="bottom: 25px; right: 25px;" onclick="alert('Automatización Nodo Buin: Conectado')">Nodo Buin</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        function switchView(view) {
+            const btnNeural = document.getElementById('btn-neural');
+            const btnTactical = document.getElementById('btn-tactical');
+            const viewNeural = document.getElementById('view-neural');
+            const viewTactical = document.getElementById('view-tactical');
+
+            if(view === 'neural') {
+                btnNeural.classList.add('active');
+                btnTactical.classList.remove('active');
+                viewNeural.style.display = 'block';
+                viewTactical.style.display = 'none';
+            } else {
+                btnTactical.classList.add('active');
+                btnNeural.classList.remove('active');
+                viewTactical.style.display = 'block';
+                viewNeural.style.display = 'none';
+            }
+        }
+
+        const canvas = document.getElementById('wireframeSphere');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+
+        function drawSphere() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = 38;
+
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.5)';
+            ctx.lineWidth = 1;
+
+            for (let i = -2; i <= 2; i++) {
+                let yOffset = i * 12;
+                let currentRadius = Math.sqrt(radius * radius - yOffset * yOffset);
+                
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + yOffset, currentRadius, currentRadius * 0.3, angle, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            for (let j = 0; j < 4; j++) {
+                let currentAngle = angle + (j * Math.PI / 2);
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, radius * Math.sin(currentAngle), radius, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            angle += 0.02;
+            requestAnimationFrame(drawSphere);
+        }
+        drawSphere();
+    </script>
+</body>
+</html>
+"""
+
+components.html(jarvis_hud_html, height=720, scrolling=True)
