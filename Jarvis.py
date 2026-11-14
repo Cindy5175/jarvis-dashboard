@@ -43,7 +43,7 @@ hud_part1 = """
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-            padding: 12px;
+            padding: 12px 12px 30px 12px;
             background-image:
                 radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.08) 0%, transparent 55%),
                 linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
@@ -256,7 +256,6 @@ hud_part2 = """
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Órbitas ajustadas para centrarse perfectamente en el canvas
         const nodes = [
             { name: 'J.A.R.V.I.S.', rx: 65, ry: 28, angle: 0.35, speed: 0.008, color: '#f5b027', ring: true, radius: 8, info: 'NÚCLEO: J.A.R.V.I.S. // ACTIVO' },
             { name: 'Agente', rx: 100, ry: 44, angle: 3.65, speed: 0.006, color: '#10e88a', ring: false, radius: 6, info: 'ÓRBITA 02: AGENTE AUTÓNOMO' },
@@ -271,7 +270,6 @@ hud_part2 = """
             const h = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h);
 
-            // Centro exacto del canvas para distribución equilibrada
             const cx = w * 0.5;
             const cy = h * 0.5;
 
@@ -359,4 +357,4 @@ hud_part2 = """
 """
 
 jarvis_hud_html = hud_part1 + hud_part2
-components.html(jarvis_hud_html, height=800, scrolling=False)
+components.html(jarvis_hud_html, height=980, scrolling=True)
