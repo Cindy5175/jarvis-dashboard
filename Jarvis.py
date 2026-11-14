@@ -46,7 +46,7 @@ if "nucleo_activo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo unificado y base de datos operando al 100% en el Nodo Buin."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo, base de datos y canal de chat listos en el Nodo Buin."}
     ]
 
 PIN_SECRETO = "2805"
@@ -146,7 +146,9 @@ with tab_hud:
     st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
     st.markdown("---")
 
+    # Controles a la izquierda, Caja de Chat a la derecha
     col_ctrl, col_chat = st.columns([1, 2])
+    
     with col_ctrl:
         st.markdown("#### 🧠 Selector de Núcleo (IA)")
         nuevo_nucleo = st.radio("Seleccionar Asistente Activo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
