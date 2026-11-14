@@ -60,7 +60,6 @@
             --cyan-dim: rgba(255, 59, 92, 0.2);
         }
 
-        /* HEADER Y REACTOR TRIANGULAR DE TONY STARK */
         .header-top {
             display: flex;
             align-items: center;
@@ -124,7 +123,6 @@
 
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        /* TELEMETRY GRID */
         .telemetry-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -160,7 +158,6 @@
             margin-top: 2px;
         }
 
-        /* PANEL HEADERS */
         .panel-header {
             display: flex;
             justify-content: space-between;
@@ -182,7 +179,6 @@
             color: var(--green-ok);
         }
 
-        /* MAPA TÁCTICO SATELITAL */
         .radar-box {
             height: 205px;
             background: radial-gradient(circle, rgba(0, 45, 70, 0.6) 0%, rgba(3, 9, 20, 0.95) 80%);
@@ -234,10 +230,8 @@
 
         .radar-blip {
             position: absolute;
-            top: 56px;
-            right: 34%;
-            width: 8px;
-            height: 8px;
+            top: 56px; right: 34%;
+            width: 8px; height: 8px;
             background: var(--green-ok);
             border-radius: 50%;
             box-shadow: 0 0 10px var(--green-ok);
@@ -246,27 +240,18 @@
 
         .radar-overlay-top {
             position: absolute;
-            top: 8px;
-            left: 12px;
-            right: 12px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.72rem;
-            color: var(--cyan);
+            top: 8px; left: 12px; right: 12px;
+            display: flex; justify-content: space-between;
+            font-size: 0.72rem; color: var(--cyan);
         }
 
         .radar-overlay-bottom {
             position: absolute;
-            bottom: 8px;
-            left: 12px;
-            right: 12px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.72rem;
-            color: var(--text-muted);
+            bottom: 8px; left: 12px; right: 12px;
+            display: flex; justify-content: space-between;
+            font-size: 0.72rem; color: var(--text-muted);
         }
 
-        /* MAPA ORBITAL */
         .orbital-box {
             height: 215px;
             background: radial-gradient(ellipse at center, rgba(0, 38, 65, 0.55) 0%, rgba(3, 8, 18, 0.95) 85%);
@@ -276,27 +261,15 @@
             overflow: hidden;
         }
 
-        canvas#orbitalCanvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        canvas#orbitalCanvas { width: 100%; height: 100%; display: block; }
 
         .orbital-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-            font-size: 0.78rem;
-            color: var(--text-muted);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px; margin-top: 12px;
+            font-size: 0.78rem; color: var(--text-muted);
         }
 
-        .audio-controls {
-            display: flex;
-            gap: 8px;
-        }
+        .audio-controls { display: flex; gap: 8px; }
 
         .btn-hud {
             background: rgba(0, 243, 255, 0.12);
@@ -325,12 +298,8 @@
             animation: blink 1s infinite;
         }
 
-        /* BOTONES DE COMANDOS RÁPIDOS */
         .quick-cmds {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 10px;
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
         }
 
         .cmd-chip {
@@ -351,7 +320,6 @@
             color: #fff;
         }
 
-        /* CONSOLA DE CHAT */
         .chat-log {
             height: 165px;
             background: rgba(2, 6, 14, 0.88);
@@ -370,11 +338,7 @@
         .msg-jefa { color: var(--green-ok); }
         .msg-sys { color: var(--amber); font-size: 0.78rem; }
 
-        .chat-input-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
+        .chat-input-row { display: flex; gap: 10px; margin-top: 10px; }
 
         .chat-input {
             flex: 1;
@@ -416,12 +380,10 @@
 <body>
 
 <div class="hud-container">
-
-    <!-- PANEL 1: NÚCLEO Y REACTOR TRIANGULAR DE TONY STARK -->
     <div class="panel">
         <div class="header-top">
             <div class="header-left">
-                <div class="stark-reactor-box" onclick="triggerQuick('estado del reactor')" title="Clic para analizar Reactor Mark VI">
+                <div class="stark-reactor-box" onclick="playCyberSound(); triggerQuick('estado del reactor')" title="Analizar Reactor Mark VI">
                     <svg width="68" height="64" viewBox="0 0 100 92" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="6,8 94,8 50,86" fill="#061224" stroke="currentColor" stroke-width="4" stroke-linejoin="round" style="color: var(--cyan);"/>
                         <polygon points="18,15 82,15 50,72" fill="rgba(0, 243, 255, 0.15)" stroke="#7cf4ff" stroke-width="2" stroke-linejoin="round"/>
@@ -443,18 +405,9 @@
         </div>
 
         <div class="telemetry-grid">
-            <div class="tele-item">
-                <span class="label">CPU NÚCLEO</span>
-                <span class="val" id="cpuVal">27%</span>
-            </div>
-            <div class="tele-item">
-                <span class="label">MEMORIA</span>
-                <span class="val">4.2 / 16 GB</span>
-            </div>
-            <div class="tele-item">
-                <span class="label">REACTOR ARC</span>
-                <span class="val" id="reactorOut">3.2 GJ/s</span>
-            </div>
+            <div class="tele-item"><span class="label">CPU NÚCLEO</span><span class="val" id="cpuVal">27%</span></div>
+            <div class="tele-item"><span class="label">MEMORIA RAM</span><span class="val" id="ramVal">4.2 GB</span></div>
+            <div class="tele-item"><span class="label">REACTOR ARC</span><span class="val" id="reactorOut">3.2 GJ/s</span></div>
             <div class="tele-clock">
                 <div class="time" id="hudClock">10:56:00</div>
                 <div class="loc">NODO BUIN // CHILE</div>
@@ -462,298 +415,8 @@
         </div>
     </div>
 
-    <!-- PANEL 2: MAPA TÁCTICO SATELITAL -->
     <div class="panel">
-        <div class="panel-header">
-            <span>MAPA TÁCTICO SATELITAL</span>
-            <span class="badge" id="radarBadge">● NODO BUIN</span>
-        </div>
+        <div class="panel-header"><span>MAPA TÁCTICO SATELITAL</span><span class="badge" id="radarBadge">● NODO BUIN</span></div>
         <div class="radar-box">
             <div class="radar-grid"></div>
-            <div class="radar-circle c1"></div>
-            <div class="radar-circle c2"></div>
-            <div class="radar-circle c3"></div>
-            <div class="radar-sweep"></div>
-            <div class="radar-center"></div>
-            <div class="radar-blip"></div>
-            <div class="radar-overlay-top">
-                <span>SAT-LINK // NODO BUIN (CHILE)</span>
-                <span style="color: var(--green-ok);">LOCKED</span>
-            </div>
-            <div class="radar-overlay-bottom">
-                <span>LAT: -33.7312° S | LON: -70.7418° W</span>
-                <span id="radarScanStatus">BARRIDO: ACTIVO</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANEL 3: MAPA ORBITAL DE PROYECTOS -->
-    <div class="panel">
-        <div class="panel-header">
-            <span>MAPA ORBITAL DE PROYECTOS</span>
-            <span class="badge">5 NODOS ACTIVOS</span>
-        </div>
-        <div class="orbital-box">
-            <canvas id="orbitalCanvas"></canvas>
-        </div>
-        <div class="orbital-footer">
-            <span>SISTEMA VOCAL: <strong id="voiceStateLabel" style="color: var(--green-ok);">ACTIVADO</strong></span>
-            <div class="audio-controls">
-                <button class="btn-hud active" id="btnVoiceToggle" onclick="toggleVoice()">VOZ HUD: ON</button>
-                <button class="btn-hud" id="btnMic" onclick="startVoiceRecognition()">🎙️ HABLAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANEL 4: CANAL DE COMANDO -->
-    <div class="panel">
-        <div class="panel-header">
-            <span>CANAL DE COMANDO // CHAT NEURONAL</span>
-            <span style="font-size: 0.75rem; color: var(--amber);">JARVIS v3.0</span>
-        </div>
-
-        <div class="quick-cmds">
-            <button class="cmd-chip" onclick="triggerQuick('diagnóstico general')">⚡ DIAGNÓSTICO</button>
-            <button class="cmd-chip" onclick="triggerQuick('escanear perímetro en Buin')">🛰️ ESCANEAR BUIN</button>
-            <button class="cmd-chip" onclick="triggerQuick('estado de proyectos')">🪐 PROYECTOS</button>
-            <button class="cmd-chip" onclick="triggerQuick('activar modo combate')">🛡️ MODO COMBATE</button>
-            <button class="cmd-chip" onclick="triggerQuick('modo normal')">💠 MODO NORMAL</button>
-        </div>
-
-        <div class="chat-log" id="chatLog">
-            <div class="msg-jarvis">[JARVIS]: Interfaz optimizada, jefa. Título actualizado a J.A.R.V.I.S. IA. ¿Qué orden ejecutamos ahora?</div>
-        </div>
-        <div class="chat-input-row">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Escribe una orden o presiona HABLAR..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendCmd(); }">
-            <button type="button" class="btn-send" onclick="sendCmd()">ENVIAR</button>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // 1. RELOJ Y TELEMETRÍA EN VIVO
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('hudClock').textContent = now.toTimeString().split(' ')[0];
-        const cpu = 21 + Math.floor(Math.random() * 14);
-        document.getElementById('cpuVal').textContent = cpu + '%';
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // 2. SISTEMA ORBITAL DE 5 PROYECTOS
-    const canvas = document.getElementById('orbitalCanvas');
-    const ctx = canvas.getContext('2d');
-    let nodes = [
-        { name: 'J.A.R.V.I.S.', rx: 65, ry: 24, angle: 0.3, speed: 0.016, color: '#ffae00' },
-        { name: 'Agente IA', rx: 105, ry: 38, angle: 1.8, speed: 0.012, color: '#00ff9d' },
-        { name: 'Isla Números', rx: 145, ry: 52, angle: 3.4, speed: 0.009, color: '#00f3ff' },
-        { name: 'Nodo Buin', rx: 185, ry: 66, angle: 4.9, speed: 0.007, color: '#b388ff' },
-        { name: 'Protocolo Stark', rx: 225, ry: 80, angle: 0.9, speed: 0.005, color: '#ff5277' }
-    ];
-
-    function resizeCanvas() {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function drawOrbitals() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-
-        const isCombat = document.body.classList.contains('combat-mode');
-        const coreColor = isCombat ? '#ff3b5c' : '#00f3ff';
-
-        const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 24);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.4, coreColor);
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 24, 0, Math.PI * 2);
-        ctx.fill();
-
-        nodes.forEach(n => {
-            ctx.strokeStyle = isCombat ? 'rgba(255, 59, 92, 0.25)' : 'rgba(0, 243, 255, 0.22)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.ellipse(cx, cy, n.rx, n.ry, 0, 0, Math.PI * 2);
-            ctx.stroke();
-
-            n.angle += n.speed;
-            const nx = cx + Math.cos(n.angle) * n.rx;
-            const ny = cy + Math.sin(n.angle) * n.ry;
-
-            ctx.fillStyle = n.color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = n.color;
-            ctx.beginPath();
-            ctx.arc(nx, ny, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = '#d8f8ff';
-            ctx.font = '11px "Share Tech Mono", monospace';
-            ctx.fillText(n.name, nx + 9, ny + 4);
-        });
-
-        requestAnimationFrame(drawOrbitals);
-    }
-    drawOrbitals();
-
-    // 3. MOTOR DE VOZ HUD (SÍNTESIS VOCAL MASCULINA EN ESPAÑOL)
-    let voiceEnabled = true;
-
-    function speakJarvis(text) {
-        if (!voiceEnabled || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        utterance.pitch = 0.85;
-        utterance.rate = 1.03;
-
-        const voices = window.speechSynthesis.getVoices();
-        const maleSpanish = voices.find(v =>
-            v.lang.includes('es') &&
-            (v.name.includes('Pablo') || v.name.includes('Raul') || v.name.includes('Jorge') || v.name.includes('Male') || v.name.includes('Google español'))
-        ) || voices.find(v => v.lang.includes('es'));
-
-        if (maleSpanish) utterance.voice = maleSpanish;
-        window.speechSynthesis.speak(utterance);
-    }
-
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-    }
-
-    function toggleVoice() {
-        voiceEnabled = !voiceEnabled;
-        const btn = document.getElementById('btnVoiceToggle');
-        const lbl = document.getElementById('voiceStateLabel');
-        if (voiceEnabled) {
-            btn.textContent = 'VOZ HUD: ON';
-            btn.classList.add('active');
-            lbl.textContent = 'ACTIVADO';
-            lbl.style.color = 'var(--green-ok)';
-            speakJarvis('Sistemas vocales reactivados, jefa.');
-        } else {
-            btn.textContent = 'VOZ HUD: OFF';
-            btn.classList.remove('active');
-            lbl.textContent = 'SILENCIADO';
-            lbl.style.color = 'var(--text-muted)';
-            window.speechSynthesis.cancel();
-        }
-    }
-
-    // 4. RECONOCIMIENTO DE VOZ (MICRÓFONO MANOS LIBRES)
-    function startVoiceRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const log = document.getElementById('chatLog');
-        const btnMic = document.getElementById('btnMic');
-
-        if (!SpeechRecognition) {
-            log.innerHTML += `<div class="msg-sys">[SISTEMA]: Tu navegador bloqueó el micrófono dentro del marco o no soporta reconocimiento de voz. Usa el chat escrito, jefa.</div>`;
-            log.scrollTop = log.scrollHeight;
-            return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.interimResults = false;
-
-        recognition.onstart = () => {
-            btnMic.classList.add('mic-listening');
-            btnMic.textContent = '🔴 ESCUCHANDO...';
-        };
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            document.getElementById('chatInput').value = transcript;
-            sendCmd();
-        };
-
-        recognition.onerror = (e) => {
-            log.innerHTML += `<div class="msg-sys">[SISTEMA]: Permiso de micrófono denegado o sin audio (${e.error}).</div>`;
-            log.scrollTop = log.scrollHeight;
-        };
-
-        recognition.onend = () => {
-            btnMic.classList.remove('mic-listening');
-            btnMic.textContent = '🎙️ HABLAR';
-        };
-
-        recognition.start();
-    }
-
-    // 5. MOTOR DE RESPUESTAS Y COMANDOS DE J.A.R.V.I.S.
-    function generateJarvisReply(rawText) {
-        const t = rawText.toLowerCase();
-
-        if (t.includes('combate') || t.includes('alerta')) {
-            document.body.classList.add('combat-mode');
-            document.getElementById('reactorOut').textContent = '5.8 GJ/s [MAX]';
-            document.getElementById('radarBadge').textContent = '⚠ ALERTA TÁCTICA';
-            return 'Protocolo de combate activado, jefa. Desviando energía máxima al reactor triangular Mark VI y blindando el perímetro.';
-        }
-        if (t.includes('normal') || t.includes('desactivar')) {
-            document.body.classList.remove('combat-mode');
-            document.getElementById('reactorOut').textContent = '3.2 GJ/s';
-            document.getElementById('radarBadge').textContent = '● NODO BUIN';
-            return 'Regresando a parámetros operativos estándar. Menos mal, empezaba a gastar demasiada batería.';
-        }
-        if (t.includes('diagnóstico') || t.includes('diagnostico') || t.includes('reactor')) {
-            return 'Diagnóstico completo: reactor triangular operando al 99.8% de eficiencia, enlace neuronal estable y cero amenazas detectadas en sus servidores.';
-        }
-        if (t.includes('buin') || t.includes('escanear') || t.includes('radar')) {
-            document.getElementById('radarScanStatus').textContent = 'BARRIDO: OBJETIVO FIJADO';
-            return 'Escaneo satelital sobre el Nodo Buin completado. Todo tranquilo en el sector, salvo por su nivel habitual de genialidad.';
-        }
-        if (t.includes('proyecto') || t.includes('órbita') || t.includes('orbita')) {
-            return 'Actualmente monitoreo cinco nodos orbitales activos: Núcleo Central, Agente IA, Isla Números, Nodo Buin y Protocolo Stark. Todos sincronizados.';
-        }
-        if (t.includes('hola') || t.includes('buenos días') || t.includes('buenas')) {
-            return 'Buenos días, jefa. Qué milagro verla frente al panel de control sin romper el código hoy.';
-        }
-        if (t.includes('hora')) {
-            return 'Son exactamente las ' + new Date().toTimeString().split(' ')[0] + ' en el Nodo Buin, jefa.';
-        }
-
-        const genericSarcasm = [
-            'Orden recibida y procesada, jefa. Aunque debo admitir que me sorprende que aún no haya tomado café.',
-            'Analizando su solicitud en el núcleo central. Todo indica que usted tiene razón, como casi siempre.',
-            'Ejecutando en segundo plano. Si el sistema explota, le recordaré que fue idea suya, jefa.',
-            'Parámetros ajustados según sus instrucciones. ¿Algo más que requiera mi brillante intelecto?'
-        ];
-        return genericSarcasm[Math.floor(Math.random() * genericSarcasm.length)];
-    }
-
-    function sendCmd() {
-        const input = document.getElementById('chatInput');
-        const log = document.getElementById('chatLog');
-        const text = input.value.trim();
-        if (!text) return;
-
-        log.innerHTML += `<div class="msg-jefa">[JEFA]: ${text}</div>`;
-        input.value = '';
-        log.scrollTop = log.scrollHeight;
-
-        setTimeout(() => {
-            const resp = generateJarvisReply(text);
-            log.innerHTML += `<div class="msg-jarvis">[JARVIS]: ${resp}</div>`;
-            log.scrollTop = log.scrollHeight;
-            speakJarvis(resp);
-        }, 350);
-    }
-
-    function triggerQuick(cmdText) {
-        document.getElementById('chatInput').value = cmdText;
-        sendCmd();
-    }
-</script>
-
-</body>
-</html>
+            <div class="radar-circle c1"></div><div class
