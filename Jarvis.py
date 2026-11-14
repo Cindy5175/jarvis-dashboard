@@ -190,9 +190,10 @@ jarvis_hud_html = """
             height: 100px;
         }
 
+        /* Órbita Circular Interactiva Completa */
         .orbit-container {
             position: relative;
-            height: 200px;
+            height: 220px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -204,11 +205,21 @@ jarvis_hud_html = """
 
         .orbit-ring {
             position: absolute;
-            width: 160px;
-            height: 160px;
-            border: 1px solid rgba(0, 243, 255, 0.2);
+            width: 170px;
+            height: 170px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
             border-radius: 50%;
-            animation: rotate-orbit 20s linear infinite;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+            animation: rotate-orbit 25s linear infinite;
+        }
+
+        .orbit-ring-inner {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border: 1px dotted rgba(255, 183, 0, 0.3);
+            border-radius: 50%;
+            animation: rotate-orbit-reverse 20s linear infinite;
         }
 
         @keyframes rotate-orbit {
@@ -216,21 +227,27 @@ jarvis_hud_html = """
             to { transform: rotate(360deg); }
         }
 
+        @keyframes rotate-orbit-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
         .planet {
             position: absolute;
-            padding: 4px 8px;
-            background: rgba(5, 8, 20, 0.9);
+            padding: 5px 10px;
+            background: rgba(5, 8, 20, 0.95);
             border: 1px solid var(--neon-blue);
             border-radius: 6px;
             font-size: 0.65rem;
             color: var(--neon-blue);
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
+            z-index: 2;
         }
 
         .planet:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
             border-color: var(--neon-gold);
             color: var(--neon-gold);
         }
@@ -291,7 +308,7 @@ jarvis_hud_html = """
                     <div>RED: <span class="telemetry-val">16 ms</span></div>
                 </div>
                 <div class="telemetry-row" style="margin-top: 6px;">
-                    <div class="timestamp" id="live-clock">23:33:00</div>
+                    <div class="timestamp" id="live-clock">23:35:00</div>
                     <div style="color: var(--text-dim);">NODO BUIN</div>
                 </div>
             </div>
@@ -315,10 +332,12 @@ jarvis_hud_html = """
             
             <div class="orbit-container">
                 <div class="orbit-ring"></div>
-                <div class="planet" style="top: 20px; left: 30px;" onclick="alert('JARVIS Core: Operativo y Sarcástico')">JARVIS</div>
-                <div class="planet" style="top: 20px; right: 25px; border-color: var(--neon-gold); color: var(--neon-gold);" onclick="alert('La Isla de los Números: Freemium $3.99 USD')">Isla Números</div>
-                <div class="planet" style="bottom: 25px; left: 25px;" onclick="alert('Agente de Soporte 24/7: Enrutando canales')">Soporte 24/7</div>
-                <div class="planet" style="bottom: 25px; right: 25px;" onclick="alert('Automatización Nodo Buin: Conectado')">Nodo Buin</div>
+                <div class="orbit-ring-inner"></div>
+                <!-- Planetas en posiciones orbitales exactas -->
+                <div class="planet" style="top: 25px; left: 35px;" onclick="alert('JARVIS Core: Operativo y Sarcástico')">JARVIS</div>
+                <div class="planet" style="top: 25px; right: 35px; border-color: var(--neon-gold); color: var(--neon-gold);" onclick="alert('La Isla de los Números: Freemium $3.99 USD')">Isla Números</div>
+                <div class="planet" style="bottom: 25px; left: 30px;" onclick="alert('Agente de Soporte 24/7: Enrutando canales')">Soporte 24/7</div>
+                <div class="planet" style="bottom: 25px; right: 30px;" onclick="alert('Automatización Nodo Buin: Conectado')">Nodo Buin</div>
             </div>
         </div>
     </div>
@@ -358,7 +377,7 @@ jarvis_hud_html = """
             const cy = canvas.height / 2;
             const radius = 38;
 
-            ctx.strokeStyle = 'rgba(0, 243, 255, 0.5)';
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.6)';
             ctx.lineWidth = 1;
 
             for (let i = -2; i <= 2; i++) {
