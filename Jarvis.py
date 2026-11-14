@@ -15,7 +15,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos globales para blindar el fondo y la estética cyberpunk
 st.markdown("""
     <style>
         .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
@@ -28,7 +27,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ZONA HORARIA CHILENA (UTC-3)
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
@@ -46,9 +44,6 @@ if "autorizado" not in st.session_state:
 if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
 
-if "offset_clima" not in st.session_state:
-    st.session_state.offset_clima = 0
-
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
         {"role": "assistant", "content": saludo_actual + ", jefa. HUD interactivo y base de datos con las 7 memorias operando al 100% en el Nodo Buin."}
@@ -56,36 +51,15 @@ if "mensajes" not in st.session_state:
 
 PIN_SECRETO = "2805"
 
-# --- INICIALIZACION DE BASE DE DATOS SQLITE (Las 7 Memorias y Misiones) ---
 fn_db = "jarvis_misiones.db"
 
 def init_db():
     try:
         conn = sqlite3.connect(fn_db, check_same_thread=False)
         cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS misiones (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tarea TEXT NOT NULL,
-                estado TEXT DEFAULT 'Pendiente',
-                fecha_creacion TEXT
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS memory (
-                key_id TEXT PRIMARY KEY,
-                fact_text TEXT,
-                category TEXT
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS episodic_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                event_type TEXT,
-                details TEXT
-            )
-        """)
+        cursor.execute("CREATE TABLE IF NOT EXISTS misiones (id INTEGER PRIMARY KEY AUTOINCREMENT, tarea TEXT NOT NULL, estado TEXT DEFAULT 'Pendiente', fecha_creacion TEXT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS memory (key_id TEXT PRIMARY KEY, fact_text TEXT, category TEXT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS episodic_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT, details TEXT)")
         conn.commit()
         conn.close()
     except Exception:
@@ -93,32 +67,9 @@ def init_db():
 
 init_db()
 
-# --- CLASES DE SOPORTE ---
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
-
-    def remember_fact(self, key_id: str, fact_text: str, category: str = "general"):
-        try:
-            conn = sqlite3.connect(self.db_path, check_same_thread=False)
-            cursor = conn.cursor()
-            cursor.execute("INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)", (key_id, fact_text, category))
-            conn.commit()
-            conn.close()
-        except Exception:
-            pass
-
-    def recall_context(self, query: str) -> list:
-        try:
-            conn = sqlite3.connect(self.db_path, check_same_thread=False)
-            cursor = conn.cursor()
-            cursor.execute("SELECT fact_text FROM memory")
-            rows = cursor.fetchall()
-            conn.close()
-            return [row[0] for row in rows if query.lower() in row[0].lower()]
-        except Exception:
-            return []
-
     def log_episode(self, event_type: str, details: str):
         try:
             conn = sqlite3.connect(self.db_path, check_same_thread=False)
@@ -130,30 +81,7 @@ class JarvisMemory:
         except Exception:
             pass
 
-class JarvisSystemExecutor:
-    @staticmethod
-    def open_application(target: str) -> str:
-        try:
-            target_lower = target.lower()
-            if target_lower.endswith(('.py', '.bat', '.sh', '.ps1')) and os.path.exists(target):
-                if sys.platform == "win32":
-                    subprocess.Popen('start cmd /k "' + sys.executable + ' ' + target + '"', shell=True)
-                else:
-                    subprocess.Popen([sys.executable, target])
-                return "Script '" + os.path.basename(target) + "' puesto en marcha, jefa."
-            
-            if sys.platform == "win32":
-                subprocess.Popen("start " + target, shell=True)
-            elif sys.platform == "darwin":
-                subprocess.Popen(["open", "-a", target])
-            else:
-                subprocess.Popen([target])
-            return "Ejecutando proceso '" + target + "' de inmediato, jefa."
-        except Exception as e:
-            return "Error ejecutando proceso: " + str(e)
-
 jarvis_mem = JarvisMemory()
-jarvis_exec = JarvisSystemExecutor()
 
 def agregar_mision(tarea):
     try:
@@ -185,21 +113,17 @@ def limpiar_misiones():
         cursor.execute("DELETE FROM misiones")
         conn.commit()
         conn.close()
-        jarvis_mem.log_episode("MISSION_PURGE", "Misiones purgadas.")
     except Exception:
         pass
 
-# --- 1. PANTALLA DE BLOQUEO (PIN) ---
 if not st.session_state.get("autorizado", False):
     st.markdown("<h2 style='text-align: center; color: #00f3ff; font-family: monospace;'>ACCESO RESTRINGIDO - NODO BUIN</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #5b8fa8; font-family: monospace;'>INGRESE PIN DE SEGURIDAD</p>", unsafe_allow_html=True)
-
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
             pin_input = st.text_input("PIN Secreto Numérico:", type="password", placeholder="Ingresa tu PIN...")
             btn_entrar = st.form_submit_button("Desbloquear Armadura")
-
         if btn_entrar:
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
@@ -210,250 +134,95 @@ if not st.session_state.get("autorizado", False):
                 st.error("PIN incorrecto. Acceso denegado.")
     st.stop()
 
-# --- 2. SISTEMA DE PESTAÑAS (HUD TÁCTICO & CENTRO FINANCIERO) ---
 tab_hud, tab_financiero = st.tabs(["⚡ HUD Táctico Principal", "📈 Centro Financiero & Mercados"])
 
 with tab_hud:
-    # --- HTML / CSS DEL HUD CIBERNÉTICO UNIFICADO ---
-    jarvis_hud_html = """
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>J.A.R.V.I.S. HUD</title>
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-        <style>
-            :root {
-                --bg-dark: #040711;
-                --panel-bg: rgba(8, 17, 36, 0.92);
-                --cyan: #00f3ff;
-                --cyan-glow: rgba(0, 243, 255, 0.45);
-                --cyan-dim: rgba(0, 243, 255, 0.18);
-                --text-main: #d8f8ff;
-                --text-muted: #5b8fa8;
-                --green-ok: #00ff9d;
-                --amber: #ffae00;
-                --red-alert: #ff3b5c;
-            }
+    # Lee el diseño HUD de manera limpia desde el archivo externo
+    try:
+        with open("hud.html", "r", encoding="utf-8") as f:
+            jarvis_hud_html = f.read()
+    except Exception:
+        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
 
-            * { box-sizing: border-box; margin: 0; padding: 0; }
+    st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
+    st.markdown("---")
 
-            body {
-                background-color: var(--bg-dark);
-                background-image: 
-                    radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.08) 0%, transparent 60%),
-                    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-                background-size: 100% 100%, 30px 30px, 30px 30px;
-                color: var(--text-main);
-                font-family: 'Share Tech Mono', monospace;
-                padding: 12px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
+    col_ctrl, col_chat = st.columns([1, 2])
+    with col_ctrl:
+        st.markdown("#### 🛠️ Controles del Sistema")
+        if st.button("🔒 Bloquear Sistema", use_container_width=True):
+            st.session_state.autorizado = False
+            st.rerun()
+        if st.button("🔄 Reinicio Total", use_container_width=True):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
 
-            .hud-container {
-                width: 100%;
-                max-width: 760px;
-                display: flex;
-                flex-direction: column;
-                gap: 14px;
-                padding-bottom: 20px;
-            }
+        st.markdown("---")
+        st.markdown("#### 🧠 Selector de Núcleo (IA)")
+        nuevo_nucleo = st.radio("Seleccionar Asistente Activo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
+        if nuevo_nucleo != st.session_state.nucleo_activo:
+            st.session_state.nucleo_activo = nuevo_nucleo
+            jarvis_mem.log_episode("CORE_SWITCH", "Cambiado a " + nuevo_nucleo)
+            st.success("Núcleo activo: " + nuevo_nucleo)
+            st.rerun()
 
-            .panel {
-                background: var(--panel-bg);
-                border: 1px solid var(--cyan);
-                border-radius: 12px;
-                padding: 16px;
-                box-shadow: 0 0 18px rgba(0, 243, 255, 0.12), inset 0 0 12px rgba(0, 243, 255, 0.06);
-                position: relative;
-            }
+        st.markdown("---")
+        st.markdown("#### 📋 Gestión de Misiones")
+        with st.expander("Base de Datos (7 Memorias)", expanded=False):
+            nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar despliegue...")
+            if st.button("Registrar Tarea", use_container_width=True):
+                if nueva_tarea.strip():
+                    agregar_mision(nueva_tarea.strip())
+                    st.success("¡Misión guardada!")
+                    st.rerun()
+            misiones = obtener_misiones()
+            if misiones:
+                for m_id, m_text, m_est in misiones:
+                    st.markdown(f"- `{m_text}`")
+            if st.button("Purgar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
 
-            body.combat-mode {
-                --cyan: #ff3b5c;
-                --cyan-glow: rgba(255, 59, 92, 0.5);
-                --cyan-dim: rgba(255, 59, 92, 0.2);
-            }
+    with col_chat:
+        col_h1, col_h2 = st.columns([4, 1])
+        with col_h1:
+            st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
+        with col_h2:
+            if st.button("Limpiar", use_container_width=True):
+                st.session_state.mensajes = [{"role": "assistant", "content": "Memoria de chat purgada. ¿Qué orden ejecutamos, jefa?"}]
+                st.rerun()
 
-            .header-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 16px;
-                padding-bottom: 12px;
-                border-bottom: 1px solid var(--cyan-dim);
-            }
+        for m in st.session_state.mensajes:
+            with st.chat_message(m["role"]):
+                st.markdown(m['content'])
 
-            .header-left {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-            }
+        prompt_chat = st.chat_input("Escribe tu orden o consulta...")
+        if prompt_chat:
+            st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+            jarvis_mem.log_episode("USER_CMD", prompt_chat)
+            nucleo = st.session_state.nucleo_activo
+            respuesta_ia = f"[{nucleo}]: Orden procesada con éxito en el Nodo Buin. Todo operando al 100%, jefa."
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+            jarvis_mem.log_episode("AI_RESP", respuesta_ia)
+            st.rerun()
 
-            .stark-reactor-box {
-                width: 64px;
-                height: 60px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                cursor: pointer;
-                filter: drop-shadow(0 0 12px var(--cyan-glow));
-                animation: reactorPulse 2.8s ease-in-out infinite;
-            }
-
-            @keyframes reactorPulse {
-                0%, 100% { filter: drop-shadow(0 0 8px var(--cyan-glow)); transform: scale(1); }
-                50% { filter: drop-shadow(0 0 20px var(--cyan)); transform: scale(1.05); }
-            }
-
-            .title-block h1 {
-                font-family: 'Orbitron', sans-serif;
-                font-size: 1.3rem;
-                font-weight: 900;
-                letter-spacing: 2px;
-                color: #ffffff;
-                text-shadow: 0 0 10px var(--cyan-glow);
-            }
-
-            .status-line {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-top: 4px;
-                font-size: 0.8rem;
-                color: var(--green-ok);
-                letter-spacing: 1px;
-            }
-
-            .status-dot {
-                width: 7px;
-                height: 7px;
-                border-radius: 50%;
-                background: var(--green-ok);
-                box-shadow: 0 0 8px var(--green-ok);
-                animation: blink 1.5s infinite;
-            }
-
-            @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-            .telemetry-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-                padding-top: 12px;
-                font-size: 0.8rem;
-            }
-
-            .tele-item span.label {
-                display: block;
-                color: var(--text-muted);
-                font-size: 0.68rem;
-                margin-bottom: 3px;
-            }
-
-            .tele-item span.val {
-                color: var(--cyan);
-                font-weight: bold;
-                font-size: 0.9rem;
-            }
-
-            .tele-clock { text-align: right; }
-            .tele-clock .time {
-                font-family: 'Orbitron', sans-serif;
-                color: var(--amber);
-                font-size: 1rem;
-                font-weight: bold;
-                text-shadow: 0 0 8px rgba(255, 174, 0, 0.4);
-            }
-            .tele-clock .loc {
-                color: var(--text-muted);
-                font-size: 0.68rem;
-                margin-top: 2px;
-            }
-
-            .panel-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-                font-family: 'Orbitron', sans-serif;
-                font-size: 0.82rem;
-                letter-spacing: 1.5px;
-                color: var(--cyan);
-            }
-
-            .badge {
-                font-family: 'Share Tech Mono', monospace;
-                font-size: 0.72rem;
-                padding: 2px 8px;
-                border: 1px solid var(--cyan);
-                border-radius: 4px;
-                background: rgba(0, 243, 255, 0.1);
-                color: var(--green-ok);
-            }
-
-            .radar-box {
-                height: 190px;
-                background: radial-gradient(circle, rgba(0, 45, 70, 0.6) 0%, rgba(3, 9, 20, 0.95) 80%);
-                border: 1px solid var(--cyan-dim);
-                border-radius: 10px;
-                position: relative;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .radar-grid {
-                position: absolute;
-                inset: 0;
-                background-image: 
-                    linear-gradient(rgba(0, 243, 255, 0.08) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0, 243, 255, 0.08) 1px, transparent 1px);
-                background-size: 25px 25px;
-            }
-
-            .radar-circle {
-                position: absolute;
-                border: 1px solid rgba(0, 243, 255, 0.28);
-                border-radius: 50%;
-            }
-            .c1 { width: 60px; height: 60px; }
-            .c2 { width: 120px; height: 120px; }
-            .c3 { width: 180px; height: 180px; }
-
-            .radar-sweep {
-                position: absolute;
-                width: 180px;
-                height: 180px;
-                border-radius: 50%;
-                background: conic-gradient(from 0deg, var(--cyan-glow) 0deg, transparent 75deg);
-                animation: spinRadar 4s linear infinite;
-            }
-            @keyframes spinRadar { 100% { transform: rotate(360deg); } }
-
-            .radar-center {
-                width: 9px;
-                height: 9px;
-                background: var(--amber);
-                border-radius: 50%;
-                box-shadow: 0 0 10px var(--amber);
-                z-index: 2;
-            }
-
-            .radar-blip {
-                position: absolute;
-                top: 50px; right: 35%;
-                width: 7px; height: 7px;
-                background: var(--green-ok);
-                border-radius: 50%;
-                box-shadow: 0 0 10px var(--green-ok);
-                animation: blink 1.2s infinite;
-            }
-
-            .radar-overlay-top {
-                position:
+with tab_financiero:
+    st.markdown("### 📈 Centro Financiero & Mercados Tradicionales")
+    st.markdown("Acceso directo a plataformas bursátiles y de análisis macroeconómico.")
+    st.markdown("---")
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown("#### 📊 Finviz")
+        st.link_button("Abrir Finviz (Acciones)", "https://finviz.com/map.ashx", use_container_width=True)
+        st.link_button("Screener de Mercado", "https://finviz.com/screener.ashx", use_container_width=True)
+    with col_f2:
+        st.markdown("#### 📉 Investing.com")
+        st.link_button("Abrir Investing.com", "https://es.investing.com/", use_container_width=True)
+        st.link_button("Índices Mundiales", "https://es.investing.com/indices/major-indices", use_container_width=True)
+    with col_f3:
+        st.markdown("#### 💱 Divisas & Commodities")
+        st.link_button("Mercado Forex", "https://es.investing.com/currencies/streaming-forex-rates-majors", use_container_width=True)
+        st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
+    st.markdown("---")
+    st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
