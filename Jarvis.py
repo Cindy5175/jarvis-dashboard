@@ -1,3 +1,31 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+# Configuración de página completa en Streamlit
+st.set_page_config(
+    page_title="J.A.R.V.I.S. // Núcleo de Comando",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# Ocultar márgenes y barras por defecto de Streamlit para inmersión total
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 0rem;
+            padding-bottom: 0rem;
+            padding-left: 0rem;
+            padding-right: 0rem;
+            max-width: 100%;
+        }
+        header, footer, #MainMenu {visibility: hidden;}
+        body {background-color: #050814;}
+    </style>
+""", unsafe_allow_html=True)
+
+# Interfaz completa de J.A.R.V.I.S. (HTML + CSS + JS)
+jarvis_hud_html = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -43,7 +71,6 @@
             gap: 15px;
         }
 
-        /* Tarjeta de Cristal Estilo Deep-Space */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -54,7 +81,6 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 15px rgba(0, 243, 255, 0.05);
         }
 
-        /* Cabecera Principal */
         .header-title {
             font-size: 1.25rem;
             font-weight: bold;
@@ -90,7 +116,6 @@
             100% { opacity: 1; }
         }
 
-        /* Botones de Navegación Rápida */
         .nav-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -118,7 +143,6 @@
             box-shadow: 0 0 12px rgba(0, 243, 255, 0.3);
         }
 
-        /* Telemetría */
         .telemetry-row {
             display: flex;
             justify-content: space-between;
@@ -139,7 +163,6 @@
             font-weight: bold;
         }
 
-        /* Sección Mapa Orbital */
         .section-title {
             font-size: 0.85rem;
             letter-spacing: 2px;
@@ -197,7 +220,6 @@
             cursor: pointer;
         }
 
-        /* Mapa Táctico Oculto por Defecto para Alternar */
         .tactical-map-view {
             display: none;
             height: 220px;
@@ -229,9 +251,7 @@
     </style>
 </head>
 <body>
-
     <div class="container">
-        <!-- Panel Principal de Mando -->
         <div class="glass-card">
             <div class="header-title">J.A.R.V.I.S. // NÚCLEO DE COMANDO</div>
             <div class="status-line">
@@ -244,7 +264,6 @@
                 <div class="nav-btn" id="btn-tactical" onclick="switchView('tactical')">MAPA TÁCTICO SATELITAL</div>
             </div>
 
-            <!-- VISTA NÚCLEO NEURONAL -->
             <div id="view-neural">
                 <div class="telemetry-row" style="border: none; padding-top: 0;">
                     <div>CPU NÚCLEO: <span class="telemetry-val">25%</span></div>
@@ -252,12 +271,11 @@
                     <div>RED: <span class="telemetry-val">16 ms // ÓPTIMO</span></div>
                 </div>
                 <div class="telemetry-row" style="margin-top: 8px;">
-                    <div class="timestamp" id="live-clock">23:20:51</div>
+                    <div class="timestamp" id="live-clock">23:24:00</div>
                     <div style="color: var(--text-dim);">NODO BUIN // 13 NOV. 2026</div>
                 </div>
             </div>
 
-            <!-- VISTA MAPA TÁCTICO SATELITAL -->
             <div id="view-tactical" class="tactical-map-view">
                 <div class="radar-sweep"></div>
                 <div style="position: absolute; top: 10px; left: 10px; font-size: 0.7rem; color: var(--neon-blue); letter-spacing: 1px;">
@@ -269,7 +287,6 @@
             </div>
         </div>
 
-        <!-- Mapa Orbital de Proyectos -->
         <div class="glass-card">
             <div class="section-title">
                 MAPA ORBITAL DE PROYECTOS
@@ -285,14 +302,12 @@
     </div>
 
     <script>
-        // Actualizar reloj dinámico
         setInterval(() => {
             const now = new Date();
             const timeString = now.toTimeString().split(' ')[0];
             document.getElementById('live-clock').innerText = timeString;
         }, 1000);
 
-        // Alternar entre Núcleo Neuronal y Mapa Táctico Satelital
         function switchView(view) {
             const btnNeural = document.getElementById('btn-neural');
             const btnTactical = document.getElementById('btn-tactical');
@@ -314,4 +329,7 @@
     </script>
 </body>
 </html>
+"""
 
+# Renderizar el HUD en Streamlit
+components.html(jarvis_hud_html, height=700, scrolling=True)
