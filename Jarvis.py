@@ -19,7 +19,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Parte 1: Estilos y Estructura Superior del HUD
 hud_part1 = """
 <!DOCTYPE html>
 <html lang="es">
@@ -121,7 +120,7 @@ hud_part1 = """
         .orbital-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .orbital-header h2 { font-size: 0.9rem; letter-spacing: 1.5px; color: var(--text-main); line-height: 1.3; }
         .orbit-badge { font-size: 0.65rem; color: var(--gold); background: rgba(245, 176, 39, 0.12); border: 1px solid rgba(245, 176, 39, 0.5); padding: 5px 10px; border-radius: 8px; text-align: center; font-weight: bold; line-height: 1.25; }
-        .canvas-box { position: relative; width: 100%; height: 245px; border-radius: 12px; background: radial-gradient(circle at 55% 65%, rgba(0, 180, 255, 0.14) 0%, rgba(3, 6, 14, 0.95) 70%); border: 1px solid rgba(0, 229, 255, 0.12); overflow: hidden; }
+        .canvas-box { position: relative; width: 100%; height: 260px; border-radius: 12px; background: radial-gradient(circle at 50% 50%, rgba(0, 180, 255, 0.14) 0%, rgba(3, 6, 14, 0.95) 75%); border: 1px solid rgba(0, 229, 255, 0.12); overflow: hidden; }
         #solarCanvas { width: 100%; height: 100%; display: block; cursor: pointer; }
         .node-status-bar { margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.18); font-size: 0.72rem; color: var(--cyan); display: flex; justify-content: space-between; align-items: center; }
         .voice-btn { background: rgba(0, 229, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 4px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: bold; cursor: pointer; }
@@ -206,7 +205,6 @@ hud_part1 = """
     </div>
 """
 
-# Parte 2: Lógica JavaScript y Cierre del HUD
 hud_part2 = """
     <script>
         function updateTelemetry() {
@@ -258,11 +256,12 @@ hud_part2 = """
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
+        // Órbitas ajustadas para centrarse perfectamente en el canvas
         const nodes = [
-            { name: 'J.A.R.V.I.S.', rx: 72, ry: 34, angle: 0.35, speed: 0.008, color: '#f5b027', ring: true, radius: 9, info: 'NÚCLEO: J.A.R.V.I.S. // ACTIVO' },
-            { name: 'Agente', rx: 112, ry: 52, angle: 3.65, speed: 0.006, color: '#10e88a', ring: false, radius: 7, info: 'ÓRBITA 02: AGENTE AUTÓNOMO' },
-            { name: 'Isla Números', rx: 148, ry: 68, angle: 2.1, speed: 0.0045, color: '#00e5ff', ring: false, radius: 6.5, info: 'ÓRBITA 03: ISLA DE LOS NÚMEROS' },
-            { name: 'Nodo Buin', rx: 180, ry: 82, angle: 5.1, speed: 0.0035, color: '#a855f7', ring: false, radius: 6, info: 'ÓRBITA 04: NODO BUIN' }
+            { name: 'J.A.R.V.I.S.', rx: 65, ry: 28, angle: 0.35, speed: 0.008, color: '#f5b027', ring: true, radius: 8, info: 'NÚCLEO: J.A.R.V.I.S. // ACTIVO' },
+            { name: 'Agente', rx: 100, ry: 44, angle: 3.65, speed: 0.006, color: '#10e88a', ring: false, radius: 6, info: 'ÓRBITA 02: AGENTE AUTÓNOMO' },
+            { name: 'Isla Números', rx: 135, ry: 60, angle: 2.1, speed: 0.0045, color: '#00e5ff', ring: false, radius: 6, info: 'ÓRBITA 03: ISLA DE LOS NÚMEROS' },
+            { name: 'Nodo Buin', rx: 165, ry: 74, angle: 5.1, speed: 0.0035, color: '#a855f7', ring: false, radius: 6, info: 'ÓRBITA 04: NODO BUIN' }
         ];
 
         let renderedPositions = [];
@@ -272,13 +271,14 @@ hud_part2 = """
             const h = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h);
 
-            const cx = w * 0.56;
-            const cy = h * 0.64;
+            // Centro exacto del canvas para distribución equilibrada
+            const cx = w * 0.5;
+            const cy = h * 0.5;
 
             nodes.forEach((n, idx) => {
                 ctx.save();
                 ctx.translate(cx, cy);
-                ctx.rotate(-0.18);
+                ctx.rotate(-0.15);
                 ctx.beginPath();
                 ctx.ellipse(0, 0, n.rx, n.ry, 0, 0, Math.PI * 2);
                 ctx.strokeStyle = idx === 0 ? 'rgba(245, 176, 39, 0.32)' : 'rgba(0, 229, 255, 0.22)';
@@ -287,20 +287,20 @@ hud_part2 = """
                 ctx.restore();
             });
 
-            const sunGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 32);
+            const sunGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 30);
             sunGrad.addColorStop(0, '#ffffff');
             sunGrad.addColorStop(0.3, '#67f3ff');
             sunGrad.addColorStop(0.65, 'rgba(0, 180, 255, 0.35)');
             sunGrad.addColorStop(1, 'transparent');
             ctx.fillStyle = sunGrad;
             ctx.beginPath();
-            ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+            ctx.arc(cx, cy, 30, 0, Math.PI * 2);
             ctx.fill();
 
             renderedPositions = [];
             nodes.forEach(n => {
                 n.angle += n.speed;
-                const tilt = -0.18;
+                const tilt = -0.15;
                 const rawX = Math.cos(n.angle) * n.rx;
                 const rawY = Math.sin(n.angle) * n.ry;
 
@@ -324,15 +324,15 @@ hud_part2 = """
 
                 if (n.ring) {
                     ctx.strokeStyle = '#f5b027';
-                    ctx.lineWidth = 1.6;
+                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
-                    ctx.arc(px, py, n.radius + 9, 0, Math.PI * 2);
+                    ctx.arc(px, py, n.radius + 8, 0, Math.PI * 2);
                     ctx.stroke();
                 }
 
                 ctx.font = 'bold 11px "Courier New", monospace';
                 ctx.fillStyle = n.ring ? '#f5b027' : '#eaf6ff';
-                ctx.fillText(n.name, px + (n.ring ? 22 : 12), py + 4);
+                ctx.fillText(n.name, px + (n.ring ? 20 : 10), py + 4);
             });
 
             requestAnimationFrame(drawSolarSystem);
@@ -346,7 +346,7 @@ hud_part2 = """
 
             for (const item of renderedPositions) {
                 const dist = Math.hypot(clickX - item.x, clickY - item.y);
-                if (dist < 28) {
+                if (dist < 26) {
                     document.getElementById('selected-node-info').innerText = item.node.info;
                     speakJarvis('Nodo ' + item.node.name);
                     break;
@@ -358,6 +358,5 @@ hud_part2 = """
 </html>
 """
 
-# Unir ambas partes y renderizar en Streamlit de forma 100% segura
 jarvis_hud_html = hud_part1 + hud_part2
-components.html(jarvis_hud_html, height=760, scrolling=False)
+components.html(jarvis_hud_html, height=800, scrolling=False)
