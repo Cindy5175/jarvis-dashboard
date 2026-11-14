@@ -20,4 +20,4 @@ st.markdown("""
 with open("hud.html", "r", encoding="utf-8") as f:
     jarvis_hud_html = f.read()
 
-components.html(jarvis_hud_html, height=1350, scrolling=True)
+components.html(jarvis_hud_html, height=1480, scrolling=True)
