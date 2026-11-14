@@ -24,7 +24,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Interfaz completa de J.A.R.V.I.S. (HTML + CSS + JS)
+# Interfaz completa de J.A.R.V.I.S. con Esfera 3D y 4 Órbitas
 jarvis_hud_html = """
 <!DOCTYPE html>
 <html lang="es">
@@ -182,9 +182,25 @@ jarvis_hud_html = """
             border-radius: 4px;
         }
 
+        /* Contenedor del Núcleo Neuronal con Esfera 3D */
+        .core-visual-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 140px;
+            position: relative;
+        }
+
+        canvas {
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Mapa Orbital de Proyectos (4 Órbitas) */
         .orbit-container {
             position: relative;
-            height: 180px;
+            height: 200px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -196,140 +212,10 @@ jarvis_hud_html = """
 
         .orbit-ring {
             position: absolute;
-            width: 140px;
-            height: 140px;
+            width: 160px;
+            height: 160px;
             border: 1px solid rgba(0, 243, 255, 0.2);
             border-radius: 50%;
             animation: rotate-orbit 20s linear infinite;
         }
 
-        @keyframes rotate-orbit {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .planet {
-            position: absolute;
-            padding: 4px 8px;
-            background: rgba(5, 8, 20, 0.9);
-            border: 1px solid var(--neon-blue);
-            border-radius: 6px;
-            font-size: 0.7rem;
-            color: var(--neon-blue);
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
-            cursor: pointer;
-        }
-
-        .tactical-map-view {
-            display: none;
-            height: 220px;
-            background: #020408;
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--neon-blue);
-        }
-
-        .radar-sweep {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            height: 300px;
-            margin-top: -150px;
-            margin-left: -150px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg at 50% 50%, rgba(0, 243, 255, 0.2) 0deg, transparent 60deg, transparent 360deg);
-            animation: sweep 4s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes sweep {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="glass-card">
-            <div class="header-title">J.A.R.V.I.S. // NÚCLEO DE COMANDO</div>
-            <div class="status-line">
-                <span class="status-dot"></span>
-                En línea // Escucha Continua Activa
-            </div>
-
-            <div class="nav-grid">
-                <div class="nav-btn active" id="btn-neural" onclick="switchView('neural')">NÚCLEO NEURONAL</div>
-                <div class="nav-btn" id="btn-tactical" onclick="switchView('tactical')">MAPA TÁCTICO SATELITAL</div>
-            </div>
-
-            <div id="view-neural">
-                <div class="telemetry-row" style="border: none; padding-top: 0;">
-                    <div>CPU NÚCLEO: <span class="telemetry-val">25%</span></div>
-                    <div>MEMORIA: <span class="telemetry-val">4.2 / 16 GB</span></div>
-                    <div>RED: <span class="telemetry-val">16 ms // ÓPTIMO</span></div>
-                </div>
-                <div class="telemetry-row" style="margin-top: 8px;">
-                    <div class="timestamp" id="live-clock">23:24:00</div>
-                    <div style="color: var(--text-dim);">NODO BUIN // 13 NOV. 2026</div>
-                </div>
-            </div>
-
-            <div id="view-tactical" class="tactical-map-view">
-                <div class="radar-sweep"></div>
-                <div style="position: absolute; top: 10px; left: 10px; font-size: 0.7rem; color: var(--neon-blue); letter-spacing: 1px;">
-                    [SAT-FEED: NODO BUIN SECTOR 01]
-                </div>
-                <div style="position: absolute; bottom: 10px; left: 10px; font-size: 0.65rem; color: var(--text-dim);">
-                    COORD: -33.7312° S, 70.7415° W
-                </div>
-            </div>
-        </div>
-
-        <div class="glass-card">
-            <div class="section-title">
-                MAPA ORBITAL DE PROYECTOS
-                <span class="badge-orbits">4 ÓRBITAS ACTIVAS</span>
-            </div>
-            
-            <div class="orbit-container">
-                <div class="orbit-ring"></div>
-                <div class="planet" style="top: 25px; left: 35px;" onclick="alert('Módulo JARVIS Core: Operativo')">Agente</div>
-                <div class="planet" style="bottom: 25px; right: 45px; border-color: var(--neon-gold); color: var(--neon-gold);" onclick="alert('La Isla de los Números: En desarrollo activo ($3.99 USD)')">J.A.R.V.I.S.</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        setInterval(() => {
-            const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0];
-            document.getElementById('live-clock').innerText = timeString;
-        }, 1000);
-
-        function switchView(view) {
-            const btnNeural = document.getElementById('btn-neural');
-            const btnTactical = document.getElementById('btn-tactical');
-            const viewNeural = document.getElementById('view-neural');
-            const viewTactical = document.getElementById('view-tactical');
-
-            if(view === 'neural') {
-                btnNeural.classList.add('active');
-                btnTactical.classList.remove('active');
-                viewNeural.style.display = 'block';
-                viewTactical.style.display = 'none';
-            } else {
-                btnTactical.classList.add('active');
-                btnNeural.classList.remove('active');
-                viewTactical.style.display = 'block';
-                viewNeural.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-# Renderizar el HUD en Streamlit
-components.html(jarvis_hud_html, height=700, scrolling=True)
