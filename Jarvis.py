@@ -19,7 +19,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-jarvis_hud_html = """
+# Parte 1: Estilos y Estructura Superior del HUD
+hud_part1 = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -38,14 +39,7 @@ jarvis_hud_html = """
             --text-main: #eaf6ff;
             --text-dim: #6f8ba6;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -57,15 +51,7 @@ jarvis_hud_html = """
                 linear-gradient(90deg, rgba(0, 229, 255, 0.025) 1px, transparent 1px);
             background-size: 100% 100%, 22px 22px, 22px 22px;
         }
-
-        .hud-wrapper {
-            max-width: 460px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
+        .hud-wrapper { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
         .hud-card {
             background: var(--card-bg);
             border: 1px solid var(--border-cyan);
@@ -75,277 +61,70 @@ jarvis_hud_html = """
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
         }
-
-        .header-top {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-
+        .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
         .arc-orb {
-            width: 44px;
-            height: 62px;
-            border-radius: 50%;
+            width: 44px; height: 62px; border-radius: 50%;
             border: 2.5px solid var(--cyan);
             box-shadow: 0 0 16px var(--cyan-glow), inset 0 0 14px var(--cyan-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
             animation: orbBreath 3s ease-in-out infinite;
         }
-
         .arc-orb-core {
-            width: 24px;
-            height: 36px;
-            border-radius: 50%;
+            width: 24px; height: 36px; border-radius: 50%;
             background: radial-gradient(circle, #7cf4ff 0%, #00b8d4 70%, transparent 100%);
             box-shadow: 0 0 12px var(--cyan);
         }
-
         @keyframes orbBreath {
             0%, 100% { transform: scale(1); box-shadow: 0 0 14px var(--cyan-glow), inset 0 0 10px var(--cyan-glow); }
             50% { transform: scale(1.04); box-shadow: 0 0 24px var(--cyan), inset 0 0 18px var(--cyan); }
         }
-
-        .title-block h1 {
-            font-size: 1.25rem;
-            line-height: 1.25;
-            letter-spacing: 2px;
-            color: var(--text-main);
-            font-weight: bold;
-        }
-
-        .status-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 6px;
-            font-size: 0.72rem;
-            color: var(--green);
-            letter-spacing: 1.2px;
-        }
-
-        .dot-live {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--green);
-            box-shadow: 0 0 8px var(--green);
-            animation: blink 1.6s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.35; }
-        }
-
+        .title-block h1 { font-size: 1.25rem; line-height: 1.25; letter-spacing: 2px; color: var(--text-main); font-weight: bold; }
+        .status-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 0.72rem; color: var(--green); letter-spacing: 1.2px; }
+        .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 1.6s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         .mode-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(3, 7, 15, 0.65);
-            padding: 6px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 18px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            background: rgba(3, 7, 15, 0.65); padding: 6px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 18px;
         }
-
         .mode-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 11px 8px;
-            border-radius: 9px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-main);
-            font-size: 0.76rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 11px 8px; border-radius: 9px; border: 1px solid transparent; background: transparent;
+            color: var(--text-main); font-size: 0.76rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; transition: all 0.25s ease; text-align: center;
         }
-
-        .mode-btn.active {
-            background: rgba(0, 229, 255, 0.12);
-            border-color: var(--cyan);
-            color: var(--cyan);
-            box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
-        }
-
+        .mode-btn.active { background: rgba(0, 229, 255, 0.12); border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 14px rgba(0, 229, 255, 0.2); }
         .telemetry-grid {
-            display: grid;
-            grid-template-columns: 0.85fr 0.95fr 0.95fr 1.25fr;
-            gap: 8px;
-            align-items: start;
-            border-top: 1px solid rgba(0, 229, 255, 0.12);
-            padding-top: 14px;
+            display: grid; grid-template-columns: 0.85fr 0.95fr 0.95fr 1.25fr;
+            gap: 8px; align-items: start; border-top: 1px solid rgba(0, 229, 255, 0.12); padding-top: 14px;
         }
-
-        .tel-label {
-            font-size: 0.63rem;
-            color: var(--text-dim);
-            line-height: 1.25;
-            margin-bottom: 4px;
-        }
-
-        .tel-value {
-            font-size: 0.78rem;
-            color: var(--cyan);
-            font-weight: bold;
-            line-height: 1.3;
-        }
-
-        .clock-box {
-            text-align: right;
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
-            padding-left: 8px;
-        }
-
-        .clock-big {
-            font-size: 1.05rem;
-            color: var(--gold);
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(245, 176, 39, 0.35);
-        }
-
-        .clock-sub {
-            font-size: 0.62rem;
-            color: var(--text-dim);
-            margin-top: 3px;
-            line-height: 1.3;
-        }
-
-        #tactical-panel {
-            display: none;
-            margin-top: 14px;
-            border-top: 1px solid rgba(0, 229, 255, 0.15);
-            padding-top: 14px;
-        }
-
+        .tel-label { font-size: 0.63rem; color: var(--text-dim); line-height: 1.25; margin-bottom: 4px; }
+        .tel-value { font-size: 0.78rem; color: var(--cyan); font-weight: bold; line-height: 1.3; }
+        .clock-box { text-align: right; border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 8px; }
+        .clock-big { font-size: 1.05rem; color: var(--gold); font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 10px rgba(245, 176, 39, 0.35); }
+        .clock-sub { font-size: 0.62rem; color: var(--text-dim); margin-top: 3px; line-height: 1.3; }
+        #tactical-panel { display: none; margin-top: 14px; border-top: 1px solid rgba(0, 229, 255, 0.15); padding-top: 14px; }
         .sat-screen {
-            position: relative;
-            height: 210px;
-            border-radius: 12px;
-            border: 1px solid var(--cyan);
-            background:
-                radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(2, 6, 14, 0.96) 75%),
-                repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px),
-                repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px);
+            position: relative; height: 210px; border-radius: 12px; border: 1px solid var(--cyan);
+            background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.12) 0%, rgba(2, 6, 14, 0.96) 75%),
+            repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px),
+            repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.07) 0px, rgba(0, 229, 255, 0.07) 1px, transparent 1px, transparent 26px);
             overflow: hidden;
         }
-
-        .radar-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid rgba(0, 229, 255, 0.25);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
+        .radar-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 50%; pointer-events: none; }
         .radar-beam {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 260px;
-            height: 260px;
-            margin-top: -130px;
-            margin-left: -130px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, rgba(0, 229, 255, 0.32) 0deg, transparent 65deg);
-            animation: spinRadar 4s linear infinite;
-            pointer-events: none;
+            position: absolute; top: 50%; left: 50%; width: 260px; height: 260px; margin-top: -130px; margin-left: -130px;
+            border-radius: 50%; background: conic-gradient(from 0deg, rgba(0, 229, 255, 0.32) 0deg, transparent 65deg);
+            animation: spinRadar 4s linear infinite; pointer-events: none;
         }
-
-        @keyframes spinRadar {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .sat-target {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--gold);
-            box-shadow: 0 0 10px var(--gold);
-            animation: blink 1.2s infinite;
-        }
-
-        .orbital-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .orbital-header h2 {
-            font-size: 0.9rem;
-            letter-spacing: 1.5px;
-            color: var(--text-main);
-            line-height: 1.3;
-        }
-
-        .orbit-badge {
-            font-size: 0.65rem;
-            color: var(--gold);
-            background: rgba(245, 176, 39, 0.12);
-            border: 1px solid rgba(245, 176, 39, 0.5);
-            padding: 5px 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            line-height: 1.25;
-        }
-
-        .canvas-box {
-            position: relative;
-            width: 100%;
-            height: 245px;
-            border-radius: 12px;
-            background: radial-gradient(circle at 55% 65%, rgba(0, 180, 255, 0.14) 0%, rgba(3, 6, 14, 0.95) 70%);
-            border: 1px solid rgba(0, 229, 255, 0.12);
-            overflow: hidden;
-        }
-
-        #solarCanvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            cursor: pointer;
-        }
-
-        .node-status-bar {
-            margin-top: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: rgba(0, 229, 255, 0.06);
-            border: 1px solid rgba(0, 229, 255, 0.18);
-            font-size: 0.72rem;
-            color: var(--cyan);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .voice-btn {
-            background: rgba(0, 229, 255, 0.15);
-            border: 1px solid var(--cyan);
-            color: var(--cyan);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.68rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        @keyframes spinRadar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .sat-target { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: blink 1.2s infinite; }
+        .orbital-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .orbital-header h2 { font-size: 0.9rem; letter-spacing: 1.5px; color: var(--text-main); line-height: 1.3; }
+        .orbit-badge { font-size: 0.65rem; color: var(--gold); background: rgba(245, 176, 39, 0.12); border: 1px solid rgba(245, 176, 39, 0.5); padding: 5px 10px; border-radius: 8px; text-align: center; font-weight: bold; line-height: 1.25; }
+        .canvas-box { position: relative; width: 100%; height: 245px; border-radius: 12px; background: radial-gradient(circle at 55% 65%, rgba(0, 180, 255, 0.14) 0%, rgba(3, 6, 14, 0.95) 70%); border: 1px solid rgba(0, 229, 255, 0.12); overflow: hidden; }
+        #solarCanvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+        .node-status-bar { margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.18); font-size: 0.72rem; color: var(--cyan); display: flex; justify-content: space-between; align-items: center; }
+        .voice-btn { background: rgba(0, 229, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 4px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -402,15 +181,9 @@ jarvis_hud_html = """
                     <div class="radar-beam"></div>
                     <div class="sat-target" style="top: 48%; left: 50%;"></div>
                     <div class="sat-target" style="top: 32%; left: 64%; background: #00e5ff; box-shadow: 0 0 8px #00e5ff;"></div>
-                    <div style="position: absolute; top: 10px; left: 12px; font-size: 0.66rem; color: var(--cyan);">
-                        SAT-LINK // NODO BUIN (CHILE)
-                    </div>
-                    <div style="position: absolute; top: 10px; right: 12px; font-size: 0.64rem; color: var(--green);">
-                        LOCKED
-                    </div>
-                    <div style="position: absolute; bottom: 10px; left: 12px; font-size: 0.64rem; color: var(--text-dim);">
-                        LAT: -33.7312° S | LON: -70.7415° W
-                    </div>
+                    <div style="position: absolute; top: 10px; left: 12px; font-size: 0.66rem; color: var(--cyan);">SAT-LINK // NODO BUIN (CHILE)</div>
+                    <div style="position: absolute; top: 10px; right: 12px; font-size: 0.64rem; color: var(--green);">LOCKED</div>
+                    <div style="position: absolute; bottom: 10px; left: 12px; font-size: 0.64rem; color: var(--text-dim);">LAT: -33.7312° S | LON: -70.7415° W</div>
                 </div>
             </div>
         </div>
@@ -431,7 +204,10 @@ jarvis_hud_html = """
             </div>
         </div>
     </div>
+"""
 
+# Parte 2: Lógica JavaScript y Cierre del HUD
+hud_part2 = """
     <script>
         function updateTelemetry() {
             const now = new Date();
@@ -566,4 +342,22 @@ jarvis_hud_html = """
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
-            const clickY
+            const clickY = e.clientY - rect.top;
+
+            for (const item of renderedPositions) {
+                const dist = Math.hypot(clickX - item.x, clickY - item.y);
+                if (dist < 28) {
+                    document.getElementById('selected-node-info').innerText = item.node.info;
+                    speakJarvis('Nodo ' + item.node.name);
+                    break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+"""
+
+# Unir ambas partes y renderizar en Streamlit de forma 100% segura
+jarvis_hud_html = hud_part1 + hud_part2
+components.html(jarvis_hud_html, height=760, scrolling=False)
