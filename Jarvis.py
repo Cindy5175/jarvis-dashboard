@@ -78,4 +78,4 @@ st.markdown("""
 
 # Caja de chat central despejada
 st.markdown("---")
-st.text_input("💬 Escribe un comando o consulta para JARVIS...", 
+st.text_input("💬 Escribe un comando o consulta para JARVIS...", placeholder="Ej: Analizar sistema...")
