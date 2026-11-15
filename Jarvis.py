@@ -58,11 +58,11 @@ st.markdown('<div style="text-align: center; font-size: 1.5rem;">⏏️</div>', 
 st.markdown('<div class="jarvis-title">J.A.R.V.I.S.<br>IA</div>', unsafe_allow_html=True)
 st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;">[ NODO BUIN, CHILE // Domingo, 15 de noviembre de 2026 - 13:05:00 ]</div>', unsafe_allow_html=True)
 
-# Núcleo Neuronal con Google Gemini, ZapIA y las 7 Memorias SQLite
+# Núcleo Neuronal (Caja principal de estado)
 st.markdown("""
     <div class="cyber-box">
         <div style="font-weight: bold; margin-bottom: 8px; color: #00f3ff;">NUCLEO NEURONAL CYBER-GRID [JARVIS]</div>
-        <div style="font-size: 0.85rem; color: #94a3b8;">Conectado a Google Gemini, ZapIA, 7 Memorias SQLite y Nodo Buin</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Conectado a Gemini, ZapIA, 7 Memorias SQLite y Nodo Buin</div>
     </div>
 """, unsafe_allow_html=True)
 
