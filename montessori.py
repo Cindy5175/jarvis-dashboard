@@ -1,12 +1,12 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Módulo Montessori // Nodo Buin",
+    page_title="Módulo Montessori // Aventura Infantil",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos idénticos con diseño lúdico, colores vivos y animaciones de estrellas
+# Estilos limpios, colores vivos y diseño lúdico para niños
 st.markdown("""
     <style>
         .stApp { background-color: #fff9e6 !important; color: #2c3e50 !important; font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif; }
@@ -22,7 +22,7 @@ st.markdown("""
             margin-bottom: 20px;
         }
         .montessori-header h1 { color: white !important; font-size: 2rem; margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
-        .montessori-header p { color: white !important; font-size: 1rem; margin: 5px 0 0 0; }
+        .montessori-header p { color: white !important; font-size: 1.1rem; margin: 8px 0 0 0; font-weight: bold; }
         
         .banner-dia {
             background: linear-gradient(135deg, #ffa502, #ff4757);
@@ -91,13 +91,13 @@ rango = "🐾 Explorador Tierno"
 if estrellas >= 10:
     rango = "📖 Genio de las Letras"
 if estrellas >= 20:
-    rango = "🚀 Maestro del Nodo Buin"
+    rango = "🚀 Maestro del Saber"
 
-# Cabecera visual
+# Cabecera visual amigable para niños (sin términos internos)
 st.markdown("""
     <div class="montessori-header">
         <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
-        <p>Aprende, juega y gana estrellas en el Nodo Buin</p>
+        <p>Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>
     </div>
 """, unsafe_allow_html=True)
 
