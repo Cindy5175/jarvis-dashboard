@@ -85,25 +85,25 @@ if "mensajes" not in st.session_state:
     ]
 
 # --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK (TRIÁNGULO INVERTIDO) ---
-estilos_css = (
-    '<style>'
-    '.stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }'
-    'p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }'
-    '.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; border-radius: 6px; }'
-    '.stButton>button p, .stButton>button span { color: #060913 !important; }'
-    '.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }'
-    '.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }'
-    
-    /* REACTOR ARC ESTILO STARK - INVERTIDO */
-    '.arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; }'
-    '.arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }'
-    '.arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }'
-    
-    '.holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15); margin: 0 auto 20px auto; max-width: 800px; }'
-    '#MainMenu {visibility: hidden;}'
-    'footer {visibility: hidden;}'
-    '</style>'
-)
+estilos_css = """
+    <style>
+        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
+        p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+        .stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; border-radius: 6px; }
+        .stButton>button p, .stButton>button span { color: #060913 !important; }
+        .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+        
+        /* REACTOR ARC ESTILO STARK - INVERTIDO */
+        .arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; }
+        .arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }
+        .arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }
+        
+        .holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15); margin: 0 auto 20px auto; max-width: 800px; }
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
 st.markdown(estilos_css, unsafe_allow_html=True)
 
 # --- 1. PANTALLA DE BLOQUEO DE SEGURIDAD ---
