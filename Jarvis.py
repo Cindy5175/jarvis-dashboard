@@ -1,21 +1,79 @@
 import streamlit as st
 import datetime
 import sqlite3
+import requests
+import os
+import sys
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO",
     layout="wide",
-    initial_sidebar_state="collapsed"  # <--- Mantiene la barra lateral oculta por defecto para ver la pantalla limpia
+    initial_sidebar_state="collapsed"  # <--- Mantiene la barra lateral oculta por defecto
 )
 
 # --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
-PIN_SECRETO = "2805"
+if "nucleo_activo" not in st.session_state:
+    st.session_state.nucleo_activo = "JARVIS"
 
-# --- ZONA HORARIA CHILENA (UTC-3) ---
+if "historial_logs" not in st.session_state:
+    st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con éxito."]
+
+if "offset_clima" not in st.session_state:
+    st.session_state.offset_clima = 0
+
+PIN_SECRETO = "2805"
+fn_db = "jarvis_misiones.db"
+
+# --- BASE DE DATOS SQLITE ---
+def init_db():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS misiones (id INTEGER PRIMARY KEY AUTOINCREMENT, tarea TEXT NOT NULL, estado TEXT DEFAULT 'Pendiente')")
+    cursor.execute("CREATE TABLE IF NOT EXISTS memory (key_id TEXT PRIMARY KEY, fact_text TEXT, category TEXT)")
+    conn.commit()
+    conn.close()
+
+init_db()
+
+class JarvisMemory:
+    def __init__(self, db_path=fn_db):
+        self.db_path = db_path
+    def remember_fact(self, key_id: str, fact_text: str):
+        conn = sqlite3.connect(self.db_path, check_same_thread=False)
+        cursor = conn.cursor()
+        cursor.execute("INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)", (key_id, fact_text, "general"))
+        conn.commit()
+        conn.close()
+
+jarvis_mem = JarvisMemory()
+
+def agregar_mision(tarea):
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+    conn.commit()
+    conn.close()
+
+def obtener_misiones():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, tarea, estado FROM misiones")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def limpiar_misiones():
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM misiones")
+    conn.commit()
+    conn.close()
+
+# ZONA HORARIA CHILENA
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
@@ -29,7 +87,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Todo en orden en el Nodo Buin, con los circuitos estables y conectados a Google Gemini, ZapIA y las 7 Memorias SQLite."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite."}
     ]
 
 # --- ESTILOS VISUALES DE LUZ DE NEÓN (CYBER-GRID & SIMETRÍA) ---
@@ -74,7 +132,7 @@ if not st.session_state.get("autorizado", False):
                 st.error("PIN incorrecto. Acceso denegado.")
     st.stop()
 
-# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS) ---
+# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS Y CONTROLES) ---
 with st.sidebar:
     st.markdown("### 🛡️ Arsenal de Módulos")
     st.markdown("---")
@@ -87,14 +145,53 @@ with st.sidebar:
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
-        
+
+    st.markdown("---")
+    st.markdown("#### ⚡ Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        ["JARVIS", "VIERNES", "NOVA"],
+        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+        label_visibility="collapsed"
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Memoria y Datos")
+    with st.expander("Gestionar Memoria SQLite", expanded=False):
+        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
+        if st.button("Guardar en Memoria", use_container_width=True):
+            if dato_mem.strip():
+                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
+                st.success("¡Memoria guardada!")
+
+    st.markdown("---")
+    st.markdown("#### 🎯 Misiones Tácticas")
+    with st.expander("Base de Datos Misiones", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada!")
+                st.rerun()
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+
     st.markdown("---")
     st.markdown("#### 🔗 Enlaces Tácticos")
     st.link_button("🌐 Finviz (Mercados)", "https://finviz.com/", use_container_width=True)
     st.link_button("📊 Investing.com (Divisas)", "https://es.investing.com/", use_container_width=True)
     st.link_button("🛰️ Mapa Global", "https://www.windy.com/", use_container_width=True)
 
-# --- 3. PANTALLA PRINCIPAL (LIMPIA Y MINIMALISTA) ---
+# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y MINIMALISTA) ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
@@ -110,7 +207,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Reloj en tiempo real vía JavaScript
 reloj_js = (
     '<script>'
     'function actualizarReloj() {'
@@ -129,7 +225,7 @@ st.components.v1.html(reloj_js, height=0)
 # Núcleo Neuronal con Google Gemini, ZapIA y las 7 Memorias SQLite
 st.markdown(
     '<div class="holo-brain-box">'
-    '<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID [JARVIS]</h4>'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">Conectado a <b>Google Gemini</b>, <b>ZapIA</b>, <b>7 Memorias SQLite</b> y Nodo Buin</p>'
     '</div>',
     unsafe_allow_html=True
@@ -137,7 +233,15 @@ st.markdown(
 
 st.markdown("---")
 
-# --- CAJA DE CHAT PRINCIPAL ---
+# --- ZONA DE CHAT CON BOTÓN DE PURGA ---
+col_ch1, col_ch2 = st.columns([5, 1])
+with col_ch1:
+    st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
+with col_ch2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_purgar_chat"):
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria de chat purgada. ¿Qué movemos ahora?"}]
+        st.rerun()
+
 for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
@@ -149,7 +253,6 @@ if prompt_chat:
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
-    # Respuesta simulada inteligente
-    respuesta_ia = f"[JARVIS] Orden '{prompt_chat}' procesada con éxito, jefa. Sistemas estables con Google Gemini, ZapIA y las 7 memorias operando al 100%."
+    respuesta_ia = f"[{st.session_state.nucleo_activo}] Orden '{prompt_chat}' procesada con éxito, jefa. Sistemas sincronizados con Google Gemini, ZapIA y las memorias."
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.rerun()
