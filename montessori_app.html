@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo Infantil Divertido // Nodo Buin</title>
+    <title>Módulo Infantil Divertido // Aventura Montessori</title>
     <style>
         body {
             background-color: #fff9e6;
@@ -22,8 +22,8 @@
             margin-bottom: 20px;
         }
         header h1 { font-size: 2rem; margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+        header p { font-size: 1.1rem; margin: 8px 0 0 0; font-weight: bold; }
         
-        /* Banner de Misión del Día */
         .banner-dia {
             background: linear-gradient(135deg, #ffa502, #ff4757);
             color: white;
@@ -106,7 +106,6 @@
         }
         .action-btn:hover { background-color: #26af5f; transform: scale(1.02); }
 
-        /* Estilo para las estrellitas flotantes de premio */
         .confetti-star {
             position: fixed;
             font-size: 24px;
@@ -124,10 +123,10 @@
 
     <header>
         <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
-        <p>Aprende, juega y gana estrellas en el Nodo Buin</p>
+        <p>Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>
     </header>
 
-    <div class="banner-dia" id="bannerMision">
+    <div class="banner-dia">
         🌟 ¡Misión del Día Destacada: La Torre Rosa (Doble Diversión)! 🐼
     </div>
 
@@ -179,19 +178,14 @@
 
         function completarMision(nombre, estrellas, event) {
             totalEstrellas += estrellas;
-            
-            // Actualizar marcador
             document.getElementById('contadorEstrellas').innerText = "⭐ Estrellas: " + totalEstrellas;
 
-            // Actualizar Rango según estrellas
             let rango = "🐾 Explorador Tierno";
             if (totalEstrellas >= 10) rango = "📖 Genio de las Letras";
-            if (totalEstrellas >= 20) rango = "🚀 Maestro del Nodo Buin";
+            if (totalEstrellas >= 20) rango = "🚀 Maestro del Saber";
             document.getElementById('textoRango').innerText = "Rango: " + rango;
 
-            // Lanzar estrellitas flotantes animadas desde el botón apretado
             lanzarEstrellas(event.clientX, event.clientY);
-
             alert("🎉 ¡Excelente trabajo! Completaste '" + nombre + "' y ganaste " + estrellas + " estrellas brillantes.");
         }
 
