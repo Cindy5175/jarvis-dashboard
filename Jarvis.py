@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA",
     layout="wide",
-    initial_sidebar_state="collapsed"  # <--- ESTO MANTIENE LA BARRA OCULTA POR DEFECTO
+    initial_sidebar_state="collapsed"  # Mantiene el panel oculto por defecto
 )
 
 # Estilos visuales de luz de neón futurista (Cyber-Grid)
@@ -31,48 +31,40 @@ st.markdown("""
             margin-bottom: 20px;
         }
 
-        /* Ocultar elementos predeterminados de Streamlit que ensucian la interfaz */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS)
+# 1. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS DE JARVIS)
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛡️ Arsenal de Módulos")
     st.markdown("---")
     
-    # Aquí metemos todos los módulos que estaban sueltos en la pantalla
+    # Únicamente los controles de sistema reales de JARVIS
     if st.button("🔒 Bloquear Sistema", use_container_width=True):
         st.warning("Sistema bloqueado por seguridad.")
         
     if st.button("🔄 Reinicio Total", use_container_width=True):
         st.error("Reiniciando núcleos neuronales...")
         
-    st.markdown("---")
-    st.markdown("#### 🚀 Enlaces del Sistema")
-    if st.button("👶 Módulo Montessori", use_container_width=True):
-        st.info("Abriendo interfaz infantil...")
-        
-    if st.button("🗺️ Mapa Táctico Satelital", use_container_width=True):
-        st.info("Cargando coordenadas...")
+    # Puedes agregar aquí otros ajustes propios de JARVIS si los necesitas, 
+    # completamente separados de proyectos externos como el infantil.
 
 # ==========================================
 # 2. PANTALLA PRINCIPAL (LIMPIA Y MINIMALISTA)
 # ==========================================
-
-# Logo y Encabezado principal
 st.markdown('<div style="text-align: center; font-size: 1.5rem;">⏏️</div>', unsafe_allow_html=True)
 st.markdown('<div class="jarvis-title">J.A.R.V.I.S.<br>IA</div>', unsafe_allow_html=True)
-st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;">[ CHILE // Domingo, 15 de noviembre de 2026 ]</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;">[ NODO BUIN, CHILE // Domingo, 15 de noviembre de 2026 ]</div>', unsafe_allow_html=True)
 
 # Núcleo Neuronal (Caja principal de estado)
 st.markdown("""
     <div class="cyber-box">
         <div style="font-weight: bold; margin-bottom: 8px; color: #00f3ff;">NUCLEO NEURONAL CYBER-GRID [JARVIS]</div>
-        <div style="font-size: 0.85rem; color: #94a3b8;">Conectado a Gemini, ZapIA y 7 Memorias SQLite</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Conectado a Gemini, ZapIA, 7 Memorias SQLite y Nodo Buin</div>
     </div>
 """, unsafe_allow_html=True)
 
