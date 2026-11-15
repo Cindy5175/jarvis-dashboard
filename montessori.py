@@ -6,7 +6,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos limpios, colores vivos y diseño lúdico para niños
 st.markdown("""
     <style>
         .stApp { background-color: #fff9e6 !important; color: #2c3e50 !important; font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif; }
@@ -81,11 +80,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inicializar memoria de sesión para estrellas
 if "estrellas_montessori" not in st.session_state:
     st.session_state.estrellas_montessori = 0
 
-# Calcular rango actual según estrellas
 estrellas = st.session_state.estrellas_montessori
 rango = "🐾 Explorador Tierno"
 if estrellas >= 10:
@@ -93,7 +90,6 @@ if estrellas >= 10:
 if estrellas >= 20:
     rango = "🚀 Maestro del Saber"
 
-# Cabecera visual amigable para niños (sin términos internos)
 st.markdown("""
     <div class="montessori-header">
         <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
@@ -101,14 +97,12 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Banner de Misión del Día
 st.markdown("""
     <div class="banner-dia">
         🌟 ¡Misión del Día Destacada: La Torre Rosa (Doble Diversión)! 🐼
     </div>
 """, unsafe_allow_html=True)
 
-# Barra de marcadores (Estrellas y Rango)
 col_m1, col_m2 = st.columns(2)
 with col_m1:
     st.markdown(f'<div style="text-align: center;"><div class="badge-estrellas">⭐ Estrellas: {estrellas}</div></div>', unsafe_allow_html=True)
@@ -117,11 +111,9 @@ with col_m2:
 
 st.markdown("---")
 
-# Tarjetas de actividades en dos columnas
 col1, col2 = st.columns(2)
 
 with col1:
-    # Tarjeta 1: Vida Práctica
     st.markdown("""
     <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #1e90ff; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
         <div class="mascota-guia"><span>🐵</span><span>¡Mono Chispas te acompaña!</span></div>
@@ -135,7 +127,6 @@ with col1:
         st.success("🎉 ¡Excelente trabajo! Completaste 'Trasvase de Semillas' y ganaste 2 estrellas brillantes.")
         st.rerun()
 
-    # Tarjeta 3: Matemáticas
     st.markdown("""
     <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #ffa502; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
         <div class="mascota-guia"><span>🦁</span><span>¡León Dani te enseña!</span></div>
@@ -150,7 +141,6 @@ with col1:
         st.rerun()
 
 with col2:
-    # Tarjeta 2: Sensorial
     st.markdown("""
     <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #2ed573; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
         <div class="mascota-guia"><span>🐼</span><span>¡Panda Lolo te guía!</span></div>
@@ -164,7 +154,6 @@ with col2:
         st.success("🎉 ¡Fantástico! Completaste 'La Torre Rosa' y ganaste 3 estrellas brillantes.")
         st.rerun()
 
-    # Tarjeta 4: Lenguaje
     st.markdown("""
     <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #ff4757; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
         <div class="mascota-guia"><span>🐰</span><span>¡Conejo Saltarín te ayuda!</span></div>
