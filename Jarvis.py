@@ -158,14 +158,14 @@ with tab_hud:
 
     st.markdown("---")
 
-    # 2. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html)
+    # 2. RENDERIZAR EL HUD GRÁFICO EXTERNO (Con altura expandida a 1100px para que no se corte nada)
     try:
         with open("hud.html", "r", encoding="utf-8") as f:
             jarvis_hud_html = f.read()
     except Exception:
         jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
 
-    st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
+    st.components.v1.html(jarvis_hud_html, height=1100, scrolling=True)
     st.markdown("---")
 
     # 3. GESTIÓN DE MISIONES
