@@ -7,7 +7,7 @@ import sys
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
-    page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO",
+    page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"  # <--- Mantiene la barra lateral oculta por defecto
 )
@@ -18,12 +18,6 @@ if "autorizado" not in st.session_state:
 
 if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
-
-if "historial_logs" not in st.session_state:
-    st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con éxito."]
-
-if "offset_clima" not in st.session_state:
-    st.session_state.offset_clima = 0
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -87,7 +81,7 @@ else:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite."}
+        {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"}
     ]
 
 # --- ESTILOS VISUALES DE LUZ DE NEÓN (CYBER-GRID & SIMETRÍA) ---
@@ -132,7 +126,7 @@ if not st.session_state.get("autorizado", False):
                 st.error("PIN incorrecto. Acceso denegado.")
     st.stop()
 
-# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS Y CONTROLES) ---
+# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS COMPLETO) ---
 with st.sidebar:
     st.markdown("### 🛡️ Arsenal de Módulos")
     st.markdown("---")
@@ -186,10 +180,20 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 🔗 Enlaces Tácticos")
+    st.markdown("#### 🎥 Videovigilancia y Cámaras Globales")
+    with st.expander("Cámaras en Vivo / Satelite", expanded=False):
+        st.link_button("Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
+        st.link_button("Concepción Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
+        st.link_button("Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
+        st.link_button("Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
+        st.link_button("Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("#### 🌐 Enlaces Tácticos")
     st.link_button("🌐 Finviz (Mercados)", "https://finviz.com/", use_container_width=True)
     st.link_button("📊 Investing.com (Divisas)", "https://es.investing.com/", use_container_width=True)
-    st.link_button("🛰️ Mapa Global", "https://www.windy.com/", use_container_width=True)
+    st.link_button("🛰️ OSIRIS (McLaren)", "https://osiris.mclaren.com/", use_container_width=True)
+    st.link_button("🌍 PlanetEar", "https://www.planet.com/", use_container_width=True)
 
 # --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y MINIMALISTA) ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -233,7 +237,7 @@ st.markdown(
 
 st.markdown("---")
 
-# --- ZONA DE CHAT CON BOTÓN DE PURGA ---
+# --- ZONA DE CHAT CON BOTÓN DE PURGA Y PERSONALIDAD /HUMAN ---
 col_ch1, col_ch2 = st.columns([5, 1])
 with col_ch1:
     st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
@@ -246,13 +250,28 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS (ej: /human, ELI10)...")
 
 if prompt_chat:
     st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
-    respuesta_ia = f"[{st.session_state.nucleo_activo}] Orden '{prompt_chat}' procesada con éxito, jefa. Sistemas sincronizados con Google Gemini, ZapIA y las memorias."
+    q = prompt_chat.lower().strip()
+    nucleo = st.session_state.nucleo_activo
+    prefijo = f"[{nucleo}] "
+
+    # Lógica con toque humano / sarcasmo fino y comandos
+    if q.startswith("/human") or " /human" in q:
+        c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+        respuesta_ia = f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, con sarcasmo fino y la precisión de siempre."
+    elif q.startswith("eli10") or " eli10" in q:
+        t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+        respuesta_ia = f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
+    elif "hola" in q or "saludos" in q:
+        respuesta_ia = f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin y el sarcasmo calibrado. ¿Qué dominamos hoy?"
+    else:
+        respuesta_ia = f"{prefijo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, jefa. Conectado a Google Gemini, ZapIA y las memorias. ¿Cuál es nuestro siguiente movimiento?"
+
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.rerun()
