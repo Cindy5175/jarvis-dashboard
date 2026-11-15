@@ -3,46 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo Infantil Montessori // Nodo Buin</title>
+    <title>Módulo Infantil Divertido // Nodo Buin</title>
     <style>
         :root {
-            --bg-color: #fdfbf7;
+            --bg-color: #fff9e6;
             --card-bg: #ffffff;
             --text-color: #2c3e50;
-            --accent-wood: #d9c5b2;
-            --primary-green: #739e82;
-            --soft-green: #eaf2ed;
-            --accent-terra: #d9826b;
-            --border-color: #e6e0d8;
+            --color-rojo: #ff4757;
+            --color-verde: #2ed573;
+            --color-azul: #1e90ff;
+            --color-amarillo: #ffa502;
+            --border-color: #dfe4ea;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif;
             margin: 0;
             padding: 20px;
-            transition: background 0.3s ease;
         }
 
         header {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 30px;
+            padding: 15px 0;
+            background: linear-gradient(135deg, #1e90ff, #2ed573);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
         }
 
         header h1 {
-            color: var(--primary-green);
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin: 0;
-            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
         }
 
         header p {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-top: 5px;
+            font-size: 1rem;
+            margin: 5px 0 0 0;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .badge-estrellas {
+            background-color: var(--color-amarillo);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .controls-bar {
@@ -54,19 +71,21 @@
         }
 
         .btn-filter {
-            background-color: var(--soft-green);
-            color: var(--primary-green);
-            border: 1px solid var(--primary-green);
-            padding: 8px 16px;
-            border-radius: 20px;
+            background-color: white;
+            color: var(--text-color);
+            border: 3px solid var(--color-azul);
+            padding: 8px 18px;
+            border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
         }
 
         .btn-filter:hover, .btn-filter.active {
-            background-color: var(--primary-green);
+            background-color: var(--color-azul);
             color: white;
+            transform: scale(1.05);
         }
 
         .grid-container {
@@ -79,39 +98,51 @@
 
         .montessori-card {
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            border-top: 8px solid var(--color-azul);
         }
+
+        .montessori-card:nth-child(2) { border-top-color: var(--color-verde); }
+        .montessori-card:nth-child(3) { border-top-color: var(--color-amarillo); }
+        .montessori-card:nth-child(4) { border-top-color: var(--color-rojo); }
 
         .montessori-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            transform: translateY(-5px);
         }
 
-        .card-tag {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent-terra);
+        .mascota-guia {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: #f1f2f6;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
             font-weight: bold;
-            margin-bottom: 8px;
+        }
+
+        .mascota-avatar {
+            font-size: 1.5rem;
         }
 
         .montessori-card h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             color: var(--text-color);
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
 
         .montessori-card p {
             font-size: 0.9rem;
-            color: #555;
+            color: #57606f;
             line-height: 1.4;
             margin-bottom: 20px;
         }
@@ -120,95 +151,114 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid var(--border-color);
+            border-top: 2px dashed var(--border-color);
             padding-top: 12px;
-            font-size: 0.8rem;
-            color: #888;
         }
 
         .action-btn {
-            background-color: var(--text-color);
+            background-color: var(--color-verde);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 6px rgba(46, 213, 115, 0.3);
+            transition: background 0.2s;
         }
 
         .action-btn:hover {
-            background-color: var(--primary-green);
+            background-color: #26af5f;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🌿 Módulo Infantil Montessori</h1>
-        <p>Entorno Pedagógico Preparado // Nodo Buin</p>
+        <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
+        <p>Aprende, juega y gana estrellas en el Nodo Buin</p>
     </header>
 
+    <div class="stats-bar">
+        <div class="badge-estrellas" id="contadorEstrellas">⭐ Estrellas ganadas: 0</div>
+    </div>
+
     <div class="controls-bar">
-        <button class="btn-filter active" onclick="filtrar('todos')">Todas las Áreas</button>
-        <button class="btn-filter" onclick="filtrar('practica')">Vida Práctica</button>
-        <button class="btn-filter" onclick="filtrar('sensorial')">Área Sensorial</button>
-        <button class="btn-filter" onclick="filtrar('matematicas')">Matemáticas</button>
-        <button class="btn-filter" onclick="filtrar('lenguaje')">Lenguaje y Letras</button>
+        <button class="btn-filter active" onclick="filtrar('todos')">🌈 Todas</button>
+        <button class="btn-filter" onclick="filtrar('practica')">🔴 Vida Práctica</button>
+        <button class="btn-filter" onclick="filtrar('sensorial')">🟢 Sensorial</button>
+        <button class="btn-filter" onclick="filtrar('matematicas')">🟡 Matemáticas</button>
+        <button class="btn-filter" onclick="filtrar('lenguaje')">🔵 Lenguaje</button>
     </div>
 
     <div class="grid-container" id="gridCards">
         
         <div class="montessori-card" data-category="practica">
             <div>
-                <div class="card-tag">Vida Práctica</div>
+                <div class="mascota-guia">
+                    <span class="mascota-avatar">🐵</span>
+                    <span>¡Mono Chispas te acompaña!</span>
+                </div>
                 <h3>Trasvase de Semillas</h3>
-                <p>Ejercicio de motricidad fina y concentración mediante el uso de cucharas para mover granos entre recipientes.</p>
+                <p>Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro sin botar nada.</p>
             </div>
             <div class="card-footer">
-                <span>Edad: 2.5 - 4 años</span>
-                <button class="action-btn" onclick="activarActividad('Trasvase de Semillas')">Iniciar</button>
+                <span>🎁 Premia: ⭐️⭐️</span>
+                <button class="action-btn" onclick="completarMision('Trasvase de Semillas', 2)">¡Jugar!</button>
             </div>
         </div>
 
         <div class="montessori-card" data-category="sensorial">
             <div>
-                <div class="card-tag">Área Sensorial</div>
-                <h3>Torre Rosa</h3>
-                <p>Bloques cúbicos seriados por tamaño que introducen conceptos de dimensiones tridimensionales y orden visual.</p>
+                <div class="mascota-guia">
+                    <span class="mascota-avatar">🐼</span>
+                    <span>¡Panda Lolo te guía!</span>
+                </div>
+                <h3>La Torre Rosa</h3>
+                <p>Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.</p>
             </div>
             <div class="card-footer">
-                <span>Edad: 3 - 5 años</span>
-                <button class="action-btn" onclick="activarActividad('Torre Rosa')">Iniciar</button>
+                <span>🎁 Premia: ⭐️⭐️⭐️</span>
+                <button class="action-btn" onclick="completarMision('La Torre Rosa', 3)">¡Jugar!</button>
             </div>
         </div>
 
         <div class="montessori-card" data-category="matematicas">
             <div>
-                <div class="card-tag">Matemáticas</div>
+                <div class="mascota-guia">
+                    <span class="mascota-avatar">🦁</span>
+                    <span>¡León Dani te enseña!</span>
+                </div>
                 <h3>Barras Numéricas</h3>
-                <p>Construcción física de las cantidades del 1 al 10 relacionando longitud con valor numérico exacto.</p>
+                <p>Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.</p>
             </div>
             <div class="card-footer">
-                <span>Edad: 4 - 6 años</span>
-                <button class="action-btn" onclick="activarActividad('Barras Numéricas')">Iniciar</button>
+                <span>🎁 Premia: ⭐️⭐️⭐️</span>
+                <button class="action-btn" onclick="completarMision('Barras Numéricas', 3)">¡Jugar!</button>
             </div>
         </div>
 
         <div class="montessori-card" data-category="lenguaje">
             <div>
-                <div class="card-tag">Lenguaje y Letras</div>
+                <div class="mascota-guia">
+                    <span class="mascota-avatar">🐰</span>
+                    <span>¡Conejo Saltarín te ayuda!</span>
+                </div>
                 <h3>Letras de Lija</h3>
-                <p>Exploración táctil y fonética de las letras del alfabeto para preparar la mano y la mente hacia la lectoescritura.</p>
+                <p>Sigue con tu dedito la forma de las letras mientras escuchas su sonido mágico.</p>
             </div>
             <div class="card-footer">
-                <span>Edad: 3 - 5 años</span>
-                <button class="action-btn" onclick="activarActividad('Letras de Lija')">Iniciar</button>
+                <span>🎁 Premia: ⭐️⭐️</span>
+                <button class="action-btn" onclick="completarMision('Letras de Lija', 2)">¡Jugar!</button>
             </div>
         </div>
 
     </div>
 
     <script>
+        let totalEstrellas = 0;
+
         function filtrar(categoria) {
             const botones = document.querySelectorAll('.btn-filter');
             botones.forEach(b => b.classList.remove('active'));
@@ -224,8 +274,10 @@
             });
         }
 
-        function activarActividad(nombre) {
-            alert("Módulo Montessori activado: " + nombre + ". ¡Excelente elección para el desarrollo pedagógico, jefa!");
+        function completarMision(nombre, estrellas) {
+            totalEstrellas += estrellas;
+            document.getElementById('contadorEstrellas').innerText = "⭐ Estrellas ganadas: " + totalEstrellas;
+            alert("🎉 ¡Excelente trabajo, campeón/a! Completaste '" + nombre + "' y ganaste " + estrellas + " estrellas brillantes. ¡Sigue así!");
         }
     </script>
 
