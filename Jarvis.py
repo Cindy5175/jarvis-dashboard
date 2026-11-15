@@ -135,7 +135,7 @@ if not st.session_state.get("autorizado", False):
 tab_hud, tab_financiero = st.tabs(["⚡ HUD Táctico Principal", "📈 Centro Financiero & Mercados"])
 
 with tab_hud:
-    # 1. CONTROLES DEL SISTEMA PRINCIPALES (ÚNICOS, ARRIBA)
+    # 1. CONTROLES DEL SISTEMA (Únicos y arriba del todo)
     col_ctrl1, col_ctrl2 = st.columns(2)
     with col_ctrl1:
         st.markdown("#### 🛠️ Controles del Sistema")
