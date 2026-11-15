@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Infantil Montessori // Nodo Buin</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --accent-wood: #d9c5b2;
+            --primary-green: #739e82;
+            --soft-green: #eaf2ed;
+            --accent-terra: #d9826b;
+            --border-color: #e6e0d8;
+        }
 
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-green);
+            font-size: 1.8rem;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-filter {
+            background-color: var(--soft-green);
+            color: var(--primary-green);
+            border: 1px solid var(--primary-green);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .btn-filter:hover, .btn-filter.active {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .montessori-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .montessori-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-terra);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .montessori-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-color);
+            font-size: 1.2rem;
+        }
+
+        .montessori-card p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .action-btn {
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-green);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌿 Módulo Infantil Montessori</h1>
+        <p>Entorno Pedagógico Preparado // Nodo Buin</p>
+    </header>
+
+    <div class="controls-bar">
+        <button class="btn-filter active" onclick="filtrar('todos')">Todas las Áreas</button>
+        <button class="btn-filter" onclick="filtrar('practica')">Vida Práctica</button>
+        <button class="btn-filter" onclick="filtrar('sensorial')">Área Sensorial</button>
+        <button class="btn-filter" onclick="filtrar('matematicas')">Matemáticas</button>
+        <button class="btn-filter" onclick="filtrar('lenguaje')">Lenguaje y Letras</button>
+    </div>
+
+    <div class="grid-container" id="gridCards">
+        
+        <div class="montessori-card" data-category="practica">
+            <div>
+                <div class="card-tag">Vida Práctica</div>
+                <h3>Trasvase de Semillas</h3>
+                <p>Ejercicio de motricidad fina y concentración mediante el uso de cucharas para mover granos entre recipientes.</p>
+            </div>
+            <div class="card-footer">
+                <span>Edad: 2.5 - 4 años</span>
+                <button class="action-btn" onclick="activarActividad('Trasvase de Semillas')">Iniciar</button>
+            </div>
+        </div>
+
+        <div class="montessori-card" data-category="sensorial">
+            <div>
+                <div class="card-tag">Área Sensorial</div>
+                <h3>Torre Rosa</h3>
+                <p>Bloques cúbicos seriados por tamaño que introducen conceptos de dimensiones tridimensionales y orden visual.</p>
+            </div>
+            <div class="card-footer">
+                <span>Edad: 3 - 5 años</span>
+                <button class="action-btn" onclick="activarActividad('Torre Rosa')">Iniciar</button>
+            </div>
+        </div>
+
+        <div class="montessori-card" data-category="matematicas">
+            <div>
+                <div class="card-tag">Matemáticas</div>
+                <h3>Barras Numéricas</h3>
+                <p>Construcción física de las cantidades del 1 al 10 relacionando longitud con valor numérico exacto.</p>
+            </div>
+            <div class="card-footer">
+                <span>Edad: 4 - 6 años</span>
+                <button class="action-btn" onclick="activarActividad('Barras Numéricas')">Iniciar</button>
+            </div>
+        </div>
+
+        <div class="montessori-card" data-category="lenguaje">
+            <div>
+                <div class="card-tag">Lenguaje y Letras</div>
+                <h3>Letras de Lija</h3>
+                <p>Exploración táctil y fonética de las letras del alfabeto para preparar la mano y la mente hacia la lectoescritura.</p>
+            </div>
+            <div class="card-footer">
+                <span>Edad: 3 - 5 años</span>
+                <button class="action-btn" onclick="activarActividad('Letras de Lija')">Iniciar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function filtrar(categoria) {
+            const botones = document.querySelectorAll('.btn-filter');
+            botones.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.montessori-card');
+            cards.forEach(card => {
+                if (categoria === 'todos' || card.dataset.category === categoria) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function activarActividad(nombre) {
+            alert("Módulo Montessori activado: " + nombre + ". ¡Excelente elección para el desarrollo pedagógico, jefa!");
+        }
+    </script>
+
+</body>
+</html>
