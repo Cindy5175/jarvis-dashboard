@@ -372,6 +372,3 @@ with tab_financiero:
         st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
     st.markdown("---")
     st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
-Con esta versión eliminamos la dependencia de cargar hud.html por separado: todo el HUD táctico —la cabecera del Reactor Arc, el Mapa Táctico Satelital con pulso activo en el Nodo Buin y el Mapa Orbital de Proyectos— se renderiza de forma nativa en la página sin ningún corte ni barra de desplazamiento interna.
-
-Solo descárgalo, súbelo a tu repositorio reemplazando el contenido de tu Jarvis.py y recarga la aplicación. ¡Ahora sí tienes a tu JARVIS completo y operativo! 🚀🤖
