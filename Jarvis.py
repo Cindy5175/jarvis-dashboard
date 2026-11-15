@@ -16,7 +16,7 @@ initial_sidebar_state="collapsed"
 
 # --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
-st.session_state.autorizado = False
+    st.session_state.autorizado = False
 
 if "nucleo_activo" not in st.session_state:
 st.session_state.nucleo_activo = "JARVIS"
