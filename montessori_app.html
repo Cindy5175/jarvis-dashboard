@@ -5,25 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulo Infantil Divertido // Nodo Buin</title>
     <style>
-        :root {
-            --bg-color: #fff9e6;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --color-rojo: #ff4757;
-            --color-verde: #2ed573;
-            --color-azul: #1e90ff;
-            --color-amarillo: #ffa502;
-            --border-color: #dfe4ea;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: #fff9e6;
+            color: #2c3e50;
             font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif;
             margin: 0;
             padding: 20px;
         }
-
         header {
             text-align: center;
             padding: 15px 0;
@@ -31,63 +19,46 @@
             color: white;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
-
-        header h1 {
-            font-size: 2rem;
-            margin: 0;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
-        }
-
-        header p {
+        header h1 { font-size: 2rem; margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+        
+        /* Banner de Misión del Día */
+        .banner-dia {
+            background: linear-gradient(135deg, #ffa502, #ff4757);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             font-size: 1rem;
-            margin: 5px 0 0 0;
         }
 
         .stats-bar {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 25px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
+            flex-wrap: wrap;
         }
-
         .badge-estrellas {
-            background-color: var(--color-amarillo);
+            background-color: #ffa502;
             color: white;
-            padding: 8px 15px;
+            padding: 8px 16px;
             border-radius: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .controls-bar {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn-filter {
-            background-color: white;
-            color: var(--text-color);
-            border: 3px solid var(--color-azul);
-            padding: 8px 18px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-filter:hover, .btn-filter.active {
-            background-color: var(--color-azul);
+        .badge-rango {
+            background-color: #1e90ff;
             color: white;
-            transform: scale(1.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -95,29 +66,19 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-
         .montessori-card {
-            background-color: var(--card-bg);
+            background-color: #ffffff;
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            border-top: 8px solid var(--color-azul);
+            border-top: 8px solid #1e90ff;
         }
-
-        .montessori-card:nth-child(2) { border-top-color: var(--color-verde); }
-        .montessori-card:nth-child(3) { border-top-color: var(--color-amarillo); }
-        .montessori-card:nth-child(4) { border-top-color: var(--color-rojo); }
-
-        .montessori-card:hover {
-            transform: translateY(-5px);
-        }
-
+        .montessori-card:nth-child(2) { border-top-color: #2ed573; }
+        .montessori-card:nth-child(3) { border-top-color: #ffa502; }
+        .montessori-card:nth-child(4) { border-top-color: #ff4757; }
         .mascota-guia {
             display: flex;
             align-items: center;
@@ -129,47 +90,33 @@
             font-size: 0.85rem;
             font-weight: bold;
         }
-
-        .mascota-avatar {
-            font-size: 1.5rem;
-        }
-
-        .montessori-card h3 {
-            margin: 0 0 8px 0;
-            color: var(--text-color);
-            font-size: 1.3rem;
-        }
-
-        .montessori-card p {
-            font-size: 0.9rem;
-            color: #57606f;
-            line-height: 1.4;
-            margin-bottom: 20px;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 2px dashed var(--border-color);
-            padding-top: 12px;
-        }
-
         .action-btn {
-            background-color: var(--color-verde);
+            background-color: #2ed573;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px;
             border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            width: 100%;
+            margin-top: 15px;
             box-shadow: 0 3px 6px rgba(46, 213, 115, 0.3);
-            transition: background 0.2s;
+            transition: transform 0.1s;
         }
+        .action-btn:hover { background-color: #26af5f; transform: scale(1.02); }
 
-        .action-btn:hover {
-            background-color: #26af5f;
+        /* Estilo para las estrellitas flotantes de premio */
+        .confetti-star {
+            position: fixed;
+            font-size: 24px;
+            animation: flyUp 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 999;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
         }
     </style>
 </head>
@@ -180,106 +127,85 @@
         <p>Aprende, juega y gana estrellas en el Nodo Buin</p>
     </header>
 
+    <div class="banner-dia" id="bannerMision">
+        🌟 ¡Misión del Día Destacada: La Torre Rosa (Doble Diversión)! 🐼
+    </div>
+
     <div class="stats-bar">
-        <div class="badge-estrellas" id="contadorEstrellas">⭐ Estrellas ganadas: 0</div>
+        <div class="badge-estrellas" id="contadorEstrellas">⭐ Estrellas: 0</div>
+        <div class="badge-rango" id="textoRango">🐾 Rango: Explorador Tierno</div>
     </div>
 
-    <div class="controls-bar">
-        <button class="btn-filter active" onclick="filtrar('todos')">🌈 Todas</button>
-        <button class="btn-filter" onclick="filtrar('practica')">🔴 Vida Práctica</button>
-        <button class="btn-filter" onclick="filtrar('sensorial')">🟢 Sensorial</button>
-        <button class="btn-filter" onclick="filtrar('matematicas')">🟡 Matemáticas</button>
-        <button class="btn-filter" onclick="filtrar('lenguaje')">🔵 Lenguaje</button>
-    </div>
-
-    <div class="grid-container" id="gridCards">
-        
-        <div class="montessori-card" data-category="practica">
+    <div class="grid-container">
+        <div class="montessori-card">
             <div>
-                <div class="mascota-guia">
-                    <span class="mascota-avatar">🐵</span>
-                    <span>¡Mono Chispas te acompaña!</span>
-                </div>
+                <div class="mascota-guia"><span>🐵</span><span>¡Mono Chispas te acompaña!</span></div>
                 <h3>Trasvase de Semillas</h3>
-                <p>Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro sin botar nada.</p>
+                <p>Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro.</p>
             </div>
-            <div class="card-footer">
-                <span>🎁 Premia: ⭐️⭐️</span>
-                <button class="action-btn" onclick="completarMision('Trasvase de Semillas', 2)">¡Jugar!</button>
-            </div>
+            <button class="action-btn" onclick="completarMision('Trasvase de Semillas', 2, event)">¡Jugar! (Gana 2 ⭐️)</button>
         </div>
 
-        <div class="montessori-card" data-category="sensorial">
+        <div class="montessori-card">
             <div>
-                <div class="mascota-guia">
-                    <span class="mascota-avatar">🐼</span>
-                    <span>¡Panda Lolo te guía!</span>
-                </div>
+                <div class="mascota-guia"><span>🐼</span><span>¡Panda Lolo te guía!</span></div>
                 <h3>La Torre Rosa</h3>
                 <p>Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.</p>
             </div>
-            <div class="card-footer">
-                <span>🎁 Premia: ⭐️⭐️⭐️</span>
-                <button class="action-btn" onclick="completarMision('La Torre Rosa', 3)">¡Jugar!</button>
-            </div>
+            <button class="action-btn" onclick="completarMision('La Torre Rosa', 3, event)">¡Jugar! (Gana 3 ⭐️)</button>
         </div>
 
-        <div class="montessori-card" data-category="matematicas">
+        <div class="montessori-card">
             <div>
-                <div class="mascota-guia">
-                    <span class="mascota-avatar">🦁</span>
-                    <span>¡León Dani te enseña!</span>
-                </div>
+                <div class="mascota-guia"><span>🦁</span><span>¡León Dani te enseña!</span></div>
                 <h3>Barras Numéricas</h3>
                 <p>Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.</p>
             </div>
-            <div class="card-footer">
-                <span>🎁 Premia: ⭐️⭐️⭐️</span>
-                <button class="action-btn" onclick="completarMision('Barras Numéricas', 3)">¡Jugar!</button>
-            </div>
+            <button class="action-btn" onclick="completarMision('Barras Numéricas', 3, event)">¡Jugar! (Gana 3 ⭐️)</button>
         </div>
 
-        <div class="montessori-card" data-category="lenguaje">
+        <div class="montessori-card">
             <div>
-                <div class="mascota-guia">
-                    <span class="mascota-avatar">🐰</span>
-                    <span>¡Conejo Saltarín te ayuda!</span>
-                </div>
+                <div class="mascota-guia"><span>🐰</span><span>¡Conejo Saltarín te ayuda!</span></div>
                 <h3>Letras de Lija</h3>
                 <p>Sigue con tu dedito la forma de las letras mientras escuchas su sonido mágico.</p>
             </div>
-            <div class="card-footer">
-                <span>🎁 Premia: ⭐️⭐️</span>
-                <button class="action-btn" onclick="completarMision('Letras de Lija', 2)">¡Jugar!</button>
-            </div>
+            <button class="action-btn" onclick="completarMision('Letras de Lija', 2, event)">¡Jugar! (Gana 2 ⭐️)</button>
         </div>
-
     </div>
 
     <script>
         let totalEstrellas = 0;
 
-        function filtrar(categoria) {
-            const botones = document.querySelectorAll('.btn-filter');
-            botones.forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        function completarMision(nombre, estrellas, event) {
+            totalEstrellas += estrellas;
+            
+            // Actualizar marcador
+            document.getElementById('contadorEstrellas').innerText = "⭐ Estrellas: " + totalEstrellas;
 
-            const cards = document.querySelectorAll('.montessori-card');
-            cards.forEach(card => {
-                if (categoria === 'todos' || card.dataset.category === categoria) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            // Actualizar Rango según estrellas
+            let rango = "🐾 Explorador Tierno";
+            if (totalEstrellas >= 10) rango = "📖 Genio de las Letras";
+            if (totalEstrellas >= 20) rango = "🚀 Maestro del Nodo Buin";
+            document.getElementById('textoRango').innerText = "Rango: " + rango;
+
+            // Lanzar estrellitas flotantes animadas desde el botón apretado
+            lanzarEstrellas(event.clientX, event.clientY);
+
+            alert("🎉 ¡Excelente trabajo! Completaste '" + nombre + "' y ganaste " + estrellas + " estrellas brillantes.");
         }
 
-        function completarMision(nombre, estrellas) {
-            totalEstrellas += estrellas;
-            document.getElementById('contadorEstrellas').innerText = "⭐ Estrellas ganadas: " + totalEstrellas;
-            alert("🎉 ¡Excelente trabajo, campeón/a! Completaste '" + nombre + "' y ganaste " + estrellas + " estrellas brillantes. ¡Sigue así!");
+        function lanzarEstrellas(x, y) {
+            for (let i = 0; i < 5; i++) {
+                let star = document.createElement('div');
+                star.innerHTML = "⭐";
+                star.className = "confetti-star";
+                star.style.left = (x + (Math.random() * 60 - 30)) + "px";
+                star.style.top = (y + (Math.random() * 20 - 10)) + "px";
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
         }
     </script>
-
 </body>
 </html>
