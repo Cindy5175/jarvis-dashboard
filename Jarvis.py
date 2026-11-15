@@ -19,7 +19,7 @@ if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
 if "nucleo_activo" not in st.session_state:
-st.session_state.nucleo_activo = "JARVIS"
+    st.session_state.nucleo_activo = "JARVIS"
 
 if "historial_logs" not in st.session_state:
 st.session_state.historial_logs = ["[SISTEMA] Nodo Buin inicializado con exito."]
