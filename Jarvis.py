@@ -43,7 +43,7 @@ if "nucleo_activo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": saludo_actual + ", jefa. Sistemas al 100% en el Nodo Buin. Pregúntame lo que necesites saber."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. Todos los sistemas operativos al 100% en el Nodo Buin."}
     ]
 
 PIN_SECRETO = "2805"
@@ -135,17 +135,17 @@ if not st.session_state.get("autorizado", False):
 tab_hud, tab_financiero = st.tabs(["⚡ HUD Táctico Principal", "📈 Centro Financiero & Mercados"])
 
 with tab_hud:
-    # 1. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html)
+    # 1. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html limpio)
     try:
         with open("hud.html", "r", encoding="utf-8") as f:
             jarvis_hud_html = f.read()
     except Exception:
-        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html - Verifique archivo en el repositorio</h3>"
+        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
 
     st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
     st.markdown("---")
 
-    # 2. CONTROLES Y SELECTOR DE NÚCLEO
+    # 2. CONTROLES DEL SISTEMA Y SELECTOR DE NÚCLEO (Ordenados fuera del HUD)
     col_ctrl1, col_ctrl2 = st.columns(2)
     with col_ctrl1:
         st.markdown("#### 🛠️ Controles del Sistema")
@@ -185,7 +185,7 @@ with tab_hud:
 
     st.markdown("---")
 
-    # 3. CANAL NEURONAL / CHAT INTELIGENTE
+    # 3. CANAL NEURONAL / CHAT
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
         st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
@@ -206,19 +206,14 @@ with tab_hud:
         texto_usuario = prompt_chat.lower()
         nucleo = st.session_state.nucleo_activo
         
-        # Respuestas con contenido real y coherente
         if "arturo prat" in texto_usuario:
-            respuesta_ia = f"[{nucleo}]: Arturo Prat Chacón fue un abogado, marino y máximo héroe naval de Chile. Es recordado universalmente por su heroico liderazgo y sacrificio al mando de la corveta Esmeralda durante el Combate Naval de Iquique el 21 de mayo de 1879."
+            respuesta_ia = f"[{nucleo}]: Arturo Prat Chacón fue un abogado, marino y máximo héroe naval de Chile, recordado por su valor en el Combate Naval de Iquique el 21 de mayo de 1879."
         elif "despierto" in texto_usuario or "hola" in texto_usuario:
-            respuesta_ia = f"[{nucleo}]: Absolutamente despierto y operando al 100%, jefa. ¿Qué investigamos o resolvemos ahora?"
+            respuesta_ia = f"[{nucleo}]: Absolutamente despierto y operando al 100%, jefa. ¿Qué resolvemos ahora?"
         elif "reactor" in texto_usuario or "energia" in texto_usuario:
-            respuesta_ia = f"[{nucleo}]: El reactor Arc en el Nodo Buin opera estable a plena potencia. Sin anomalías térmicas."
-        elif "clima" in texto_usuario or "tiempo" in texto_usuario:
-            respuesta_ia = f"[{nucleo}]: Los sensores atmosféricos reportan condiciones estables en la zona, jefa."
-        elif "gracias" in texto_usuario:
-            respuesta_ia = f"[{nucleo}]: A su servicio, jefa. Para eso se diseñó esta armadura."
+            respuesta_ia = f"[{nucleo}]: El reactor Arc opera estable a plena potencia en el Nodo Buin."
         else:
-            respuesta_ia = f"[{nucleo}]: Analizando su consulta: '{prompt_chat}'. He procesado los parámetros y la información solicitada con éxito, jefa."
+            respuesta_ia = f"[{nucleo}]: Analizando su consulta sobre '{prompt_chat}'. Instrucción ejecutada con éxito en el Nodo Buin, jefa."
 
         st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
         jarvis_mem.log_episode("AI_RESP", respuesta_ia)
