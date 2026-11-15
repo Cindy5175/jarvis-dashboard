@@ -135,17 +135,7 @@ if not st.session_state.get("autorizado", False):
 tab_hud, tab_financiero = st.tabs(["⚡ HUD Táctico Principal", "📈 Centro Financiero & Mercados"])
 
 with tab_hud:
-    # 1. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html limpio)
-    try:
-        with open("hud.html", "r", encoding="utf-8") as f:
-            jarvis_hud_html = f.read()
-    except Exception:
-        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
-
-    st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
-    st.markdown("---")
-
-    # 2. CONTROLES DEL SISTEMA Y SELECTOR DE NÚCLEO (Ordenados fuera del HUD)
+    # 1. CONTROLES DEL SISTEMA PRINCIPALES (ÚNICOS, ARRIBA)
     col_ctrl1, col_ctrl2 = st.columns(2)
     with col_ctrl1:
         st.markdown("#### 🛠️ Controles del Sistema")
@@ -167,6 +157,18 @@ with tab_hud:
             st.rerun()
 
     st.markdown("---")
+
+    # 2. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html)
+    try:
+        with open("hud.html", "r", encoding="utf-8") as f:
+            jarvis_hud_html = f.read()
+    except Exception:
+        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
+
+    st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
+    st.markdown("---")
+
+    # 3. GESTIÓN DE MISIONES
     st.markdown("#### 📋 Gestión de Misiones")
     with st.expander("Base de Datos (7 Memorias)", expanded=False):
         nueva_tarea = st.text_input("Nueva Misión Táctica:", placeholder="Ej: Revisar despliegue...")
@@ -185,7 +187,7 @@ with tab_hud:
 
     st.markdown("---")
 
-    # 3. CANAL NEURONAL / CHAT
+    # 4. CANAL NEURONAL / CHAT
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
         st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
