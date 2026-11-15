@@ -46,7 +46,7 @@ if "mensajes" not in st.session_state:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- INICIALIZACION DE BASE DE DATOS SQLITE (Misiones & 7 Memorias Estrictas) ---
+# --- INICIALIZACION DE BASE DE DATOS SQLITE SEGURA ---
 def init_db():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     cursor = conn.cursor()
@@ -57,13 +57,33 @@ def init_db():
         estado TEXT DEFAULT 'Pendiente'
     )
     """)
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS memory (
-        slot_id INTEGER PRIMARY KEY,
-        fact_text TEXT,
-        category TEXT
-    )
-    """)
+    
+    # Verificamos la tabla memory para evitar conflictos de esquema previo
+    cursor.execute("PRAGMA table_info(memory);")
+    columnas = [col[1] for col in cursor.fetchall()]
+    
+    if not columnas:
+        # Si no existe, la creamos con slot_id
+        cursor.execute("""
+        CREATE TABLE memory (
+            slot_id INTEGER PRIMARY KEY,
+            fact_text TEXT,
+            category TEXT
+        )
+        """)
+        conn.commit()
+    elif "slot_id" not in columnas:
+        # Si existía con el esquema antiguo (key_id), la actualizamos de forma limpia
+        cursor.execute("DROP TABLE memory;")
+        cursor.execute("""
+        CREATE TABLE memory (
+            slot_id INTEGER PRIMARY KEY,
+            fact_text TEXT,
+            category TEXT
+        )
+        """)
+        conn.commit()
+
     # Asegurar que existan exactamente los 7 slots de memoria estricta
     for i in range(1, 8):
         cursor.execute("INSERT OR IGNORE INTO memory (slot_id, fact_text, category) VALUES (?, ?, ?)", 
@@ -361,20 +381,4 @@ with tab_principal:
             else:
                 respuesta_ia = f"{prefijo_nucleo}Orden ejecutada con precisión en el Nodo Buin, jefa. Analizando: '{prompt_chat}'."
 
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-            st.rerun()
-
-with tab_financiero:
-    st.markdown("### Centro Financiero & Mercados Tradicionales")
-    st.markdown("Acceso directo a plataformas bursátiles y de análisis macroeconómico.")
-    st.markdown("---")
-    col_f1, col_f2, col_f3 = st.columns(3)
-    with col_f1:
-        st.markdown("#### Finviz")
-        st.link_button("Abrir Finviz (Acciones)", "https://finviz.com/map.ashx", use_container_width=True)
-    with col_f2:
-        st.markdown("#### Investing.com")
-        st.link_button("Abrir Investing.com", "https://es.investing.com/", use_container_width=True)
-    with col_f3:
-        st.markdown("#### Divisas & Commodities")
-        st.link_button("Mercado Forex", "https://es.investing.com/currencies/streaming-forex-rates-majors", use_container_width=True)
+            st
