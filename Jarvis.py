@@ -84,7 +84,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"}
     ]
 
-# --- ESTILOS VISUALES DE LUZ DE NEÓN (CYBER-GRID & SIMETRÍA) ---
+# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK (TRIÁNGULO INVERTIDO) ---
 estilos_css = (
     '<style>'
     '.stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }'
@@ -93,9 +93,12 @@ estilos_css = (
     '.stButton>button p, .stButton>button span { color: #060913 !important; }'
     '.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }'
     '.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }'
+    
+    /* REACTOR ARC ESTILO STARK - INVERTIDO */
     '.arc-reactor-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; }'
-    '.arc-ring { width: 50px; height: 50px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #00f3ff 0%, #060913 70%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), inset 0 0 8px rgba(0, 243, 255, 0.5); margin-bottom: 8px; }'
-    '.arc-triangle { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 15px solid #060913; filter: drop-shadow(0 0 5px #00f3ff); }'
+    '.arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }'
+    '.arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }'
+    
     '.holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15); margin: 0 auto 20px auto; max-width: 800px; }'
     '#MainMenu {visibility: hidden;}'
     'footer {visibility: hidden;}'
@@ -195,14 +198,15 @@ with st.sidebar:
     st.link_button("🛰️ OSIRIS (McLaren)", "https://osiris.mclaren.com/", use_container_width=True)
     st.link_button("🌍 PlanetEar", "https://www.planet.com/", use_container_width=True)
 
-# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y MINIMALISTA) ---
+# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
 
+# Reactor Arc Estilo Tony Stark (Triángulo Invertido)
 st.markdown(
     f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle"></div></div>'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
     f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
     f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
     f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
@@ -261,7 +265,6 @@ if prompt_chat:
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
 
-    # Lógica con toque humano / sarcasmo fino y comandos
     if q.startswith("/human") or " /human" in q:
         c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
         respuesta_ia = f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, con sarcasmo fino y la precisión de siempre."
