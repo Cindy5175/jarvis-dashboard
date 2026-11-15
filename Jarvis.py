@@ -11,10 +11,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos limpios sin forzar posiciones flotantes raras en la caja de chat
+# Estilos limpios y profesionales
 st.markdown("""
     <style>
-        .block-container { padding: 0.5rem 1rem 3rem 1rem !important; max-width: 100% !important; }
+        .block-container { padding: 0.5rem 1rem 4rem 1rem !important; max-width: 100% !important; }
         header, footer, #MainMenu {visibility: hidden;}
         body, .stApp {background-color: #040711; color: #00f3ff; font-family: monospace;}
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff; font-family: monospace; }
@@ -43,7 +43,7 @@ if "nucleo_activo" not in st.session_state:
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
-        {"role": "assistant", "content": saludo_actual + ", jefa. Sistemas al 100%. Pregúntame lo que quieras, estoy completamente despierto."}
+        {"role": "assistant", "content": saludo_actual + ", jefa. Todos los sistemas y núcleos gráficos operativos al 100% en el Nodo Buin."}
     ]
 
 PIN_SECRETO = "2805"
@@ -135,16 +135,17 @@ if not st.session_state.get("autorizado", False):
 tab_hud, tab_financiero = st.tabs(["⚡ HUD Táctico Principal", "📈 Centro Financiero & Mercados"])
 
 with tab_hud:
+    # 1. RENDERIZAR EL HUD GRÁFICO EXTERNO (hud.html)
     try:
         with open("hud.html", "r", encoding="utf-8") as f:
             jarvis_hud_html = f.read()
     except Exception:
-        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
+        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html - Verifique archivo en el repositorio</h3>"
 
     st.components.v1.html(jarvis_hud_html, height=720, scrolling=True)
     st.markdown("---")
 
-    # Controles del Sistema y Selector de Núcleo
+    # 2. CONTROLES Y SELECTOR DE NÚCLEO
     col_ctrl1, col_ctrl2 = st.columns(2)
     with col_ctrl1:
         st.markdown("#### 🛠️ Controles del Sistema")
@@ -184,7 +185,7 @@ with tab_hud:
 
     st.markdown("---")
 
-    # Canal Neuronal (Caja de chat natural y sin solapamientos)
+    # 3. CANAL NEURONAL / CHAT
     col_h1, col_h2 = st.columns([4, 1])
     with col_h1:
         st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
