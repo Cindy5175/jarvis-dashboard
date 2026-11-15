@@ -1,7 +1,6 @@
 import streamlit as st
 import datetime
 import sqlite3
-import os
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
@@ -11,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos limpios y profesionales
+# Estilos limpios, profesionales y animaciones SVG/CSS
 st.markdown("""
     <style>
         .block-container { padding: 0.5rem 1rem 4rem 1rem !important; max-width: 100% !important; }
@@ -21,12 +20,65 @@ st.markdown("""
         .stButton>button { background-color: rgba(0, 243, 255, 0.15) !important; color: #00f3ff !important; border: 1px solid #00f3ff !important; font-weight: bold; font-family: monospace; width: 100%; border-radius: 6px; }
         .stButton>button:hover { background-color: #00f3ff !important; color: #040711 !important; box-shadow: 0 0 10px #00f3ff; }
         [data-testid="stExpander"] summary span { color: #00f3ff !important; font-weight: bold; }
+        
+        /* Estilos del HUD Unificado */
+        .hud-box {
+            border: 1px solid #00f3ff;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: linear-gradient(180deg, rgba(0, 243, 255, 0.06) 0%, rgba(4, 7, 17, 0.9) 100%);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+        }
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .badge-online {
+            border: 1px solid #00ff66;
+            color: #00ff66 !important;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-nodo {
+            border: 1px solid #00f3ff;
+            color: #00f3ff !important;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .radar-grid {
+            background-image: linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @keyframes pulse-dot {
+            0% { r: 4; opacity: 1; }
+            50% { r: 7; opacity: 0.6; }
+            100% { r: 4; opacity: 1; }
+        }
+        .pulse-center {
+            animation: pulse-dot 2s infinite ease-in-out;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
+hora_formateada = now_chile.strftime('%H:%M:%S')
 
 if 0 <= hora_actual < 12:
     saludo_actual = "Buenos días"
@@ -163,14 +215,87 @@ with tab_hud:
 
     st.markdown("---")
 
-    # 2. RENDERIZAR EL HUD GRÁFICO EXTERNO
-    try:
-        with open("hud.html", "r", encoding="utf-8") as f:
-            jarvis_hud_html = f.read()
-    except Exception:
-        jarvis_hud_html = "<h3 style='color:red;'>Error cargando hud.html</h3>"
+    # 2. HUD GRÁFICO UNIFICADO (Sin iframe externo, 100% nativo y sin cortes)
+    hud_completo_html = f"""
+    <div class="hud-box">
+        <div class="hud-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <svg width="36" height="36" viewBox="0 0 40 40">
+                    <polygon points="4,6 36,6 20,35" fill="none" stroke="#00f3ff" stroke-width="2.5"/>
+                    <polygon points="10,10 30,10 20,28" fill="rgba(0,243,255,0.2)" stroke="#00f3ff" stroke-width="1.5"/>
+                </svg>
+                <div>
+                    <div style="font-size: 18px; font-weight: bold; letter-spacing: 2px;">J.A.R.V.I.S. HUD</div>
+                    <div style="font-size: 11px; color: #00ff66;">● EN LÍNEA // NODO BUIN</div>
+                </div>
+            </div>
+            <span class="badge-online">NÚCLEO: {st.session_state.nucleo_activo}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+            <div style="background: rgba(0,243,255,0.05); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 11px; color: #5b8fa8;">CPU NÚCLEO</div>
+                <div style="font-size: 16px; font-weight: bold;">27%</div>
+            </div>
+            <div style="background: rgba(0,243,255,0.05); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 11px; color: #5b8fa8;">MEMORIA RAM</div>
+                <div style="font-size: 16px; font-weight: bold;">4.2 GB</div>
+            </div>
+            <div style="background: rgba(0,243,255,0.05); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 11px; color: #5b8fa8;">REACTOR ARC</div>
+                <div style="font-size: 16px; font-weight: bold;">3.2 GJ/s</div>
+            </div>
+            <div style="background: rgba(0,243,255,0.05); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 11px; color: #ffaa00;">HORA LOCAL</div>
+                <div style="font-size: 16px; font-weight: bold; color: #ffaa00;">{hora_formateada}</div>
+            </div>
+        </div>
+    </div>
 
-    st.components.v1.html(jarvis_hud_html, height=1100, scrolling=True)
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+        <!-- MAPA TÁCTICO SATELITAL -->
+        <div class="hud-box">
+            <div class="hud-header">
+                <span style="font-weight: bold; font-size: 14px;">MAPA TÁCTICO SATELITAL</span>
+                <span class="badge-nodo">● NODO BUIN</span>
+            </div>
+            <div class="radar-grid">
+                <svg width="100%" height="200" viewBox="0 0 300 200">
+                    <circle cx="150" cy="100" r="85" fill="none" stroke="rgba(0,243,255,0.25)" stroke-width="1"/>
+                    <circle cx="150" cy="100" r="58" fill="none" stroke="rgba(0,243,255,0.35)" stroke-width="1"/>
+                    <circle cx="150" cy="100" r="30" fill="none" stroke="rgba(0,243,255,0.5)" stroke-width="1"/>
+                    <line x1="150" y1="10" x2="150" y2="190" stroke="rgba(0,243,255,0.15)" stroke-width="1"/>
+                    <line x1="50" y1="100" x2="250" y2="100" stroke="rgba(0,243,255,0.15)" stroke-width="1"/>
+                    <circle cx="150" cy="100" r="5" fill="#ffaa00" class="pulse-center"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- MAPA ORBITAL DE PROYECTOS -->
+        <div class="hud-box">
+            <div class="hud-header">
+                <span style="font-weight: bold; font-size: 14px;">MAPA ORBITAL DE PROYECTOS</span>
+                <span class="badge-nodo">5 NODOS</span>
+            </div>
+            <div class="radar-grid">
+                <svg width="100%" height="200" viewBox="0 0 300 200">
+                    <ellipse cx="150" cy="105" rx="125" ry="52" fill="none" stroke="rgba(0,243,255,0.25)" stroke-width="1"/>
+                    <ellipse cx="150" cy="105" rx="90" ry="36" fill="none" stroke="rgba(0,243,255,0.35)" stroke-width="1"/>
+                    <ellipse cx="150" cy="105" rx="52" ry="20" fill="none" stroke="rgba(0,243,255,0.45)" stroke-width="1"/>
+                    
+                    <circle cx="240" cy="65" r="4" fill="#00f3ff"/>
+                    <text x="248" y="69" fill="#00f3ff" font-size="11" font-family="monospace">Isla Número</text>
+                    
+                    <circle cx="185" cy="122" r="4" fill="#ffaa00"/>
+                    <text x="193" y="126" fill="#ffffff" font-size="11" font-family="monospace">J.A.R.V.I.S.</text>
+                    
+                    <circle cx="95" cy="136" r="4" fill="#00ff66"/>
+                    <text x="103" y="140" fill="#00ff66" font-size="11" font-family="monospace">Agente IA</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(hud_completo_html, unsafe_allow_html=True)
     st.markdown("---")
 
     # 3. GESTIÓN DE MISIONES
@@ -247,3 +372,6 @@ with tab_financiero:
         st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
     st.markdown("---")
     st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
+Con esta versión eliminamos la dependencia de cargar hud.html por separado: todo el HUD táctico —la cabecera del Reactor Arc, el Mapa Táctico Satelital con pulso activo en el Nodo Buin y el Mapa Orbital de Proyectos— se renderiza de forma nativa en la página sin ningún corte ni barra de desplazamiento interna.
+
+Solo descárgalo, súbelo a tu repositorio reemplazando el contenido de tu Jarvis.py y recarga la aplicación. ¡Ahora sí tienes a tu JARVIS completo y operativo! 🚀🤖
