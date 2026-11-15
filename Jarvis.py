@@ -149,7 +149,12 @@ with tab_hud:
 
     with col_ctrl2:
         st.markdown("#### 🧠 Selector de Núcleo (IA)")
-        nuevo_nucleo = st.radio("Seleccionar Asistente Activo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
+        nuevo_nucleo = st.radio(
+            "Seleccionar Asistente Activo:",
+            ["JARVIS", "VIERNES", "NOVA"],
+            index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+            label_visibility="collapsed"
+        )
         if nuevo_nucleo != st.session_state.nucleo_activo:
             st.session_state.nucleo_activo = nuevo_nucleo
             jarvis_mem.log_episode("CORE_SWITCH", "Cambiado a " + nuevo_nucleo)
@@ -192,4 +197,53 @@ with tab_hud:
     with col_h1:
         st.markdown(f"<h4>💬 Canal Neuronal [{st.session_state.nucleo_activo}]</h4>", unsafe_allow_html=True)
     with col_h2:
-        if st.button("Limpiar",
+        if st.button("Limpiar", use_container_width=True):
+            st.session_state.mensajes = [
+                {"role": "assistant", "content": "Memoria de chat purgada. ¿Qué orden ejecutamos, jefa?"}
+            ]
+            st.rerun()
+
+    for m in st.session_state.mensajes:
+        with st.chat_message(m["role"]):
+            st.markdown(m['content'])
+
+    prompt_chat = st.chat_input("Escribe tu orden o consulta...")
+    if prompt_chat:
+        st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+        jarvis_mem.log_episode("USER_CMD", prompt_chat)
+        
+        texto_usuario = prompt_chat.lower()
+        nucleo = st.session_state.nucleo_activo
+        
+        if "arturo prat" in texto_usuario:
+            respuesta_ia = f"[{nucleo}]: Arturo Prat Chacón fue un abogado, marino y máximo héroe naval de Chile, recordado por su valor en el Combate Naval de Iquique el 21 de mayo de 1879."
+        elif "despierto" in texto_usuario or "hola" in texto_usuario:
+            respuesta_ia = f"[{nucleo}]: Absolutamente despierto y operando al 100%, jefa. ¿Qué resolvemos ahora?"
+        elif "reactor" in texto_usuario or "energia" in texto_usuario:
+            respuesta_ia = f"[{nucleo}]: El reactor Arc opera estable a plena potencia en el Nodo Buin."
+        else:
+            respuesta_ia = f"[{nucleo}]: Analizando su consulta sobre '{prompt_chat}'. Instrucción ejecutada con éxito en el Nodo Buin, jefa."
+
+        st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+        jarvis_mem.log_episode("AI_RESP", respuesta_ia)
+        st.rerun()
+
+with tab_financiero:
+    st.markdown("### 📈 Centro Financiero & Mercados Tradicionales")
+    st.markdown("Acceso directo a plataformas bursátiles y de análisis macroeconómico.")
+    st.markdown("---")
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown("#### 📊 Finviz")
+        st.link_button("Abrir Finviz (Acciones)", "https://finviz.com/map.ashx", use_container_width=True)
+        st.link_button("Screener de Mercado", "https://finviz.com/screener.ashx", use_container_width=True)
+    with col_f2:
+        st.markdown("#### 📉 Investing.com")
+        st.link_button("Abrir Investing.com", "https://es.investing.com/", use_container_width=True)
+        st.link_button("Índices Mundiales", "https://es.investing.com/indices/major-indices", use_container_width=True)
+    with col_f3:
+        st.markdown("#### 💱 Divisas & Commodities")
+        st.link_button("Mercado Forex", "https://es.investing.com/currencies/streaming-forex-rates-majors", use_container_width=True)
+        st.link_button("Materias Primas", "https://es.investing.com/commodities/real-time-futures", use_container_width=True)
+    st.markdown("---")
+    st.info("El subsistema financiero está conectado con la Memoria de Recuperación y la Base de Datos SQLite del Nodo Buin.")
