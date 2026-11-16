@@ -84,13 +84,19 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"}
     ]
 
-# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES SEGUROS ---
+# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES COMPACTOS ---
 estilos_css = """
     <style>
         .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-        .stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; border-radius: 6px; }
-        .stButton>button p, .stButton>button span { color: #060913 !important; }
+        
+        /* AJUSTE FINO DE TEXTOS EN BARRA LATERAL Y MINI MÓDULOS */
+        [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
+        [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+        [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
+        
+        .stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); width: 100%; border-radius: 6px; padding: 5px 10px !important; }
+        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
         .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
         .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
         
@@ -99,9 +105,9 @@ estilos_css = """
         .arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }
         .arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }
         
-        /* BOTÓN TÁCTICO HTML SEGURO */
-        .tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important; text-align: center; padding: 8px 12px; margin: 6px 0; border-radius: 6px; font-weight: bold; text-decoration: none; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); transition: all 0.3s ease; }
-        .tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+        /* BOTÓN TÁCTICO HTML COMPACTO */
+        .tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important; text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 5px; font-size: 0.76rem !important; font-weight: bold; text-decoration: none; font-family: monospace; box-shadow: 0 0 8px rgba(0, 243, 255, 0.5); transition: all 0.25s ease; }
+        .tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; box-shadow: 0 0 12px rgba(0, 243, 255, 0.9); }
 
         .holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15); margin: 0 auto 20px auto; max-width: 800px; }
         #MainMenu {visibility: hidden;}
@@ -187,8 +193,8 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 🎥 Videovigilancia y Cámaras Globales")
-    with st.expander("Cámaras en Vivo / Satelite", expanded=False):
+    st.markdown("#### 🎥 Videovigilancia y Cámaras")
+    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
         st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">Stgo / Chile (Skyline)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">Concepción Webcam</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">Windy Radars & Cams</a>', unsafe_allow_html=True)
@@ -199,18 +205,19 @@ with st.sidebar:
     st.markdown("#### 🛰️ Telemetría Global & Satélites")
     with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
         st.markdown('<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">👁️ OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Satélites en Vivo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">🌎 PlanetEar (Satélites)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Órbita en Vivo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Aéreo)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">🛡️ Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("#### 🌐 Enlaces Tácticos & Nuevos Activos")
+    st.markdown("#### 🌐 Enlaces Tácticos & Activos")
     st.markdown('<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">📈 Seguimiento ANT (Nasdaq)</a>', unsafe_allow_html=True)
     st.markdown('<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">🚀 Monitoreo SpaceX</a>', unsafe_allow_html=True)
     st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">🌐 Finviz (Mercados)</a>', unsafe_allow_html=True)
     st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">📊 Investing.com (Divisas)</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">🌎 PlanetEar</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">💰 Indicadores Económicos (UF/USD)</a>', unsafe_allow_html=True)
 
 # --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
