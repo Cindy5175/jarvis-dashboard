@@ -80,6 +80,24 @@ def limpiar_misiones():
     conn.commit()
     conn.close()
 
+# --- OBTENCIÓN DE INDICADORES ECONÓMICOS EN TIEMPO REAL (CHILE) ---
+@st.cache_data(ttl=300)
+def obtener_indicadores_chile():
+    try:
+        resp = requests.get("https://mindicador.cl/api", timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            return {
+                "dolar": data.get("dolar", {}).get("valor"),
+                "euro": data.get("euro", {}).get("valor"),
+                "uf": data.get("uf", {}).get("valor"),
+                "utm": data.get("utm", {}).get("valor"),
+                "ok": True
+            }
+    except Exception:
+        pass
+    return {"ok": False}
+
 # ZONA HORARIA CHILENA
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
@@ -128,6 +146,21 @@ estilos_css = """
         .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
         .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
         
+        /* TARJETA DE INDICADORES ECONÓMICOS EN VIVO */
+        .econ-card {
+            border: 1px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2);
+        }
+        .econ-label { font-size: 0.75rem !important; opacity: 0.85; }
+        .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
+
         /* REACTOR ARC ESTILO STARK - INVERTIDO */
         .arc-reactor-container {
             display: flex;
@@ -372,6 +405,26 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("#### 💰 Enlaces Financieros")
+    with st.expander("📊 Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        datos_econ = obtener_indicadores_chile()
+        if datos_econ.get("ok"):
+            dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            
+            st.markdown(
+                f'<div class="econ-card"><span class="econ-label">🇺🇸 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">🇪🇺 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">🇨🇱 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.warning("No se pudo conectar con el nodo económico.")
+            
+        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
+            obtener_indicadores_chile.clear()
+            st.rerun()
+
     st.markdown(
         '<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">'
         '📈 Seguimiento ANT (Nasdaq)'
@@ -393,12 +446,6 @@ with st.sidebar:
     st.markdown(
         '<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">'
         '📊 Investing.com (Divisas)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">'
-        '💰 Indicadores Económicos (UF/USD)'
         '</a>',
         unsafe_allow_html=True
     )
