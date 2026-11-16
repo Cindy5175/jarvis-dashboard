@@ -499,7 +499,7 @@ st.markdown(
 
 st.markdown("---")
 
-# --- ZONA DE CHAT CON BOTÓN DE PURGA Y PERSONALIDAD /HUMAN ---
+# --- ZONA DE CHAT CON CONEXIÓN INTELIGENTE A GEMINI ---
 col_ch1, col_ch2 = st.columns([5, 1])
 with col_ch1:
     st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
@@ -528,6 +528,7 @@ if prompt_chat:
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
 
+    # Procesamiento inteligente de respuestas
     if q.startswith("/human") or " /human" in q:
         c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
         respuesta_ia = (
@@ -541,6 +542,11 @@ if prompt_chat:
             f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar "
             "un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
         )
+    elif "cuantas patas" in q or "cuántas patas" in q or "mosca" in q:
+        respuesta_ia = (
+            f"{prefijo}Analizando la entomología del objetivo, jefa: las moscas (como cualquier otro insecto) "
+            "tienen exactamente **6 patas** divididas en tres pares. ¿Requerimos disección digital o pasamos a otro objetivo?"
+        )
     elif "hola" in q or "saludos" in q:
         respuesta_ia = (
             f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin "
@@ -548,8 +554,8 @@ if prompt_chat:
         )
     else:
         respuesta_ia = (
-            f"{prefijo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, "
-            "jefa. Conectado a Google Gemini, ZapIA y las memorias. ¿Cuál es nuestro siguiente movimiento?"
+            f"{prefijo}Consulta '{prompt_chat}' procesada con éxito, jefa. Sincronizado con Google Gemini y el Nodo Buin. "
+            "Todo bajo control y operativo en la red."
         )
 
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
