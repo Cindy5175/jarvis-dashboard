@@ -200,4 +200,69 @@ with st.sidebar:
     with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
         st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Satélites en Vivo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico A
+        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">🛡️ Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### 🌐 Enlaces Tácticos & Nuevos Activos")
+    st.markdown('<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">📈 Seguimiento ANT (Nasdaq)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">🚀 Monitoreo SpaceX</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">🌐 Finviz (Mercados)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">📊 Investing.com (Divisas)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">🌎 PlanetEar</a>', unsafe_allow_html=True)
+
+# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+
+# Reactor Arc Estilo Tony Stark (Triángulo Invertido)
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
+    f'</p>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+reloj_js = (
+    '<script>'
+    'function actualizarReloj() {'
+    'const ahora = new Date();'
+    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
+    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
+    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
+    'if (relojEl) { relojEl.innerText = horaChile; }'
+    '}'
+    'setInterval(actualizarReloj, 1000);'
+    'actualizarReloj();'
+    '</script>'
+)
+st.components.v1.html(reloj_js, height=0)
+
+# Núcleo Neuronal con Google Gemini, ZapIA y las 7 Memorias SQLite
+st.markdown(
+    '<div class="holo-brain-box">'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>'
+    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">Conectado a <b>Google Gemini</b>, <b>ZapIA</b>, <b>7 Memorias SQLite</b> y Nodo Buin</p>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+# --- ZONA DE CHAT CON BOTÓN DE PURGA Y PERSONALIDAD /HUMAN ---
+col_ch1, col_ch2 = st.columns([5, 1])
+with col_ch1:
+    st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
+with col_ch2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_purgar_chat"):
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria de chat purgada. ¿Qué movemos ahora?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=
