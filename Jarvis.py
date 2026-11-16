@@ -9,7 +9,7 @@ import sys
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="collapsed"  # <--- Mantiene la barra lateral oculta por defecto
+    initial_sidebar_state="collapsed"
 )
 
 # --- INICIALIZACION DE SESSION_STATE ---
@@ -198,6 +198,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🛰️ Telemetría Global & Satélites")
     with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
+        st.markdown('<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">👁️ OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Satélites en Vivo)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
@@ -216,7 +217,6 @@ dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Doming
 meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
 
-# Reactor Arc Estilo Tony Stark (Triángulo Invertido)
 st.markdown(
     f'<div class="arc-reactor-container">'
     f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
@@ -243,7 +243,6 @@ reloj_js = (
 )
 st.components.v1.html(reloj_js, height=0)
 
-# Núcleo Neuronal con Google Gemini, ZapIA y las 7 Memorias SQLite
 st.markdown(
     '<div class="holo-brain-box">'
     f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>'
