@@ -200,12 +200,4 @@ with st.sidebar:
     with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
         st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Satélites en Vivo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">🛡️ Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("#### 🌐 Enlaces Tácticos & Nuevos Activos")
-    st.markdown('<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">📈 Seguimiento ANT (Nasdaq)</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">🚀 Monitoreo SpaceX</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">🌐 Finviz (Mercados)</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">📊 Investing.com (Divisas
+        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico A
