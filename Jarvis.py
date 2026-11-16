@@ -6,7 +6,7 @@ import os
 # ==============================================================================
 
 # Reemplaza la cadena con tu API Key oficial de BigModel
-API_KEY_GLM = "TU_API_KEY_OFICIAL_AQUI"
+API_KEY_GLM = "becc490a2db546128bd0962bef6f1615"
 
 # Inicializamos el cliente oficial de Zhipu AI
 client = ZhipuAI(api_key=API_KEY_GLM)
