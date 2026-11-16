@@ -84,7 +84,7 @@ if "mensajes" not in st.session_state:
         {"role": "assistant", "content": f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"}
     ]
 
-# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK (TRIÁNGULO INVERTIDO) ---
+# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES SEGUROS ---
 estilos_css = """
     <style>
         .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
@@ -99,6 +99,10 @@ estilos_css = """
         .arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }
         .arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }
         
+        /* BOTÓN TÁCTICO HTML SEGURO */
+        .tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important; text-align: center; padding: 8px 12px; margin: 6px 0; border-radius: 6px; font-weight: bold; text-decoration: none; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); transition: all 0.3s ease; }
+        .tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+
         .holo-brain-box { border: 1.5px solid #00f3ff; background: linear-gradient(135deg, #0a1128 0%, #060913 100%); padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15); margin: 0 auto 20px auto; max-width: 800px; }
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
@@ -185,10 +189,104 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 🎥 Videovigilancia y Cámaras Globales")
     with st.expander("Cámaras en Vivo / Satelite", expanded=False):
-        st.link_button("Stgo / Chile (Skyline)", "https://www.skylinewebcams.com/es/webcam/chile.html", use_container_width=True)
-        st.link_button("Concepción Webcam", "https://liveworldwebcams.com/es/concepcion-webcam/", use_container_width=True)
-        st.link_button("Windy Radars & Cams", "https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7", use_container_width=True)
-        st.link_button("Galveston Port, Texas", "https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28", use_container_width=True)
-        st.link_button("Puerta del Sol, Madrid", "https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html", use_container_width=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">Stgo / Chile (Skyline)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">Concepción Webcam</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">Windy Radars & Cams</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">Galveston Port, Texas</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">Puerta del Sol, Madrid</a>', unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown("#### 🛰️ Telemetría Global & Ojo de Dios")
+    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
+        st.markdown('<a class="tactical-link-btn" href="https://osiris.mclaren.com/" target="_blank">👁️ OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://stuffin.space/" target="_blank">🛰️ Satélites en Órbita (Vivo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">🛡️ Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### 🌐 Enlaces Tácticos")
+    st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">🌐 Finviz (Mercados)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">📊 Investing.com (Divisas)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">🌎 PlanetEar</a>', unsafe_allow_html=True)
+
+# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+
+# Reactor Arc Estilo Tony Stark (Triángulo Invertido)
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
+    f'</p>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+reloj_js = (
+    '<script>'
+    'function actualizarReloj() {'
+    'const ahora = new Date();'
+    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
+    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
+    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
+    'if (relojEl) { relojEl.innerText = horaChile; }'
+    '}'
+    'setInterval(actualizarReloj, 1000);'
+    'actualizarReloj();'
+    '</script>'
+)
+st.components.v1.html(reloj_js, height=0)
+
+# Núcleo Neuronal con Google Gemini, ZapIA y las 7 Memorias SQLite
+st.markdown(
+    '<div class="holo-brain-box">'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">⚡ NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4>'
+    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">Conectado a <b>Google Gemini</b>, <b>ZapIA</b>, <b>7 Memorias SQLite</b> y Nodo Buin</p>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+# --- ZONA DE CHAT CON BOTÓN DE PURGA Y PERSONALIDAD /HUMAN ---
+col_ch1, col_ch2 = st.columns([5, 1])
+with col_ch1:
+    st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
+with col_ch2:
+    if st.button("🗑️ Purgar", use_container_width=True, key="btn_purgar_chat"):
+        st.session_state.mensajes = [{"role": "assistant", "content": f"{saludo_actual}, jefa. Memoria de chat purgada. ¿Qué movemos ahora?"}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS (ej: /human, ELI10)...")
+
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+
+    q = prompt_chat.lower().strip()
+    nucleo = st.session_state.nucleo_activo
+    prefijo = f"[{nucleo}] "
+
+    if q.startswith("/human") or " /human" in q:
+        c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+        respuesta_ia = f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando '{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, con sarcasmo fino y la precisión de siempre."
+    elif q.startswith("eli10") or " eli10" in q:
+        t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+        respuesta_ia = f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
+    elif "hola" in q or "saludos" in q:
+        respuesta_ia = f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin y el sarcasmo calibrado. ¿Qué dominamos hoy?"
+    else:
+        respuesta_ia = f"{prefijo}Instrucción '{prompt_chat}' procesada con elegancia y baja latencia, jefa. Conectado a Google Gemini, ZapIA y las memorias. ¿Cuál es nuestro siguiente movimiento?"
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    st.rerun()
