@@ -200,7 +200,7 @@ with st.sidebar:
     with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
         st.markdown('<a class="tactical-link-btn" href="https://osiris.mclaren.com/" target="_blank">👁️ OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">🌍 NASA Worldview (Satélites)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://stuffin.space/" target="_blank">🛰️ Satélites en Órbita (Vivo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">🛰️ N2YO (Satélites en Vivo)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">✈️ Flightradar24 (Tráfico Aéreo)</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">🛡️ Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
 
