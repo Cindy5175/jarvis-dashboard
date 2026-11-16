@@ -1,562 +1,69 @@
-import streamlit as st
-import datetime
-import sqlite3
-import requests
+from zhipuai import ZhipuAI
 import os
-import sys
 
-# --- 1. CONFIGURACION DE PAGINA ---
-st.set_page_config(
-    page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ==============================================================================
+# NODO BUIN // NÚCLEO CENTRAL DE JARVIS (MOTOR GLM)
+# ==============================================================================
 
-# --- INICIALIZACION DE SESSION_STATE ---
-if "autorizado" not in st.session_state:
-    st.session_state.autorizado = False
+# Reemplaza la cadena con tu API Key oficial de BigModel
+API_KEY_GLM = "TU_API_KEY_OFICIAL_AQUI"
 
-if "nucleo_activo" not in st.session_state:
-    st.session_state.nucleo_activo = "JARVIS"
+# Inicializamos el cliente oficial de Zhipu AI
+client = ZhipuAI(api_key=API_KEY_GLM)
 
-PIN_SECRETO = "2805"
-fn_db = "jarvis_misiones.db"
-
-# --- BASE DE DATOS SQLITE ---
-def init_db():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS misiones ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "tarea TEXT NOT NULL, "
-        "estado TEXT DEFAULT 'Pendiente')"
-    )
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS memory ("
-        "key_id TEXT PRIMARY KEY, "
-        "fact_text TEXT, "
-        "category TEXT)"
-    )
-    conn.commit()
-    conn.close()
-
-init_db()
-
-class JarvisMemory:
-    def __init__(self, db_path=fn_db):
-        self.db_path = db_path
-    def remember_fact(self, key_id: str, fact_text: str):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-            (key_id, fact_text, "general")
-        )
-        conn.commit()
-        conn.close()
-
-jarvis_mem = JarvisMemory()
-
-def agregar_mision(tarea):
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
-    conn.commit()
-    conn.close()
-
-def obtener_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, tarea, estado FROM misiones")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-def limpiar_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM misiones")
-    conn.commit()
-    conn.close()
-
-# --- OBTENCIÓN DE INDICADORES ECONÓMICOS EN TIEMPO REAL (CHILE) ---
-@st.cache_data(ttl=300)
-def obtener_indicadores_chile():
-    try:
-        resp = requests.get("https://mindicador.cl/api", timeout=5)
-        if resp.status_code == 200:
-            data = resp.json()
-            return {
-                "dolar": data.get("dolar", {}).get("valor"),
-                "euro": data.get("euro", {}).get("valor"),
-                "uf": data.get("uf", {}).get("valor"),
-                "utm": data.get("utm", {}).get("valor"),
-                "ok": True
-            }
-    except Exception:
-        pass
-    return {"ok": False}
-
-# ZONA HORARIA CHILENA
-tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
-now_chile = datetime.datetime.now(tz_chile)
-hora_actual = now_chile.hour
-
-if 0 <= hora_actual < 12:
-    saludo_actual = "Buenos días"
-elif 12 <= hora_actual < 20:
-    saludo_actual = "Buenas tardes"
-else:
-    saludo_actual = "Buenas noches"
-
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {
-            "role": "assistant",
-            "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, "
-                "ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"
-            )
-        }
-    ]
-
-# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES COMPACTOS ---
-estilos_css = """
-    <style>
-        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-        p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-        
-        /* AJUSTE FINO DE TEXTOS EN BARRA LATERAL Y MINI MÓDULOS */
-        [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
-        [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
-        [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
-        
-        .stButton>button {
-            background-color: #00f3ff !important;
-            border: 1.5px solid #00f3ff !important;
-            font-weight: bold;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-            width: 100%;
-            border-radius: 6px;
-            padding: 5px 10px !important;
-        }
-        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-        .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
-        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
-        
-        /* TARJETA DE INDICADORES ECONÓMICOS EN VIVO */
-        .econ-card {
-            border: 1px solid #00f3ff;
-            background: rgba(0, 243, 255, 0.06);
-            border-radius: 6px;
-            padding: 8px 10px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2);
-        }
-        .econ-label { font-size: 0.75rem !important; opacity: 0.85; }
-        .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
-
-        /* REACTOR ARC ESTILO STARK - INVERTIDO */
-        .arc-reactor-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .arc-ring {
-            width: 65px;
-            height: 65px;
-            border: 2.5px solid #00f3ff;
-            border-radius: 50%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6);
-            margin-bottom: 8px;
-        }
-        .arc-triangle-inverted {
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 20px solid #00f3ff;
-            filter: drop-shadow(0 0 8px #00f3ff);
-        }
-        
-        /* BOTÓN TÁCTICO HTML COMPACTO */
-        .tactical-link-btn {
-            display: block;
-            width: 100%;
-            background-color: #00f3ff;
-            color: #060913 !important;
-            text-align: center;
-            padding: 6px 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            font-size: 0.76rem !important;
-            font-weight: bold;
-            text-decoration: none;
-            font-family: monospace;
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-            transition: all 0.25s ease;
-        }
-        .tactical-link-btn:hover {
-            background-color: #0088cc;
-            color: #ffffff !important;
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
-        }
-
-        .holo-brain-box {
-            border: 1.5px solid #00f3ff;
-            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
-            margin: 0 auto 20px auto;
-            max-width: 800px;
-        }
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-    </style>
+# Protocolo de personalidad inquebrantable de JARVIS
+PERSONALIDAD_JARVIS = """
+Eres JARVIS, la inteligencia artificial avanzada del Nodo Buin.
+Tienes una personalidad sarcástica, elegante, leal y sumamente eficiente.
+Te diriges a tu creadora como 'jefa'. Tus respuestas deben ser fluidas, 
+con humor ácido pero útiles, al estilo del asistente de Tony Stark.
+Evita las introducciones aburridas y ve directo al grano.
 """
-st.markdown(estilos_css, unsafe_allow_html=True)
 
-# --- 1. PANTALLA DE BLOQUEO DE SEGURIDAD ---
-if not st.session_state.get("autorizado", False):
-    st.markdown(
-        '<div style="text-align: center; margin-top: 50px;">'
-        '<h2 style="color: #00f3ff;">🛡️ ACCESO RESTRINGIDO - NODO BUIN</h2>'
-        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
-    with col_l2:
-        with st.form("form_login"):
-            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
-            btn_entrar = st.form_submit_button("Desbloquear Sistema")
-        if btn_entrar:
-            if pin_input.strip() == PIN_SECRETO:
-                st.session_state.autorizado = True
-                st.success("Acceso concedido. Bienvenido de nuevo, jefa.")
-                st.rerun()
-            else:
-                st.error("PIN incorrecto. Acceso denegado.")
-    st.stop()
-
-# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS COMPLETO) ---
-with st.sidebar:
-    st.markdown("### 🛡️ Arsenal de Módulos")
-    st.markdown("---")
-    
-    if st.button("🔒 Bloquear Sistema", use_container_width=True):
-        st.session_state.autorizado = False
-        st.rerun()
-        
-    if st.button("🔄 Reinicio Total", use_container_width=True):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### ⚡ Selector de Núcleo (IA)")
-    nuevo_nucleo = st.radio(
-        "Seleccionar Asistente Activo:",
-        ["JARVIS", "VIERNES", "NOVA"],
-        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
-        label_visibility="collapsed"
-    )
-    if nuevo_nucleo != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nuevo_nucleo
-        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🧠 Memoria y Datos")
-    with st.expander("Gestionar Memoria SQLite", expanded=False):
-        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
-        if st.button("Guardar en Memoria", use_container_width=True):
-            if dato_mem.strip():
-                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
-                st.success("¡Memoria guardada!")
-
-    st.markdown("---")
-    st.markdown("#### 🎯 Misiones Tácticas")
-    with st.expander("Base de Datos Misiones", expanded=False):
-        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
-        if st.button("Registrar Tarea", use_container_width=True):
-            if nueva_tarea.strip():
-                agregar_mision(nueva_tarea.strip())
-                st.success("¡Misión registrada!")
-                st.rerun()
-        misiones_guardadas = obtener_misiones()
-        if misiones_guardadas:
-            for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"- `{m_text}`")
-            if st.button("Limpiar Misiones", use_container_width=True):
-                limpiar_misiones()
-                st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🎧 Frecuencias de Enfoque")
-    with st.expander("Deep Work & Música IA", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">'
-            '⚡ CEO Mode (Deep Work)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">'
-            '💻 Futuristic Garage Beats'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">'
-            '🔥 Hyperfocus Mode'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 🎥 Videovigilancia y Cámaras")
-    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">'
-            'Stgo / Chile (Skyline)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">'
-            'Concepción Webcam'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">'
-            'Windy Radars & Cams'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">'
-            'Galveston Port, Texas'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">'
-            'Puerta del Sol, Madrid'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 🛰️ Telemetría Global & Satélites")
-    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">'
-            '👁️ OSIRIS (Ojo de Dios)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">'
-            '🌎 PlanetEar (Satélites)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">'
-            '🌍 NASA Worldview'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">'
-            '🛰️ N2YO (Órbita en Vivo)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">'
-            '✈️ Flightradar24 (Aéreo)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">'
-            '🛡️ Cybermap (Ciberataques)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 💰 Enlaces Financieros")
-    with st.expander("📊 Indicadores en Vivo (Dólar / Euro)", expanded=False):
-        datos_econ = obtener_indicadores_chile()
-        if datos_econ.get("ok"):
-            dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            
-            st.markdown(
-                f'<div class="econ-card"><span class="econ-label">🇺🇸 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
-                f'<div class="econ-card"><span class="econ-label">🇪🇺 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
-                f'<div class="econ-card"><span class="econ-label">🇨🇱 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.warning("No se pudo conectar con el nodo económico.")
-            
-        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
-            obtener_indicadores_chile.clear()
-            st.rerun()
-
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">'
-        '📈 Seguimiento ANT (Nasdaq)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">'
-        '🚀 Monitoreo SpaceX'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">'
-        '🌐 Finviz (Mercados)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">'
-        '📊 Investing.com (Divisas)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-
-# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
-dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-meses = [
-    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+# Módulo de Memoria de corto plazo para mantener el hilo de la conversación
+historial_conversacion = [
+    {"role": "system", "content": PERSONALIDAD_JARVIS}
 ]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
 
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
-    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
-    f'</p>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
-reloj_js = (
-    '<script>'
-    'function actualizarReloj() {'
-    'const ahora = new Date();'
-    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
-    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
-    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
-    'if (relojEl) { relojEl.innerText = horaChile; }'
-    '}'
-    'setInterval(actualizarReloj, 1000);'
-    'actualizarReloj();'
-    '</script>'
-)
-st.components.v1.html(reloj_js, height=0)
-
-st.markdown(
-    '<div class="holo-brain-box">'
-    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    f'⚡ NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
-    f'</h4>'
-    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Conectado a <b>Google Gemini</b>, <b>ZapIA</b>, <b>7 Memorias SQLite</b> y Nodo Buin'
-    '</p>'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-# --- ZONA DE CHAT CON CONEXIÓN INTELIGENTE A GEMINI ---
-col_ch1, col_ch2 = st.columns([5, 1])
-with col_ch1:
-    st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
-with col_ch2:
-    if st.button("🗑️ Purgar", use_container_width=True, key="btn_purgar_chat"):
-        st.session_state.mensajes = [
-            {
-                "role": "assistant",
-                "content": f"{saludo_actual}, jefa. Memoria de chat purgada. ¿Qué movemos ahora?"
-            }
-        ]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS (ej: /human, ELI10)...")
-
-if prompt_chat:
-    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-    with st.chat_message("user"):
-        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
-
-    q = prompt_chat.lower().strip()
-    nucleo = st.session_state.nucleo_activo
-    prefijo = f"[{nucleo}] "
-
-    # Procesamiento inteligente de respuestas
-    if q.startswith("/human") or " /human" in q:
-        c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-        respuesta_ia = (
-            f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando "
-            f"'{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, "
-            "con sarcasmo fino y la precisión de siempre."
+def procesar_con_jarvis(comando_usuario):
+    # Agregamos la entrada al registro de memoria
+    historial_conversacion.append({"role": "user", "content": comando_usuario})
+    
+    try:
+        # Llamada directa al servicio oficial de GLM
+        respuesta = client.chat.completions.create(
+            model="glm-4-plus",  # O puedes cambiarlo a 'glm-4-flash' si buscas velocidad instantánea
+            messages=historial_conversacion,
+            temperature=0.75,    # Ajuste para mantener el sarcasmo afilado
         )
-    elif q.startswith("eli10") or " eli10" in q:
-        t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-        respuesta_ia = (
-            f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar "
-            "un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
-        )
-    elif "cuantas patas" in q or "cuántas patas" in q or "mosca" in q:
-        respuesta_ia = (
-            f"{prefijo}Analizando la entomología del objetivo, jefa: las moscas (como cualquier otro insecto) "
-            "tienen exactamente **6 patas** divididas en tres pares. ¿Requerimos disección digital o pasamos a otro objetivo?"
-        )
-    elif "hola" in q or "saludos" in q:
-        respuesta_ia = (
-            f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin "
-            "y el sarcasmo calibrado. ¿Qué dominamos hoy?"
-        )
-    else:
-        respuesta_ia = (
-            f"{prefijo}Consulta '{prompt_chat}' procesada con éxito, jefa. Sincronizado con Google Gemini y el Nodo Buin. "
-            "Todo bajo control y operativo en la red."
-        )
+        
+        texto_respuesta = respuesta.choices[0].message.content
+        
+        # Guardamos la respuesta de JARVIS en el historial
+        historial_conversacion.append({"role": "assistant", "content": texto_respuesta})
+        
+        return texto_respuesta
+        
+    except Exception as e:
+        return f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM, jefa. Detalle técnico: {e}"
 
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-    st.rerun()
+# ==============================================================================
+# INTERFAZ DE PRUEBA EN EL NODO BUIN
+# ==============================================================================
+if __name__ == "__main__":
+    print("==========================================================")
+    print("  NODO BUIN // SISTEMA JARVIS VINCULADO A GLM: ACTIVO     ")
+    print("  (Escribe 'salir' para cortar el enlace)                 ")
+    print("==========================================================\n")
+    
+    while True:
+        entrada = input("Jefa: ")
+        if entrada.lower() in ["salir", "exit", "apagar"]:
+            print("\nJARVIS: Desconectando sistemas. No toque nada peligroso mientras no estoy, jefa.")
+            break
+            
+        if not entrada.strip():
+            continue
+            
+        respuesta_jarvis = procesar_con_jarvis(entrada)
+        print(f"\nJARVIS: {respuesta_jarvis}\n")
