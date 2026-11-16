@@ -2,15 +2,22 @@ import streamlit as st
 from zhipuai import ZhipuAI
 
 # ==============================================================================
-# NODO BUIN // CONFIGURACIÓN DE LA INTERFAZ WEB DE JARVIS
+# NODO BUIN // CONFIGURACIÓN DEL NÚCLEO TÁCTICO DE JARVIS
 # ==============================================================================
 
-st.set_page_config(page_title="JARVIS - Nodo Buin", page_icon="🛡️", layout="centered")
+st.set_page_config(
+    page_title="JARVIS - Nodo Buin", 
+    page_icon="🛡️", 
+    layout="centered"
+)
 
 st.title("🛡️ Nodo Buin // Núcleo Táctico JARVIS")
-st.caption("Sistemas enlazados al motor GLM de Zhipu AI.")
+st.caption("Sistemas enlazados al motor GLM de Zhipu AI y al mapa táctico satelital.")
 
-# Reemplaza con tu API Key oficial de BigModel
+# ==============================================================================
+# CONFIGURACIÓN DE CREDENCIALES
+# ==============================================================================
+# Inserta aquí tu API Key oficial obtenida en open.bigmodel.cn
 API_KEY_GLM = "TU_API_KEY_OFICIAL_AQUI"
 
 if API_KEY_GLM == "TU_API_KEY_OFICIAL_AQUI":
@@ -40,19 +47,19 @@ else:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Caja de entrada interactiva web (reemplaza al input de consola)
+    # Caja de entrada interactiva web (reemplaza al input de consola antiguo)
     if prompt := st.chat_input("Escribe una orden para JARVIS, jefa..."):
-        # Guardar mensaje del usuario
+        # Guardar mensaje del usuario en el historial
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Generar respuesta de JARVIS conectada a GLM
+        # Generar respuesta de JARVIS conectada al motor GLM
         with st.chat_message("assistant"):
-            with st.spinner("Procesando telemetría..."):
+            with st.spinner("Procesando telemetría del Nodo Buin..."):
                 try:
                     respuesta = client.chat.completions.create(
-                        model="glm-4-plus",  # O 'glm-4-flash' para velocidad máxima
+                        model="glm-4-plus",  # Puedes cambiarlo a 'glm-4-flash' si buscas velocidad máxima
                         messages=st.session_state.messages,
                         temperature=0.75,
                     )
@@ -63,4 +70,4 @@ else:
                     st.session_state.messages.append({"role": "assistant", "content": texto_respuesta})
                     
                 except Exception as e:
-                    st.error(f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM. Detalle: {e}")
+                    st.error(f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM, jefa. Detalle: {e}")
