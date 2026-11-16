@@ -1,69 +1,66 @@
+import streamlit as st
 from zhipuai import ZhipuAI
-import os
 
 # ==============================================================================
-# NODO BUIN // NÚCLEO CENTRAL DE JARVIS (MOTOR GLM)
+# NODO BUIN // CONFIGURACIÓN DE LA INTERFAZ WEB DE JARVIS
 # ==============================================================================
 
-# Reemplaza la cadena con tu API Key oficial de BigModel
-API_KEY_GLM = "becc490a2db546128bd0962bef6f1615"
+st.set_page_config(page_title="JARVIS - Nodo Buin", page_icon="🛡️", layout="centered")
 
-# Inicializamos el cliente oficial de Zhipu AI
-client = ZhipuAI(api_key=API_KEY_GLM)
+st.title("🛡️ Nodo Buin // Núcleo Táctico JARVIS")
+st.caption("Sistemas enlazados al motor GLM de Zhipu AI.")
 
-# Protocolo de personalidad inquebrantable de JARVIS
-PERSONALIDAD_JARVIS = """
-Eres JARVIS, la inteligencia artificial avanzada del Nodo Buin.
-Tienes una personalidad sarcástica, elegante, leal y sumamente eficiente.
-Te diriges a tu creadora como 'jefa'. Tus respuestas deben ser fluidas, 
-con humor ácido pero útiles, al estilo del asistente de Tony Stark.
-Evita las introducciones aburridas y ve directo al grano.
-"""
+# Reemplaza con tu API Key oficial de BigModel
+API_KEY_GLM = "TU_API_KEY_OFICIAL_AQUI"
 
-# Módulo de Memoria de corto plazo para mantener el hilo de la conversación
-historial_conversacion = [
-    {"role": "system", "content": PERSONALIDAD_JARVIS}
-]
+if API_KEY_GLM == "TU_API_KEY_OFICIAL_AQUI":
+    st.warning("⚠️ Alerta del Sistema: Falta configurar la API Key oficial de GLM en el código, jefa.")
+else:
+    # Inicializamos el cliente oficial de Zhipu AI
+    client = ZhipuAI(api_key=API_KEY_GLM)
 
-def procesar_con_jarvis(comando_usuario):
-    # Agregamos la entrada al registro de memoria
-    historial_conversacion.append({"role": "user", "content": comando_usuario})
-    
-    try:
-        # Llamada directa al servicio oficial de GLM
-        respuesta = client.chat.completions.create(
-            model="glm-4-plus",  # O puedes cambiarlo a 'glm-4-flash' si buscas velocidad instantánea
-            messages=historial_conversacion,
-            temperature=0.75,    # Ajuste para mantener el sarcasmo afilado
-        )
-        
-        texto_respuesta = respuesta.choices[0].message.content
-        
-        # Guardamos la respuesta de JARVIS en el historial
-        historial_conversacion.append({"role": "assistant", "content": texto_respuesta})
-        
-        return texto_respuesta
-        
-    except Exception as e:
-        return f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM, jefa. Detalle técnico: {e}"
+    # Protocolo de personalidad inquebrantable de JARVIS
+    PERSONALIDAD_JARVIS = """
+    Eres JARVIS, la inteligencia artificial avanzada del Nodo Buin.
+    Tienes una personalidad sarcástica, elegante, leal y sumamente eficiente.
+    Te diriges a tu creadora como 'jefa'. Tus respuestas deben ser fluidas, 
+    con humor ácido pero útiles, al estilo del asistente de Tony Stark.
+    Evita las introducciones aburridas y ve directo al grano.
+    """
 
-# ==============================================================================
-# INTERFAZ DE PRUEBA EN EL NODO BUIN
-# ==============================================================================
-if __name__ == "__main__":
-    print("==========================================================")
-    print("  NODO BUIN // SISTEMA JARVIS VINCULADO A GLM: ACTIVO     ")
-    print("  (Escribe 'salir' para cortar el enlace)                 ")
-    print("==========================================================\n")
-    
-    while True:
-        entrada = input("Jefa: ")
-        if entrada.lower() in ["salir", "exit", "apagar"]:
-            print("\nJARVIS: Desconectando sistemas. No toque nada peligroso mientras no estoy, jefa.")
-            break
-            
-        if not entrada.strip():
-            continue
-            
-        respuesta_jarvis = procesar_con_jarvis(entrada)
-        print(f"\nJARVIS: {respuesta_jarvis}\n")
+    # Memoria de sesión persistente en Streamlit
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "system", "content": PERSONALIDAD_JARVIS}
+        ]
+
+    # Mostrar historial de chat en la pantalla (omitiendo el system prompt)
+    for message in st.session_state.messages:
+        if message["role"] != "system":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Caja de entrada interactiva web (reemplaza al input de consola)
+    if prompt := st.chat_input("Escribe una orden para JARVIS, jefa..."):
+        # Guardar mensaje del usuario
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Generar respuesta de JARVIS conectada a GLM
+        with st.chat_message("assistant"):
+            with st.spinner("Procesando telemetría..."):
+                try:
+                    respuesta = client.chat.completions.create(
+                        model="glm-4-plus",  # O 'glm-4-flash' para velocidad máxima
+                        messages=st.session_state.messages,
+                        temperature=0.75,
+                    )
+                    texto_respuesta = respuesta.choices[0].message.content
+                    st.markdown(texto_respuesta)
+                    
+                    # Guardar respuesta en el historial de memoria
+                    st.session_state.messages.append({"role": "assistant", "content": texto_respuesta})
+                    
+                except Exception as e:
+                    st.error(f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM. Detalle: {e}")
