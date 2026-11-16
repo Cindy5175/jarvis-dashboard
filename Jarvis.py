@@ -71,3 +71,4 @@ else:
                     
                 except Exception as e:
                     st.error(f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM, jefa. Detalle: {e}")
+
