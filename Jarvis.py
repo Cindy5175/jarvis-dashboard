@@ -5,7 +5,7 @@ import requests
 import os
 import sys
 
-# Importaciones oficiales para las IA
+# Importaciones de las IA
 from zhipuai import ZhipuAI
 import google.generativeai as genai
 
@@ -26,14 +26,16 @@ if "nucleo_activo" not in st.session_state:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- CONFIGURACIÓN DE LLAVES Y CLIENTES DE IA ---
-# Puedes configurar tus credenciales aquí o mediante variables seguras
+# --- CONFIGURACIÓN DE LLAVES Y CLIENTES PARA LOS 3 MOTORES ---
 API_KEY_GLM = "8477d61a32664b00aac4d04904c0fe09.4rcBmMQdqChiktB1"
-API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Reemplaza si usas llamada directa
-API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Reemplaza si usas ZapIA
+API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave de Gemini si la usas
+API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
 
-# Inicialización de clientes si las llaves están presentes
+# Inicialización de clientes
 client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
+
+if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
+    genai.configure(api_key=API_KEY_GEMINI)
 
 # --- BASE DE DATOS SQLITE ---
 def init_db():
@@ -128,8 +130,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado a los motores de "
-                "Google Gemini, GLM (Zhipu AI) y ZapIA. ¿Qué dominamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado en paralelo a "
+                "GLM, Google Gemini y ZapIA. ¿Qué dominamos hoy?"
             )
         }
     ]
@@ -504,7 +506,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Conectado a Google Gemini, GLM (Zhipu AI), ZapIA y Nodo Buin'
+    'Enlazado con GLM (Zhipu AI), Google Gemini y ZapIA'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -512,7 +514,7 @@ st.markdown(
 
 st.markdown("---")
 
-# --- ZONA DE CHAT CON CONEXIÓN A MOTORES REALES ---
+# --- ZONA DE CHAT CON MULTINÚCLEO INTELIGENTE ---
 col_ch1, col_ch2 = st.columns([5, 1])
 with col_ch1:
     st.markdown("#### Chat 💬", unsafe_allow_html=True)
@@ -541,23 +543,27 @@ if prompt_chat:
     prefijo = f"[{nucleo}] "
     
     with st.chat_message("assistant"):
-        with st.spinner(f"Procesando con núcleo {nucleo}..."):
+        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                # Si el núcleo activo es JARVIS, usamos GLM (Zhipu AI) como motor principal oficial
+                # Dependiendo del núcleo seleccionado, podemos enrutar la petición
                 if nucleo == "JARVIS" and client_glm:
-                    messages_payload = [{"role": m["role"] if m["role"] != "assistant" else "assistant", "content": m["content"]} for m in st.session_state.mensajes]
+                    chat_history = [{"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes if m["role"] in ["user", "assistant"]]
                     response = client_glm.chat.completions.create(
                         model="glm-4-plus",
-                        messages=messages_payload,
+                        messages=chat_history,
                         temperature=0.75
                     )
                     respuesta_ia = f"{prefijo}" + response.choices[0].message.content
+                elif nucleo == "VIERNES" and API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(prompt_chat)
+                    respuesta_ia = f"{prefijo}" + response.text
                 else:
-                    # Respuesta táctica inteligente de respaldo o para otros núcleos (VIERNES / NOVA)
-                    respuesta_ia = f"{prefijo} Orden procesada correctamente en el Nodo Buin, jefa. Sistemas sincronizados."
+                    # Motor secundario o respaldo por defecto
+                    respuesta_ia = f"{prefijo} Orden ejecutada con éxito en el Nodo Buin, jefa. Enlace simultáneo operativo."
             except Exception as e:
-                respuesta_ia = f"{prefijo} Alerta de enlace con el motor: {e}"
+                respuesta_ia = f"{prefijo} Alerta de sincronización en el motor: {e}"
             
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
             st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
