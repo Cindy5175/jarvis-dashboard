@@ -17,188 +17,147 @@
             padding: 15px 0;
             background: linear-gradient(135deg, #1e90ff, #2ed573);
             color: white;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        header h1 { font-size: 2rem; margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
-        header p { font-size: 1.1rem; margin: 8px 0 0 0; font-weight: bold; }
-        
-        .banner-dia {
-            background: linear-gradient(135deg, #ffa502, #ff4757);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 14px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            font-size: 1rem;
-        }
-
-        .stats-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            flex-wrap: wrap;
-        }
-        .badge-estrellas {
-            background-color: #ffa502;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .badge-rango {
-            background-color: #1e90ff;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
         }
-        .montessori-card {
-            background-color: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        .mission-box {
+            background-color: #fffae6;
+            border: 2px dashed #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #d35400;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #e8f4f8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            border: 1px solid #bce8f1;
+        }
+        .cards-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .card {
+            flex: 1;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-top: 8px solid #1e90ff;
         }
-        .montessori-card:nth-child(2) { border-top-color: #2ed573; }
-        .montessori-card:nth-child(3) { border-top-color: #ffa502; }
-        .montessori-card:nth-child(4) { border-top-color: #ff4757; }
-        .mascota-guia {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            background: #f1f2f6;
-            padding: 8px 12px;
-            border-radius: 12px;
+        .card h4 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        .card h3 {
+            color: #2c3e50;
+        }
+        .card p {
             font-size: 0.85rem;
-            font-weight: bold;
+            color: #555;
         }
-        .action-btn {
+        .play-btn {
             background-color: #2ed573;
             color: white;
             border: none;
             padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
+            border-radius: 6px;
             font-weight: bold;
-            font-size: 0.95rem;
+            cursor: pointer;
             width: 100%;
-            margin-top: 15px;
-            box-shadow: 0 3px 6px rgba(46, 213, 115, 0.3);
-            transition: transform 0.1s;
+            transition: 0.2s;
         }
-        .action-btn:hover { background-color: #26af5f; transform: scale(1.02); }
-
-        .confetti-star {
-            position: fixed;
-            font-size: 24px;
-            animation: flyUp 1s ease-out forwards;
-            pointer-events: none;
-            z-index: 999;
-        }
-        @keyframes flyUp {
-            0% { transform: translateY(0) scale(0.5); opacity: 1; }
-            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        .play-btn:hover {
+            background-color: #26af5f;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Encabezado -->
+        <header>
+            <h1 style="margin:0; font-size: 1.8rem;">🧸 ¡Aventura Divertida Montessori! 🌟</h1>
+            <p style="margin:5px 0 0 0; font-size: 0.9rem;">Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>
+        </header>
 
-    <header>
-        <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
-        <p>Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>
-    </header>
-
-    <div class="banner-dia">
-        🌟 ¡Misión del Día Destacada: La Torre Rosa (Doble Diversión)! 🐼
-    </div>
-
-    <div class="stats-bar">
-        <div class="badge-estrellas" id="contadorEstrellas">⭐ Estrellas: 0</div>
-        <div class="badge-rango" id="textoRango">🐾 Rango: Explorador Tierno</div>
-    </div>
-
-    <div class="grid-container">
-        <div class="montessori-card">
-            <div>
-                <div class="mascota-guia"><span>🐵</span><span>¡Mono Chispas te acompaña!</span></div>
-                <h3>Trasvase de Semillas</h3>
-                <p>Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro.</p>
-            </div>
-            <button class="action-btn" onclick="completarMision('Trasvase de Semillas', 2, event)">¡Jugar! (Gana 2 ⭐️)</button>
+        <!-- Misión del Día -->
+        <div class="mission-box">
+            ⭐ Misión del Día Destacada: La Torre Rosa (Doble Diversión)
         </div>
 
-        <div class="montessori-card">
-            <div>
-                <div class="mascota-guia"><span>🐼</span><span>¡Panda Lolo te guía!</span></div>
-                <h3>La Torre Rosa</h3>
-                <p>Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.</p>
-            </div>
-            <button class="action-btn" onclick="completarMision('La Torre Rosa', 3, event)">¡Jugar! (Gana 3 ⭐️)</button>
+        <!-- Barra de Estadísticas -->
+        <div class="stats-bar">
+            <div>⭐ Estrellas: <span id="contador-estrellas">0</span></div>
+            <div>🎖️ Rango: <span id="rango-texto">Explorador Tierno</span></div>
         </div>
 
-        <div class="montessori-card">
-            <div>
-                <div class="mascota-guia"><span>🦁</span><span>¡León Dani te enseña!</span></div>
-                <h3>Barras Numéricas</h3>
-                <p>Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.</p>
+        <!-- Tarjetas de Actividades -->
+        <div class="cards-grid">
+            <!-- Actividad 1 -->
+            <div class="card">
+                <div>
+                    <h4>🪴 Mono Chispas te acompaña</h4>
+                    <h3>Trasvase de Semillas</h3>
+                    <p>Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro.</p>
+                </div>
+                <button class="play-btn" onclick="completarMision('Trasvase de Semillas', 2, this)">🎮 ¡Jugar! (Gana 2 ⭐)</button>
             </div>
-            <button class="action-btn" onclick="completarMision('Barras Numéricas', 3, event)">¡Jugar! (Gana 3 ⭐️)</button>
-        </div>
 
-        <div class="montessori-card">
-            <div>
-                <div class="mascota-guia"><span>🐰</span><span>¡Conejo Saltarín te ayuda!</span></div>
-                <h3>Letras de Lija</h3>
-                <p>Sigue con tu dedito la forma de las letras mientras escuchas su sonido mágico.</p>
+            <!-- Actividad 2 -->
+            <div class="card">
+                <div>
+                    <h4>🐼 Panda Lolo te guía</h4>
+                    <h3>La Torre Rosa</h3>
+                    <p>Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.</p>
+                </div>
+                <button class="play-btn" onclick="completarMision('La Torre Rosa', 3, this)">🎮 ¡Jugar! (Gana 3 ⭐)</button>
             </div>
-            <button class="action-btn" onclick="completarMision('Letras de Lija', 2, event)">¡Jugar! (Gana 2 ⭐️)</button>
+
+            <!-- Actividad 3 -->
+            <div class="card">
+                <div>
+                    <h4>🦁 León Dani te enseña</h4>
+                    <h3>Barras Numéricas</h3>
+                    <p>Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.</p>
+                </div>
+                <button class="play-btn" onclick="completarMision('Barras Numéricas', 3, this)">🎮 ¡Jugar! (Gana 3 ⭐)</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let totalEstrellas = 0;
+        let estrellasTotal = 0;
 
-        function completarMision(nombre, estrellas, event) {
-            totalEstrellas += estrellas;
-            document.getElementById('contadorEstrellas').innerText = "⭐ Estrellas: " + totalEstrellas;
+        function completarMision(nombreMision, recompensa, boton) {
+            if (boton.dataset.completado === "true") return;
 
-            let rango = "🐾 Explorador Tierno";
-            if (totalEstrellas >= 10) rango = "📖 Genio de las Letras";
-            if (totalEstrellas >= 20) rango = "🚀 Maestro del Saber";
-            document.getElementById('textoRango').innerText = "Rango: " + rango;
+            estrellasTotal += recompensa;
+            document.getElementById("contador-estrellas").innerText = estrellasTotal;
 
-            lanzarEstrellas(event.clientX, event.clientY);
-            alert("🎉 ¡Excelente trabajo! Completaste '" + nombre + "' y ganaste " + estrellas + " estrellas brillantes.");
-        }
+            let rango = "Explorador Tierno";
+            if (estrellasTotal >= 5) rango = "Explorador Experto";
+            if (estrellasTotal >= 10) rango = "Maestro Montessori";
+            document.getElementById("rango-texto").innerText = rango;
 
-        function lanzarEstrellas(x, y) {
-            for (let i = 0; i < 5; i++) {
-                let star = document.createElement('div');
-                star.innerHTML = "⭐";
-                star.className = "confetti-star";
-                star.style.left = (x + (Math.random() * 60 - 30)) + "px";
-                star.style.top = (y + (Math.random() * 20 - 10)) + "px";
-                document.body.appendChild(star);
-                setTimeout(() => star.remove(), 1000);
-            }
+            boton.dataset.completado = "true";
+            boton.innerText = "✅ ¡Completado!";
+            boton.style.backgroundColor = "#ff4757";
         }
     </script>
 </body>
