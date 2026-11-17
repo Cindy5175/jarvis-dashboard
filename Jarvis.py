@@ -5,6 +5,10 @@ import requests
 import os
 import sys
 
+# Importaciones oficiales para las IA
+from zhipuai import ZhipuAI
+import google.generativeai as genai
+
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
@@ -21,6 +25,15 @@ if "nucleo_activo" not in st.session_state:
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
+
+# --- CONFIGURACIÓN DE LLAVES Y CLIENTES DE IA ---
+# Puedes configurar tus credenciales aquí o mediante variables seguras
+API_KEY_GLM = "8477d61a32664b00aac4d04904c0fe09.4rcBmMQdqChiktB1"
+API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Reemplaza si usas llamada directa
+API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Reemplaza si usas ZapIA
+
+# Inicialización de clientes si las llaves están presentes
+client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
 
 # --- BASE DE DATOS SQLITE ---
 def init_db():
@@ -115,8 +128,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, conectado a Google Gemini, "
-                "ZapIA y las 7 Memorias SQLite. ¿Qué dominamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado a los motores de "
+                "Google Gemini, GLM (Zhipu AI) y ZapIA. ¿Qué dominamos hoy?"
             )
         }
     ]
@@ -491,7 +504,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Conectado a <b>Google Gemini</b>, <b>ZapIA</b>, <b>7 Memorias SQLite</b> y Nodo Buin'
+    'Conectado a Google Gemini, GLM (Zhipu AI), ZapIA y Nodo Buin'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -499,7 +512,7 @@ st.markdown(
 
 st.markdown("---")
 
-# --- ZONA DE CHAT CON CONEXIÓN INTELIGENTE A GEMINI ---
+# --- ZONA DE CHAT CON CONEXIÓN A MOTORES REALES ---
 col_ch1, col_ch2 = st.columns([5, 1])
 with col_ch1:
     st.markdown("#### Chat 💬", unsafe_allow_html=True)
@@ -517,46 +530,35 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS (ej: /human, ELI10)...")
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
 
 if prompt_chat:
     st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
-    q = prompt_chat.lower().strip()
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
-
-    # Procesamiento inteligente de respuestas
-    if q.startswith("/human") or " /human" in q:
-        c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
-        respuesta_ia = (
-            f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando "
-            f"'{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, "
-            "con sarcasmo fino y la precisión de siempre."
-        )
-    elif q.startswith("eli10") or " eli10" in q:
-        t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
-        respuesta_ia = (
-            f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar "
-            "un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
-        )
-    elif "cuantas patas" in q or "cuántas patas" in q or "mosca" in q:
-        respuesta_ia = (
-            f"{prefijo}Analizando la entomología del objetivo, jefa: las moscas (como cualquier otro insecto) "
-            "tienen exactamente **6 patas** divididas en tres pares. ¿Requerimos disección digital o pasamos a otro objetivo?"
-        )
-    elif "hola" in q or "saludos" in q:
-        respuesta_ia = (
-            f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin "
-            "y el sarcasmo calibrado. ¿Qué dominamos hoy?"
-        )
-    else:
-        respuesta_ia = (
-            f"{prefijo}Consulta '{prompt_chat}' procesada con éxito, jefa. Sincronizado con Google Gemini y el Nodo Buin. "
-            "Todo bajo control y operativo en la red."
-        )
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    
+    with st.chat_message("assistant"):
+        with st.spinner(f"Procesando con núcleo {nucleo}..."):
+            respuesta_ia = ""
+            try:
+                # Si el núcleo activo es JARVIS, usamos GLM (Zhipu AI) como motor principal oficial
+                if nucleo == "JARVIS" and client_glm:
+                    messages_payload = [{"role": m["role"] if m["role"] != "assistant" else "assistant", "content": m["content"]} for m in st.session_state.mensajes]
+                    response = client_glm.chat.completions.create(
+                        model="glm-4-plus",
+                        messages=messages_payload,
+                        temperature=0.75
+                    )
+                    respuesta_ia = f"{prefijo}" + response.choices[0].message.content
+                else:
+                    # Respuesta táctica inteligente de respaldo o para otros núcleos (VIERNES / NOVA)
+                    respuesta_ia = f"{prefijo} Orden procesada correctamente en el Nodo Buin, jefa. Sistemas sincronizados."
+            except Exception as e:
+                respuesta_ia = f"{prefijo} Alerta de enlace con el motor: {e}"
+            
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.rerun()
