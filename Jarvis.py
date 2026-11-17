@@ -318,7 +318,7 @@ with st.sidebar:
     st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">Finviz (Mercados)</a>', unsafe_allow_html=True)
     st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">Investing.com (Divisas)</a>', unsafe_allow_html=True)
 
-# --- 3. PANTALLA PRINCIPAL (ESTABLE Y CON HORA SINCRONIZADA) ---
+# --- 3. PANTALLA PRINCIPAL CON REACTOR ARC Y SEGUNDERO EN TIEMPO REAL ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = [
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -333,11 +333,29 @@ st.markdown(
     f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
     f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
     f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <b>{now_live.strftime("%H:%M:%S")}</b> ]'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <b id="reloj-vivo" style="color: #00f3ff;">{now_live.strftime("%H:%M:%S")}</b> ]'
     f'</p>'
     f'</div>',
     unsafe_allow_html=True
 )
+
+# Script de JavaScript seguro para actualizar el segundero en vivo cada segundo
+reloj_js = """
+<script>
+    function iniciarRelojVivo() {
+        if (window.jarvisInterval) clearInterval(window.jarvisInterval);
+        window.jarvisInterval = setInterval(() => {
+            const ahora = new Date();
+            const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
+            const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);
+            const el = window.parent.document.getElementById("reloj-vivo");
+            if (el) { el.innerText = horaChile; }
+        }, 1000);
+    }
+    iniciarRelojVivo();
+</script>
+"""
+st.components.v1.html(reloj_js, height=0)
 
 st.markdown(
     '<div class="holo-brain-box">'
