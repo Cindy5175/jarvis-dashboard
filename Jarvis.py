@@ -132,7 +132,7 @@ if "mensajes" not in st.session_state:
         }
     ]
 
-# --- ESTILOS VISUALES STARK (SEGUROS) ---
+# --- ESTILOS VISUALES STARK ---
 estilos_css = """
 <style>
     .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
@@ -261,7 +261,7 @@ if not st.session_state.get("autorizado", False):
                 st.error("PIN incorrecto. Acceso denegado.")
     st.stop()
 
-# --- 2. PANEL LATERAL OCULTO ---
+# --- 2. PANEL LATERAL: ARSENAL DE MÓDULOS ---
 with st.sidebar:
     st.markdown("### Arsenal de Módulos")
     st.markdown("---")
@@ -289,6 +289,32 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+    st.markdown("#### Memoria y Datos")
+    with st.expander("Gestionar Memoria SQLite", expanded=False):
+        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
+        if st.button("Guardar en Memoria", use_container_width=True):
+            if dato_mem.strip():
+                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
+                st.success("¡Memoria guardada!")
+
+    st.markdown("---")
+    st.markdown("#### Misiones Tácticas")
+    with st.expander("Base de Datos Misiones", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada!")
+                st.rerun()
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+
+    st.markdown("---")
     st.markdown("#### Enlaces Financieros")
     with st.expander("Indicadores en Vivo (Dólar / Euro)", expanded=False):
         datos_econ = obtener_indicadores_chile()
@@ -310,4 +336,41 @@ with st.sidebar:
             obtener_indicadores_chile.clear()
             st.rerun()
 
-# ---
+# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC ---
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = [
+    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+]
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+hora_str = now_chile.strftime("%H:%M:%S")
+
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
+    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – {hora_str} ]'
+    f'</p>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="holo-brain-box">'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
+    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
+    f'</h4>'
+    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
+    'Enlazado con GLM (Zhipu AI), Google Gemini y ZapIA | Sistemas estables'
+    '</p>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+# --- ZONA DE CHAT ---
+col_ch1, col_ch2 = st.columns([5, 1])
+with col
