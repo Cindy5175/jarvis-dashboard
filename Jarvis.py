@@ -4,7 +4,6 @@ import sqlite3
 import requests
 import os
 import sys
-from streamlit_autorefresh import st_autorefresh
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
@@ -12,9 +11,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# Autorefresh cada 1000ms (1 segundo) para que el reloj y el segundero corran en tiempo real fluido
-st_autorefresh(interval=1000, limit=None, key="reloj_en_vivo")
 
 # --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
@@ -135,7 +131,7 @@ if "mensajes" not in st.session_state:
             "role": "assistant",
             "content": (
                 f"{saludo_actual}, jefa. Nodo Buin en línea, operando al 100%. "
-                "Reloj en tiempo real activo con segundero fluido. ¿Qué ordenamos hoy?"
+                "Sistemas estables y reloj dinámico activo. ¿Qué ordenamos hoy?"
             )
         }
     ]
@@ -379,7 +375,7 @@ with st.sidebar:
         st.markdown('<a class="tactical-link-btn" href="https://maps.google.com" target="_blank">Abrir Satélite Global</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://earth.google.com" target="_blank">Google Earth 3D</a>', unsafe_allow_html=True)
 
-# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC Y RELOJ EN TIEMPO REAL ---
+# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC Y RELOJ SINCRONIZADO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = [
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
