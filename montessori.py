@@ -1,168 +1,132 @@
 import streamlit as st
+import datetime
 
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="Módulo Montessori // Aventura Infantil",
+    page_title="J.A.R.V.I.S. // Aventura Montessori",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-st.markdown("""
-    <style>
-        .stApp { background-color: #fff9e6 !important; color: #2c3e50 !important; font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif; }
-        p, span, label, h1, h2, h3, h4, div { color: #2c3e50; font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif; }
-        
-        .montessori-header {
-            text-align: center;
-            padding: 15px 0;
-            background: linear-gradient(135deg, #1e90ff, #2ed573);
-            color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .montessori-header h1 { color: white !important; font-size: 2rem; margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
-        .montessori-header p { color: white !important; font-size: 1.1rem; margin: 8px 0 0 0; font-weight: bold; }
-        
-        .banner-dia {
-            background: linear-gradient(135deg, #ffa502, #ff4757);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 14px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            font-size: 1rem;
-        }
-        
-        .badge-estrellas {
-            background-color: #ffa502;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-weight: bold;
-            display: inline-block;
-        }
-        .badge-rango {
-            background-color: #1e90ff;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-weight: bold;
-            display: inline-block;
-        }
-        
-        .mascota-guia {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            background: #f1f2f6;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-        
-        .stButton>button {
-            background-color: #2ed573 !important;
-            color: white !important;
-            border: none !important;
-            padding: 10px 16px !important;
-            border-radius: 10px !important;
-            font-weight: bold !important;
-            box-shadow: 0 3px 6px rgba(46, 213, 115, 0.3);
-            width: 100%;
-        }
-        .stButton>button:hover { background-color: #26af5f !important; }
-    </style>
-""", unsafe_allow_html=True)
+# --- ESTILOS VISUALES TÁCTICOS Y ACOGEDORES ---
+estilos_css = """
+<style>
+    .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
+    p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
+    
+    .montessori-header {
+        border: 1.5px solid #00f3ff;
+        background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        margin-bottom: 20px;
+    }
+    .mission-box {
+        border: 1px dashed #ff9900;
+        background: rgba(255, 153, 0, 0.08);
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #ff9900 !important;
+    }
+    .mission-box p, .mission-box span { color: #ff9900 !important; }
+    
+    .stButton>button {
+        background-color: #00f3ff !important;
+        border: 1.5px solid #00f3ff !important;
+        font-weight: bold;
+        font-family: monospace;
+        color: #060913 !important;
+        width: 100%;
+        border-radius: 6px;
+        padding: 8px 12px !important;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+    .stButton>button:hover {
+        background-color: #0088cc !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.9);
+    }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+</style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
 
-if "estrellas_montessori" not in st.session_state:
-    st.session_state.estrellas_montessori = 0
+# --- INICIALIZACIÓN DE ESTADOS ---
+if "estrellas" not in st.session_state:
+    st.session_state.estrellas = 0
+if "completadas" not in st.session_state:
+    st.session_state.completadas = []
 
-estrellas = st.session_state.estrellas_montessori
-rango = "🐾 Explorador Tierno"
-if estrellas >= 10:
-    rango = "📖 Genio de las Letras"
-if estrellas >= 20:
-    rango = "🚀 Maestro del Saber"
+# --- ENCABEZADO PRINCIPAL ---
+st.markdown(
+    '<div class="montessori-header">'
+    '<h1 style="margin:0; font-size: 2rem; text-shadow: 0 0 10px #00f3ff;">🧸 ¡Aventura Divertida Montessori! 🌟</h1>'
+    '<p style="margin:5px 0 0 0; opacity: 0.85;">Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>'
+    '</div>',
+    unsafe_allow_html=True
+)
 
-st.markdown("""
-    <div class="montessori-header">
-        <h1>🐵 ¡Aventura Divertida Montessori! 🌟</h1>
-        <p>Aprende, juega y gana estrellas. ¡Cada día una nueva aventura para descubrir!</p>
-    </div>
-""", unsafe_allow_html=True)
+# --- MISIÓN DEL DÍA ---
+st.markdown(
+    '<div class="mission-box">'
+    '<b>⭐ Misión del Día Destacada:</b> La Torre Rosa (Doble Diversión)'
+    '</div>',
+    unsafe_allow_html=True
+)
 
-st.markdown("""
-    <div class="banner-dia">
-        🌟 ¡Misión del Día Destacada: La Torre Rosa (Doble Diversión)! 🐼
-    </div>
-""", unsafe_allow_html=True)
-
-col_m1, col_m2 = st.columns(2)
-with col_m1:
-    st.markdown(f'<div style="text-align: center;"><div class="badge-estrellas">⭐ Estrellas: {estrellas}</div></div>', unsafe_allow_html=True)
-with col_m2:
-    st.markdown(f'<div style="text-align: center;"><div class="badge-rango">Rango: {rango}</div></div>', unsafe_allow_html=True)
+# --- PANEL DE ESTADÍSTICAS ---
+col_s1, col_s2 = st.columns(2)
+with col_s1:
+    st.markdown(f"### ⭐ Estrellas: `{st.session_state.estrellas}`")
+with col_s2:
+    rango_actual = "Explorador Tierno" if st.session_state.estrellas < 10 else "Maestro Montessori"
+    st.markdown(f"### 🎖️ Rango: `{rango_actual}`")
 
 st.markdown("---")
 
-col1, col2 = st.columns(2)
+# --- ACTIVIDADES / MÓDULOS ---
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown("""
-    <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #1e90ff; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
-        <div class="mascota-guia"><span>🐵</span><span>¡Mono Chispas te acompaña!</span></div>
-        <h3 style="margin: 0 0 8px 0;">Trasvase de Semillas</h3>
-        <p style="color: #57606f; font-size: 0.9rem;">Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro.</p>
-        <p style="font-size: 0.8rem; color: #ff4757; font-weight: bold;">🎁 Premia: ⭐️⭐️ (2 Estrellas)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("¡Jugar Trasvase!", key="btn_1"):
-        st.session_state.estrellas_montessori += 2
-        st.success("🎉 ¡Excelente trabajo! Completaste 'Trasvase de Semillas' y ganaste 2 estrellas brillantes.")
-        st.rerun()
-
-    st.markdown("""
-    <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #ffa502; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
-        <div class="mascota-guia"><span>🦁</span><span>¡León Dani te enseña!</span></div>
-        <h3 style="margin: 0 0 8px 0;">Barras Numéricas</h3>
-        <p style="color: #57606f; font-size: 0.9rem;">Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.</p>
-        <p style="font-size: 0.8rem; color: #ffa502; font-weight: bold;">🎁 Premia: ⭐️⭐️⭐️ (3 Estrellas)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("¡Jugar Barras Numéricas!", key="btn_3"):
-        st.session_state.estrellas_montessori += 3
-        st.success("🎉 ¡Impresionante! Completaste 'Barras Numéricas' y ganaste 3 estrellas brillantes.")
-        st.rerun()
+    st.markdown("### 🪴 Mono Chispas")
+    st.markdown("#### Trasvase de Semillas")
+    st.write("Usa tu cuchara con mucho cuidado para mover las semillas de un plato a otro.")
+    is_done1 = "Trasvase de Semillas" in st.session_state.completadas
+    btn_label1 = "✅ ¡Completado!" if is_done1 else "🎮 ¡Jugar! (Gana 2 ⭐)"
+    if st.button(btn_label1, key="btn_semillas"):
+        if not is_done1:
+            st.session_state.estrellas += 2
+            st.session_state.completadas.append("Trasvase de Semillas")
+            st.success("¡Excelente trabajo con las semillas!")
+            st.rerun()
 
 with col2:
-    st.markdown("""
-    <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #2ed573; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
-        <div class="mascota-guia"><span>🐼</span><span>¡Panda Lolo te guía!</span></div>
-        <h3 style="margin: 0 0 8px 0;">La Torre Rosa</h3>
-        <p style="color: #57606f; font-size: 0.9rem;">Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.</p>
-        <p style="font-size: 0.8rem; color: #2ed573; font-weight: bold;">🎁 Premia: ⭐️⭐️⭐️ (3 Estrellas)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("¡Jugar Torre Rosa!", key="btn_2"):
-        st.session_state.estrellas_montessori += 3
-        st.success("🎉 ¡Fantástico! Completaste 'La Torre Rosa' y ganaste 3 estrellas brillantes.")
-        st.rerun()
+    st.markdown("### 🐼 Panda Lolo")
+    st.markdown("#### La Torre Rosa")
+    st.write("Ordena los cubos desde el más grande abajo hasta el más pequeñito arriba.")
+    is_done2 = "La Torre Rosa" in st.session_state.completadas
+    btn_label2 = "✅ ¡Completado!" if is_done2 else "🎮 ¡Jugar! (Gana 3 ⭐)"
+    if st.button(btn_label2, key="btn_torre"):
+        if not is_done2:
+            st.session_state.estrellas += 3
+            st.session_state.completadas.append("La Torre Rosa")
+            st.success("¡Torre armada con éxito!")
+            st.rerun()
 
-    st.markdown("""
-    <div style="background: white; border-radius: 16px; padding: 20px; border-top: 8px solid #ff4757; box-shadow: 0 6px 12px rgba(0,0,0,0.08); margin-bottom: 20px;">
-        <div class="mascota-guia"><span>🐰</span><span>¡Conejo Saltarín te ayuda!</span></div>
-        <h3 style="margin: 0 0 8px 0;">Letras de Lija</h3>
-        <p style="color: #57606f; font-size: 0.9rem;">Sigue con tu dedito la forma de las letras mientras escuchas su sonido mágico.</p>
-        <p style="font-size: 0.8rem; color: #1e90ff; font-weight: bold;">🎁 Premia: ⭐️⭐️ (2 Estrellas)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("¡Jugar Letras de Lija!", key="btn_4"):
-        st.session_state.estrellas_montessori += 2
-        st.success("🎉 ¡Muy bien hecho! Completaste 'Letras de Lija' y ganaste 2 estrellas brillantes.")
-        st.rerun()
+with col3:
+    st.markdown("### 🦁 León Dani")
+    st.markdown("#### Barras Numéricas")
+    st.write("Cuenta las barritas de colores y descubre qué número corresponde a cada tamaño.")
+    is_done3 = "Barras Numéricas" in st.session_state.completadas
+    btn_label3 = "✅ ¡Completado!" if is_done3 else "🎮 ¡Jugar! (Gana 3 ⭐)"
+    if st.button(btn_label3, key="btn_barras"):
+        if not is_done3:
+            st.session_state.estrellas += 3
+            st.session_state.completadas.append("Barras Numéricas")
+            st.success("¡Gran conteo numérico!")
+            st.rerun()
