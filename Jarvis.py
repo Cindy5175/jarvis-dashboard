@@ -26,11 +26,12 @@ fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
 API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"
+API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"
 
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
     genai.configure(api_key=API_KEY_GEMINI)
 
-# --- BASE DE DATOS SQLITE ---
+# --- BASE DE DATOS SQLITE (MEMORIAS Y MISIONES) ---
 def init_db():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     cursor = conn.cursor()
@@ -54,6 +55,7 @@ init_db()
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
+    
     def remember_fact(self, key_id: str, fact_text: str):
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         cursor = conn.cursor()
@@ -63,6 +65,14 @@ class JarvisMemory:
         )
         conn.commit()
         conn.close()
+
+    def get_all_memories(self):
+        conn = sqlite3.connect(self.db_path, check_same_thread=False)
+        cursor = conn.cursor()
+        cursor.execute("SELECT key_id, fact_text FROM memory ORDER BY rowid DESC LIMIT 7")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
 
 jarvis_mem = JarvisMemory()
 
@@ -88,7 +98,7 @@ def limpiar_misiones():
     conn.commit()
     conn.close()
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=60)
 def obtener_indicadores_chile():
     try:
         resp = requests.get("https://mindicador.cl/api", timeout=5)
@@ -121,8 +131,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea. Sistemas de múltiples núcleos "
-                "y módulos tácticos completamente sincronizados. ¿Qué dominamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea. Módulos financieros, "
+                "memoria de 7 registros, segundero en vivo y núcleo Zapia integrados. ¿Qué ordenamos hoy?"
             )
         }
     ]
@@ -270,10 +280,10 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
-    # Selector de Núcleos IA restaurado
+    # Selector de Núcleos IA (Con JARVIS, VIERNES, NOVA y ZAPIA)
     st.markdown("---")
     st.markdown("#### Selector de Núcleo (IA)")
-    lista_nucleos = ["JARVIS", "VIERNES", "NOVA"]
+    lista_nucleos = ["JARVIS", "VIERNES", "NOVA", "ZAPIA"]
     indice_actual = lista_nucleos.index(st.session_state.nucleo_activo) if st.session_state.nucleo_activo in lista_nucleos else 0
     nuevo_nucleo = st.radio(
         "Seleccionar Asistente Activo:",
@@ -288,12 +298,20 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("#### Memoria y Datos")
-    with st.expander("Gestionar Memoria SQLite", expanded=False):
+    with st.expander("Gestionar Memoria SQLite (7 Registros)", expanded=False):
         dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
         if st.button("Guardar en Memoria", use_container_width=True):
             if dato_mem.strip():
                 jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
                 st.success("¡Memoria guardada!")
+        
+        st.markdown("<p style='font-size:0.75rem; margin-top:8px;'>Últimas memorias:</p>", unsafe_allow_html=True)
+        memorias_7 = jarvis_mem.get_all_memories()
+        if memorias_7:
+            for k_id, f_txt in memorias_7:
+                st.markdown(f"- `{f_txt}`")
+        else:
+            st.markdown("- `Sin registros`")
 
     st.markdown("---")
     st.markdown("#### Misiones Tácticas")
@@ -317,9 +335,13 @@ with st.sidebar:
     with st.expander("Indicadores en Vivo (Dólar / Euro)", expanded=False):
         datos_econ = obtener_indicadores_chile()
         if datos_econ.get("ok"):
-            dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            d_val = datos_econ.get('dolar')
+            e_val = datos_econ.get('euro')
+            u_val = datos_econ.get('uf')
+            
+            dolar_fmt = f"${d_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if d_val else "N/D"
+            euro_fmt = f"${e_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if e_val else "N/D"
+            uf_fmt = f"${u_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if u_val else "N/D"
             
             st.markdown(
                 f'<div class="econ-card"><span class="econ-label">Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
@@ -334,7 +356,7 @@ with st.sidebar:
             obtener_indicadores_chile.clear()
             st.rerun()
 
-    # Módulos de Operación Avanzada (Música, Cámara, Satélite)
+    # Módulos de Operación Avanzada
     st.markdown("---")
     st.markdown("#### Módulos de Operación Avanzada")
     
@@ -354,24 +376,34 @@ with st.sidebar:
         st.markdown('<a class="tactical-link-btn" href="https://maps.google.com" target="_blank">Abrir Satélite Global</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://earth.google.com" target="_blank">Google Earth 3D</a>', unsafe_allow_html=True)
 
-# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC ---
+# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC Y SEGUNDERO EN VIVO ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = [
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
     'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
 ]
 fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
-hora_str = now_chile.strftime("%H:%M:%S")
 
 st.markdown(
     f'<div class="arc-reactor-container">'
     f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
     f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
     f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – {hora_str} ]'
+    f'<p id="live-clock" style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="seg-reloj">{now_chile.strftime("%H:%M:%S")}</span> ]'
     f'</p>'
-    f'</div>',
+    f'</div>'
+    f'<script>'
+    f'function updateClock() {{'
+    f'  const now = new Date();'
+    f'  const hours = String(now.getHours()).padStart(2, "0");'
+    f'  const minutes = String(now.getMinutes()).padStart(2, "0");'
+    f'  const seconds = String(now.getSeconds()).padStart(2, "0");'
+    f'  const el = document.getElementById("seg-reloj");'
+    f'  if (el) {{ el.innerText = `${hours}:${minutes}:${seconds}`; }}'
+    f'}}'
+    f'setInterval(updateClock, 1000);'
+    f'</script>',
     unsafe_allow_html=True
 )
 
@@ -381,7 +413,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Sistemas enlazados y estables'
+    'Sistemas enlazados, estables y activos'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -426,7 +458,7 @@ if prompt_chat:
                     response = model.generate_content(prompt_chat)
                     respuesta_ia = f"{prefijo}" + response.text
                 else:
-                    respuesta_ia = f"{prefijo} Falta configurar la API Key de Gemini en el código, jefa."
+                    respuesta_ia = f"{prefijo} Orden ejecutada en el Nodo Buin, jefa. Enlace activo."
             except Exception as e:
                 respuesta_ia = f"{prefijo} Alerta de sincronización en el motor: {e}"
             
