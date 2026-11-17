@@ -17,7 +17,7 @@ st.caption("Sistemas enlazados al motor GLM de Zhipu AI y al mapa táctico satel
 # ==============================================================================
 # CONFIGURACIÓN DE CREDENCIALES
 # ==============================================================================
-# Inserta aquí tu API Key oficial obtenida en open.bigmodel.cn
+# Pega tu API Key real aquí dentro de las comillas
 API_KEY_GLM = "TU_API_KEY_OFICIAL_AQUI"
 
 if API_KEY_GLM == "TU_API_KEY_OFICIAL_AQUI":
@@ -41,34 +41,29 @@ else:
             {"role": "system", "content": PERSONALIDAD_JARVIS}
         ]
 
-    # Mostrar historial de chat en la pantalla (omitiendo el system prompt)
+    # Mostrar historial de chat en la pantalla
     for message in st.session_state.messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Caja de entrada interactiva web (reemplaza al input de consola antiguo)
+    # Caja de entrada interactiva web
     if prompt := st.chat_input("Escribe una orden para JARVIS, jefa..."):
-        # Guardar mensaje del usuario en el historial
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Generar respuesta de JARVIS conectada al motor GLM
         with st.chat_message("assistant"):
             with st.spinner("Procesando telemetría del Nodo Buin..."):
                 try:
                     respuesta = client.chat.completions.create(
-                        model="glm-4-plus",  # Puedes cambiarlo a 'glm-4-flash' si buscas velocidad máxima
+                        model="glm-4-plus",
                         messages=st.session_state.messages,
                         temperature=0.75,
                     )
                     texto_respuesta = respuesta.choices[0].message.content
                     st.markdown(texto_respuesta)
-                    
-                    # Guardar respuesta en el historial de memoria
                     st.session_state.messages.append({"role": "assistant", "content": texto_respuesta})
                     
                 except Exception as e:
                     st.error(f"[Alerta del Sistema]: Fallo en el enlace con el servicio GLM, jefa. Detalle: {e}")
-
