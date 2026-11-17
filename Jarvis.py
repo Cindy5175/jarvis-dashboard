@@ -5,7 +5,6 @@ import requests
 import os
 import sys
 
-# Importaciones de las IA
 from zhipuai import ZhipuAI
 import google.generativeai as genai
 
@@ -26,12 +25,11 @@ if "nucleo_activo" not in st.session_state:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- CONFIGURACIÓN DE LLAVES Y CLIENTES PARA LOS 3 MOTORES ---
+# --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
 API_KEY_GLM = "8477d61a32664b00aac4d04904c0fe09.4rcBmMQdqChiktB1"
-API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave de Gemini si la usas
-API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
+API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"
+API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"
 
-# Inicialización de clientes
 client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
 
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
@@ -95,7 +93,6 @@ def limpiar_misiones():
     conn.commit()
     conn.close()
 
-# --- OBTENCIÓN DE INDICADORES ECONÓMICOS EN TIEMPO REAL (CHILE) ---
 @st.cache_data(ttl=300)
 def obtener_indicadores_chile():
     try:
@@ -113,7 +110,6 @@ def obtener_indicadores_chile():
         pass
     return {"ok": False}
 
-# ZONA HORARIA CHILENA
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
@@ -136,13 +132,12 @@ if "mensajes" not in st.session_state:
         }
     ]
 
-# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES COMPACTOS ---
+# --- ESTILOS VISUALES STARK (SEGUROS) ---
 estilos_css = """
 <style>
     .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
     p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
     
-    /* AJUSTE FINO DE TEXTOS EN BARRA LATERAL Y MINI MÓDULOS */
     [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
     [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
     [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
@@ -161,7 +156,6 @@ estilos_css = """
     .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
     .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
     
-    /* TARJETA DE INDICADORES ECONÓMICOS EN VIVO */
     .econ-card {
         border: 1px solid #00f3ff;
         background: rgba(0, 243, 255, 0.06);
@@ -176,7 +170,6 @@ estilos_css = """
     .econ-label { font-size: 0.75rem !important; opacity: 0.85; }
     .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
 
-    /* REACTOR ARC ESTILO STARK - INVERTIDO */
     .arc-reactor-container {
         display: flex;
         flex-direction: column;
@@ -207,7 +200,6 @@ estilos_css = """
         filter: drop-shadow(0 0 8px #00f3ff);
     }
     
-    /* BOTÓN TÁCTICO HTML COMPACTO */
     .tactical-link-btn {
         display: block;
         width: 100%;
@@ -245,3 +237,77 @@ estilos_css = """
 </style>
 """
 st.markdown(estilos_css, unsafe_allow_html=True)
+
+# --- 1. PANTALLA DE BLOQUEO DE SEGURIDAD ---
+if not st.session_state.get("autorizado", False):
+    st.markdown(
+        '<div style="text-align: center; margin-top: 50px;">'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Sistema")
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                st.success("Acceso concedido. Bienvenido de nuevo, jefa.")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+# --- 2. PANEL LATERAL OCULTO ---
+with st.sidebar:
+    st.markdown("### Arsenal de Módulos")
+    st.markdown("---")
+    
+    if st.button("Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+        
+    if st.button("Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        ["JARVIS", "VIERNES", "NOVA"],
+        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+        label_visibility="collapsed"
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### Enlaces Financieros")
+    with st.expander("Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        datos_econ = obtener_indicadores_chile()
+        if datos_econ.get("ok"):
+            dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            
+            st.markdown(
+                f'<div class="econ-card"><span class="econ-label">Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">Euro</span><span class="econ-val">{euro_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.warning("No se pudo conectar con el nodo económico.")
+            
+        if st.button("Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
+            obtener_indicadores_chile.clear()
+            st.rerun()
+
+# ---
