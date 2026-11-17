@@ -132,7 +132,7 @@ if "mensajes" not in st.session_state:
             "role": "assistant",
             "content": (
                 f"{saludo_actual}, jefa. Nodo Buin en línea, operando al 100%. "
-                "Sistemas estables, segundero activo y todos los módulos desplegados. ¿Qué ordenamos hoy?"
+                "Sistemas estables y todos los módulos desplegados. ¿Qué ordenamos hoy?"
             )
         }
     ]
@@ -376,37 +376,24 @@ with st.sidebar:
         st.markdown('<a class="tactical-link-btn" href="https://maps.google.com" target="_blank">Abrir Satélite Global</a>', unsafe_allow_html=True)
         st.markdown('<a class="tactical-link-btn" href="https://earth.google.com" target="_blank">Google Earth 3D</a>', unsafe_allow_html=True)
 
-# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC Y SEGUNDERO EN VIVO ---
+# --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC Y RELOJ EN TIEMPO REAL ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = [
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
     'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
 ]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+now_live = datetime.datetime.now(tz_chile)
+fecha_str = f"{dias[now_live.weekday()]}, {now_live.day:02d} de {meses[now_live.month]} de {now_live.year}"
 
-# Contenedor dinámico del reloj para que corra el segundero fluido
 st.markdown(
     f'<div class="arc-reactor-container">'
     f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
     f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
     f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<div style="margin: 0; font-size: 0.75rem !important; opacity: 0.85; font-family: monospace;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="live-sec-clock" style="color: #00f3ff; font-weight: bold;"></span> ]'
-    f'</div>'
-    f'</div>'
-    f'<script>'
-    f'(function() {{'
-    f'  if (window.jarvisClockInterval) clearInterval(window.jarvisClockInterval);'
-    f'  window.jarvisClockInterval = setInterval(() => {{'
-    f'    const now = new Date();'
-    f'    const h = String(now.getHours()).padStart(2, "0");'
-    f'    const m = String(now.getMinutes()).padStart(2, "0");'
-    f'    const s = String(now.getSeconds()).padStart(2, "0");'
-    f'    const el = document.getElementById("live-sec-clock");'
-    f'    if (el) el.innerText = h + ":" + m + ":" + s;'
-    f'  }}, 1000);'
-    f'}})();'
-    f'</script>',
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <b>{now_live.strftime("%H:%M:%S")}</b> ]'
+    f'</p>'
+    f'</div>',
     unsafe_allow_html=True
 )
 
