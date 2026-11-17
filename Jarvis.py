@@ -113,7 +113,6 @@ def obtener_indicadores_chile():
     except Exception:
         pass
     
-    # Respaldo táctico blindado si la API externa no responde
     return {
         "dolar": 950.0,
         "euro": 1020.0,
@@ -337,4 +336,28 @@ with st.sidebar:
                 limpiar_misiones()
                 st.rerun()
 
-    st.markdown("
+    st.markdown("---")
+    st.markdown("#### Enlaces Financieros")
+    with st.expander("Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        datos_econ = obtener_indicadores_chile()
+        if datos_econ.get("ok"):
+            d_val = datos_econ.get('dolar')
+            e_val = datos_econ.get('euro')
+            u_val = datos_econ.get('uf')
+            
+            dolar_fmt = f"${d_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if d_val else "N/D"
+            euro_fmt = f"${e_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if e_val else "N/D"
+            uf_fmt = f"${u_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if u_val else "N/D"
+            
+            st.markdown(
+                f'<div class="econ-card"><span class="econ-label">Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">Euro</span><span class="econ-val">{euro_fmt}</span></div>'
+                f'<div class="econ-card"><span class="econ-label">Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.warning("No se pudo conectar con el nodo económico.")
+            
+        if st.button("Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
+            obtener_indicadores_chile.clear()
+            st
