@@ -502,7 +502,7 @@ st.markdown("---")
 # --- ZONA DE CHAT CON CONEXIÓN INTELIGENTE A GEMINI ---
 col_ch1, col_ch2 = st.columns([5, 1])
 with col_ch1:
-    st.markdown("#### 💬 Interacción Activa", unsafe_allow_html=True)
+    st.markdown("#### Chat 💬", unsafe_allow_html=True)
 with col_ch2:
     if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
         st.session_state.mensajes = [
