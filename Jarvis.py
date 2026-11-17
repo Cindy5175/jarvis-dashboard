@@ -5,7 +5,6 @@ import requests
 import os
 import sys
 
-from zhipuai import ZhipuAI
 import google.generativeai as genai
 
 # --- 1. CONFIGURACION DE PAGINA ---
@@ -20,18 +19,14 @@ if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
 if "nucleo_activo" not in st.session_state:
-    st.session_state.nucleo_activo = "JARVIS"
+    st.session_state.nucleo_activo = "JARVIS"  # Ahora JARVIS usa Gemini por debajo
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
-# Clave original restaurada y lista
-API_KEY_GLM = "8477d61a32664b00aac4d04904c0fe09.4rcBmMQdqChiktB1"
-API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"
-API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"
-
-client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
+# Tu llave oficial de Gemini integrada
+API_KEY_GEMINI = "AIzaSy..."  # Reemplaza con tu clave de Gemini si aún no está puesta
 
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
     genai.configure(api_key=API_KEY_GEMINI)
@@ -127,8 +122,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, operando con el núcleo "
-                "de GLM. ¿Qué dominamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea. JARVIS al mando, "
+                "operando con sistemas estables y sin restricciones. ¿Qué ordenamos hoy?"
             )
         }
     ]
@@ -200,28 +195,6 @@ estilos_css = """
         border-top: 20px solid #00f3ff;
         filter: drop-shadow(0 0 8px #00f3ff);
     }
-    
-    .tactical-link-btn {
-        display: block;
-        width: 100%;
-        background-color: #00f3ff;
-        color: #060913 !important;
-        text-align: center;
-        padding: 6px 10px;
-        margin: 5px 0;
-        border-radius: 5px;
-        font-size: 0.76rem !important;
-        font-weight: bold;
-        text-decoration: none;
-        font-family: monospace;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-        transition: all 0.25s ease;
-    }
-    .tactical-link-btn:hover {
-        background-color: #0088cc;
-        color: #ffffff !important;
-        box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
-    }
 
     .holo-brain-box {
         border: 1.5px solid #00f3ff;
@@ -274,19 +247,6 @@ with st.sidebar:
     if st.button("Reinicio Total", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### Selector de Núcleo (IA)")
-    nuevo_nucleo = st.radio(
-        "Seleccionar Asistente Activo:",
-        ["JARVIS", "VIERNES", "NOVA"],
-        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
-        label_visibility="collapsed"
-    )
-    if nuevo_nucleo != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nuevo_nucleo
-        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
         st.rerun()
 
     st.markdown("---")
@@ -360,11 +320,11 @@ st.markdown(
 
 st.markdown(
     '<div class="holo-brain-box">'
-    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
-    f'</h4>'
+    '<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
+    'NÚCLEO NEURONAL CYBER-GRID [JARVIS]'
+    '</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Enlazado con GLM | Sistemas estables'
+    'Enlace neuronal estable y activo'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -397,23 +357,18 @@ if prompt_chat:
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
-    nucleo = st.session_state.nucleo_activo
-    prefijo = f"[{nucleo}] "
+    prefijo = "[JARVIS] "
     
     with st.chat_message("assistant"):
-        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
+        with st.spinner("Procesando orden en el Nodo Buin..."):
             respuesta_ia = ""
             try:
-                if nucleo == "JARVIS" and client_glm:
-                    chat_history = [{"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes if m["role"] in ["user", "assistant"]]
-                    response = client_glm.chat.completions.create(
-                        model="glm-4-plus",
-                        messages=chat_history,
-                        temperature=0.75
-                    )
-                    respuesta_ia = f"{prefijo}" + response.choices[0].message.content
+                if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(prompt_chat)
+                    respuesta_ia = f"{prefijo}" + response.text
                 else:
-                    respuesta_ia = f"{prefijo} Orden ejecutada con éxito en el Nodo Buin, jefa. Enlace simultáneo operativo."
+                    respuesta_ia = f"{prefijo} Falta configurar la API Key de Gemini en el código, jefa."
             except Exception as e:
                 respuesta_ia = f"{prefijo} Alerta de sincronización en el motor: {e}"
             
