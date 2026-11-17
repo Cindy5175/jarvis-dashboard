@@ -131,8 +131,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea. Módulos financieros, "
-                "memoria de 7 registros, segundero en vivo y núcleo Zapia integrados. ¿Qué ordenamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea, operando al 100%. "
+                "Sistemas estables, segundero activo y todos los módulos desplegados. ¿Qué ordenamos hoy?"
             )
         }
     ]
@@ -280,7 +280,7 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
-    # Selector de Núcleos IA (Con JARVIS, VIERNES, NOVA y ZAPIA)
+    # Selector de Núcleos IA (JARVIS, VIERNES, NOVA, ZAPIA)
     st.markdown("---")
     st.markdown("#### Selector de Núcleo (IA)")
     lista_nucleos = ["JARVIS", "VIERNES", "NOVA", "ZAPIA"]
@@ -389,7 +389,7 @@ st.markdown(
     f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
     f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
     f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p id="live-clock" style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
     f'[ NODO BUIN, CHILE // {fecha_str} – <span id="seg-reloj">{now_chile.strftime("%H:%M:%S")}</span> ]'
     f'</p>'
     f'</div>'
@@ -400,7 +400,7 @@ st.markdown(
     f'  const minutes = String(now.getMinutes()).padStart(2, "0");'
     f'  const seconds = String(now.getSeconds()).padStart(2, "0");'
     f'  const el = document.getElementById("seg-reloj");'
-    f'  if (el) {{ el.innerText = `${hours}:${minutes}:${seconds}`; }}'
+    f'  if (el) {{ el.innerText = hours + ":" + minutes + ":" + seconds; }}'
     f'}}'
     f'setInterval(updateClock, 1000);'
     f'</script>',
