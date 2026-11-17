@@ -1,3 +1,5 @@
 streamlit
 zhipuai
+google-generativeai
+requests
 sniffio
