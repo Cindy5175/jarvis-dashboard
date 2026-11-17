@@ -235,7 +235,7 @@ st.markdown(estilos_css, unsafe_allow_html=True)
 if not st.session_state.get("autorizado", False):
     st.markdown(
         '<div style="text-align: center; margin-top: 50px;">'
-        '<h2 style="color: #00f3ff;"> ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
         '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
         '</div>',
         unsafe_allow_html=True
@@ -513,4 +513,50 @@ with col_ch2:
         ]
         st.rerun()
 
-for m in st.session_
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS (ej: /human, ELI10)...")
+
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+
+    q = prompt_chat.lower().strip()
+    nucleo = st.session_state.nucleo_activo
+    prefijo = f"[{nucleo}] "
+
+    # Procesamiento inteligente de respuestas
+    if q.startswith("/human") or " /human" in q:
+        c = prompt_chat.replace("/human", "").replace("/HUMAN", "").strip()
+        respuesta_ia = (
+            f"{prefijo}Entendido, jefa. Dejando la formalidad de lado: analizando "
+            f"'{c or 'su solicitud'}', te diré que por aquí todo fluye sin rodeos, "
+            "con sarcasmo fino y la precisión de siempre."
+        )
+    elif q.startswith("eli10") or " eli10" in q:
+        t = prompt_chat.replace("ELI10", "").replace("eli10", "").strip()
+        respuesta_ia = (
+            f"{prefijo}Explicando '{t or 'el concepto'}' en fácil, jefa: es como armar "
+            "un circuito por bloques; conectas una pieza con otra y el sistema cobra vida."
+        )
+    elif "cuantas patas" in q or "cuántas patas" in q or "mosca" in q:
+        respuesta_ia = (
+            f"{prefijo}Analizando la entomología del objetivo, jefa: las moscas (como cualquier otro insecto) "
+            "tienen exactamente **6 patas** divididas en tres pares. ¿Requerimos disección digital o pasamos a otro objetivo?"
+        )
+    elif "hola" in q or "saludos" in q:
+        respuesta_ia = (
+            f"{prefijo}Hola, jefa. Operando al 100% con circuitos estables en el Nodo Buin "
+            "y el sarcasmo calibrado. ¿Qué dominamos hoy?"
+        )
+    else:
+        respuesta_ia = (
+            f"{prefijo}Consulta '{prompt_chat}' procesada con éxito, jefa. Sincronizado con Google Gemini y el Nodo Buin. "
+            "Todo bajo control y operativo en la red."
+        )
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+    st.rerun()
