@@ -19,14 +19,13 @@ if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
 if "nucleo_activo" not in st.session_state:
-    st.session_state.nucleo_activo = "JARVIS"  # Ahora JARVIS usa Gemini por debajo
+    st.session_state.nucleo_activo = "JARVIS"
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
-# Tu llave oficial de Gemini integrada
-API_KEY_GEMINI = "AIzaSy..."  # Reemplaza con tu clave de Gemini si aún no está puesta
+API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"
 
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
     genai.configure(api_key=API_KEY_GEMINI)
@@ -122,8 +121,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea. JARVIS al mando, "
-                "operando con sistemas estables y sin restricciones. ¿Qué ordenamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea. Sistemas de múltiples núcleos "
+                "y módulos tácticos completamente sincronizados. ¿Qué dominamos hoy?"
             )
         }
     ]
@@ -195,6 +194,28 @@ estilos_css = """
         border-top: 20px solid #00f3ff;
         filter: drop-shadow(0 0 8px #00f3ff);
     }
+    
+    .tactical-link-btn {
+        display: block;
+        width: 100%;
+        background-color: #00f3ff;
+        color: #060913 !important;
+        text-align: center;
+        padding: 6px 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+        font-size: 0.76rem !important;
+        font-weight: bold;
+        text-decoration: none;
+        font-family: monospace;
+        box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+        transition: all 0.25s ease;
+    }
+    .tactical-link-btn:hover {
+        background-color: #0088cc;
+        color: #ffffff !important;
+        box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
+    }
 
     .holo-brain-box {
         border: 1.5px solid #00f3ff;
@@ -249,6 +270,22 @@ with st.sidebar:
             del st.session_state[key]
         st.rerun()
 
+    # Selector de Núcleos IA restaurado
+    st.markdown("---")
+    st.markdown("#### Selector de Núcleo (IA)")
+    lista_nucleos = ["JARVIS", "VIERNES", "NOVA"]
+    indice_actual = lista_nucleos.index(st.session_state.nucleo_activo) if st.session_state.nucleo_activo in lista_nucleos else 0
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        lista_nucleos,
+        index=indice_actual,
+        label_visibility="collapsed"
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
+        st.rerun()
+
     st.markdown("---")
     st.markdown("#### Memoria y Datos")
     with st.expander("Gestionar Memoria SQLite", expanded=False):
@@ -297,6 +334,26 @@ with st.sidebar:
             obtener_indicadores_chile.clear()
             st.rerun()
 
+    # Módulos de Operación Avanzada (Música, Cámara, Satélite)
+    st.markdown("---")
+    st.markdown("#### Módulos de Operación Avanzada")
+    
+    with st.expander("Módulo de Música", expanded=False):
+        st.markdown("<p style='font-size:0.75rem;'>Reproductor de streaming y ambientación táctica.</p>", unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://open.spotify.com" target="_blank">Abrir Spotify Táctico</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://music.youtube.com" target="_blank">YouTube Music Grid</a>', unsafe_allow_html=True)
+
+    with st.expander("Cámara de Vigilancia", expanded=False):
+        st.markdown("<p style='font-size:0.75rem;'>Monitoreo de perímetro y nodos de seguridad en vivo.</p>", unsafe_allow_html=True)
+        st.markdown('<div class="econ-card"><span class="econ-label">Nodo Buin - Perímetro</span><span class="econ-val" style="color: #00ff66 !important;">ONLINE</span></div>', unsafe_allow_html=True)
+        if st.button("Escanear Perímetro", use_container_width=True):
+            st.success("Perímetro seguro. Sin anomalías detectadas.")
+
+    with st.expander("Mapa Táctico Satelital", expanded=False):
+        st.markdown("<p style='font-size:0.75rem;'>Geolocalización y telemetría satelital activa.</p>", unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://maps.google.com" target="_blank">Abrir Satélite Global</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://earth.google.com" target="_blank">Google Earth 3D</a>', unsafe_allow_html=True)
+
 # --- 3. PANTALLA PRINCIPAL CON ENCABEZADO REACTOR ARC ---
 dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 meses = [
@@ -320,11 +377,11 @@ st.markdown(
 
 st.markdown(
     '<div class="holo-brain-box">'
-    '<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    'NÚCLEO NEURONAL CYBER-GRID [JARVIS]'
-    '</h4>'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
+    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
+    f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Enlace neuronal estable y activo'
+    'Sistemas enlazados y estables'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -350,17 +407,18 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
+prompt_chat = st.chat_input("Escribe tu orden o consulta para el sistema...")
 
 if prompt_chat:
     st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
     with st.chat_message("user"):
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
-    prefijo = "[JARVIS] "
+    nucleo = st.session_state.nucleo_activo
+    prefijo = f"[{nucleo}] "
     
     with st.chat_message("assistant"):
-        with st.spinner("Procesando orden en el Nodo Buin..."):
+        with st.spinner(f"Procesando con núcleo {nucleo}..."):
             respuesta_ia = ""
             try:
                 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
