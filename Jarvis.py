@@ -56,7 +56,7 @@ fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
 # Pega tu nueva API Key de GLM aquí entre las comillas:
-API_KEY_GLM = "PEGA_AQUI_TU_NUEVA_CLAVE" 
+API_KEY_GLM = "4b611742dc75440f859f3ab4bb3e1114.v3okxAaXYTYfhvx3" 
 API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"
 API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"
 
