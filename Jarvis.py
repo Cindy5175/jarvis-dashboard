@@ -26,7 +26,7 @@ PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DIRECTA DE LA LLAVE ---
-API_KEY_GROQ = "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"
+API_KEY_GROQ ="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"
 client_groq = Groq(api_key=API_KEY_GROQ) if API_KEY_GROQ else None
 
 # --- BASE DE DATOS SQLITE ---
