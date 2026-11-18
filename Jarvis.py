@@ -5,8 +5,8 @@ import requests
 import os
 import sys
 
-# Importación de la IA principal
-import google.generativeai as genai
+# Importación del motor Groq (que ya tienes configurado en Secrets)
+from groq import Groq
 
 # --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
@@ -25,17 +25,9 @@ if "nucleo_activo" not in st.session_state:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
-API_KEY_GEMINI = "AQ.Ab8RN6J1GBuqimgqwYtMmjVF1fVat00sjuQvNexruK3VusaOmQ"  # Inserta tu clave real de Gemini aquí
-API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
-
-# Inicialización correcta de Gemini
-if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
-    genai.configure(api_key=API_KEY_GEMINI)
-    generation_config = {"temperature": 0.75}
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash', generation_config=generation_config)
-else:
-    gemini_model = None
+# --- CONFIGURACIÓN DE LLAVES Y CLIENTES DESDE SECRETS ---
+API_KEY_GROQ = st.secrets.get("groq_api_key", "")
+client_groq = Groq(api_key=API_KEY_GROQ) if API_KEY_GROQ else None
 
 # --- BASE DE DATOS SQLITE ---
 def init_db():
@@ -130,8 +122,8 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado a "
-                "Google Gemini y ZapIA. ¿Qué dominamos hoy?"
+                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado al núcleo neuronal táctico. "
+                "¿Qué dominamos hoy?"
             )
         }
     ]
@@ -506,7 +498,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Enlazado con Google Gemini y ZapIA'
+    'Motor Táctico Neuronal Activo // Enlace Directo'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -542,20 +534,30 @@ if prompt_chat:
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
    
+    # Personalidad sarcástica y táctica estilo J.A.R.V.I.S.
+    instruccion_sistema = (
+        f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
+        "Tratas a la usuaria de 'jefa'. Eres brillante, leal, extremadamente eficiente y tienes un toque sutil de sarcasmo elegante. "
+        "Responde en español de forma clara, directa y útil."
+    )
+   
     with st.chat_message("assistant"):
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                if gemini_model:
-                    historial_gemini = [
-                        {"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]}
-                        for m in st.session_state.mensajes[:-1]
+                if client_groq:
+                    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
+                        {"role": m["role"], "content": m["content"]}
+                        for m in st.session_state.mensajes
                     ]
-                    chat_sesion = gemini_model.start_chat(history=historial_gemini)
-                    response = chat_sesion.send_message(prompt_chat)
-                    respuesta_ia = f"{prefijo}" + response.text
+                    completion = client_groq.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=mensajes_api,
+                        temperature=0.75
+                    )
+                    respuesta_ia = f"{prefijo}" + completion.choices[0].message.content
                 else:
-                    respuesta_ia = f"{prefijo} Alerta: Falta configurar la API_KEY_GEMINI en el sistema."
+                    respuesta_ia = f"{prefijo} Alerta: No detecto la clave 'groq_api_key' en los secretos de Streamlit."
             except Exception as e:
                 respuesta_ia = f"{prefijo} Alerta de sincronización en el motor: {e}"
            
