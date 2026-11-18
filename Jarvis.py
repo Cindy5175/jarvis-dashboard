@@ -5,8 +5,7 @@ import requests
 import os
 import sys
 
-# Importaciones de las IA
-from zhipuai import ZhipuAI
+# Importación de IA restante
 import google.generativeai as genai
 
 # --- 1. CONFIGURACION DE PAGINA ---
@@ -26,14 +25,11 @@ if "nucleo_activo" not in st.session_state:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- CONFIGURACIÓN DE LLAVES Y CLIENTES PARA LOS 3 MOTORES ---
-API_KEY_GLM = "8477d61a32664b00aac4d04904c0fe09.4rcBmMQdqChiktB1"
+# --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
 API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave de Gemini si la usas
 API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
 
 # Inicialización de clientes
-client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
-
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
     genai.configure(api_key=API_KEY_GEMINI)
 
@@ -131,7 +127,7 @@ if "mensajes" not in st.session_state:
             "role": "assistant",
             "content": (
                 f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado en paralelo a "
-                "GLM, Google Gemini y ZapIA. ¿Qué dominamos hoy?"
+                "Google Gemini y ZapIA. ¿Qué dominamos hoy?"
             )
         }
     ]
@@ -506,7 +502,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Enlazado con GLM (Zhipu AI), Google Gemini y ZapIA'
+    'Enlazado con Google Gemini y ZapIA'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -546,16 +542,7 @@ if prompt_chat:
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                # Dependiendo del núcleo seleccionado, podemos enrutar la petición
-                if nucleo == "JARVIS" and client_glm:
-                    chat_history = [{"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes if m["role"] in ["user", "assistant"]]
-                    response = client_glm.chat.completions.create(
-                        model="glm-4-plus",
-                        messages=chat_history,
-                        temperature=0.75
-                    )
-                    respuesta_ia = f"{prefijo}" + response.choices[0].message.content
-                elif nucleo == "VIERNES" and API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
+                if nucleo in ["JARVIS", "VIERNES"] and API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
                     model = genai.GenerativeModel('gemini-pro')
                     response = model.generate_content(prompt_chat)
                     respuesta_ia = f"{prefijo}" + response.text
