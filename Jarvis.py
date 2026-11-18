@@ -26,7 +26,7 @@ PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
-API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave real de Gemini aquí
+API_KEY_GEMINI = "AQ.Ab8RN6J1GBuqimgqwYtMmjVF1fVat00sjuQvNexruK3VusaOmQ"  # Inserta tu clave real de Gemini aquí
 API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
 
 # Inicialización correcta de Gemini
