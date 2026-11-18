@@ -5,7 +5,7 @@ import requests
 import os
 import sys
 
-# Importación de IA restante
+# Importación de la IA principal
 import google.generativeai as genai
 
 # --- 1. CONFIGURACION DE PAGINA ---
@@ -26,12 +26,16 @@ PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CONFIGURACIÓN DE LLAVES Y CLIENTES ---
-API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave de Gemini si la usas
+API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  # Inserta tu clave real de Gemini aquí
 API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    # Inserta tu clave de ZapIA si la usas
 
-# Inicialización de clientes
+# Inicialización correcta de Gemini
 if API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
     genai.configure(api_key=API_KEY_GEMINI)
+    generation_config = {"temperature": 0.75}
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash', generation_config=generation_config)
+else:
+    gemini_model = None
 
 # --- BASE DE DATOS SQLITE ---
 def init_db():
@@ -126,7 +130,7 @@ if "mensajes" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado en paralelo a "
+                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado a "
                 "Google Gemini y ZapIA. ¿Qué dominamos hoy?"
             )
         }
@@ -542,13 +546,16 @@ if prompt_chat:
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                if nucleo in ["JARVIS", "VIERNES"] and API_KEY_GEMINI and API_KEY_GEMINI != "TU_API_KEY_DE_GEMINI":
-                    model = genai.GenerativeModel('gemini-pro')
-                    response = model.generate_content(prompt_chat)
+                if gemini_model:
+                    historial_gemini = [
+                        {"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]}
+                        for m in st.session_state.mensajes[:-1]
+                    ]
+                    chat_sesion = gemini_model.start_chat(history=historial_gemini)
+                    response = chat_sesion.send_message(prompt_chat)
                     respuesta_ia = f"{prefijo}" + response.text
                 else:
-                    # Motor secundario o respaldo por defecto
-                    respuesta_ia = f"{prefijo} Orden ejecutada con éxito en el Nodo Buin, jefa. Enlace simultáneo operativo."
+                    respuesta_ia = f"{prefijo} Alerta: Falta configurar la API_KEY_GEMINI en el sistema."
             except Exception as e:
                 respuesta_ia = f"{prefijo} Alerta de sincronización en el motor: {e}"
            
