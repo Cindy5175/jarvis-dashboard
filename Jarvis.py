@@ -29,7 +29,8 @@ fn_db = "jarvis_misiones.db"
 
 API_KEY_GEMINI = "TU_API_KEY_DE_GEMINI"  
 API_KEY_ZAPIA = "TU_API_KEY_DE_ZAPIA"    
-
+# Borra o comenta esta línea exacta:
+client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
 # Inicialización de clientes
 client_glm = ZhipuAI(api_key=API_KEY_GLM) if API_KEY_GLM else None
 
