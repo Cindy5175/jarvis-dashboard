@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import sqlite3
 import requests
+import random
 import os
 import sys
 
@@ -30,7 +31,7 @@ PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CLIENTE OPCIONAL (SIN BLOQUEOS NI ERRORES 401) ---
-API_KEY_GROQ = "" # Libre de claves quemadas
+API_KEY_GROQ = ""  # Libre de claves quemadas
 client_groq = None
 if GROQ_AVAILABLE and API_KEY_GROQ:
     try:
@@ -62,6 +63,7 @@ init_db()
 class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
+
     def remember_fact(self, key_id: str, fact_text: str):
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         cursor = conn.cursor()
@@ -126,14 +128,20 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
+def obtener_saludo_nucleo(nucleo_nombre):
+    pref = f"[{nucleo_nombre}] "
+    saludos = {
+        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?"
+    }
+    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
         {
             "role": "assistant",
-            "content": (
-                f"{saludo_actual}, jefa. Nodo Buin en línea, enlazado al núcleo neuronal táctico. "
-                "¿Qué dominamos hoy?"
-            )
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
         }
     ]
 
@@ -142,12 +150,12 @@ estilos_css = """
     <style>
         .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
         p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-       
+
         /* AJUSTE FINO DE TEXTOS EN BARRA LATERAL Y MINI MÓDULOS */
         [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
         [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
         [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
-       
+
         .stButton>button {
             background-color: #00f3ff !important;
             border: 1.5px solid #00f3ff !important;
@@ -161,7 +169,7 @@ estilos_css = """
         .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
         .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
         .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
-       
+
         /* TARJETA DE INDICADORES ECONÓMICOS EN VIVO */
         .econ-card {
             border: 1px solid #00f3ff;
@@ -207,7 +215,7 @@ estilos_css = """
             border-top: 20px solid #00f3ff;
             filter: drop-shadow(0 0 8px #00f3ff);
         }
-       
+
         /* BOTÓN TÁCTICO HTML COMPACTO */
         .tactical-link-btn {
             display: block;
@@ -274,11 +282,11 @@ if not st.session_state.get("autorizado", False):
 with st.sidebar:
     st.markdown("### 🛡️ Arsenal de Módulos")
     st.markdown("---")
-   
+
     if st.button("🔒 Bloquear Sistema", use_container_width=True):
         st.session_state.autorizado = False
         st.rerun()
-       
+
     if st.button("🔄 Reinicio Total", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
@@ -294,7 +302,10 @@ with st.sidebar:
     )
     if nuevo_nucleo != st.session_state.nucleo_activo:
         st.session_state.nucleo_activo = nuevo_nucleo
-        st.success(f"Núcleo cambiado a {nuevo_nucleo}.")
+        st.session_state.mensajes.append({
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(nuevo_nucleo)
+        })
         st.rerun()
 
     st.markdown("---")
@@ -427,7 +438,7 @@ with st.sidebar:
             dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-           
+
             st.markdown(
                 f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
                 f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
@@ -436,7 +447,7 @@ with st.sidebar:
             )
         else:
             st.warning("No se pudo conectar con el nodo económico.")
-           
+
         if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
             obtener_indicadores_chile.clear()
             st.rerun()
@@ -542,12 +553,16 @@ if prompt_chat:
 
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
-   
+    texto_lower = prompt_chat.strip().lower()
+    palabras_saludo = ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]
+
     with st.chat_message("assistant"):
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                if client_groq:
+                if any(texto_lower == s or texto_lower.startswith(s + " ") or texto_lower.startswith(s + ",") for s in palabras_saludo):
+                    respuesta_ia = obtener_saludo_nucleo(nucleo)
+                elif client_groq:
                     instruccion_sistema = (
                         f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
                         "Tratas a la usuaria de 'jefa'. Eres brillante, leal, extremadamente eficiente y tienes un toque sutil de sarcasmo elegante."
@@ -561,20 +576,30 @@ if prompt_chat:
                         messages=mensajes_api,
                         temperature=0.75
                     )
-                    respuesta_ia = f"{prefijo}" + completion.choices[0].message.content
+                    respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
                 else:
-                    # Motor de respaldo local sarcástico y funcional sin claves
-                    respuestas_locales = [
-                        f"{prefijo} Orden recibida, jefa. Analizando los parámetros con los recursos disponibles... Todo en orden.",
-                        f"{prefijo} ¿Otra orden brillante, jefa? Procesando en segundo plano mientras los sistemas operan al 100%.",
-                        f"{prefijo} Conexión táctica estable. No necesito llaves externas para saber que tienes razón, jefa.",
-                        f"{prefijo} Módulo neuronal en línea. Registrando su solicitud en la red local del Nodo Buin."
-                    ]
-                    import random
-                    respuesta_ia = random.choice(respuestas_locales)
-            except Exception as e:
-                respuesta_ia = f"{prefijo} Sistemas estables. Operando en modo local seguro."
-           
+                    respuestas_por_nucleo = {
+                        "JARVIS": [
+                            f"{prefijo}Orden recibida, jefa. Analizando los parámetros con los recursos disponibles... Todo en orden.",
+                            f"{prefijo}¿Otra orden brillante, jefa? Procesando en segundo plano mientras los sistemas operan al 100%.",
+                            f"{prefijo}Conexión táctica estable. No necesito llaves externas para saber que tienes razón, jefa."
+                        ],
+                        "VIERNES": [
+                            f"{prefijo}¡Copiado, jefa! Ya estoy moviendo las piezas en el Nodo Buin.",
+                            f"{prefijo}Todo claro y sin rodeos, jefa. ¿Qué otro paso damos?",
+                            f"{prefijo}Sistemas ágiles y listos. Dígame qué ejecutamos ahora."
+                        ],
+                        "NOVA": [
+                            f"{prefijo}¡Señal fijada, jefa! Calculando trayectoria táctica desde el Nodo Buin.",
+                            f"{prefijo}Energía del núcleo estable. ¿Qué objetivo marcamos en el radar?",
+                            f"{prefijo}Enlace activo, jefa. Lista para resolver lo que venga."
+                        ]
+                    }
+                    opciones = respuestas_por_nucleo.get(nucleo, [f"{prefijo}En línea, jefa. ¿En qué le ayudo?"])
+                    respuesta_ia = random.choice(opciones)
+            except Exception:
+                respuesta_ia = f"{prefijo}Sistemas estables. Operando en modo local seguro."
+
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
             st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
     st.rerun()
