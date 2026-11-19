@@ -137,6 +137,84 @@ def obtener_saludo_nucleo(nucleo_nombre):
     }
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
+def generar_respuesta_coherente(nucleo, texto_usuario):
+    prefijo = f"[{nucleo}] "
+    t = texto_usuario.strip().lower()
+
+    palabras_saludo = [
+        "hola", "buenas", "buenos días", "buenos dias",
+        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"
+    ]
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
+        return obtener_saludo_nucleo(nucleo)
+
+    # 1. Bolsas y mercados financieros
+    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
+        if nucleo == "JARVIS":
+            return (
+                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
+            )
+        if nucleo == "VIERNES":
+            return (
+                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
+                "Abra **Finviz** o **ANT (Nasdaq)** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
+            )
+        return (
+            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa. "
+            "Tiene acceso directo a **Finviz** y **Nasdaq** en el panel de **Enlaces Financieros**."
+        )
+
+    # 2. Dólar, euro, UF y divisas
+    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
+        econ = obtener_indicadores_chile()
+        if econ.get("ok"):
+            dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            return (
+                f"{prefijo}Indicadores registrados en el Nodo Buin, jefa: "
+                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
+            )
+        return (
+            f"{prefijo}Intenté consultar los indicadores en Chile, jefa, pero el enlace externo no respondió ahora. "
+            "Pruebe pulsando **Actualizar Divisas** en el panel lateral."
+        )
+
+    # 3. Hora y fecha
+    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+        hora_str = now_chile.strftime("%H:%M:%S")
+        return (
+            f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa. "
+            "El reloj superior sigue sincronizado."
+        )
+
+    # 4. Estado del sistema o misiones
+    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
+        return (
+            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
+            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
+        )
+
+    # 5. Respuesta general coherente según el núcleo
+    respuestas_generales = {
+        "JARVIS": [
+            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, los sistemas locales están estables; indíqueme qué acción concreta desea ejecutar en el panel.",
+            f"{prefijo}Tomo nota de su consulta sobre *'{texto_usuario.strip()}'*, jefa. Si necesita abrir un módulo de monitoreo, finanzas o misiones, está todo listo en el arsenal."
+        ],
+        "VIERNES": [
+            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. Como estamos en modo local, dígame qué módulo abrimos o qué tarea anotamos.",
+            f"{prefijo}Anotado, jefa. Para *'{texto_usuario.strip()}'* tenemos el panel lateral listo: misiones, divisas, cámaras o telemetría."
+        ],
+        "NOVA": [
+            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. En modo local le indico qué ruta tomar si quiere revisar datos o registrar una misión.",
+            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*. ¿Lo llevamos a misión táctica o revisamos algún panel?"
+        ]
+    }
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [
         {
@@ -535,7 +613,7 @@ with col_ch2:
         st.session_state.mensajes = [
             {
                 "role": "assistant",
-                "content": f"{saludo_actual}, jefa. Memoria de chat purgada. ¿Qué movemos ahora?"
+                "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
             }
         ]
         st.rerun()
@@ -553,16 +631,12 @@ if prompt_chat:
 
     nucleo = st.session_state.nucleo_activo
     prefijo = f"[{nucleo}] "
-    texto_lower = prompt_chat.strip().lower()
-    palabras_saludo = ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]
 
     with st.chat_message("assistant"):
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
             respuesta_ia = ""
             try:
-                if any(texto_lower == s or texto_lower.startswith(s + " ") or texto_lower.startswith(s + ",") for s in palabras_saludo):
-                    respuesta_ia = obtener_saludo_nucleo(nucleo)
-                elif client_groq:
+                if client_groq:
                     instruccion_sistema = (
                         f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
                         "Tratas a la usuaria de 'jefa'. Eres brillante, leal, extremadamente eficiente y tienes un toque sutil de sarcasmo elegante."
@@ -578,27 +652,9 @@ if prompt_chat:
                     )
                     respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
                 else:
-                    respuestas_por_nucleo = {
-                        "JARVIS": [
-                            f"{prefijo}Orden recibida, jefa. Analizando los parámetros con los recursos disponibles... Todo en orden.",
-                            f"{prefijo}¿Otra orden brillante, jefa? Procesando en segundo plano mientras los sistemas operan al 100%.",
-                            f"{prefijo}Conexión táctica estable. No necesito llaves externas para saber que tienes razón, jefa."
-                        ],
-                        "VIERNES": [
-                            f"{prefijo}¡Copiado, jefa! Ya estoy moviendo las piezas en el Nodo Buin.",
-                            f"{prefijo}Todo claro y sin rodeos, jefa. ¿Qué otro paso damos?",
-                            f"{prefijo}Sistemas ágiles y listos. Dígame qué ejecutamos ahora."
-                        ],
-                        "NOVA": [
-                            f"{prefijo}¡Señal fijada, jefa! Calculando trayectoria táctica desde el Nodo Buin.",
-                            f"{prefijo}Energía del núcleo estable. ¿Qué objetivo marcamos en el radar?",
-                            f"{prefijo}Enlace activo, jefa. Lista para resolver lo que venga."
-                        ]
-                    }
-                    opciones = respuestas_por_nucleo.get(nucleo, [f"{prefijo}En línea, jefa. ¿En qué le ayudo?"])
-                    respuesta_ia = random.choice(opciones)
+                    respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
             except Exception:
-                respuesta_ia = f"{prefijo}Sistemas estables. Operando en modo local seguro."
+                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
 
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
             st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
