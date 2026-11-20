@@ -382,4 +382,4 @@ with st.sidebar:
     ]:
         st.markdown(f'<a class="tactical-link-btn" href="{url}" target="_blank">{label}</a>', unsafe_allow_html=True)
 
-dias = ["Lunes", "Mart
+dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
