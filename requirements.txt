@@ -1,1 +1,6 @@
-groq
+try:
+    import cv2
+    CV2_DISPONIBLE = True
+except ModuleNotFoundError:
+    cv2 = None
+    CV2_DISPONIBLE = False
