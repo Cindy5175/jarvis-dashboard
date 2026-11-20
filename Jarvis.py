@@ -199,6 +199,7 @@ else:
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
+OSIRIS_URL = "https://osirisai.live/"
 
 api_key_groq = ""
 try:
@@ -306,8 +307,18 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
+def skill_ojo_osiris(nucleo: str, _t: str, _raw: str) -> str:
+    jarvis_core.ojo_de_dios_activo = True
+    st.session_state.ver_ojo_dios = True
+    cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
+    return (
+        f"[{nucleo}] **Ojo de Dios** activado en **{cam_act}**, jefa. "
+        f"Enlace táctico vinculado: [{OSIRIS_URL}]({OSIRIS_URL})."
+    )
+
+
 def skill_osiris_ai(nucleo: str, _t: str, _raw: str) -> str:
-    return f"[{nucleo}] Enlace directo a **Osiris AI**, jefa: [https://osirisai.live/](https://osirisai.live/)."
+    return f"[{nucleo}] Enlace directo a **Osiris AI**, jefa: [{OSIRIS_URL}]({OSIRIS_URL})."
 
 
 def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
@@ -315,7 +326,10 @@ def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
     st.session_state.ver_ojo_dios = True
     cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
     mov_act = getattr(jarvis_core, "ultimo_movimiento", "Sin novedades en el perímetro.")
-    return f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{cam_act}** y sensores perimetrales ({mov_act})."
+    return (
+        f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{cam_act}** "
+        f"({mov_act}) // Enlace: [{OSIRIS_URL}]({OSIRIS_URL})."
+    )
 
 
 def skill_mapa_tactico(nucleo: str, _t: str, _raw: str) -> str:
@@ -359,6 +373,7 @@ def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
 
 
 SKILLS_REGISTRY = [
+    {"id": "ojo_osiris", "keys": ["ojo osiris", "osiris ojo", "vigilancia osiris", "enlace ojo de dios", "comando ojo"], "fn": skill_ojo_osiris},
     {"id": "osiris_ai", "keys": ["osiris", "osiris ai", "osirisai"], "fn": skill_osiris_ai},
     {"id": "ojo_de_dios", "keys": ["ojo de dios", "cámaras", "camaras", "vigilancia", "cctv"], "fn": skill_ojo_de_dios},
     {"id": "mapa_tactico", "keys": ["mapa táctico satelital", "mapa tactico satelital", "mapa"], "fn": skill_mapa_tactico},
@@ -420,7 +435,7 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     if ia_resp:
         return ia_resp
     return random.choice([
-        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `ojo de dios`, `misión: ...` o `recuerda: ...`.",
+        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `ojo osiris`, `ojo de dios`, `misión: ...` o `recuerda: ...`.",
         f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame en qué más le apoyo.",
     ])
 
@@ -540,7 +555,7 @@ with st.sidebar:
             st.rerun()
 
     for label, url in [
-        ("Osiris AI", "https://osirisai.live/"),
+        ("Osiris AI", OSIRIS_URL),
         ("Seguimiento ANT (Nasdaq)", "https://www.nasdaq.com/market-activity/stocks/ant"),
         ("Monitoreo SpaceX", "https://www.spacex.com/"),
         ("Finviz (Mercados)", "https://finviz.com/"),
@@ -591,7 +606,7 @@ if st.session_state.ver_ojo_dios or getattr(jarvis_core, "ojo_de_dios_activo", F
         f'<b>👁️ OJO DE DIOS // {cam_titulo}</b>'
         f'<span style="font-size:0.75rem;">ESTADO: ENLACE ACTIVO</span>'
         f'</div>'
-        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {mov_titulo}</p>'
+        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {mov_titulo} // <a href="{OSIRIS_URL}" target="_blank" style="color:#00f3ff;">Osiris AI</a></p>'
         f'</div>',
         unsafe_allow_html=True
     )
