@@ -294,7 +294,7 @@ st.markdown(
     '.stButton>button{background-color:#00f3ff!important;border:1.5px solid #00f3ff!important;font-weight:bold;width:100%;border-radius:6px;}'
     '.stButton>button p,.stButton>button span{color:#060913!important;font-size:0.78rem!important;}'
     '.econ-card{border:1px solid #00f3ff;background:rgba(0,243,255,0.06);border-radius:6px;padding:8px 10px;margin:5px 0;display:flex;justify-content:space-between;}'
-    '.arc-reactor-container{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:10px;}'
+    '.arc-reactor-container{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:6px;}'
     '.arc-ring{width:65px;height:65px;border:2.5px solid #00f3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(0,243,255,0.4) 0%,#060913 75%);box-shadow:0 0 20px rgba(0,243,255,0.8);margin-bottom:8px;}'
     '.arc-triangle-inverted{width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #00f3ff;}'
     '.tactical-link-btn{display:block;width:100%;background-color:#00f3ff;color:#060913!important;text-align:center;padding:6px 10px;margin:5px 0;border-radius:5px;font-size:0.76rem!important;font-weight:bold;text-decoration:none;}'
@@ -382,44 +382,4 @@ with st.sidebar:
     ]:
         st.markdown(f'<a class="tactical-link-btn" href="{url}" target="_blank">{label}</a>', unsafe_allow_html=True)
 
-dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-meses = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
-
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-    f'<h1 style="margin:0;font-size:2.2rem!important;">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin:0;font-size:0.75rem!important;">[ NODO BUIN, CHILE // {fecha_str} – {now_chile.strftime("%H:%M:%S")} ]</p>'
-    f'</div>'
-    f'<div class="holo-brain-box"><h4 style="margin:0 0 5px 0;">NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4><p style="font-size:0.8rem;margin:0;">Motor Táctico Neuronal Activo // Enlace Directo</p></div>',
-    unsafe_allow_html=True
-)
-st.markdown("---")
-
-if st.session_state.ver_mapa or jarvis_core.mostrar_mapa_tactico:
-    st.markdown("#### 🛰️ mapa táctico satelital")
-    st.map({"lat": [-33.4489], "lon": [-70.6693]}, zoom=10)
-    st.markdown("---")
-
-c_ch1, c_ch2 = st.columns([5, 1])
-with c_ch1:
-    st.markdown("#### Chat 💬")
-with c_ch2:
-    if st.button("🧹 Purgar", use_container_width=True):
-        st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
-
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
-if prompt_chat:
-    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-    nucleo = st.session_state.nucleo_activo
-    resp_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-    st.session_state.mensajes.append({"role": "assistant", "content": resp_ia})
-    if nucleo == "JARVIS":
-        jarvis_core.hablar(resp_ia.replace("**", ""))
-    st.rerun()
+dias = ["Lunes", "Mart
