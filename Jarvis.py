@@ -280,7 +280,9 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
         f"{prefijo}Entendido, jefa: *'{texto_usuario.strip()}'*. ¿Lo dejamos como misión o abrimos algún módulo?",
         f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame en qué más le apoyo.",
     ])
-    if "mensajes" not in st.session_state:
+
+
+if "mensajes" not in st.session_state:
     st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
 if "ver_mapa" not in st.session_state:
     st.session_state.ver_mapa = False
