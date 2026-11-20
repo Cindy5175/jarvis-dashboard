@@ -59,6 +59,32 @@ def limpiar_texto_para_voz(texto: str) -> str:
     return limpio
 
 
+def hablar_en_navegador(texto: str):
+    limpio = limpiar_texto_para_voz(texto).replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"').replace("\n", " ")
+    if not limpio:
+        return
+    html_voz = f"""
+    <script>
+      (function() {{
+        try {{
+          if ("speechSynthesis" in window) {{
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance("{limpio}");
+            utter.lang = "es-CL";
+            utter.rate = 1.0;
+            utter.pitch = 0.92;
+            const voces = window.speechSynthesis.getVoices() || [];
+            const vozEs = voces.find(v => (v.lang || "").toLowerCase().startsWith("es"));
+            if (vozEs) utter.voice = vozEs;
+            window.speechSynthesis.speak(utter);
+          }}
+        }} catch (e) {{}}
+      }})();
+    </script>
+    """
+    st.components.v1.html(html_voz, height=0)
+
+
 class JarvisCoreEnhancements:
     def __init__(self):
         self.activo = True
@@ -137,8 +163,6 @@ class JarvisCoreEnhancements:
                 setattr(self, k, v)
         if not hasattr(self, "_voz_lock"):
             self._voz_lock = threading.Lock()
-        if getattr(self, "engine", None) is not None and not hasattr(self, "_configurar_voz_varonil"):
-            pass
 
     def hablar(self, texto: str):
         if not getattr(self, "engine", None) or not texto:
@@ -172,7 +196,11 @@ class JarvisCoreEnhancements:
                                 dicho = self.recognizer.recognize_google(audio, language="es-CL")
                                 if dicho:
                                     self.ultimo_comando_voz = dicho
-                                    self.hablar(f"Recibido, jefa: {dicho}.")
+                                    if "mapa" in dicho.lower():
+                                        self.mostrar_mapa_tactico = True
+                                        self.hablar("Sí, señorita.")
+                                    else:
+                                        self.hablar(f"Recibido, señorita: {dicho}.")
                             except Exception:
                                 continue
                 except Exception:
@@ -204,7 +232,7 @@ class JarvisCoreEnhancements:
                             ultimo = time.time()
                             self.ultimo_movimiento = f"Movimiento detectado ({time.strftime('%H:%M:%S')})"
                             if not self.hablando:
-                                self.hablar("Sensor perimetral activo. Detecto movimiento, jefa.")
+                                self.hablar("Sensor perimetral activo. Detecto movimiento, señorita.")
                         time.sleep(0.08)
                 finally:
                     cap.release()
@@ -225,6 +253,8 @@ if "ver_mapa" not in st.session_state:
     st.session_state.ver_mapa = False
 if "ver_ojo_dios" not in st.session_state:
     st.session_state.ver_ojo_dios = False
+if "voz_pendiente" not in st.session_state:
+    st.session_state.voz_pendiente = ""
 if "jarvis_core" not in st.session_state:
     c_obj = JarvisCoreEnhancements()
     c_obj.iniciar_hilos()
@@ -348,11 +378,11 @@ saludo_actual = "Buenos días" if now_chile.hour < 12 else ("Buenas tardes" if n
 def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     pref = f"[{nucleo_nombre}] "
     saludos = {
-        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
-        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
-        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "JARVIS": f"{pref}{saludo_actual}, señorita. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo_actual}, señorita! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo_actual}, señorita! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
     }
-    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, señorita. En línea y a su servicio.")
 
 
 def skill_wendy(nucleo: str, _t: str, _raw: str) -> str:
@@ -360,7 +390,7 @@ def skill_wendy(nucleo: str, _t: str, _raw: str) -> str:
     st.session_state.ver_ojo_dios = True
     cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
     return (
-        f"[{nucleo}] Protocolo **Wendy** activado, jefa. **Ojo de Dios** en **{cam_act}** "
+        f"[{nucleo}] Sí, señorita. Protocolo **Wendy** activado, **Ojo de Dios** en **{cam_act}** "
         f"y enlace vinculado: [{OSIRIS_URL}]({OSIRIS_URL})."
     )
 
@@ -371,7 +401,7 @@ def skill_planetear(nucleo: str, _t: str, _raw: str) -> str:
     st.session_state.ver_mapa = True
     st.session_state.ver_ojo_dios = True
     return (
-        f"[{nucleo}] Modo **Planetear** desplegado, jefa: **mapa táctico satelital** y **Ojo de Dios** activos "
+        f"[{nucleo}] Sí, señorita. Modo **Planetear** desplegado: **mapa táctico satelital** y **Ojo de Dios** activos "
         f"con enlace [{OSIRIS_URL}]({OSIRIS_URL})."
     )
 
@@ -381,13 +411,13 @@ def skill_ojo_osiris(nucleo: str, _t: str, _raw: str) -> str:
     st.session_state.ver_ojo_dios = True
     cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
     return (
-        f"[{nucleo}] **Ojo de Dios** activado en **{cam_act}**, jefa. "
-        f"Enlace táctico vinculado: [{OSIRIS_URL}]({OSIRIS_URL})."
+        f"[{nucleo}] Sí, señorita. **Ojo de Dios** activado en **{cam_act}** // "
+        f"Enlace táctico: [{OSIRIS_URL}]({OSIRIS_URL})."
     )
 
 
 def skill_osiris_ai(nucleo: str, _t: str, _raw: str) -> str:
-    return f"[{nucleo}] Enlace directo a **Osiris AI**, jefa: [{OSIRIS_URL}]({OSIRIS_URL})."
+    return f"[{nucleo}] Sí, señorita. Enlace directo a **Osiris AI**: [{OSIRIS_URL}]({OSIRIS_URL})."
 
 
 def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
@@ -396,7 +426,7 @@ def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
     cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
     mov_act = getattr(jarvis_core, "ultimo_movimiento", "Sin novedades en el perímetro.")
     return (
-        f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{cam_act}** "
+        f"[{nucleo}] Sí, señorita. **Ojo de Dios** activado en **{cam_act}** "
         f"({mov_act}) // Enlace: [{OSIRIS_URL}]({OSIRIS_URL})."
     )
 
@@ -404,21 +434,22 @@ def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
 def skill_mapa_tactico(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.mostrar_mapa_tactico = True
     st.session_state.ver_mapa = True
-    return f"[{nucleo}] Desplegando **mapa táctico satelital**, jefa. Telemetría en línea."
+    st.session_state.voz_pendiente = "Sí, señorita."
+    return f"[{nucleo}] Sí, señorita. Desplegando **mapa táctico satelital**."
 
 
 def skill_finanzas_chile(nucleo: str, _t: str, _raw: str) -> str:
     econ = obtener_indicadores_chile()
     tag = " *(modo respaldo)*" if econ.get("respaldo") else ""
     return (
-        f"[{nucleo}] Indicadores en Nodo Buin{tag}, jefa: "
+        f"[{nucleo}] Indicadores en Nodo Buin{tag}, señorita: "
         f"Dólar **{fmt_clp(econ['dolar'])}**, Euro **{fmt_clp(econ['euro'])}** y UF **{fmt_clp(econ['uf'])}**."
     )
 
 
 def skill_mercados_externos(nucleo: str, _t: str, _raw: str) -> str:
     return (
-        f"[{nucleo}] En el chat local no hay streaming de bolsa en tiempo real, jefa. "
+        f"[{nucleo}] En el chat local no hay streaming de bolsa en tiempo real, señorita. "
         f"Use **Seguimiento ANT (Nasdaq)** o **Finviz** en el panel lateral para monitorear el movimiento."
     )
 
@@ -428,17 +459,17 @@ def skill_misiones_y_memoria(nucleo: str, t: str, raw: str) -> str:
         tarea = raw.split(":", 1)[1].strip()
         if tarea:
             agregar_mision(tarea)
-            return f"[{nucleo}] Misión registrada en base de datos, jefa: **{tarea}**."
+            return f"[{nucleo}] Sí, señorita. Misión registrada en base de datos: **{tarea}**."
     if t.startswith("recuerda:") or t.startswith("guarda:"):
         hecho = raw.split(":", 1)[1].strip()
         if hecho:
             guardar_memoria(hecho, "skill_chat")
-            return f"[{nucleo}] Guardado en memoria SQLite, jefa: *{hecho}*."
-    return f"[{nucleo}] Núcleo **{nucleo}** operativo en Nodo Buin, jefa. Misiones activas: **{len(obtener_misiones())}**."
+            return f"[{nucleo}] Sí, señorita. Guardado en memoria SQLite: *{hecho}*."
+    return f"[{nucleo}] Núcleo **{nucleo}** operativo en Nodo Buin, señorita. Misiones activas: **{len(obtener_misiones())}**."
 
 
 def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
-    return f"[{nucleo}] Estado perimetral, jefa: {getattr(jarvis_core, 'ultimo_movimiento', 'Sin novedades.')}"
+    return f"[{nucleo}] Estado perimetral, señorita: {getattr(jarvis_core, 'ultimo_movimiento', 'Sin novedades.')}"
 
 
 SKILLS_REGISTRY = [
@@ -461,9 +492,9 @@ def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
     mems = [m[0] for m in obtener_memorias(3)]
     ctx_mem = f"Memorias recientes: {'; '.join(mems)}." if mems else ""
     estilos = {
-        "JARVIS": "Eres JARVIS, elegante, ingenioso y con sarcasmo fino, tratas al usuario como 'jefa' y respondes en español.",
-        "VIERNES": "Eres VIERNES, ágil, directa y resolutiva, tratas al usuario como 'jefa' y respondes en español.",
-        "NOVA": "Eres NOVA, enérgica y cósmica, tratas al usuario como 'jefa' y respondes en español.",
+        "JARVIS": "Eres JARVIS, elegante, ingenioso y con sarcasmo fino, tratas al usuario como 'señorita' y respondes en español.",
+        "VIERNES": "Eres VIERNES, ágil, directa y resolutiva, tratas al usuario como 'señorita' y respondes en español.",
+        "NOVA": "Eres NOVA, enérgica y cósmica, tratas al usuario como 'señorita' y respondes en español.",
     }
     sys_msg = (
         f"{estilos.get(nucleo, estilos['JARVIS'])} "
@@ -492,22 +523,22 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     raw = texto_usuario.strip()
     t = raw.lower()
     if "protocolo extremo" in t:
-        return f"{prefijo}Protocolo de conocimiento extremo activado, jefa. Analizando a fondo sin rodeos."
+        return f"{prefijo}Protocolo de conocimiento extremo activado, señorita. Analizando a fondo sin rodeos."
     if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]):
         return obtener_saludo_nucleo(nucleo)
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
-        return f"{prefijo}Tiene **6 patas**, jefa. Y por lo general aterrizan justo cuando estorban."
+        return f"{prefijo}Tiene **6 patas**, señorita. Y por lo general aterrizan justo cuando estorban."
     for sk in SKILLS_REGISTRY:
         if any(k in t for k in sk["keys"]):
             return sk["fn"](nucleo, t, raw)
     if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
-        return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), jefa."
+        return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), señorita."
     ia_resp = responder_con_groq(nucleo, raw)
     if ia_resp:
         return ia_resp
     return random.choice([
-        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `wendy`, `planetear`, `ojo de dios`, `misión: ...` o `recuerda: ...`.",
-        f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame en qué más le apoyo.",
+        f"{prefijo}Entendido, señorita: *'{raw}'*. Puede usar `mapa`, `wendy`, `planetear`, `ojo de dios`, `misión: ...` o `recuerda: ...`.",
+        f"{prefijo}Tomo nota de *'{raw}'*, señorita. Dígame en qué más le apoyo.",
     ])
 
 
@@ -667,6 +698,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown("---")
+
+if st.session_state.voz_pendiente:
+    hablar_en_navegador(st.session_state.voz_pendiente)
+    st.session_state.voz_pendiente = ""
 
 if st.session_state.ver_ojo_dios or getattr(jarvis_core, "ojo_de_dios_activo", False):
     cam_titulo = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
