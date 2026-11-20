@@ -184,14 +184,21 @@ def init_db():
 init_db()
 
 
-def guardar_memoria(fact_text: str):
+def guardar_memoria(fact_text: str, category: str = "general"):
     conn = sqlite3.connect(fn_db, check_same_thread=False)
     conn.cursor().execute(
         "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-        (f"mem_{datetime.datetime.now().timestamp()}", fact_text, "general")
+        (f"mem_{datetime.datetime.now().timestamp()}", fact_text, category)
     )
     conn.commit()
     conn.close()
+
+
+def obtener_memorias(limite: int = 5):
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    rows = conn.cursor().execute("SELECT fact_text, category FROM memory ORDER BY key_id DESC LIMIT ?", (limite,)).fetchall()
+    conn.close()
+    return rows
 
 
 def agregar_mision(tarea: str):
@@ -236,6 +243,10 @@ def obtener_indicadores_chile():
     return {"dolar": 950.00, "euro": 1030.00, "uf": 38000.00, "ok": True, "respaldo": True}
 
 
+def fmt_clp(val: float) -> str:
+    return f"${val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 saludo_actual = "Buenos días" if now_chile.hour < 12 else ("Buenas tardes" if now_chile.hour < 20 else "Buenas noches")
@@ -251,34 +262,74 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
+# --- BLOQUE MODULAR DE AGENT SKILLS (ESTILO MODULAR ENCHUFABLE) ---
+def skill_mapa_tactico(nucleo: str, _t: str, _raw: str) -> str:
+    jarvis_core.mostrar_mapa_tactico = True
+    st.session_state.ver_mapa = True
+    return f"[{nucleo}] Desplegando **mapa táctico satelital**, jefa. Telemetría en línea."
+
+
+def skill_finanzas_chile(nucleo: str, _t: str, _raw: str) -> str:
+    econ = obtener_indicadores_chile()
+    tag = " *(modo respaldo)*" if econ.get("respaldo") else ""
+    return (
+        f"[{nucleo}] Indicadores en Nodo Buin{tag}, jefa: "
+        f"Dólar **{fmt_clp(econ['dolar'])}**, Euro **{fmt_clp(econ['euro'])}** y UF **{fmt_clp(econ['uf'])}**."
+    )
+
+
+def skill_mercados_externos(nucleo: str, _t: str, _raw: str) -> str:
+    return (
+        f"[{nucleo}] En el chat local no hay streaming de bolsa en tiempo real, jefa. "
+        f"Use **Seguimiento ANT (Nasdaq)** o **Finviz** en el panel lateral para monitorear el movimiento."
+    )
+
+
+def skill_misiones_y_memoria(nucleo: str, t: str, raw: str) -> str:
+    if t.startswith("mision:") or t.startswith("misión:") or t.startswith("anota mision:") or t.startswith("anota misión:"):
+        tarea = raw.split(":", 1)[1].strip()
+        if tarea:
+            agregar_mision(tarea)
+            return f"[{nucleo}] Misión registrada en base de datos, jefa: **{tarea}**."
+    if t.startswith("recuerda:") or t.startswith("guarda:"):
+        hecho = raw.split(":", 1)[1].strip()
+        if hecho:
+            guardar_memoria(hecho, "skill_chat")
+            return f"[{nucleo}] Guardado en memoria SQLite, jefa: *{hecho}*."
+    return f"[{nucleo}] Núcleo **{nucleo}** operativo en Nodo Buin, jefa. Misiones activas: **{len(obtener_misiones())}**."
+
+
+def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
+    return f"[{nucleo}] Estado perimetral, jefa: {jarvis_core.ultimo_movimiento}"
+
+
+SKILLS_REGISTRY = [
+    {"id": "mapa_tactico", "keys": ["mapa táctico satelital", "mapa tactico satelital", "mapa"], "fn": skill_mapa_tactico},
+    {"id": "finanzas_chile", "keys": ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"], "fn": skill_finanzas_chile},
+    {"id": "mercados_externos", "keys": ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz", "ant"], "fn": skill_mercados_externos},
+    {"id": "misiones_memoria", "keys": ["mision:", "misión:", "anota mision:", "anota misión:", "recuerda:", "guarda:", "estado", "sistema", "misión", "misiones", "pendiente", "pendientes"], "fn": skill_misiones_y_memoria},
+    {"id": "perimetro_cam", "keys": ["cámara", "camara", "perímetro", "perimetro", "movimiento", "sensor"], "fn": skill_perimetro_cam},
+]
+
+
 def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     prefijo = f"[{nucleo}] "
-    t = texto_usuario.strip().lower()
+    raw = texto_usuario.strip()
+    t = raw.lower()
     if "protocolo extremo" in t:
         return f"{prefijo}Protocolo de conocimiento extremo activado, jefa. Analizando a fondo sin rodeos."
-    if "mapa táctico satelital" in t or "mapa tactico satelital" in t or "mapa" in t:
-        jarvis_core.mostrar_mapa_tactico = True
-        st.session_state.ver_mapa = True
-        return f"{prefijo}Desplegando **mapa táctico satelital**, jefa. Telemetría en línea."
     if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]):
         return obtener_saludo_nucleo(nucleo)
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
         return f"{prefijo}Tiene **6 patas**, jefa. Y por lo general aterrizan justo cuando estorban."
-    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
-        return f"{prefijo}En modo respaldo local no tengo cotizaciones en vivo dentro del chat, jefa. Revise **Finviz** o **ANT (Nasdaq)** en el panel lateral."
-    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
-        econ = obtener_indicadores_chile()
-        d_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        e_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        u_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        return f"{prefijo}Indicadores en Nodo Buin, jefa: Dólar **{d_fmt}**, Euro **{e_fmt}** y UF **{u_fmt}**."
+    for sk in SKILLS_REGISTRY:
+        if any(k in t for k in sk["keys"]):
+            return sk["fn"](nucleo, t, raw)
     if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
         return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), jefa."
-    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
-        return f"{prefijo}Núcleo **{nucleo}** operativo en Nodo Buin, jefa. Misiones activas: **{len(obtener_misiones())}**."
     return random.choice([
-        f"{prefijo}Entendido, jefa: *'{texto_usuario.strip()}'*. ¿Lo dejamos como misión o abrimos algún módulo?",
-        f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame en qué más le apoyo.",
+        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `misión: ...` o `recuerda: ...` si quiere guardarlo.",
+        f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame en qué más le apoyo.",
     ])
 
 
@@ -361,13 +412,10 @@ with st.sidebar:
     st.markdown("#### 📈 Enlaces Financieros")
     with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
         econ = obtener_indicadores_chile()
-        d_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        e_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        u_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         st.markdown(
-            f'<div class="econ-card"><span>💵 Dólar Obs.</span><b>{d_fmt}</b></div>'
-            f'<div class="econ-card"><span>💶 Euro</span><b>{e_fmt}</b></div>'
-            f'<div class="econ-card"><span>📈 Valor UF</span><b>{u_fmt}</b></div>',
+            f'<div class="econ-card"><span>💵 Dólar Obs.</span><b>{fmt_clp(econ["dolar"])}</b></div>'
+            f'<div class="econ-card"><span>💶 Euro</span><b>{fmt_clp(econ["euro"])}</b></div>'
+            f'<div class="econ-card"><span>📈 Valor UF</span><b>{fmt_clp(econ["uf"])}</b></div>',
             unsafe_allow_html=True
         )
         if st.button("🔄 Actualizar Divisas", use_container_width=True):
