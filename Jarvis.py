@@ -8,14 +8,12 @@ import sys
 import time
 import threading
 
-# Intento opcional de importar Groq por si acaso
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
 
-# --- IMPORTACIONES SEGURAS DE HARDWARE / MULTIMEDIA (LOCAL + CLOUD) ---
 try:
     import cv2
     CV2_DISPONIBLE = True
@@ -69,7 +67,6 @@ class JarvisCoreEnhancements:
         self.ultimo_comando_voz = "Esperando instrucción de voz..."
         self.mostrar_mapa_tactico = False
 
-        # 1. Inicialización segura de voz varonil
         self.engine = None
         if TTS_DISPONIBLE and pyttsx3 is not None:
             try:
@@ -80,7 +77,6 @@ class JarvisCoreEnhancements:
             except Exception:
                 self.engine = None
 
-        # 2. Inicialización segura de escucha continua
         self.recognizer = None
         if SR_DISPONIBLE and sr is not None:
             try:
@@ -91,7 +87,6 @@ class JarvisCoreEnhancements:
             except Exception:
                 self.recognizer = None
 
-        # 3. Protocolos de conocimiento extremo y comandos clave
         self.protocolos = {
             "protocolo extremo": (
                 "Activando protocolo de conocimiento extremo, jefa. "
@@ -252,7 +247,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
@@ -270,76 +264,9 @@ jarvis_core = st.session_state.jarvis_core
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
-# --- CLIENTE OPCIONAL (SIN BLOQUEOS NI ERRORES 401) ---
-API_KEY_GROQ = ""  # Libre de claves quemadas
+API_KEY_GROQ = ""
 client_groq = None
 if GROQ_AVAILABLE and API_KEY_GROQ:
     try:
         client_groq = Groq(api_key=API_KEY_GROQ)
     except Exception:
-        client_groq = None
-
-# --- BASE DE DATOS SQLITE ---
-def init_db():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS misiones ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "tarea TEXT NOT NULL, "
-        "estado TEXT DEFAULT 'Pendiente')"
-    )
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS memory ("
-        "key_id TEXT PRIMARY KEY, "
-        "fact_text TEXT, "
-        "category TEXT)"
-    )
-    conn.commit()
-    conn.close()
-
-init_db()
-
-class JarvisMemory:
-    def __init__(self, db_path=fn_db):
-        self.db_path = db_path
-
-    def remember_fact(self, key_id: str, fact_text: str):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-            (key_id, fact_text, "general")
-        )
-        conn.commit()
-        conn.close()
-
-jarvis_mem = JarvisMemory()
-
-def agregar_mision(tarea):
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
-    conn.commit()
-    conn.close()
-
-def obtener_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, tarea, estado FROM misiones")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-def limpiar_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM misiones")
-    conn.commit()
-    conn.close()
-
-# --- OBTENCIÓN DE INDICADORES ECONÓMICOS EN TIEMPO REAL (CHILE) ---
-@st.cache_data(ttl=300)
-def obtener_indicadores_chile():
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT
