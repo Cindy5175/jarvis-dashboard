@@ -27,10 +27,13 @@ def camara_disponible(indice: int = 0) -> bool:
     """Verifica de forma segura si OpenCV y la cámara están operativos."""
     if not CV2_DISPONIBLE or cv2 is None:
         return False
-    cap = cv2.VideoCapture(indice)
-    disponible = cap.isOpened()
-    cap.release()
-    return disponible
+    try:
+        cap = cv2.VideoCapture(indice)
+        disponible = cap.isOpened()
+        cap.release()
+        return disponible
+    except Exception:
+        return False
 
 
 class JarvisCoreEnhancements:
@@ -89,17 +92,21 @@ class JarvisCoreEnhancements:
     def _seleccionar_voz_varonil(self):
         if not self.engine:
             return
-        voces = self.engine.getProperty("voices")
-        for voz in voces:
-            nombre = voz.name.lower()
-            if "spanish" in nombre or "español" in nombre or "sabina" not in nombre:
-                if any(tag in nombre for tag in ["male", "raul", "pablo", "jorge", "david", "es"]):
+        try:
+            voces = self.engine.getProperty("voices")
+            for voz in voces:
+                nombre = getattr(voz, "name", "").lower()
+                if "sabina" not in nombre and any(
+                    tag in nombre for tag in ["male", "raul", "pablo", "jorge", "david", "es", "spanish", "español"]
+                ):
                     self.engine.setProperty("voice", voz.id)
                     break
+        except Exception:
+            pass
 
     def hablar(self, texto: str):
         """Habla en local si hay motor de audio y evita bucle con el micrófono."""
-        if not self.engine:
+        if not self.engine or not texto:
             return
         self.hablando = True
         try:
@@ -112,7 +119,9 @@ class JarvisCoreEnhancements:
 
     def procesar_intencion(self, texto: str) -> str:
         """Evalúa protocolos, mapa táctico satelital o responde con sarcasmo seco."""
-        consulta = texto.lower().strip()
+        consulta = (texto or "").lower().strip()
+        if not consulta:
+            return ""
 
         for clave, respuesta in self.protocolos.items():
             if clave in consulta:
@@ -154,7 +163,6 @@ class JarvisCoreEnhancements:
                         except Exception:
                             time.sleep(0.3)
             except Exception:
-                # En entornos cloud sin micrófono físico sale silenciosamente sin romper la app
                 return
 
         hilo = threading.Thread(target=_loop_voz, daemon=True)
@@ -170,19 +178,57 @@ class JarvisCoreEnhancements:
             if not cap.isOpened():
                 return
 
-            ret, frame_anterior = cap.read()
-            if not ret:
-                cap.release()
-                return
-
-            gris_anterior = cv2.cvtColor(frame_anterior, cv2.COLOR_BGR2GRAY)
-            gris_anterior = cv2.GaussianBlur(gris_anterior, (21, 21), 0)
-            ultimo_aviso = 0
-
-            while self.activo:
-                ret, frame = cap.read()
+            try:
+                ret, frame_anterior = cap.read()
                 if not ret:
-                    time.sleep(0.2)
-                    continue
+                    return
 
-                gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gris_anterior = cv2.cvtColor(frame_anterior, cv2.COLOR_BGR2GRAY)
+                gris_anterior = cv2.GaussianBlur(gris_anterior, (21, 21), 0)
+                ultimo_aviso = 0
+
+                while self.activo:
+                    ret, frame = cap.read()
+                    if not ret:
+                        time.sleep(0.2)
+                        continue
+
+                    gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gris = cv2.GaussianBlur(gris, (21, 21), 0)
+
+                    diferencia = cv2.absdiff(gris_anterior, gris)
+                    umbral = cv2.threshold(diferencia, 25, 255, cv2.THRESH_BINARY)[1]
+                    umbral = cv2.dilate(umbral, None, iterations=2)
+                    contornos, _ = cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                    movimiento_detectado = any(cv2.contourArea(c) > sensibilidad for c in contornos)
+                    gris_anterior = gris
+
+                    ahora = time.time()
+                    if movimiento_detectado and (ahora - ultimo_aviso) > cooldown:
+                        ultimo_aviso = ahora
+                        if self.on_motion_callback:
+                            self.on_motion_callback()
+                        elif not self.hablando:
+                            self.hablar("Sensor perimetral activado. Detecto movimiento en la sala, jefa.")
+
+                    time.sleep(0.08)
+            finally:
+                cap.release()
+
+        hilo_cam = threading.Thread(target=_loop_camara, daemon=True)
+        hilo_cam.start()
+
+    def detener(self):
+        self.activo = False
+
+
+if __name__ == "__main__":
+    jarvis = JarvisCoreEnhancements()
+    jarvis.iniciar_escucha_continua()
+    jarvis.iniciar_sensor_movimiento(indice_camara=0)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        jarvis.detener()
