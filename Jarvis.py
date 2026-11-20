@@ -14,96 +14,70 @@ except ImportError:
 
 try:
     import cv2
-    CV2_DISPONIBLE = True
+    CV2_OK = True
 except Exception:
     cv2 = None
-    CV2_DISPONIBLE = False
+    CV2_OK = False
 
 try:
     import speech_recognition as sr
-    SR_DISPONIBLE = True
+    SR_OK = True
 except Exception:
     sr = None
-    SR_DISPONIBLE = False
+    SR_OK = False
 
 try:
     import pyttsx3
-    TTS_DISPONIBLE = True
+    TTS_OK = True
 except Exception:
     pyttsx3 = None
-    TTS_DISPONIBLE = False
+    TTS_OK = False
 
 
 def camara_disponible(indice: int = 0) -> bool:
-    if not CV2_DISPONIBLE or cv2 is None:
+    if not CV2_OK or cv2 is None:
         return False
     try:
         cap = cv2.VideoCapture(indice)
-        disponible = cap.isOpened()
+        ok = cap.isOpened()
         cap.release()
-        return disponible
+        return ok
     except Exception:
         return False
 
 
 class JarvisCoreEnhancements:
-    def __init__(self, on_command_callback=None, on_motion_callback=None):
+    def __init__(self):
         self.activo = True
         self.hablando = False
-        self.on_command_callback = on_command_callback
-        self.on_motion_callback = on_motion_callback
         self.ultimo_movimiento = "Sin novedades en el perímetro."
         self.ultimo_comando_voz = "Esperando instrucción de voz..."
         self.mostrar_mapa_tactico = False
 
         self.engine = None
-        if TTS_DISPONIBLE and pyttsx3 is not None:
+        if TTS_OK and pyttsx3 is not None:
             try:
                 self.engine = pyttsx3.init()
                 self.engine.setProperty("rate", 178)
                 self.engine.setProperty("volume", 1.0)
-                self._seleccionar_voz_varonil()
+                for voz in self.engine.getProperty("voices"):
+                    nombre = getattr(voz, "name", "").lower()
+                    if "sabina" not in nombre and any(
+                        t in nombre for t in ["male", "raul", "pablo", "jorge", "david", "es", "spanish"]
+                    ):
+                        self.engine.setProperty("voice", voz.id)
+                        break
             except Exception:
                 self.engine = None
 
         self.recognizer = None
-        if SR_DISPONIBLE and sr is not None:
+        if SR_OK and sr is not None:
             try:
                 self.recognizer = sr.Recognizer()
                 self.recognizer.pause_threshold = 0.85
-                self.recognizer.energy_threshold = 300
                 self.recognizer.dynamic_energy_threshold = True
             except Exception:
                 self.recognizer = None
-
-        self.protocolos = {
-            "protocolo extremo": (
-                "Activando protocolo de conocimiento extremo, jefa. "
-                "Procesando análisis profundo sin filtros de cortesía innecesarios."
-            ),
-            "mapa táctico satelital": (
-                "Desplegando mapa táctico satelital en la consola, jefa. "
-                "Coordenadas de Santiago y telemetría activas."
-            ),
-            "estado del sistema": (
-                "Todos los núcleos operativos al cien por ciento. "
-                "Aunque dudo que eso evite que me pida cinco cosas a la vez."
-            ),
-        }
-
-    def _seleccionar_voz_varonil(self):
-        if not self.engine:
-            return
-        try:
-            for voz in self.engine.getProperty("voices"):
-                nombre = getattr(voz, "name", "").lower()
-                if "sabina" not in nombre and any(
-                    tag in nombre for tag in ["male", "raul", "pablo", "jorge", "david", "es", "spanish", "español"]
-                ):
-                    self.engine.setProperty("voice", voz.id)
-                    break
-        except Exception:
-            pass
 
     def hablar(self, texto: str):
         if not self.engine or not texto:
@@ -117,94 +91,58 @@ class JarvisCoreEnhancements:
         finally:
             self.hablando = False
 
-    def procesar_intencion(self, texto: str) -> str:
-        consulta = (texto or "").lower().strip()
-        if not consulta:
-            return ""
-        if "mapa táctico satelital" in consulta or "mapa tactico satelital" in consulta or "mapa" in consulta:
-            self.mostrar_mapa_tactico = True
-            return self.protocolos["mapa táctico satelital"]
-        for clave, respuesta in self.protocolos.items():
-            if clave in consulta:
-                return respuesta
-        if "hola" in consulta or "jarvis" in consulta:
-            return "Aquí estoy, jefa. ¿Qué brillante ocurrencia vamos a ejecutar ahora?"
-        if "gracias" in consulta:
-            return "No hay de qué. Alguien tiene que mantener este sistema funcionando."
-        if self.on_command_callback:
-            return self.on_command_callback(texto)
-        return f"Orden recibida: '{texto}'. Procesando con mi habitual eficiencia sobrehumana."
-
-    def iniciar_escucha_continua(self):
-        if not self.recognizer or not SR_DISPONIBLE or sr is None:
-            return
-
-        def _loop_voz():
-            try:
-                with sr.Microphone() as source:
-                    self.recognizer.adjust_for_ambient_noise(source, duration=0.8)
-                    while self.activo:
-                        if self.hablando:
-                            time.sleep(0.1)
-                            continue
-                        try:
-                            audio = self.recognizer.listen(source, timeout=4, phrase_time_limit=12)
-                            texto = self.recognizer.recognize_google(audio, language="es-CL")
-                            if texto:
-                                self.ultimo_comando_voz = texto
-                                respuesta = self.procesar_intencion(texto)
-                                if respuesta:
-                                    self.hablar(respuesta)
-                        except Exception:
-                            continue
-            except Exception:
-                return
-
-        threading.Thread(target=_loop_voz, daemon=True).start()
-
-    def iniciar_sensor_movimiento(self, indice_camara: int = 0, sensibilidad: int = 4500, cooldown: int = 20):
-        if not camara_disponible(indice_camara) or cv2 is None:
-            return
-
-        def _loop_camara():
-            cap = cv2.VideoCapture(indice_camara)
-            if not cap.isOpened():
-                return
-            try:
-                ret, frame_anterior = cap.read()
-                if not ret:
+    def iniciar_hilos(self):
+        if self.recognizer and SR_OK and sr is not None:
+            def _voz():
+                try:
+                    with sr.Microphone() as src:
+                        self.recognizer.adjust_for_ambient_noise(src, duration=0.8)
+                        while self.activo:
+                            if self.hablando:
+                                time.sleep(0.1)
+                                continue
+                            try:
+                                audio = self.recognizer.listen(src, timeout=4, phrase_time_limit=12)
+                                dicho = self.recognizer.recognize_google(audio, language="es-CL")
+                                if dicho:
+                                    self.ultimo_comando_voz = dicho
+                                    self.hablar(f"Recibido, jefa: {dicho}.")
+                            except Exception:
+                                continue
+                except Exception:
                     return
-                gris_anterior = cv2.GaussianBlur(
-                    cv2.cvtColor(frame_anterior, cv2.COLOR_BGR2GRAY), (21, 21), 0
-                )
-                ultimo_aviso = 0
-                while self.activo:
-                    ret, frame = cap.read()
+            threading.Thread(target=_voz, daemon=True).start()
+
+        if camara_disponible(0) and cv2 is not None:
+            def _cam():
+                cap = cv2.VideoCapture(0)
+                if not cap.isOpened():
+                    return
+                try:
+                    ret, f1 = cap.read()
                     if not ret:
-                        time.sleep(0.2)
-                        continue
-                    gris = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (21, 21), 0)
-                    diferencia = cv2.absdiff(gris_anterior, gris)
-                    umbral = cv2.dilate(
-                        cv2.threshold(diferencia, 25, 255, cv2.THRESH_BINARY)[1], None, iterations=2
-                    )
-                    contornos, _ = cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                    movimiento_detectado = any(cv2.contourArea(c) > sensibilidad for c in contornos)
-                    gris_anterior = gris
-
-                    ahora = time.time()
-                    if movimiento_detectado and (ahora - ultimo_aviso) > cooldown:
-                        ultimo_aviso = ahora
-                        self.ultimo_movimiento = f"Movimiento detectado ({time.strftime('%H:%M:%S')})"
-                        if self.on_motion_callback:
-                            self.on_motion_callback()
-                        elif not self.hablando:
-                            self.hablar("Sensor perimetral activado. Detecto movimiento en la sala, jefa.")
-                    time.sleep(0.08)
-            finally:
-                cap.release()
-
-        threading.Thread(target=_loop_camara, daemon=True).start()
+                        return
+                    g1 = cv2.GaussianBlur(cv2.cvtColor(f1, cv2.COLOR_BGR2GRAY), (21, 21), 0)
+                    ultimo = 0
+                    while self.activo:
+                        ret, f2 = cap.read()
+                        if not ret:
+                            time.sleep(0.2)
+                            continue
+                        g2 = cv2.GaussianBlur(cv2.cvtColor(f2, cv2.COLOR_BGR2GRAY), (21, 21), 0)
+                        diff = cv2.absdiff(g1, g2)
+                        umbral = cv2.dilate(cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1], None, iterations=2)
+                        contornos, _ = cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        g1 = g2
+                        if any(cv2.contourArea(c) > 4500 for c in contornos) and (time.time() - ultimo) > 20:
+                            ultimo = time.time()
+                            self.ultimo_movimiento = f"Movimiento detectado ({time.strftime('%H:%M:%S')})"
+                            if not self.hablando:
+                                self.hablar("Sensor perimetral activo. Detecto movimiento, jefa.")
+                        time.sleep(0.08)
+                finally:
+                    cap.release()
+            threading.Thread(target=_cam, daemon=True).start()
 
 
 st.set_page_config(
@@ -218,16 +156,13 @@ if "autorizado" not in st.session_state:
 if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
 if "jarvis_core" not in st.session_state:
-    core_instance = JarvisCoreEnhancements()
-    core_instance.iniciar_escucha_continua()
-    core_instance.iniciar_sensor_movimiento(indice_camara=0)
-    st.session_state.jarvis_core = core_instance
+    c_obj = JarvisCoreEnhancements()
+    c_obj.iniciar_hilos()
+    st.session_state.jarvis_core = c_obj
 
 jarvis_core = st.session_state.jarvis_core
-
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
-
 API_KEY_GROQ = ""
 client_groq = None
 if GROQ_AVAILABLE and API_KEY_GROQ:
@@ -239,19 +174,9 @@ if GROQ_AVAILABLE and API_KEY_GROQ:
 
 def init_db():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS misiones ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "tarea TEXT NOT NULL, "
-        "estado TEXT DEFAULT 'Pendiente')"
-    )
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS memory ("
-        "key_id TEXT PRIMARY KEY, "
-        "fact_text TEXT, "
-        "category TEXT)"
-    )
+    cur = conn.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS misiones (id INTEGER PRIMARY KEY AUTOINCREMENT, tarea TEXT NOT NULL, estado TEXT DEFAULT 'Pendiente')")
+    cur.execute("CREATE TABLE IF NOT EXISTS memory (key_id TEXT PRIMARY KEY, fact_text TEXT, category TEXT)")
     conn.commit()
     conn.close()
 
@@ -259,45 +184,33 @@ def init_db():
 init_db()
 
 
-class JarvisMemory:
-    def __init__(self, db_path=fn_db):
-        self.db_path = db_path
-
-    def remember_fact(self, key_id: str, fact_text: str):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-            (key_id, fact_text, "general")
-        )
-        conn.commit()
-        conn.close()
-
-
-jarvis_mem = JarvisMemory()
-
-
-def agregar_mision(tarea):
+def guardar_memoria(fact_text: str):
     conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+    conn.cursor().execute(
+        "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
+        (f"mem_{datetime.datetime.now().timestamp()}", fact_text, "general")
+    )
+    conn.commit()
+    conn.close()
+
+
+def agregar_mision(tarea: str):
+    conn = sqlite3.connect(fn_db, check_same_thread=False)
+    conn.cursor().execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
     conn.commit()
     conn.close()
 
 
 def obtener_misiones():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, tarea, estado FROM misiones")
-    rows = cursor.fetchall()
+    rows = conn.cursor().execute("SELECT id, tarea, estado FROM misiones").fetchall()
     conn.close()
     return rows
 
 
 def limpiar_misiones():
     conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM misiones")
+    conn.cursor().execute("DELETE FROM misiones")
     conn.commit()
     conn.close()
 
@@ -309,38 +222,26 @@ def obtener_indicadores_chile():
         try:
             resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=10)
             if resp.status_code == 200:
-                data = resp.json()
-                dolar = data.get("dolar", {}).get("valor")
-                euro = data.get("euro", {}).get("valor")
-                uf = data.get("uf", {}).get("valor")
-                utm = data.get("utm", {}).get("valor")
-                if dolar and euro and uf:
+                d = resp.json()
+                if d.get("dolar", {}).get("valor") and d.get("euro", {}).get("valor") and d.get("uf", {}).get("valor"):
                     return {
-                        "dolar": float(dolar),
-                        "euro": float(euro),
-                        "uf": float(uf),
-                        "utm": float(utm) if utm else 0.0,
+                        "dolar": float(d["dolar"]["valor"]),
+                        "euro": float(d["euro"]["valor"]),
+                        "uf": float(d["uf"]["valor"]),
                         "ok": True,
                         "respaldo": False,
                     }
         except Exception:
             pass
-    return {"dolar": 950.00, "euro": 1030.00, "uf": 38000.00, "utm": 67000.00, "ok": True, "respaldo": True}
+    return {"dolar": 950.00, "euro": 1030.00, "uf": 38000.00, "ok": True, "respaldo": True}
 
 
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
-hora_actual = now_chile.hour
-
-if 0 <= hora_actual < 12:
-    saludo_actual = "Buenos días"
-elif 12 <= hora_actual < 20:
-    saludo_actual = "Buenas tardes"
-else:
-    saludo_actual = "Buenas noches"
+saludo_actual = "Buenos días" if now_chile.hour < 12 else ("Buenas tardes" if now_chile.hour < 20 else "Buenas noches")
 
 
-def obtener_saludo_nucleo(nucleo_nombre):
+def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     pref = f"[{nucleo_nombre}] "
     saludos = {
         "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
@@ -350,122 +251,173 @@ def obtener_saludo_nucleo(nucleo_nombre):
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
-def generar_respuesta_coherente(nucleo, texto_usuario):
+def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     prefijo = f"[{nucleo}] "
     t = texto_usuario.strip().lower()
-
     if "protocolo extremo" in t:
-        return (
-            f"{prefijo}Protocolo de conocimiento extremo activado, jefa. "
-            "Analizando el problema a fondo sin rodeos ni cortesías innecesarias."
-        )
+        return f"{prefijo}Protocolo de conocimiento extremo activado, jefa. Analizando a fondo sin rodeos."
     if "mapa táctico satelital" in t or "mapa tactico satelital" in t or "mapa" in t:
         jarvis_core.mostrar_mapa_tactico = True
-        return f"{prefijo}Desplegando **mapa táctico satelital** en el panel, jefa. Telemetría en línea."
-
-    palabras_saludo = [
-        "hola", "buenas", "buenos días", "buenos dias",
-        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"
-    ]
-    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
+        st.session_state.ver_mapa = True
+        return f"{prefijo}Desplegando **mapa táctico satelital**, jefa. Telemetría en línea."
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]):
         return obtener_saludo_nucleo(nucleo)
-
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
-        if nucleo == "JARVIS":
-            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
-        if nucleo == "VIERNES":
-            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
-        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
-
+        return f"{prefijo}Tiene **6 patas**, jefa. Y por lo general aterrizan justo cuando estorban."
     if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
-        return (
-            f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-            "Puede revisar **Finviz** o **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
-        )
-
+        return f"{prefijo}En modo respaldo local no tengo cotizaciones en vivo dentro del chat, jefa. Revise **Finviz** o **ANT (Nasdaq)** en el panel lateral."
     if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
-        if econ.get("ok"):
-            dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
-            return (
-                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
-                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
-            )
-
+        d_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        e_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        u_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"{prefijo}Indicadores en Nodo Buin, jefa: Dólar **{d_fmt}**, Euro **{e_fmt}** y UF **{u_fmt}**."
     if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
         return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), jefa."
-
     if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
-        return (
-            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
-            f"Actualmente hay **{len(obtener_misiones())}** misión(es) registrada(s)."
+        return f"{prefijo}Núcleo **{nucleo}** operativo en Nodo Buin, jefa. Misiones activas: **{len(obtener_misiones())}**."
+    return random.choice([
+        f"{prefijo}Entendido, jefa: *'{texto_usuario.strip()}'*. ¿Lo dejamos como misión o abrimos algún módulo?",
+        f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame en qué más le apoyo.",
+    ])
+    if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
+if "ver_mapa" not in st.session_state:
+    st.session_state.ver_mapa = False
+
+st.markdown(
+    '<style>'
+    '.stApp{background-color:#060913!important;color:#00f3ff!important;font-family:monospace;}'
+    'p,span,label,h1,h2,h3,h4,div{color:#00f3ff!important;font-family:monospace;}'
+    '.stButton>button{background-color:#00f3ff!important;border:1.5px solid #00f3ff!important;font-weight:bold;width:100%;border-radius:6px;}'
+    '.stButton>button p,.stButton>button span{color:#060913!important;font-size:0.78rem!important;}'
+    '.econ-card{border:1px solid #00f3ff;background:rgba(0,243,255,0.06);border-radius:6px;padding:8px 10px;margin:5px 0;display:flex;justify-content:space-between;}'
+    '.arc-reactor-container{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:10px;}'
+    '.arc-ring{width:65px;height:65px;border:2.5px solid #00f3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(0,243,255,0.4) 0%,#060913 75%);box-shadow:0 0 20px rgba(0,243,255,0.8);margin-bottom:8px;}'
+    '.arc-triangle-inverted{width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #00f3ff;}'
+    '.tactical-link-btn{display:block;width:100%;background-color:#00f3ff;color:#060913!important;text-align:center;padding:6px 10px;margin:5px 0;border-radius:5px;font-size:0.76rem!important;font-weight:bold;text-decoration:none;}'
+    '.holo-brain-box{border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);padding:15px;border-radius:8px;text-align:center;margin:0 auto 20px auto;max-width:800px;}'
+    '#MainMenu,footer{visibility:hidden;}'
+    '</style>',
+    unsafe_allow_html=True
+)
+
+if not st.session_state.get("autorizado", False):
+    st.markdown('<div style="text-align:center;margin-top:50px;"><h2>ACCESO RESTRINGIDO - NODO BUIN</h2><p>INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p></div>', unsafe_allow_html=True)
+    _, c2, _ = st.columns([1, 2, 1])
+    with c2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            if st.form_submit_button("Desbloquear Sistema"):
+                if pin_input.strip() == PIN_SECRETO:
+                    st.session_state.autorizado = True
+                    st.rerun()
+                else:
+                    st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio("Núcleo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.session_state.mensajes.append({"role": "assistant", "content": obtener_saludo_nucleo(nuevo_nucleo)})
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 💾 Memoria y Datos")
+    with st.expander("Gestionar Memoria SQLite", expanded=False):
+        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
+        if st.button("Guardar en Memoria", use_container_width=True) and dato_mem.strip():
+            guardar_memoria(dato_mem.strip())
+            st.success("¡Memoria guardada!")
+
+    st.markdown("---")
+    st.markdown("#### 📋 Misiones Tácticas")
+    with st.expander("Base de Datos Misiones", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True) and nueva_tarea.strip():
+            agregar_mision(nueva_tarea.strip())
+            st.rerun()
+        for _, m_txt, _ in obtener_misiones():
+            st.markdown(f"- `{m_txt}`")
+        if obtener_misiones() and st.button("Limpiar Misiones", use_container_width=True):
+            limpiar_misiones()
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 📈 Enlaces Financieros")
+    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        econ = obtener_indicadores_chile()
+        d_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        e_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        u_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        st.markdown(
+            f'<div class="econ-card"><span>💵 Dólar Obs.</span><b>{d_fmt}</b></div>'
+            f'<div class="econ-card"><span>💶 Euro</span><b>{e_fmt}</b></div>'
+            f'<div class="econ-card"><span>📈 Valor UF</span><b>{u_fmt}</b></div>',
+            unsafe_allow_html=True
         )
+        if st.button("🔄 Actualizar Divisas", use_container_width=True):
+            obtener_indicadores_chile.clear()
+            st.rerun()
 
-    respuestas_generales = {
-        "JARVIS": [
-            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, no tengo un dato específico cargado en modo local; ¿quiere que lo dejemos como misión?",
-            f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame si necesita registrar o abrir algo."
-        ],
-        "VIERNES": [
-            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. ¿Lo anotamos o abrimos algún módulo?",
-            f"{prefijo}Anotado, jefa. Le ayudo con lo que necesite."
-        ],
-        "NOVA": [
-            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. ¿Qué paso siguiente damos?",
-            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*, jefa."
-        ],
-    }
-    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+    for label, url in [
+        ("Seguimiento ANT (Nasdaq)", "https://www.nasdaq.com/market-activity/stocks/ant"),
+        ("Monitoreo SpaceX", "https://www.spacex.com/"),
+        ("Finviz (Mercados)", "https://finviz.com/"),
+        ("Investing.com (Divisas)", "https://es.investing.com/"),
+    ]:
+        st.markdown(f'<a class="tactical-link-btn" href="{url}" target="_blank">{label}</a>', unsafe_allow_html=True)
 
+dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+meses = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
 
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}
-    ]
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin:0;font-size:2.2rem!important;">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin:0;font-size:0.75rem!important;">[ NODO BUIN, CHILE // {fecha_str} – {now_chile.strftime("%H:%M:%S")} ]</p>'
+    f'</div>'
+    f'<div class="holo-brain-box"><h4 style="margin:0 0 5px 0;">NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4><p style="font-size:0.8rem;margin:0;">Motor Táctico Neuronal Activo // Enlace Directo</p></div>',
+    unsafe_allow_html=True
+)
+st.markdown("---")
 
-estilos_css = """
-<style>
-.stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-[data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
-[data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
-[data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
-.stButton>button {
-    background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
-    font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-    width: 100%; border-radius: 6px; padding: 5px 10px !important;
-}
-.stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
-.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
-.econ-card {
-    border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06); border-radius: 6px;
-    padding: 8px 10px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center;
-}
-.econ-label { font-size: 0.75rem !important; opacity: 0.85; }
-.econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
-.arc-reactor-container {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; margin-bottom: 10px;
-}
-.arc-ring {
-    width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6);
-    margin-bottom: 8px;
-}
-.arc-triangle-inverted {
-    width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent;
-    border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff);
-}
-.tactical-link-btn {
-    display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;
-    text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 5px;
-    font-size: 0.76rem !important; font-weight: bold; text-decoration: none; font-family: monospace;
-    box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-}
-.tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; }
+if st.session_state.ver_mapa or jarvis_core.mostrar_mapa_tactico:
+    st.markdown("#### 🛰️ mapa táctico satelital")
+    st.map({"lat": [-33.4489], "lon": [-70.6693]}, zoom=10)
+    st.markdown("---")
+
+c_ch1, c_ch2 = st.columns([5, 1])
+with c_ch1:
+    st.markdown("#### Chat 💬")
+with c_ch2:
+    if st.button("🧹 Purgar", use_container_width=True):
+        st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
+
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    nucleo = st.session_state.nucleo_activo
+    resp_ia = generar_respuesta_coherente(nucleo, prompt_chat)
+    st.session_state.mensajes.append({"role": "assistant", "content": resp_ia})
+    if nucleo == "JARVIS":
+        jarvis_core.hablar(resp_ia.replace("**", ""))
+    st.rerun()
