@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import datetime
 import sqlite3
@@ -53,6 +54,9 @@ class JarvisCoreEnhancements:
         self.ultimo_movimiento = "Sin novedades en el perímetro."
         self.ultimo_comando_voz = "Esperando instrucción de voz..."
         self.mostrar_mapa_tactico = False
+        self.ojo_de_dios_activo = False
+        self.camara_seleccionada = "CAM-01 // PERÍMETRO NODO BUIN"
+        self.stream_url = ""
 
         self.engine = None
         if TTS_OK and pyttsx3 is not None:
@@ -155,6 +159,10 @@ if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
+if "ver_mapa" not in st.session_state:
+    st.session_state.ver_mapa = False
+if "ver_ojo_dios" not in st.session_state:
+    st.session_state.ver_ojo_dios = False
 if "jarvis_core" not in st.session_state:
     c_obj = JarvisCoreEnhancements()
     c_obj.iniciar_hilos()
@@ -163,11 +171,19 @@ if "jarvis_core" not in st.session_state:
 jarvis_core = st.session_state.jarvis_core
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
-API_KEY_GROQ = ""
+
+api_key_groq = ""
+try:
+    api_key_groq = st.secrets.get("GROQ_API_KEY", "")
+except Exception:
+    api_key_groq = ""
+if not api_key_groq:
+    api_key_groq = os.environ.get("GROQ_API_KEY", "")
+
 client_groq = None
-if GROQ_AVAILABLE and API_KEY_GROQ:
+if GROQ_AVAILABLE and api_key_groq:
     try:
-        client_groq = Groq(api_key=API_KEY_GROQ)
+        client_groq = Groq(api_key=api_key_groq)
     except Exception:
         client_groq = None
 
@@ -263,6 +279,15 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
 
 
 # --- BLOQUE MODULAR DE AGENT SKILLS (ESTILO MODULAR ENCHUFABLE) ---
+def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
+    jarvis_core.ojo_de_dios_activo = True
+    st.session_state.ver_ojo_dios = True
+    return (
+        f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{jarvis_core.camara_seleccionada}** "
+        f"y sensores perimetrales ({jarvis_core.ultimo_movimiento})."
+    )
+
+
 def skill_mapa_tactico(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.mostrar_mapa_tactico = True
     st.session_state.ver_mapa = True
@@ -304,12 +329,45 @@ def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
 
 
 SKILLS_REGISTRY = [
+    {"id": "ojo_de_dios", "keys": ["ojo de dios", "cámaras", "camaras", "vigilancia", "cctv"], "fn": skill_ojo_de_dios},
     {"id": "mapa_tactico", "keys": ["mapa táctico satelital", "mapa tactico satelital", "mapa"], "fn": skill_mapa_tactico},
     {"id": "finanzas_chile", "keys": ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"], "fn": skill_finanzas_chile},
     {"id": "mercados_externos", "keys": ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz", "ant"], "fn": skill_mercados_externos},
     {"id": "misiones_memoria", "keys": ["mision:", "misión:", "anota mision:", "anota misión:", "recuerda:", "guarda:", "estado", "sistema", "misión", "misiones", "pendiente", "pendientes"], "fn": skill_misiones_y_memoria},
     {"id": "perimetro_cam", "keys": ["cámara", "camara", "perímetro", "perimetro", "movimiento", "sensor"], "fn": skill_perimetro_cam},
 ]
+
+
+def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
+    if client_groq is None:
+        return ""
+    mems = [m[0] for m in obtener_memorias(3)]
+    ctx_mem = f"Memorias recientes: {'; '.join(mems)}." if mems else ""
+    estilos = {
+        "JARVIS": "Eres JARVIS, elegante, ingenioso y con sarcasmo fino, tratas al usuario como 'jefa' y respondes en español.",
+        "VIERNES": "Eres VIERNES, ágil, directa y resolutiva, tratas al usuario como 'jefa' y respondes en español.",
+        "NOVA": "Eres NOVA, enérgica y cósmica, tratas al usuario como 'jefa' y respondes en español.",
+    }
+    sys_msg = (
+        f"{estilos.get(nucleo, estilos['JARVIS'])} "
+        f"Skills activas: {[s['id'] for s in SKILLS_REGISTRY]}. {ctx_mem} Sé conciso."
+    )
+    try:
+        chat = client_groq.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": sys_msg},
+                {"role": "user", "content": texto_usuario},
+            ],
+            temperature=0.7,
+            max_tokens=300,
+        )
+        contenido = (chat.choices[0].message.content or "").strip()
+        if contenido:
+            return f"[{nucleo}] {contenido}"
+    except Exception:
+        pass
+    return ""
 
 
 def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
@@ -327,16 +385,17 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
             return sk["fn"](nucleo, t, raw)
     if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
         return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), jefa."
+    ia_resp = responder_con_groq(nucleo, raw)
+    if ia_resp:
+        return ia_resp
     return random.choice([
-        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `misión: ...` o `recuerda: ...` si quiere guardarlo.",
+        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `ojo de dios`, `misión: ...` o `recuerda: ...`.",
         f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame en qué más le apoyo.",
     ])
 
 
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
-if "ver_mapa" not in st.session_state:
-    st.session_state.ver_mapa = False
 
 st.markdown(
     '<style>'
@@ -350,6 +409,7 @@ st.markdown(
     '.arc-triangle-inverted{width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #00f3ff;}'
     '.tactical-link-btn{display:block;width:100%;background-color:#00f3ff;color:#060913!important;text-align:center;padding:6px 10px;margin:5px 0;border-radius:5px;font-size:0.76rem!important;font-weight:bold;text-decoration:none;}'
     '.holo-brain-box{border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);padding:15px;border-radius:8px;text-align:center;margin:0 auto 20px auto;max-width:800px;}'
+    '.god-eye-box{border:1.5px solid #00f3ff;background:rgba(10,17,40,0.9);border-radius:8px;padding:14px;margin-bottom:16px;}'
     '#MainMenu,footer{visibility:hidden;}'
     '</style>',
     unsafe_allow_html=True
@@ -386,6 +446,31 @@ with st.sidebar:
         st.session_state.nucleo_activo = nuevo_nucleo
         st.session_state.mensajes.append({"role": "assistant", "content": obtener_saludo_nucleo(nuevo_nucleo)})
         st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 👁️ Ojo de Dios y Vigilancia")
+    with st.expander("Cámaras y Sensores", expanded=False):
+        cam_opts = [
+            "CAM-01 // PERÍMETRO NODO BUIN",
+            "CAM-02 // ACCESO PRINCIPAL",
+            "CAM-03 // PATIO Y SECTOR NORTE",
+            "CAM-04 // ENLACE REMOTO / RTSP",
+        ]
+        sel_cam = st.selectbox("Feed Activo:", cam_opts, index=cam_opts.index(jarvis_core.camara_seleccionada) if jarvis_core.camara_seleccionada in cam_opts else 0)
+        jarvis_core.camara_seleccionada = sel_cam
+        jarvis_core.stream_url = st.text_input("URL Stream (MJPEG/Imagen opcional):", value=jarvis_core.stream_url, placeholder="https://...")
+        c_od1, c_od2 = st.columns(2)
+        with c_od1:
+            if st.button("👁️ Ver Ojo", use_container_width=True):
+                st.session_state.ver_ojo_dios = True
+                jarvis_core.ojo_de_dios_activo = True
+                st.rerun()
+        with c_od2:
+            if st.button("✖ Ocultar", use_container_width=True):
+                st.session_state.ver_ojo_dios = False
+                jarvis_core.ojo_de_dios_activo = False
+                st.rerun()
+        st.caption(f"Sensor: {jarvis_core.ultimo_movimiento}")
 
     st.markdown("---")
     st.markdown("#### 💾 Memoria y Datos")
@@ -457,11 +542,60 @@ reloj_vivo_html = """
 """
 st.components.v1.html(reloj_vivo_html, height=28)
 
+estado_ia = "GROQ ONLINE" if client_groq else "MOTOR LOCAL + SKILLS"
 st.markdown(
-    f'<div class="holo-brain-box"><h4 style="margin:0 0 5px 0;">NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4><p style="font-size:0.8rem;margin:0;">Motor Táctico Neuronal Activo // Enlace Directo</p></div>',
+    f'<div class="holo-brain-box"><h4 style="margin:0 0 5px 0;">NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4><p style="font-size:0.8rem;margin:0;">{estado_ia} // Enlace Directo</p></div>',
     unsafe_allow_html=True
 )
 st.markdown("---")
+
+if st.session_state.ver_ojo_dios or jarvis_core.ojo_de_dios_activo:
+    st.markdown(
+        f'<div class="god-eye-box">'
+        f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        f'<b>👁️ OJO DE DIOS // {jarvis_core.camara_seleccionada}</b>'
+        f'<span style="font-size:0.75rem;">ESTADO: ENLACE ACTIVO</span>'
+        f'</div>'
+        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {jarvis_core.ultimo_movimiento}</p>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+    if jarvis_core.stream_url.strip():
+        st.image(jarvis_core.stream_url.strip(), caption=jarvis_core.camara_seleccionada, use_container_width=True)
+    else:
+        od_html = """
+        <div style="background:#050914;border:1px solid #00f3ff;border-radius:6px;padding:12px;text-align:center;">
+          <canvas id="godEyeCanvas" width="640" height="170" style="width:100%;max-width:640px;height:170px;background:#03060d;border-radius:4px;"></canvas>
+        </div>
+        <script>
+          const cv = document.getElementById("godEyeCanvas");
+          if (cv) {
+            const ctx = cv.getContext("2d");
+            let ang = 0;
+            function drawEye() {
+              ctx.clearRect(0, 0, cv.width, cv.height);
+              ctx.strokeStyle = "rgba(0,243,255,0.18)";
+              for (let x = 0; x < cv.width; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cv.height); ctx.stroke(); }
+              for (let y = 0; y < cv.height; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cv.width, y); ctx.stroke(); }
+              const cx = cv.width / 2, cy = cv.height / 2;
+              ctx.strokeStyle = "#00f3ff";
+              ctx.beginPath(); ctx.arc(cx, cy, 46, 0, Math.PI * 2); ctx.stroke();
+              ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.stroke();
+              ctx.strokeStyle = "rgba(0,243,255,0.85)";
+              ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang) * 65, cy + Math.sin(ang) * 65); ctx.stroke();
+              ctx.fillStyle = "#00f3ff";
+              ctx.font = "12px monospace";
+              ctx.fillText("GOD'S EYE // TELEMETRÍA OPTICA", 14, 22);
+              ctx.fillText("SECTOR: BUIN-SUR", cv.width - 145, 22);
+              ang += 0.04;
+              requestAnimationFrame(drawEye);
+            }
+            drawEye();
+          }
+        </script>
+        """
+        st.components.v1.html(od_html, height=195)
+    st.markdown("---")
 
 if st.session_state.ver_mapa or jarvis_core.mostrar_mapa_tactico:
     st.markdown("#### 🛰️ mapa táctico satelital")
