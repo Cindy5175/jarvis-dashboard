@@ -1,1 +1,3 @@
-grod
+streamlit
+requests
+groq
