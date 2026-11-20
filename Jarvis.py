@@ -1,13 +1,41 @@
-import cv2
 import time
 import threading
-import speech_recognition as sr
-import pyttsx3
+
+try:
+    import cv2
+    CV2_DISPONIBLE = True
+except ModuleNotFoundError:
+    cv2 = None
+    CV2_DISPONIBLE = False
+
+try:
+    import speech_recognition as sr
+    SR_DISPONIBLE = True
+except ModuleNotFoundError:
+    sr = None
+    SR_DISPONIBLE = False
+
+try:
+    import pyttsx3
+    TTS_DISPONIBLE = True
+except ModuleNotFoundError:
+    pyttsx3 = None
+    TTS_DISPONIBLE = False
+
+
+def camara_disponible(indice: int = 0) -> bool:
+    """Verifica de forma segura si OpenCV y la cámara están operativos."""
+    if not CV2_DISPONIBLE or cv2 is None:
+        return False
+    cap = cv2.VideoCapture(indice)
+    disponible = cap.isOpened()
+    cap.release()
+    return disponible
 
 
 class JarvisCoreEnhancements:
     """
-    Módulo unificado para JARVIS:
+    Módulo unificado y seguro (local + Streamlit Cloud) para JARVIS:
     1. Escucha continua manos libres (sin botones)
     2. Personalidad con voz varonil y sarcasmo seco
     3. Protocolos de conocimiento extremo
@@ -20,17 +48,27 @@ class JarvisCoreEnhancements:
         self.on_command_callback = on_command_callback
         self.on_motion_callback = on_motion_callback
 
-        # 1. Configuración de voz varonil y rápida
-        self.engine = pyttsx3.init()
-        self.engine.setProperty("rate", 178)
-        self.engine.setProperty("volume", 1.0)
-        self._seleccionar_voz_varonil()
+        # 1. Inicialización segura de voz varonil
+        self.engine = None
+        if TTS_DISPONIBLE and pyttsx3 is not None:
+            try:
+                self.engine = pyttsx3.init()
+                self.engine.setProperty("rate", 178)
+                self.engine.setProperty("volume", 1.0)
+                self._seleccionar_voz_varonil()
+            except Exception:
+                self.engine = None
 
-        # 2. Configuración de escucha continua
-        self.recognizer = sr.Recognizer()
-        self.recognizer.pause_threshold = 0.85
-        self.recognizer.energy_threshold = 300
-        self.recognizer.dynamic_energy_threshold = True
+        # 2. Inicialización segura de escucha continua
+        self.recognizer = None
+        if SR_DISPONIBLE and sr is not None:
+            try:
+                self.recognizer = sr.Recognizer()
+                self.recognizer.pause_threshold = 0.85
+                self.recognizer.energy_threshold = 300
+                self.recognizer.dynamic_energy_threshold = True
+            except Exception:
+                self.recognizer = None
 
         # 3. Protocolos de conocimiento extremo y comandos clave
         self.protocolos = {
@@ -49,6 +87,8 @@ class JarvisCoreEnhancements:
         }
 
     def _seleccionar_voz_varonil(self):
+        if not self.engine:
+            return
         voces = self.engine.getProperty("voices")
         for voz in voces:
             nombre = voz.name.lower()
@@ -58,11 +98,15 @@ class JarvisCoreEnhancements:
                     break
 
     def hablar(self, texto: str):
-        """Habla de forma fluida pausando temporalmente la autoescucha."""
+        """Habla en local si hay motor de audio y evita bucle con el micrófono."""
+        if not self.engine:
+            return
         self.hablando = True
         try:
             self.engine.say(texto)
             self.engine.runAndWait()
+        except Exception:
+            pass
         finally:
             self.hablando = False
 
@@ -80,38 +124,47 @@ class JarvisCoreEnhancements:
         if "gracias" in consulta:
             return "No hay de qué. Alguien tiene que mantener este sistema funcionando."
 
-        # Respuesta base para delegar al modelo conversacional con tono sarcástico
         if self.on_command_callback:
             return self.on_command_callback(texto)
 
         return f"Orden recibida: '{texto}'. Procesando con mi habitual eficiencia sobrehumana."
 
     def iniciar_escucha_continua(self):
-        """Hilo de conversación fluida manos libres sin pulsar botones."""
+        """Hilo de conversación fluida manos libres (solo activo si hay micrófono disponible)."""
+        if not self.recognizer or not SR_DISPONIBLE or sr is None:
+            return
+
         def _loop_voz():
-            with sr.Microphone() as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.8)
-                while self.activo:
-                    if self.hablando:
-                        time.sleep(0.1)
-                        continue
-                    try:
-                        audio = self.recognizer.listen(source, timeout=4, phrase_time_limit=12)
-                        texto = self.recognizer.recognize_google(audio, language="es-CL")
-                        if texto:
-                            respuesta = self.procesar_intencion(texto)
-                            if respuesta:
-                                self.hablar(respuesta)
-                    except (sr.WaitTimeoutError, sr.UnknownValueError):
-                        continue
-                    except Exception:
-                        time.sleep(0.3)
+            try:
+                with sr.Microphone() as source:
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.8)
+                    while self.activo:
+                        if self.hablando:
+                            time.sleep(0.1)
+                            continue
+                        try:
+                            audio = self.recognizer.listen(source, timeout=4, phrase_time_limit=12)
+                            texto = self.recognizer.recognize_google(audio, language="es-CL")
+                            if texto:
+                                respuesta = self.procesar_intencion(texto)
+                                if respuesta:
+                                    self.hablar(respuesta)
+                        except (sr.WaitTimeoutError, sr.UnknownValueError):
+                            continue
+                        except Exception:
+                            time.sleep(0.3)
+            except Exception:
+                # En entornos cloud sin micrófono físico sale silenciosamente sin romper la app
+                return
 
         hilo = threading.Thread(target=_loop_voz, daemon=True)
         hilo.start()
 
     def iniciar_sensor_movimiento(self, indice_camara: int = 0, sensibilidad: int = 4500, cooldown: int = 20):
-        """Sensor de movimiento silencioso por webcam sin alterar la estética de la UI."""
+        """Sensor de movimiento silencioso por webcam (se omite si no hay cv2 o cámara)."""
+        if not camara_disponible(indice_camara) or cv2 is None:
+            return
+
         def _loop_camara():
             cap = cv2.VideoCapture(indice_camara)
             if not cap.isOpened():
@@ -133,42 +186,3 @@ class JarvisCoreEnhancements:
                     continue
 
                 gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                gris = cv2.GaussianBlur(gris, (21, 21), 0)
-
-                diferencia = cv2.absdiff(gris_anterior, gris)
-                umbral = cv2.threshold(diferencia, 25, 255, cv2.THRESH_BINARY)[1]
-                umbral = cv2.dilate(umbral, None, iterations=2)
-                contornos, _ = cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-                movimiento_detectado = any(cv2.contourArea(c) > sensibilidad for c in contornos)
-                gris_anterior = gris
-
-                ahora = time.time()
-                if movimiento_detectado and (ahora - ultimo_aviso) > cooldown:
-                    ultimo_aviso = ahora
-                    if self.on_motion_callback:
-                        self.on_motion_callback()
-                    elif not self.hablando:
-                        self.hablar("Sensor perimetral activado. Detecto movimiento en la sala, jefa.")
-
-                time.sleep(0.08)
-
-            cap.release()
-
-        hilo_cam = threading.Thread(target=_loop_camara, daemon=True)
-        hilo_cam.start()
-
-    def detener(self):
-        self.activo = False
-
-
-# Ejemplo de conexión limpia desde su jarvis.py o server.py:
-if __name__ == "__main__":
-    jarvis = JarvisCoreEnhancements()
-    jarvis.iniciar_escucha_continua()
-    jarvis.iniciar_sensor_movimiento(indice_camara=0)
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        jarvis.detener()
