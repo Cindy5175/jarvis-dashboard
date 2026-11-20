@@ -278,6 +278,7 @@ else:
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 OSIRIS_URL = "https://osirisai.live/"
+GROQ_MODELO_ACTIVO = "openai/gpt-oss-120b"
 
 api_key_groq = ""
 try:
@@ -558,21 +559,22 @@ def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
         f"{estilos.get(nucleo, estilos['JARVIS'])} "
         f"Skills activas: {[s['id'] for s in SKILLS_REGISTRY]}. {ctx_mem} {ctx_chat} Sé conciso."
     )
-    try:
-        chat = client_groq.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": sys_msg},
-                {"role": "user", "content": texto_usuario},
-            ],
-            temperature=0.7,
-            max_tokens=300,
-        )
-        contenido = (chat.choices[0].message.content or "").strip()
-        if contenido:
-            return f"[{nucleo}] {contenido}"
-    except Exception:
-        pass
+    for modelo_cand in [GROQ_MODELO_ACTIVO, "llama-3.3-70b-versatile"]:
+        try:
+            chat = client_groq.chat.completions.create(
+                model=modelo_cand,
+                messages=[
+                    {"role": "system", "content": sys_msg},
+                    {"role": "user", "content": texto_usuario},
+                ],
+                temperature=0.7,
+                max_tokens=300,
+            )
+            contenido = (chat.choices[0].message.content or "").strip()
+            if contenido:
+                return f"[{nucleo}] {contenido}"
+        except Exception:
+            continue
     return ""
 
 
@@ -611,4 +613,230 @@ st.markdown(
     '.stButton>button p,.stButton>button span{color:#060913!important;font-size:0.78rem!important;}'
     '.econ-card{border:1px solid #00f3ff;background:rgba(0,243,255,0.06);border-radius:6px;padding:8px 10px;margin:5px 0;display:flex;justify-content:space-between;}'
     '.arc-reactor-container{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:6px;}'
-    '.arc-ring{width:65px;height:65px;border:2.5px solid #00f3ff;border-radius:50%;display:flex;align-items:center
+    '.arc-ring{width:65px;height:65px;border:2.5px solid #00f3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(0,243,255,0.4) 0%,#060913 75%);box-shadow:0 0 20px rgba(0,243,255,0.8);margin-bottom:8px;}'
+    '.arc-triangle-inverted{width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #00f3ff;}'
+    '.tactical-link-btn{display:block;width:100%;background-color:#00f3ff;color:#060913!important;text-align:center;padding:6px 10px;margin:5px 0;border-radius:5px;font-size:0.76rem!important;font-weight:bold;text-decoration:none;}'
+    '.holo-brain-box{border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);padding:15px;border-radius:8px;text-align:center;margin:0 auto 20px auto;max-width:800px;}'
+    '.god-eye-box{border:1.5px solid #00f3ff;background:rgba(10,17,40,0.9);border-radius:8px;padding:14px;margin-bottom:16px;}'
+    '#MainMenu,footer{visibility:hidden;}'
+    '</style>',
+    unsafe_allow_html=True
+)
+
+if not st.session_state.get("autorizado", False):
+    st.markdown('<div style="text-align:center;margin-top:50px;"><h2>ACCESO RESTRINGIDO - NODO BUIN</h2><p>INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p></div>', unsafe_allow_html=True)
+    _, c2, _ = st.columns([1, 2, 1])
+    with c2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            if st.form_submit_button("Desbloquear Sistema"):
+                if pin_input.strip() == PIN_SECRETO:
+                    st.session_state.autorizado = True
+                    st.rerun()
+                else:
+                    st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio("Núcleo:", ["JARVIS", "VIERNES", "NOVA"], index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo), label_visibility="collapsed")
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        st.session_state.mensajes.append({"role": "assistant", "content": obtener_saludo_nucleo(nuevo_nucleo)})
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 👁️ Ojo de Dios y Vigilancia")
+    with st.expander("Cámaras y Sensores", expanded=False):
+        cam_opts = [
+            "CAM-01 // PERÍMETRO NODO BUIN",
+            "CAM-02 // ACCESO PRINCIPAL",
+            "CAM-03 // PATIO Y SECTOR NORTE",
+            "CAM-04 // ENLACE REMOTO / RTSP",
+        ]
+        cam_actual = getattr(jarvis_core, "camara_seleccionada", cam_opts[0])
+        sel_cam = st.selectbox("Feed Activo:", cam_opts, index=cam_opts.index(cam_actual) if cam_actual in cam_opts else 0)
+        jarvis_core.camara_seleccionada = sel_cam
+        jarvis_core.stream_url = st.text_input("URL Stream (MJPEG/Imagen opcional):", value=getattr(jarvis_core, "stream_url", ""), placeholder="https://...")
+        c_od1, c_od2 = st.columns(2)
+        with c_od1:
+            if st.button("👁️ Ver Ojo", use_container_width=True):
+                st.session_state.ver_ojo_dios = True
+                jarvis_core.ojo_de_dios_activo = True
+                st.rerun()
+        with c_od2:
+            if st.button("✖ Ocultar", use_container_width=True):
+                st.session_state.ver_ojo_dios = False
+                jarvis_core.ojo_de_dios_activo = False
+                st.rerun()
+        st.caption(f"Sensor: {getattr(jarvis_core, 'ultimo_movimiento', 'Sin novedades.')}")
+
+    st.markdown("---")
+    st.markdown("#### 💾 Memoria y Datos")
+    with st.expander("Gestionar Memoria SQLite", expanded=False):
+        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
+        if st.button("Guardar en Memoria", use_container_width=True) and dato_mem.strip():
+            guardar_memoria(dato_mem.strip())
+            st.success("¡Memoria guardada!")
+
+    st.markdown("---")
+    st.markdown("#### 📋 Misiones Tácticas")
+    with st.expander("Base de Datos Misiones", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True) and nueva_tarea.strip():
+            agregar_mision(nueva_tarea.strip())
+            st.rerun()
+        for _, m_txt, m_est in obtener_misiones():
+            marca = "✅" if m_est == "Completada" else "⏳"
+            st.markdown(f"- {marca} `{m_txt}`")
+        if obtener_misiones() and st.button("Limpiar Misiones", use_container_width=True):
+            limpiar_misiones()
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 📈 Enlaces Financieros")
+    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        econ = obtener_indicadores_chile()
+        st.markdown(
+            f'<div class="econ-card"><span>💵 Dólar Obs.</span><b>{fmt_clp(econ["dolar"])}</b></div>'
+            f'<div class="econ-card"><span>💶 Euro</span><b>{fmt_clp(econ["euro"])}</b></div>'
+            f'<div class="econ-card"><span>📈 Valor UF</span><b>{fmt_clp(econ["uf"])}</b></div>',
+            unsafe_allow_html=True
+        )
+        if st.button("🔄 Actualizar Divisas", use_container_width=True):
+            obtener_indicadores_chile.clear()
+            st.rerun()
+
+    for label, url in [
+        ("Osiris AI", OSIRIS_URL),
+        ("Seguimiento ANT (Nasdaq)", "https://www.nasdaq.com/market-activity/stocks/ant"),
+        ("Monitoreo SpaceX", "https://www.spacex.com/"),
+        ("Finviz (Mercados)", "https://finviz.com/"),
+        ("Investing.com (Divisas)", "https://es.investing.com/"),
+    ]:
+        st.markdown(f'<a class="tactical-link-btn" href="{url}" target="_blank">{label}</a>', unsafe_allow_html=True)
+
+fecha_str = now_chile.strftime("%d/%m/%Y")
+
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin:0;font-size:2.2rem!important;">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin:0;font-size:0.75rem!important;">[ NODO BUIN, CHILE // {fecha_str} ]</p>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+reloj_vivo_html = """
+<div style="text-align:center;color:#00f3ff;font-family:monospace;font-size:0.85rem;margin-bottom:10px;">
+  HORA EN VIVO (SANTIAGO): <span id="reloj-vivo">--:--:--</span>
+</div>
+<script>
+  function tickChile() {
+    const opts = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
+    const el = document.getElementById("reloj-vivo");
+    if (el) el.textContent = new Intl.DateTimeFormat("es-CL", opts).format(new Date());
+  }
+  tickChile();
+  setInterval(tickChile, 1000);
+</script>
+"""
+st.components.v1.html(reloj_vivo_html, height=28)
+
+estado_ia = "GROQ ONLINE" if client_groq else "MOTOR LOCAL + SKILLS"
+st.markdown(
+    f'<div class="holo-brain-box"><h4 style="margin:0 0 5px 0;">NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]</h4><p style="font-size:0.8rem;margin:0;">{estado_ia} // Enlace Directo</p></div>',
+    unsafe_allow_html=True
+)
+st.markdown("---")
+
+if st.session_state.voz_pendiente:
+    hablar_en_navegador(st.session_state.voz_pendiente)
+    st.session_state.voz_pendiente = ""
+
+if st.session_state.ver_ojo_dios or getattr(jarvis_core, "ojo_de_dios_activo", False):
+    cam_titulo = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
+    mov_titulo = getattr(jarvis_core, "ultimo_movimiento", "Sin novedades en el perímetro.")
+    st.markdown(
+        f'<div class="god-eye-box">'
+        f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        f'<b>👁️ OJO DE DIOS // {cam_titulo}</b>'
+        f'<span style="font-size:0.75rem;">ESTADO: ENLACE ACTIVO</span>'
+        f'</div>'
+        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {mov_titulo} // <a href="{OSIRIS_URL}" target="_blank" style="color:#00f3ff;">Osiris AI</a></p>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+    if getattr(jarvis_core, "stream_url", "").strip():
+        st.image(jarvis_core.stream_url.strip(), caption=cam_titulo, use_container_width=True)
+    else:
+        od_html = """
+        <div style="background:#050914;border:1px solid #00f3ff;border-radius:6px;padding:12px;text-align:center;">
+          <canvas id="godEyeCanvas" width="640" height="170" style="width:100%;max-width:640px;height:170px;background:#03060d;border-radius:4px;"></canvas>
+        </div>
+        <script>
+          const cv = document.getElementById("godEyeCanvas");
+          if (cv) {
+            const ctx = cv.getContext("2d");
+            let ang = 0;
+            function drawEye() {
+              ctx.clearRect(0, 0, cv.width, cv.height);
+              ctx.strokeStyle = "rgba(0,243,255,0.18)";
+              for (let x = 0; x < cv.width; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cv.height); ctx.stroke(); }
+              for (let y = 0; y < cv.height; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cv.width, y); ctx.stroke(); }
+              const cx = cv.width / 2, cy = cv.height / 2;
+              ctx.strokeStyle = "#00f3ff";
+              ctx.beginPath(); ctx.arc(cx, cy, 46, 0, Math.PI * 2); ctx.stroke();
+              ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.stroke();
+              ctx.strokeStyle = "rgba(0,243,255,0.85)";
+              ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang) * 65, cy + Math.sin(ang) * 65); ctx.stroke();
+              ctx.fillStyle = "#00f3ff";
+              ctx.font = "12px monospace";
+              ctx.fillText("GOD'S EYE // TELEMETRÍA OPTICA", 14, 22);
+              ctx.fillText("SECTOR: BUIN-SUR", cv.width - 145, 22);
+              ang += 0.04;
+              requestAnimationFrame(drawEye);
+            }
+            drawEye();
+          }
+        </script>
+        """
+        st.components.v1.html(od_html, height=195)
+    st.markdown("---")
+
+if st.session_state.ver_mapa or getattr(jarvis_core, "mostrar_mapa_tactico", False):
+    st.markdown("#### 🛰️ mapa táctico satelital")
+    st.map({"lat": [-33.4489], "lon": [-70.6693]}, zoom=10)
+    st.markdown("---")
+
+c_ch1, c_ch2 = st.columns([5, 1])
+with c_ch1:
+    st.markdown("#### Chat 💬")
+with c_ch2:
+    if st.button("🧹 Purgar", use_container_width=True):
+        st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
+
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    nucleo = st.session_state.nucleo_activo
+    resp_ia = generar_respuesta_coherente(nucleo, prompt_chat)
+    st.session_state.mensajes.append({"role": "assistant", "content": resp_ia})
+    if nucleo == "JARVIS":
+        jarvis_core.hablar(resp_ia)
+    st.rerun()
