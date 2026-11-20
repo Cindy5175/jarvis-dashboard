@@ -406,6 +406,15 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, señorita. En línea y a su servicio.")
 
 
+def _coincide_clave(texto_norm: str, tokens_palabras: set, clave: str) -> bool:
+    c = clave.lower().strip()
+    if not c:
+        return False
+    if " " in c or ":" in c:
+        return c in texto_norm
+    return c in tokens_palabras
+
+
 def skill_wendy(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.ojo_de_dios_activo = True
     st.session_state.ver_ojo_dios = True
@@ -531,7 +540,7 @@ SKILLS_REGISTRY = [
     {"id": "ojo_de_dios", "keys": ["ojo de dios", "cámaras", "camaras", "vigilancia", "cctv"], "fn": skill_ojo_de_dios},
     {"id": "mapa_tactico", "keys": ["mapa táctico satelital", "mapa tactico satelital", "mapa"], "fn": skill_mapa_tactico},
     {"id": "finanzas_chile", "keys": ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"], "fn": skill_finanzas_chile},
-    {"id": "mercados_externos", "keys": ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz", "ant"], "fn": skill_mercados_externos},
+    {"id": "mercados_externos", "keys": ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz", "accion ant", "acción ant"], "fn": skill_mercados_externos},
     {"id": "resumen_tactico", "keys": ["resumen", "reporte", "diagnóstico", "diagnostico"], "fn": skill_resumen_tactico},
     {"id": "misiones_memoria", "keys": ["mision:", "misión:", "anota mision:", "anota misión:", "completa mision:", "completa misión:", "recuerda:", "guarda:", "olvida:", "borra memoria:", "memorias", "qué recuerdas", "que recuerdas", "estado", "sistema", "misión", "misiones", "pendiente", "pendientes"], "fn": skill_misiones_y_memoria},
     {"id": "perimetro_cam", "keys": ["cámara", "camara", "perímetro", "perimetro", "movimiento", "sensor"], "fn": skill_perimetro_cam},
@@ -582,16 +591,17 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     prefijo = f"[{nucleo}] "
     raw = texto_usuario.strip()
     t = raw.lower()
+    tokens = set(re.findall(r"[a-záéíóúñü0-9:]+", t))
     if "protocolo extremo" in t:
         return f"{prefijo}Protocolo de conocimiento extremo activado, señorita. Analizando a fondo sin rodeos."
     if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]):
         return obtener_saludo_nucleo(nucleo)
-    if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
+    if "mosca" in tokens and ({"patas", "cuantas", "cuántas"} & tokens):
         return f"{prefijo}Tiene **6 patas**, señorita. Y por lo general aterrizan justo cuando estorban."
     for sk in SKILLS_REGISTRY:
-        if any(k in t for k in sk["keys"]):
+        if any(_coincide_clave(t, tokens, k) for k in sk["keys"]):
             return sk["fn"](nucleo, t, raw)
-    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+    if {"hora", "fecha"} & tokens or any(f in t for f in ["qué hora", "que hora", "día de hoy", "dia de hoy"]):
         return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), señorita."
     ia_resp = responder_con_groq(nucleo, raw)
     if ia_resp:
