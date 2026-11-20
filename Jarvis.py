@@ -1,4 +1,5 @@
 import os
+import re
 import streamlit as st
 import datetime
 import sqlite3
@@ -47,6 +48,17 @@ def camara_disponible(indice: int = 0) -> bool:
         return False
 
 
+def limpiar_texto_para_voz(texto: str) -> str:
+    if not texto:
+        return ""
+    limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace táctico ", texto)
+    limpio = re.sub(r"https?://\S+", " enlace táctico ", limpio)
+    limpio = re.sub(r"\[[^\]]+\]", "", limpio)
+    limpio = re.sub(r"[*_`#]+", "", limpio)
+    limpio = re.sub(r"\s+", " ", limpio).strip()
+    return limpio
+
+
 class JarvisCoreEnhancements:
     def __init__(self):
         self.activo = True
@@ -57,20 +69,13 @@ class JarvisCoreEnhancements:
         self.ojo_de_dios_activo = False
         self.camara_seleccionada = "CAM-01 // PERÍMETRO NODO BUIN"
         self.stream_url = ""
+        self._voz_lock = threading.Lock()
 
         self.engine = None
         if TTS_OK and pyttsx3 is not None:
             try:
                 self.engine = pyttsx3.init()
-                self.engine.setProperty("rate", 178)
-                self.engine.setProperty("volume", 1.0)
-                for voz in self.engine.getProperty("voices"):
-                    nombre = getattr(voz, "name", "").lower()
-                    if "sabina" not in nombre and any(
-                        t in nombre for t in ["male", "raul", "pablo", "jorge", "david", "es", "spanish"]
-                    ):
-                        self.engine.setProperty("voice", voz.id)
-                        break
+                self._configurar_voz_varonil()
             except Exception:
                 self.engine = None
 
@@ -82,6 +87,39 @@ class JarvisCoreEnhancements:
                 self.recognizer.dynamic_energy_threshold = True
             except Exception:
                 self.recognizer = None
+
+    def _configurar_voz_varonil(self):
+        if not self.engine:
+            return
+        try:
+            self.engine.setProperty("rate", 166)
+            self.engine.setProperty("volume", 0.95)
+            voces = self.engine.getProperty("voices") or []
+            candidatas_varoniles = []
+            candidatas_espanol = []
+            excluir = ("sabina", "helena", "zira", "hazel", "female", "mujer", "sofia", "sofía", "lucia", "lucía")
+
+            for voz in voces:
+                nombre = getattr(voz, "name", "").lower()
+                vid = getattr(voz, "id", "").lower()
+                info = f"{nombre} {vid}"
+                if any(bad in info for bad in excluir):
+                    continue
+                if any(m in info for m in ["male", "raul", "raúl", "pablo", "jorge", "david", "diego", "carlos", "enrique", "alvaro", "álvaro"]):
+                    candidatas_varoniles.append(voz)
+                elif any(es in info for es in ["es-cl", "es-es", "es-mx", "es_cl", "es_es", "spanish", "castellano", "chile"]):
+                    candidatas_espanol.append(voz)
+
+            elegida = None
+            if candidatas_varoniles:
+                elegida = candidatas_varoniles[0]
+            elif candidatas_espanol:
+                elegida = candidatas_espanol[0]
+
+            if elegida is not None:
+                self.engine.setProperty("voice", elegida.id)
+        except Exception:
+            pass
 
     def asegurar_atributos(self):
         defaults = {
@@ -97,18 +135,27 @@ class JarvisCoreEnhancements:
         for k, v in defaults.items():
             if not hasattr(self, k):
                 setattr(self, k, v)
+        if not hasattr(self, "_voz_lock"):
+            self._voz_lock = threading.Lock()
+        if getattr(self, "engine", None) is not None and not hasattr(self, "_configurar_voz_varonil"):
+            pass
 
     def hablar(self, texto: str):
-        if not self.engine or not texto:
+        if not getattr(self, "engine", None) or not texto:
             return
-        self.hablando = True
-        try:
-            self.engine.say(texto)
-            self.engine.runAndWait()
-        except Exception:
-            pass
-        finally:
-            self.hablando = False
+        frase = limpiar_texto_para_voz(texto)
+        if not frase:
+            return
+        with self._voz_lock:
+            self.hablando = True
+            try:
+                self._configurar_voz_varonil()
+                self.engine.say(frase)
+                self.engine.runAndWait()
+            except Exception:
+                pass
+            finally:
+                self.hablando = False
 
     def iniciar_hilos(self):
         if self.recognizer and SR_OK and sr is not None:
@@ -118,7 +165,7 @@ class JarvisCoreEnhancements:
                         self.recognizer.adjust_for_ambient_noise(src, duration=0.8)
                         while self.activo:
                             if self.hablando:
-                                time.sleep(0.1)
+                                time.sleep(0.12)
                                 continue
                             try:
                                 audio = self.recognizer.listen(src, timeout=4, phrase_time_limit=12)
@@ -193,6 +240,7 @@ else:
         "stream_url": "",
         "mostrar_mapa_tactico": False,
         "ultimo_movimiento": "Sin novedades en el perímetro.",
+        "hablando": False,
     }.items():
         if not hasattr(jarvis_core, _k):
             setattr(jarvis_core, _k, _v)
@@ -694,5 +742,5 @@ if prompt_chat:
     resp_ia = generar_respuesta_coherente(nucleo, prompt_chat)
     st.session_state.mensajes.append({"role": "assistant", "content": resp_ia})
     if nucleo == "JARVIS":
-        jarvis_core.hablar(resp_ia.replace("**", ""))
+        jarvis_core.hablar(resp_ia)
     st.rerun()
