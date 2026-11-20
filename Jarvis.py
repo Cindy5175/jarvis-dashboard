@@ -307,6 +307,27 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
+def skill_wendy(nucleo: str, _t: str, _raw: str) -> str:
+    jarvis_core.ojo_de_dios_activo = True
+    st.session_state.ver_ojo_dios = True
+    cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
+    return (
+        f"[{nucleo}] Protocolo **Wendy** activado, jefa. **Ojo de Dios** en **{cam_act}** "
+        f"y enlace vinculado: [{OSIRIS_URL}]({OSIRIS_URL})."
+    )
+
+
+def skill_planetear(nucleo: str, _t: str, _raw: str) -> str:
+    jarvis_core.mostrar_mapa_tactico = True
+    jarvis_core.ojo_de_dios_activo = True
+    st.session_state.ver_mapa = True
+    st.session_state.ver_ojo_dios = True
+    return (
+        f"[{nucleo}] Modo **Planetear** desplegado, jefa: **mapa táctico satelital** y **Ojo de Dios** activos "
+        f"con enlace [{OSIRIS_URL}]({OSIRIS_URL})."
+    )
+
+
 def skill_ojo_osiris(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.ojo_de_dios_activo = True
     st.session_state.ver_ojo_dios = True
@@ -373,6 +394,8 @@ def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
 
 
 SKILLS_REGISTRY = [
+    {"id": "wendy", "keys": ["wendy"], "fn": skill_wendy},
+    {"id": "planetear", "keys": ["planetear"], "fn": skill_planetear},
     {"id": "ojo_osiris", "keys": ["ojo osiris", "osiris ojo", "vigilancia osiris", "enlace ojo de dios", "comando ojo"], "fn": skill_ojo_osiris},
     {"id": "osiris_ai", "keys": ["osiris", "osiris ai", "osirisai"], "fn": skill_osiris_ai},
     {"id": "ojo_de_dios", "keys": ["ojo de dios", "cámaras", "camaras", "vigilancia", "cctv"], "fn": skill_ojo_de_dios},
@@ -435,7 +458,7 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     if ia_resp:
         return ia_resp
     return random.choice([
-        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `ojo osiris`, `ojo de dios`, `misión: ...` o `recuerda: ...`.",
+        f"{prefijo}Entendido, jefa: *'{raw}'*. Puede usar `wendy`, `planetear`, `ojo de dios`, `misión: ...` o `recuerda: ...`.",
         f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame en qué más le apoyo.",
     ])
 
