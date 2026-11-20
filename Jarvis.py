@@ -306,6 +306,10 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
+def skill_osiris_ai(nucleo: str, _t: str, _raw: str) -> str:
+    return f"[{nucleo}] Enlace directo a **Osiris AI**, jefa: [https://osirisai.live/](https://osirisai.live/)."
+
+
 def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.ojo_de_dios_activo = True
     st.session_state.ver_ojo_dios = True
@@ -355,6 +359,7 @@ def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
 
 
 SKILLS_REGISTRY = [
+    {"id": "osiris_ai", "keys": ["osiris", "osiris ai", "osirisai"], "fn": skill_osiris_ai},
     {"id": "ojo_de_dios", "keys": ["ojo de dios", "cámaras", "camaras", "vigilancia", "cctv"], "fn": skill_ojo_de_dios},
     {"id": "mapa_tactico", "keys": ["mapa táctico satelital", "mapa tactico satelital", "mapa"], "fn": skill_mapa_tactico},
     {"id": "finanzas_chile", "keys": ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"], "fn": skill_finanzas_chile},
@@ -535,6 +540,7 @@ with st.sidebar:
             st.rerun()
 
     for label, url in [
+        ("Osiris AI", "https://osirisai.live/"),
         ("Seguimiento ANT (Nasdaq)", "https://www.nasdaq.com/market-activity/stocks/ant"),
         ("Monitoreo SpaceX", "https://www.spacex.com/"),
         ("Finviz (Mercados)", "https://finviz.com/"),
