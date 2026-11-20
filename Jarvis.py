@@ -83,6 +83,21 @@ class JarvisCoreEnhancements:
             except Exception:
                 self.recognizer = None
 
+    def asegurar_atributos(self):
+        defaults = {
+            "activo": True,
+            "hablando": False,
+            "ultimo_movimiento": "Sin novedades en el perímetro.",
+            "ultimo_comando_voz": "Esperando instrucción de voz...",
+            "mostrar_mapa_tactico": False,
+            "ojo_de_dios_activo": False,
+            "camara_seleccionada": "CAM-01 // PERÍMETRO NODO BUIN",
+            "stream_url": "",
+        }
+        for k, v in defaults.items():
+            if not hasattr(self, k):
+                setattr(self, k, v)
+
     def hablar(self, texto: str):
         if not self.engine or not texto:
             return
@@ -169,6 +184,19 @@ if "jarvis_core" not in st.session_state:
     st.session_state.jarvis_core = c_obj
 
 jarvis_core = st.session_state.jarvis_core
+if hasattr(jarvis_core, "asegurar_atributos"):
+    jarvis_core.asegurar_atributos()
+else:
+    for _k, _v in {
+        "ojo_de_dios_activo": False,
+        "camara_seleccionada": "CAM-01 // PERÍMETRO NODO BUIN",
+        "stream_url": "",
+        "mostrar_mapa_tactico": False,
+        "ultimo_movimiento": "Sin novedades en el perímetro.",
+    }.items():
+        if not hasattr(jarvis_core, _k):
+            setattr(jarvis_core, _k, _v)
+
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
@@ -278,14 +306,12 @@ def obtener_saludo_nucleo(nucleo_nombre: str) -> str:
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
-# --- BLOQUE MODULAR DE AGENT SKILLS (ESTILO MODULAR ENCHUFABLE) ---
 def skill_ojo_de_dios(nucleo: str, _t: str, _raw: str) -> str:
     jarvis_core.ojo_de_dios_activo = True
     st.session_state.ver_ojo_dios = True
-    return (
-        f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{jarvis_core.camara_seleccionada}** "
-        f"y sensores perimetrales ({jarvis_core.ultimo_movimiento})."
-    )
+    cam_act = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
+    mov_act = getattr(jarvis_core, "ultimo_movimiento", "Sin novedades en el perímetro.")
+    return f"[{nucleo}] **Ojo de Dios** activado, jefa. Monitoreando **{cam_act}** y sensores perimetrales ({mov_act})."
 
 
 def skill_mapa_tactico(nucleo: str, _t: str, _raw: str) -> str:
@@ -325,7 +351,7 @@ def skill_misiones_y_memoria(nucleo: str, t: str, raw: str) -> str:
 
 
 def skill_perimetro_cam(nucleo: str, _t: str, _raw: str) -> str:
-    return f"[{nucleo}] Estado perimetral, jefa: {jarvis_core.ultimo_movimiento}"
+    return f"[{nucleo}] Estado perimetral, jefa: {getattr(jarvis_core, 'ultimo_movimiento', 'Sin novedades.')}"
 
 
 SKILLS_REGISTRY = [
@@ -456,9 +482,10 @@ with st.sidebar:
             "CAM-03 // PATIO Y SECTOR NORTE",
             "CAM-04 // ENLACE REMOTO / RTSP",
         ]
-        sel_cam = st.selectbox("Feed Activo:", cam_opts, index=cam_opts.index(jarvis_core.camara_seleccionada) if jarvis_core.camara_seleccionada in cam_opts else 0)
+        cam_actual = getattr(jarvis_core, "camara_seleccionada", cam_opts[0])
+        sel_cam = st.selectbox("Feed Activo:", cam_opts, index=cam_opts.index(cam_actual) if cam_actual in cam_opts else 0)
         jarvis_core.camara_seleccionada = sel_cam
-        jarvis_core.stream_url = st.text_input("URL Stream (MJPEG/Imagen opcional):", value=jarvis_core.stream_url, placeholder="https://...")
+        jarvis_core.stream_url = st.text_input("URL Stream (MJPEG/Imagen opcional):", value=getattr(jarvis_core, "stream_url", ""), placeholder="https://...")
         c_od1, c_od2 = st.columns(2)
         with c_od1:
             if st.button("👁️ Ver Ojo", use_container_width=True):
@@ -470,7 +497,7 @@ with st.sidebar:
                 st.session_state.ver_ojo_dios = False
                 jarvis_core.ojo_de_dios_activo = False
                 st.rerun()
-        st.caption(f"Sensor: {jarvis_core.ultimo_movimiento}")
+        st.caption(f"Sensor: {getattr(jarvis_core, 'ultimo_movimiento', 'Sin novedades.')}")
 
     st.markdown("---")
     st.markdown("#### 💾 Memoria y Datos")
@@ -549,19 +576,21 @@ st.markdown(
 )
 st.markdown("---")
 
-if st.session_state.ver_ojo_dios or jarvis_core.ojo_de_dios_activo:
+if st.session_state.ver_ojo_dios or getattr(jarvis_core, "ojo_de_dios_activo", False):
+    cam_titulo = getattr(jarvis_core, "camara_seleccionada", "CAM-01 // PERÍMETRO NODO BUIN")
+    mov_titulo = getattr(jarvis_core, "ultimo_movimiento", "Sin novedades en el perímetro.")
     st.markdown(
         f'<div class="god-eye-box">'
         f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
-        f'<b>👁️ OJO DE DIOS // {jarvis_core.camara_seleccionada}</b>'
+        f'<b>👁️ OJO DE DIOS // {cam_titulo}</b>'
         f'<span style="font-size:0.75rem;">ESTADO: ENLACE ACTIVO</span>'
         f'</div>'
-        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {jarvis_core.ultimo_movimiento}</p>'
+        f'<p style="font-size:0.78rem;margin:0 0 8px 0;">Sensor perimetral: {mov_titulo}</p>'
         f'</div>',
         unsafe_allow_html=True
     )
-    if jarvis_core.stream_url.strip():
-        st.image(jarvis_core.stream_url.strip(), caption=jarvis_core.camara_seleccionada, use_container_width=True)
+    if getattr(jarvis_core, "stream_url", "").strip():
+        st.image(jarvis_core.stream_url.strip(), caption=cam_titulo, use_container_width=True)
     else:
         od_html = """
         <div style="background:#050914;border:1px solid #00f3ff;border-radius:6px;padding:12px;text-align:center;">
@@ -597,7 +626,7 @@ if st.session_state.ver_ojo_dios or jarvis_core.ojo_de_dios_activo:
         st.components.v1.html(od_html, height=195)
     st.markdown("---")
 
-if st.session_state.ver_mapa or jarvis_core.mostrar_mapa_tactico:
+if st.session_state.ver_mapa or getattr(jarvis_core, "mostrar_mapa_tactico", False):
     st.markdown("#### 🛰️ mapa táctico satelital")
     st.map({"lat": [-33.4489], "lon": [-70.6693]}, zoom=10)
     st.markdown("---")
