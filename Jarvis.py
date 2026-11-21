@@ -694,4 +694,4 @@ def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
         f"{estilos.get(nucleo, estilos['JARVIS'])} "
         f"Skills activas: {[s['id'] for s in SKILLS_REGISTRY]}. {ctx_mem} {ctx_chat} Sé conciso."
     )
-    for modelo_cand in [GROQ_MODELO_ACT
+    for modelo_cand in [GROQ_MODELO_ACTIVO, "llama-3.3-70b-versatile"]:
