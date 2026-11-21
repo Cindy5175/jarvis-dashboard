@@ -1,8 +1,11 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import datetime
 import sqlite3
 import requests
 import random
+import math
+import re
 import os
 import sys
 
@@ -27,11 +30,22 @@ if "autorizado" not in st.session_state:
 if "nucleo_activo" not in st.session_state:
     st.session_state.nucleo_activo = "JARVIS"
 
+if "voz_masculina_activa" not in st.session_state:
+    st.session_state.voz_masculina_activa = True
+
+if "escucha_continua_activa" not in st.session_state:
+    st.session_state.escucha_continua_activa = True
+
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
 
 # --- CLIENTE OPCIONAL (SIN BLOQUEOS NI ERRORES 401) ---
-API_KEY_GROQ = ""  # Libre de claves quemadas
+API_KEY_GROQ = ""
+try:
+    API_KEY_GROQ = st.secrets.get("GROQ_API_KEY", "")
+except Exception:
+    API_KEY_GROQ = os.environ.get("GROQ_API_KEY", "")
+
 client_groq = None
 if GROQ_AVAILABLE and API_KEY_GROQ:
     try:
@@ -64,15 +78,23 @@ class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
 
-    def remember_fact(self, key_id: str, fact_text: str):
+    def remember_fact(self, key_id: str, fact_text: str, category: str = "general"):
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         cursor = conn.cursor()
         cursor.execute(
             "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-            (key_id, fact_text, "general")
+            (key_id, fact_text, category)
         )
         conn.commit()
         conn.close()
+
+    def recent_facts(self, limit: int = 5):
+        conn = sqlite3.connect(self.db_path, check_same_thread=False)
+        cursor = conn.cursor()
+        cursor.execute("SELECT fact_text FROM memory ORDER BY key_id DESC LIMIT ?", (limit,))
+        rows = [r[0] for r in cursor.fetchall() if r and r[0]]
+        conn.close()
+        return rows
 
 jarvis_mem = JarvisMemory()
 
@@ -126,7 +148,6 @@ def obtener_indicadores_chile():
         except Exception:
             pass
 
-    # Respaldo seguro si la red externa no responde a tiempo
     return {
         "dolar": 950.00,
         "euro": 1030.00,
@@ -157,6 +178,183 @@ def obtener_saludo_nucleo(nucleo_nombre):
     }
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
+# --- VOZ MASCULINA Y ESCUCHA CONTINUA EN NAVEGADOR ---
+def limpiar_texto_voz(texto: str) -> str:
+    if not texto:
+        return ""
+    limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace ", texto)
+    limpio = re.sub(r"https?://\S+", " enlace ", limpio)
+    limpio = re.sub(r"\$[^$]+\$", " fórmula ", limpio)
+    limpio = re.sub(r"[*_`#>\[\]]+", "", limpio)
+    limpio = re.sub(r"\s+", " ", limpio).strip()
+    return limpio[:450]
+
+def hablar_voz_masculina(texto: str, activa: bool = True):
+    if not activa:
+        return
+    limpio = limpiar_texto_voz(texto)
+    if not limpio:
+        return
+    escapado = (
+        limpio.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("'", "\\'")
+        .replace("\n", " ")
+    )
+    js_voz = f"""
+    <script>
+      (function() {{
+        try {{
+          if ("speechSynthesis" in window) {{
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance("{escapado}");
+            utter.lang = "es-CL";
+            utter.rate = 1.02;
+            utter.pitch = 0.84;
+            const voices = window.speechSynthesis.getVoices() || [];
+            const maleEs = voices.find(v => {{
+              const n = (v.name || "").toLowerCase();
+              const l = (v.lang || "").toLowerCase();
+              const isEs = l.startsWith("es");
+              const isFem = /sabina|helena|zira|hazel|lucia|lucía|sofia|sofía|female|mujer/.test(n);
+              return isEs && !isFem;
+            }}) || voices.find(v => (v.lang || "").toLowerCase().startsWith("es"));
+            if (maleEs) utter.voice = maleEs;
+            window.speechSynthesis.speak(utter);
+          }}
+        }} catch (e) {{}}
+      }})();
+    </script>
+    """
+    components.html(js_voz, height=0)
+
+def escucha_continua_js(activa: bool):
+    if not activa:
+        return
+    js_sr = """
+    <script>
+      (function() {
+        try {
+          const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SR || window.__jarvisSrActive) return;
+          const rec = new SR();
+          rec.lang = "es-CL";
+          rec.continuous = true;
+          rec.interimResults = false;
+          window.__jarvisSrActive = true;
+          rec.onresult = function(ev) {
+            const idx = ev.results.length - 1;
+            if (idx >= 0 && ev.results[idx][0]) {
+              const dicho = (ev.results[idx][0].transcript || "").trim();
+              if (dicho) {
+                const el = window.parent.document.getElementById("jarvis-ultima-voz");
+                if (el) el.innerText = "Última voz: " + dicho;
+              }
+            }
+          };
+          rec.onerror = function() { window.__jarvisSrActive = false; };
+          rec.onend = function() {
+            window.__jarvisSrActive = false;
+            try { rec.start(); window.__jarvisSrActive = true; } catch (e) {}
+          };
+          rec.start();
+        } catch (e) {}
+      })();
+    </script>
+    """
+    components.html(js_sr, height=0)
+
+# --- MOTOR DE CÁLCULOS Y CONOCIMIENTO (CIENCIA, TECNOLOGÍA, MEDICINA, HISTORIA, BIOLOGÍA) ---
+def evaluar_calculo_seguro(texto_raw: str) -> str | None:
+    limpio = texto_raw.strip().lower()
+    for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "="]:
+        if limpio.startswith(pref):
+            limpio = limpio[len(pref):].strip()
+    limpio = limpio.replace("×", "*").replace("·", "*").replace("÷", "/").replace("^", "**")
+    if not limpio or not re.fullmatch(r"[0-9+\-*/().%\s,a-z_]+", limpio):
+        return None
+    if not re.search(r"\d", limpio):
+        return None
+    # Evitar confundir fechas o horas con operaciones matemáticas simples
+    if re.fullmatch(r"\d{1,2}:\d{2}(:\d{2})?", limpio):
+        return None
+
+    entorno = {
+        "__builtins__": {},
+        "abs": abs,
+        "round": round,
+        "min": min,
+        "max": max,
+        "pow": pow,
+        "sqrt": math.sqrt,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "log": math.log10,
+        "ln": math.log,
+        "exp": math.exp,
+        "pi": math.pi,
+        "e": math.e,
+    }
+    try:
+        resultado = eval(limpio, entorno, {})
+        if isinstance(resultado, (int, float)) and not isinstance(resultado, bool):
+            if isinstance(resultado, float) and resultado.is_integer():
+                resultado = int(resultado)
+            elif isinstance(resultado, float):
+                resultado = round(resultado, 6)
+            return f"Resultado del cálculo `{limpio}`: **{resultado}**."
+    except Exception:
+        return None
+    return None
+
+def responder_dominios_conocimiento(t: str, raw: str) -> str | None:
+    calculo = evaluar_calculo_seguro(raw)
+    if calculo:
+        return calculo
+
+    # BIOLOGÍA
+    if any(k in t for k in ["biología", "biologia", "adn", "arn", "célula", "celula", "genética", "genetica", "evolución", "evolucion", "mitosis", "fotosíntesis", "fotosintesis"]):
+        return (
+            "En **biología**, la célula es la unidad básica de la vida: las eucariotas organizan su material genético en un núcleo y "
+            "cuentan con orgánulos como mitocondrias (ATP mediante respiración celular) y cloroplastos (fotosíntesis en plantas). "
+            "El **ADN** almacena la información hereditaria en doble hélice y el **ARN** media su transcripción y traducción a proteínas."
+        )
+
+    # CIENCIA (FÍSICA, QUÍMICA, ASTRONOMÍA, TERMODINÁMICA)
+    if any(k in t for k in ["ciencia", "física", "fisica", "química", "quimica", "termodinámica", "termodinamica", "cuántica", "cuantica", "astronomía", "astronomia", "gravedad", "luz", "átomo", "atomo", "entropía", "entropia"]):
+        return (
+            "En **ciencia**, los fenómenos se modelan con leyes contrastables y magnitudes físicas: desde la mecánica clásica y la "
+            "termodinámica ($\\Delta U = Q - W$, $\\Delta S \\ge 0$) hasta la relatividad, la mecánica cuántica y la estructura atómica "
+            "y molecular en química. Si buscas un tema puntual (por ejemplo termodinámica, astronomía o cinemática), pídelo directo."
+        )
+
+    # TECNOLOGÍA
+    if any(k in t for k in ["tecnología", "tecnologia", "programación", "programacion", "algoritmo", "inteligencia artificial", "ia", "red", "redes", "ciberseguridad", "base de datos", "sqlite", "python", "cloud", "nube"]):
+        return (
+            "En **tecnología**, los sistemas modernos combinan cómputo, redes, almacenamiento y modelos de software: "
+            "desde arquitecturas cliente-servidor y bases de datos relacionales (como SQLite) hasta automatización, APIs e inteligencia artificial, "
+            "cuidando latencia, seguridad, tolerancia a fallos y reproducibilidad."
+        )
+
+    # MEDICINA
+    if any(k in t for k in ["medicina", "anatomía", "anatomia", "fisiología", "fisiologia", "inmune", "inmunológico", "inmunologico", "sistema nervioso", "cardiovascular", "farmaco", "fármaco", "vacuna", "salud"]):
+        return (
+            "En **medicina** y fisiología humana, el organismo mantiene la **homeostasis** mediante sistemas integrados "
+            "(nervioso, endocrino, cardiovascular, respiratorio, digestivo, renal e inmune). "
+            "Nota: esto es información académica general y no sustituye una evaluación médica presencial ni un diagnóstico clínico."
+        )
+
+    # HISTORIA
+    if any(k in t for k in ["historia", "histórico", "historico", "antigüedad", "antiguedad", "edad media", "revolución", "revolucion", "guerra mundial", "independencia", "imperio", "civilización", "civilizacion", "chile"]):
+        return (
+            "En **historia**, los procesos humanos se analizan mediante fuentes, cronología y causalidad múltiple: "
+            "desde las primeras civilizaciones y la Antigüedad clásica hasta la Edad Media, la Edad Moderna, las revoluciones "
+            "y el siglo XX, observando cómo interactúan factores económicos, sociales, tecnológicos y geopolíticos."
+        )
+
+    return None
+
 def generar_respuesta_coherente(nucleo, texto_usuario):
     prefijo = f"[{nucleo}] "
     t = texto_usuario.strip().lower()
@@ -175,6 +373,11 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if nucleo == "VIERNES":
             return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
         return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+
+    # 0.5 Conocimiento de ciencia, tecnología, medicina, cálculos, historia y biología
+    resp_dominio = responder_dominios_conocimiento(t, texto_usuario)
+    if resp_dominio:
+        return f"{prefijo}{resp_dominio}"
 
     # 1. Bolsas y mercados financieros
     if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
@@ -223,463 +426,4 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
         )
 
-    # 5. Respuesta general coherente según el núcleo
-    respuestas_generales = {
-        "JARVIS": [
-            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, no tengo un dato específico cargado para ese tema en modo local; ¿quiere que lo dejemos como misión o que abramos algún módulo del panel?",
-            f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. En respaldo local respondo lo que tengo a mano; dígame si necesita algo en particular."
-        ],
-        "VIERNES": [
-            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. Como estamos en modo local, dígame si quiere anotarlo o abrir algún módulo del lateral.",
-            f"{prefijo}Anotado, jefa. Para *'{texto_usuario.strip()}'* no tengo un módulo dedicado aquí adentro, pero le ayudo con lo que necesite."
-        ],
-        "NOVA": [
-            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. En modo local le digo qué podemos hacer: ¿lo registramos o revisamos algún panel?",
-            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*. ¿Qué paso siguiente damos, jefa?"
-        ]
-    }
-    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
-
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [
-        {
-            "role": "assistant",
-            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
-        }
-    ]
-
-# --- ESTILOS VISUALES: REACTOR ARC ESTILO STARK & BOTONES COMPACTOS ---
-estilos_css = """
-    <style>
-        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-        p, span, label, h1, h2, h3, h4, div { color: #00f3ff !important; font-family: monospace; }
-
-        /* AJUSTE FINO DE TEXTOS EN BARRA LATERAL Y MINI MÓDULOS */
-        [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
-        [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
-        [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
-
-        .stButton>button {
-            background-color: #00f3ff !important;
-            border: 1.5px solid #00f3ff !important;
-            font-weight: bold;
-            font-family: monospace;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-            width: 100%;
-            border-radius: 6px;
-            padding: 5px 10px !important;
-        }
-        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-        .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
-        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
-
-        /* TARJETA DE INDICADORES ECONÓMICOS EN VIVO */
-        .econ-card {
-            border: 1px solid #00f3ff;
-            background: rgba(0, 243, 255, 0.06);
-            border-radius: 6px;
-            padding: 8px 10px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2);
-        }
-        .econ-label { font-size: 0.75rem !important; opacity: 0.85; }
-        .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
-
-        /* REACTOR ARC ESTILO STARK - INVERTIDO */
-        .arc-reactor-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .arc-ring {
-            width: 65px;
-            height: 65px;
-            border: 2.5px solid #00f3ff;
-            border-radius: 50%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6);
-            margin-bottom: 8px;
-        }
-        .arc-triangle-inverted {
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 20px solid #00f3ff;
-            filter: drop-shadow(0 0 8px #00f3ff);
-        }
-
-        /* BOTÓN TÁCTICO HTML COMPACTO */
-        .tactical-link-btn {
-            display: block;
-            width: 100%;
-            background-color: #00f3ff;
-            color: #060913 !important;
-            text-align: center;
-            padding: 6px 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            font-size: 0.76rem !important;
-            font-weight: bold;
-            text-decoration: none;
-            font-family: monospace;
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-            transition: all 0.25s ease;
-        }
-        .tactical-link-btn:hover {
-            background-color: #0088cc;
-            color: #ffffff !important;
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
-        }
-
-        .holo-brain-box {
-            border: 1.5px solid #00f3ff;
-            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
-            margin: 0 auto 20px auto;
-            max-width: 800px;
-        }
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-    </style>
-"""
-st.markdown(estilos_css, unsafe_allow_html=True)
-
-# --- 1. PANTALLA DE BLOQUEO DE SEGURIDAD ---
-if not st.session_state.get("autorizado", False):
-    st.markdown(
-        '<div style="text-align: center; margin-top: 50px;">'
-        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
-        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
-    with col_l2:
-        with st.form("form_login"):
-            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
-            btn_entrar = st.form_submit_button("Desbloquear Sistema")
-        if btn_entrar:
-            if pin_input.strip() == PIN_SECRETO:
-                st.session_state.autorizado = True
-                st.success("Acceso concedido. Bienvenido de nuevo, jefa.")
-                st.rerun()
-            else:
-                st.error("PIN incorrecto. Acceso denegado.")
-    st.stop()
-
-# --- 2. PANEL LATERAL OCULTO (ARSENAL DE MÓDULOS COMPLETO) ---
-with st.sidebar:
-    st.markdown("### 🛡️ Arsenal de Módulos")
-    st.markdown("---")
-
-    if st.button("🔒 Bloquear Sistema", use_container_width=True):
-        st.session_state.autorizado = False
-        st.rerun()
-
-    if st.button("🔄 Reinicio Total", use_container_width=True):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🧠 Selector de Núcleo (IA)")
-    nuevo_nucleo = st.radio(
-        "Seleccionar Asistente Activo:",
-        ["JARVIS", "VIERNES", "NOVA"],
-        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
-        label_visibility="collapsed"
-    )
-    if nuevo_nucleo != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nuevo_nucleo
-        st.session_state.mensajes.append({
-            "role": "assistant",
-            "content": obtener_saludo_nucleo(nuevo_nucleo)
-        })
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 💾 Memoria y Datos")
-    with st.expander("Gestionar Memoria SQLite", expanded=False):
-        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
-        if st.button("Guardar en Memoria", use_container_width=True):
-            if dato_mem.strip():
-                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
-                st.success("¡Memoria guardada!")
-
-    st.markdown("---")
-    st.markdown("#### 📋 Misiones Tácticas")
-    with st.expander("Base de Datos Misiones", expanded=False):
-        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
-        if st.button("Registrar Tarea", use_container_width=True):
-            if nueva_tarea.strip():
-                agregar_mision(nueva_tarea.strip())
-                st.success("¡Misión registrada!")
-                st.rerun()
-        misiones_guardadas = obtener_misiones()
-        if misiones_guardadas:
-            for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"- `{m_text}`")
-            if st.button("Limpiar Misiones", use_container_width=True):
-                limpiar_misiones()
-                st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🎧 Frecuencias de Enfoque")
-    with st.expander("Deep Work & Música IA", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">'
-            '🎧 CEO Mode (Deep Work)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">'
-            '🚀 Futuristic Garage Beats'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">'
-            '⚡ Hyperfocus Mode'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 📷 Videovigilancia y Cámaras")
-    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">'
-            'Stgo / Chile (Skyline)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">'
-            'Concepción Webcam'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">'
-            'Windy Radars & Cams'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">'
-            'Galveston Port, Texas'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">'
-            'Puerta del Sol, Madrid'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 🛰️ Telemetría Global & Satélites")
-    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">'
-            'OSIRIS (Ojo de Dios)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">'
-            'PlanetEar (Satélites)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">'
-            'NASA Worldview'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">'
-            'N2YO (Órbita en Vivo)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">'
-            'Flightradar24 (Aéreo)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">'
-            'Cybermap (Ciberataques)'
-            '</a>',
-            unsafe_allow_html=True
-        )
-
-    st.markdown("---")
-    st.markdown("#### 📈 Enlaces Financieros")
-    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
-        datos_econ = obtener_indicadores_chile()
-        dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">📈 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
-            unsafe_allow_html=True
-        )
-        if datos_econ.get("respaldo"):
-            st.caption("Modo respaldo local (sin conexión externa).")
-
-        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
-            obtener_indicadores_chile.clear()
-            st.rerun()
-
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">'
-        'Seguimiento ANT (Nasdaq)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">'
-        'Monitoreo SpaceX'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">'
-        'Finviz (Mercados)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">'
-        'Investing.com (Divisas)'
-        '</a>',
-        unsafe_allow_html=True
-    )
-
-# --- 3. PANTALLA PRINCIPAL (LIMPIA, SIMÉTRICA Y CON REACTOR ARC STARK) ---
-dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-meses = [
-    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
-
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
-    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
-    f'</p>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
-reloj_js = (
-    '<script>'
-    'function actualizarReloj() {'
-    'const ahora = new Date();'
-    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
-    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
-    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
-    'if (relojEl) { relojEl.innerText = horaChile; }'
-    '}'
-    'setInterval(actualizarReloj, 1000);'
-    'actualizarReloj();'
-    '</script>'
-)
-st.components.v1.html(reloj_js, height=0)
-
-st.markdown(
-    '<div class="holo-brain-box">'
-    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
-    f'</h4>'
-    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Motor Táctico Neuronal Activo // Enlace Directo'
-    '</p>'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-# --- ZONA DE CHAT CON MULTINÚCLEO INTELIGENTE (RESPALDO BLINDADO) ---
-col_ch1, col_ch2 = st.columns([5, 1])
-with col_ch1:
-    st.markdown("#### Chat 💬", unsafe_allow_html=True)
-with col_ch2:
-    if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
-        st.session_state.mensajes = [
-            {
-                "role": "assistant",
-                "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
-            }
-        ]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
-
-if prompt_chat:
-    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-    with st.chat_message("user"):
-        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
-
-    nucleo = st.session_state.nucleo_activo
-    prefijo = f"[{nucleo}] "
-
-    with st.chat_message("assistant"):
-        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
-            respuesta_ia = ""
-            try:
-                if client_groq:
-                    instruccion_sistema = (
-                        f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
-                        "Tratas a la usuaria de 'jefa'. Eres brillante, leal, extremadamente eficiente y tienes un toque sutil de sarcasmo elegante."
-                    )
-                    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
-                        {"role": m["role"], "content": m["content"]}
-                        for m in st.session_state.mensajes
-                    ]
-                    completion = client_groq.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=mensajes_api,
-                        temperature=0.75
-                    )
-                    respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
-                else:
-                    respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-            except Exception:
-                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-
-            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-    st.rerun()
+    #
