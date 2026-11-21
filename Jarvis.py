@@ -412,4 +412,5 @@ def limpiar_misiones():
     conn.close()
 
 
-@st.cache_data(ttl=
+@st.cache_data(ttl=300)
+def obtener_indicadores_chile():
