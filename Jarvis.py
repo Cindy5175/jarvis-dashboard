@@ -740,4 +740,4 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
     if ia_resp:
         return ia_resp
     return random.choice([
-        f"{prefijo}Entendido, señorita: *'{raw}'*. Puede usar `mapa`, `wendy`, `planetear`, `resumen`, `memor
+      f"{prefijo}Entendido, señorita: *'{raw}'*. Puede usar `mapa`, `wendy`, `planetear`, `resumen`, `memorias`, `misión: ...` o `recuerda: ...`.", 
