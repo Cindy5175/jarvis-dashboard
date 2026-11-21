@@ -33,7 +33,6 @@ except Exception:
 
 
 def _resolver_respuesta_bilingue_y_memoria(mensaje_usuario: str, memoria_txt: str = "") -> str | None:
-    """Devuelve respuesta en inglés si aplica, o apoyo de memoria si se consulta; None para dejar pasar tu flujo normal."""
     if not mensaje_usuario:
         return None
     if detectar_solicitud_idioma(mensaje_usuario) == "en":
@@ -291,7 +290,7 @@ class JarvisCoreEnhancements:
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 if "autorizado" not in st.session_state:
@@ -695,125 +694,4 @@ def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
         f"{estilos.get(nucleo, estilos['JARVIS'])} "
         f"Skills activas: {[s['id'] for s in SKILLS_REGISTRY]}. {ctx_mem} {ctx_chat} Sé conciso."
     )
-    for modelo_cand in [GROQ_MODELO_ACTIVO, "llama-3.3-70b-versatile"]:
-        try:
-            chat = client_groq.chat.completions.create(
-                model=modelo_cand,
-                messages=[
-                    {"role": "system", "content": sys_msg},
-                    {"role": "user", "content": texto_usuario},
-                ],
-                temperature=0.7,
-                max_tokens=300,
-            )
-            contenido = (chat.choices[0].message.content or "").strip()
-            if contenido:
-                return f"[{nucleo}] {contenido}"
-        except Exception:
-            continue
-    return ""
-
-
-def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
-    prefijo = f"[{nucleo}] "
-    raw = texto_usuario.strip()
-    t = raw.lower()
-    tokens = set(re.findall(r"[a-záéíóúñü0-9:]+", t))
-    memoria_ext = obtener_memoria_completa()
-    resp_bilingue_mem = _resolver_respuesta_bilingue_y_memoria(raw, memoria_ext)
-    if resp_bilingue_mem:
-        return f"{prefijo}{resp_bilingue_mem}"
-    if "protocolo extremo" in t:
-        return f"{prefijo}Protocolo de conocimiento extremo activado, señorita. Analizando a fondo sin rodeos."
-    if any(
-        t == s or t.startswith(s + " ") or t.startswith(s + ",")
-        for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]
-    ):
-        return obtener_saludo_nucleo(nucleo)
-    if "mosca" in tokens and ({"patas", "cuantas", "cuántas"} & tokens):
-        return f"{prefijo}Tiene **6 patas**, señorita. Y por lo general aterrizan justo cuando estorban."
-    for sk in SKILLS_REGISTRY:
-        if any(_coincide_clave(t, tokens, k) for k in sk["keys"]):
-            return sk["fn"](nucleo, t, raw)
-    if {"hora", "fecha"} & tokens or any(f in t for f in ["qué hora", "que hora", "día de hoy", "dia de hoy"]):
-        return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), señorita."
-    ia_resp = responder_con_groq(nucleo, raw)
-    if ia_resp:
-        return ia_resp
-    return random.choice([
-        f"{prefijo}Entendido, señorita: *'{raw}'*. Puede usar `mapa`, `wendy`, `planetear`, `resumen`, `memorias`, `misión: ...` o `recuerda: ...`.",
-        f"{prefijo}Tomo nota de *'{raw}'*, señorita. Dígame en qué más le apoyo.",
-    ])
-
-
-if "mensajes" not in st.session_state:
-    st.session_state.mensajes = [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}]
-
-st.markdown(
-    '<style>'
-    '.stApp{background-color:#060913!important;color:#00f3ff!important;font-family:monospace;}'
-    'p,span,label,h1,h2,h3,h4,div{color:#00f3ff!important;font-family:monospace;}'
-    '.stButton>button{background-color:#00f3ff!important;border:1.5px solid #00f3ff!important;font-weight:bold;width:100%;border-radius:6px;}'
-    '.stButton>button p,.stButton>button span{color:#060913!important;font-size:0.78rem!important;}'
-    '.econ-card{border:1px solid #00f3ff;background:rgba(0,243,255,0.06);border-radius:6px;padding:8px 10px;margin:5px 0;display:flex;justify-content:space-between;}'
-    '.arc-reactor-container{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:6px;}'
-    '.arc-ring{width:65px;height:65px;border:2.5px solid #00f3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(0,243,255,0.4) 0%,#060913 75%);box-shadow:0 0 20px rgba(0,243,255,0.8);margin-bottom:8px;}'
-    '.arc-triangle-inverted{width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #00f3ff;}'
-    '.tactical-link-btn{display:block;width:100%;background-color:#00f3ff;color:#060913!important;text-align:center;padding:6px 10px;margin:5px 0;border-radius:5px;font-size:0.76rem!important;font-weight:bold;text-decoration:none;}'
-    '.holo-brain-box{border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);padding:15px;border-radius:8px;text-align:center;margin:0 auto 20px auto;max-width:800px;}'
-    '.god-eye-box{border:1.5px solid #00f3ff;background:rgba(10,17,40,0.9);border-radius:8px;padding:14px;margin-bottom:16px;}'
-    '#MainMenu,footer{visibility:hidden;}'
-    '</style>',
-    unsafe_allow_html=True
-)
-
-if not st.session_state.get("autorizado", False):
-    st.markdown(
-        '<div style="text-align:center;margin-top:50px;"><h2>ACCESO RESTRINGIDO - NODO BUIN</h2>'
-        '<p>INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p></div>',
-        unsafe_allow_html=True,
-    )
-    _, c2, _ = st.columns([1, 2, 1])
-    with c2:
-        with st.form("form_login"):
-            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
-            if st.form_submit_button("Desbloquear Sistema"):
-                if pin_input.strip() == PIN_SECRETO:
-                    st.session_state.autorizado = True
-                    st.rerun()
-                else:
-                    st.error("PIN incorrecto. Acceso denegado.")
-    st.stop()
-
-with st.sidebar:
-    st.markdown("### 🛡️ Arsenal de Módulos")
-    if st.button("🔒 Bloquear Sistema", use_container_width=True):
-        st.session_state.autorizado = False
-        st.rerun()
-    if st.button("🔄 Reinicio Total", use_container_width=True):
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🧠 Selector de Núcleo (IA)")
-    nuevo_nucleo = st.radio(
-        "Núcleo:",
-        ["JARVIS", "VIERNES", "NOVA"],
-        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
-        label_visibility="collapsed",
-    )
-    if nuevo_nucleo != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nuevo_nucleo
-        st.session_state.mensajes.append({"role": "assistant", "content": obtener_saludo_nucleo(nuevo_nucleo)})
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 👁️ Ojo de Dios y Vigilancia")
-    with st.expander("Cámaras y Sensores", expanded=False):
-        cam_opts = [
-            "CAM-01 // PERÍMETRO NODO BUIN",
-            "CAM-02 // ACCESO PRINCIPAL",
-            "CAM-03 // PATIO Y SECTOR NORTE",
-            "CAM-04 // ENLACE REMOTO / RTSP",
-        ]
+    for modelo_cand in [GROQ_MODELO_ACT
