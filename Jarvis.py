@@ -1,29 +1,25 @@
-import streamlit as st
-import streamlit.components.v1 as components
 import datetime
+import math
+import os
+import random
+import re
 import sqlite3
 import requests
-import random
-import math
-import re
-import os
-import sys
+import streamlit as st
+import streamlit.components.v1 as components
 
-# Intento opcional de importar Groq por si acaso
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
 
-# --- 1. CONFIGURACION DE PAGINA ---
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- INICIALIZACION DE SESSION_STATE ---
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
@@ -37,9 +33,8 @@ if "escucha_continua_activa" not in st.session_state:
     st.session_state.escucha_continua_activa = True
 
 PIN_SECRETO = "2805"
-fn_db = "jarvis_misiones.db"
+DB_PATH = "jarvis_misiones.db"
 
-# --- CLIENTE OPCIONAL (SIN BLOQUEOS NI ERRORES 401) ---
 API_KEY_GROQ = ""
 try:
     API_KEY_GROQ = st.secrets.get("GROQ_API_KEY", "")
@@ -53,74 +48,98 @@ if GROQ_AVAILABLE and API_KEY_GROQ:
     except Exception:
         client_groq = None
 
-# --- BASE DE DATOS SQLITE ---
+
 def init_db():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS misiones ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "tarea TEXT NOT NULL, "
-        "estado TEXT DEFAULT 'Pendiente')"
-    )
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS memory ("
-        "key_id TEXT PRIMARY KEY, "
-        "fact_text TEXT, "
-        "category TEXT)"
-    )
-    conn.commit()
-    conn.close()
-
-init_db()
-
-class JarvisMemory:
-    def __init__(self, db_path=fn_db):
-        self.db_path = db_path
-
-    def remember_fact(self, key_id: str, fact_text: str, category: str = "general"):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
-            (key_id, fact_text, category)
+            "CREATE TABLE IF NOT EXISTS misiones ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "tarea TEXT NOT NULL, "
+            "estado TEXT DEFAULT 'Pendiente')"
+        )
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS memory ("
+            "key_id TEXT PRIMARY KEY, "
+            "fact_text TEXT, "
+            "category TEXT)"
         )
         conn.commit()
         conn.close()
+    except Exception:
+        pass
+
+
+init_db()
+
+
+class JarvisMemory:
+    def __init__(self, db_path=DB_PATH):
+        self.db_path = db_path
+
+    def remember_fact(self, key_id: str, fact_text: str, category: str = "general"):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
+                (key_id, fact_text, category)
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
     def recent_facts(self, limit: int = 5):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute("SELECT fact_text FROM memory ORDER BY key_id DESC LIMIT ?", (limit,))
-        rows = [r[0] for r in cursor.fetchall() if r and r[0]]
-        conn.close()
-        return rows
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("SELECT fact_text FROM memory ORDER BY key_id DESC LIMIT ?", (limit,))
+            rows = [r[0] for r in cursor.fetchall() if r and r[0]]
+            conn.close()
+            return rows
+        except Exception:
+            return []
+
 
 jarvis_mem = JarvisMemory()
 
+
 def agregar_mision(tarea):
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
 
 def obtener_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, tarea, estado FROM misiones")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, tarea, estado FROM misiones")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
 
 def limpiar_misiones():
-    conn = sqlite3.connect(fn_db, check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM misiones")
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM misiones")
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
-# --- OBTENCIÓN DE INDICADORES ECONÓMICOS EN TIEMPO REAL (CHILE) ---
+
 @st.cache_data(ttl=300)
 def obtener_indicadores_chile():
     headers = {
@@ -129,7 +148,7 @@ def obtener_indicadores_chile():
     }
     for _ in range(2):
         try:
-            resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=10)
+            resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=6)
             if resp.status_code == 200:
                 data = resp.json()
                 dolar = data.get("dolar", {}).get("valor")
@@ -157,7 +176,7 @@ def obtener_indicadores_chile():
         "respaldo": True
     }
 
-# ZONA HORARIA CHILENA
+
 tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
 now_chile = datetime.datetime.now(tz_chile)
 hora_actual = now_chile.hour
@@ -169,6 +188,7 @@ elif 12 <= hora_actual < 20:
 else:
     saludo_actual = "Buenas noches"
 
+
 def obtener_saludo_nucleo(nucleo_nombre):
     pref = f"[{nucleo_nombre}] "
     saludos = {
@@ -178,7 +198,7 @@ def obtener_saludo_nucleo(nucleo_nombre):
     }
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
-# --- VOZ MASCULINA Y ESCUCHA CONTINUA EN NAVEGADOR ---
+
 def limpiar_texto_voz(texto: str) -> str:
     if not texto:
         return ""
@@ -188,6 +208,7 @@ def limpiar_texto_voz(texto: str) -> str:
     limpio = re.sub(r"[*_`#>\[\]]+", "", limpio)
     limpio = re.sub(r"\s+", " ", limpio).strip()
     return limpio[:450]
+
 
 def hablar_voz_masculina(texto: str, activa: bool = True):
     if not activa:
@@ -228,6 +249,7 @@ def hablar_voz_masculina(texto: str, activa: bool = True):
     """
     components.html(js_voz, height=0)
 
+
 def escucha_continua_js(activa: bool):
     if not activa:
         return
@@ -264,8 +286,8 @@ def escucha_continua_js(activa: bool):
     """
     components.html(js_sr, height=0)
 
-# --- MOTOR DE CÁLCULOS Y CONOCIMIENTO (CIENCIA, TECNOLOGÍA, MEDICINA, HISTORIA, BIOLOGÍA) ---
-def evaluar_calculo_seguro(texto_raw: str) -> str | None:
+
+def evaluar_calculo_seguro(texto_raw: str):
     limpio = texto_raw.strip().lower()
     for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "="]:
         if limpio.startswith(pref):
@@ -275,7 +297,6 @@ def evaluar_calculo_seguro(texto_raw: str) -> str | None:
         return None
     if not re.search(r"\d", limpio):
         return None
-    # Evitar confundir fechas o horas con operaciones matemáticas simples
     if re.fullmatch(r"\d{1,2}:\d{2}(:\d{2})?", limpio):
         return None
 
@@ -298,132 +319,4 @@ def evaluar_calculo_seguro(texto_raw: str) -> str | None:
     }
     try:
         resultado = eval(limpio, entorno, {})
-        if isinstance(resultado, (int, float)) and not isinstance(resultado, bool):
-            if isinstance(resultado, float) and resultado.is_integer():
-                resultado = int(resultado)
-            elif isinstance(resultado, float):
-                resultado = round(resultado, 6)
-            return f"Resultado del cálculo `{limpio}`: **{resultado}**."
-    except Exception:
-        return None
-    return None
-
-def responder_dominios_conocimiento(t: str, raw: str) -> str | None:
-    calculo = evaluar_calculo_seguro(raw)
-    if calculo:
-        return calculo
-
-    # BIOLOGÍA
-    if any(k in t for k in ["biología", "biologia", "adn", "arn", "célula", "celula", "genética", "genetica", "evolución", "evolucion", "mitosis", "fotosíntesis", "fotosintesis"]):
-        return (
-            "En **biología**, la célula es la unidad básica de la vida: las eucariotas organizan su material genético en un núcleo y "
-            "cuentan con orgánulos como mitocondrias (ATP mediante respiración celular) y cloroplastos (fotosíntesis en plantas). "
-            "El **ADN** almacena la información hereditaria en doble hélice y el **ARN** media su transcripción y traducción a proteínas."
-        )
-
-    # CIENCIA (FÍSICA, QUÍMICA, ASTRONOMÍA, TERMODINÁMICA)
-    if any(k in t for k in ["ciencia", "física", "fisica", "química", "quimica", "termodinámica", "termodinamica", "cuántica", "cuantica", "astronomía", "astronomia", "gravedad", "luz", "átomo", "atomo", "entropía", "entropia"]):
-        return (
-            "En **ciencia**, los fenómenos se modelan con leyes contrastables y magnitudes físicas: desde la mecánica clásica y la "
-            "termodinámica ($\\Delta U = Q - W$, $\\Delta S \\ge 0$) hasta la relatividad, la mecánica cuántica y la estructura atómica "
-            "y molecular en química. Si buscas un tema puntual (por ejemplo termodinámica, astronomía o cinemática), pídelo directo."
-        )
-
-    # TECNOLOGÍA
-    if any(k in t for k in ["tecnología", "tecnologia", "programación", "programacion", "algoritmo", "inteligencia artificial", "ia", "red", "redes", "ciberseguridad", "base de datos", "sqlite", "python", "cloud", "nube"]):
-        return (
-            "En **tecnología**, los sistemas modernos combinan cómputo, redes, almacenamiento y modelos de software: "
-            "desde arquitecturas cliente-servidor y bases de datos relacionales (como SQLite) hasta automatización, APIs e inteligencia artificial, "
-            "cuidando latencia, seguridad, tolerancia a fallos y reproducibilidad."
-        )
-
-    # MEDICINA
-    if any(k in t for k in ["medicina", "anatomía", "anatomia", "fisiología", "fisiologia", "inmune", "inmunológico", "inmunologico", "sistema nervioso", "cardiovascular", "farmaco", "fármaco", "vacuna", "salud"]):
-        return (
-            "En **medicina** y fisiología humana, el organismo mantiene la **homeostasis** mediante sistemas integrados "
-            "(nervioso, endocrino, cardiovascular, respiratorio, digestivo, renal e inmune). "
-            "Nota: esto es información académica general y no sustituye una evaluación médica presencial ni un diagnóstico clínico."
-        )
-
-    # HISTORIA
-    if any(k in t for k in ["historia", "histórico", "historico", "antigüedad", "antiguedad", "edad media", "revolución", "revolucion", "guerra mundial", "independencia", "imperio", "civilización", "civilizacion", "chile"]):
-        return (
-            "En **historia**, los procesos humanos se analizan mediante fuentes, cronología y causalidad múltiple: "
-            "desde las primeras civilizaciones y la Antigüedad clásica hasta la Edad Media, la Edad Moderna, las revoluciones "
-            "y el siglo XX, observando cómo interactúan factores económicos, sociales, tecnológicos y geopolíticos."
-        )
-
-    return None
-
-def generar_respuesta_coherente(nucleo, texto_usuario):
-    prefijo = f"[{nucleo}] "
-    t = texto_usuario.strip().lower()
-
-    palabras_saludo = [
-        "hola", "buenas", "buenos días", "buenos dias",
-        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"
-    ]
-    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
-        return obtener_saludo_nucleo(nucleo)
-
-    # 0. Consultas puntuales / curiosidades
-    if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
-        if nucleo == "JARVIS":
-            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
-        if nucleo == "VIERNES":
-            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
-        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
-
-    # 0.5 Conocimiento de ciencia, tecnología, medicina, cálculos, historia y biología
-    resp_dominio = responder_dominios_conocimiento(t, texto_usuario)
-    if resp_dominio:
-        return f"{prefijo}{resp_dominio}"
-
-    # 1. Bolsas y mercados financieros
-    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
-        if nucleo == "JARVIS":
-            return (
-                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
-            )
-        if nucleo == "VIERNES":
-            return (
-                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
-                "Abra **Finviz** o **ANT (Nasdaq)** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
-            )
-        return (
-            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa. "
-            "Tiene acceso directo a **Finviz** y **Nasdaq** en el panel de **Enlaces Financieros**."
-        )
-
-    # 2. Dólar, euro, UF y divisas
-    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
-        econ = obtener_indicadores_chile()
-        if econ.get("ok"):
-            dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
-            return (
-                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
-                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
-            )
-
-    # 3. Hora y fecha
-    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
-        hora_str = now_chile.strftime("%H:%M:%S")
-        return (
-            f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa. "
-            "El reloj superior sigue sincronizado."
-        )
-
-    # 4. Estado del sistema o misiones
-    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
-        misiones = obtener_misiones()
-        cant = len(misiones)
-        return (
-            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
-            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
-        )
-
-    #
+        if isinstance(
