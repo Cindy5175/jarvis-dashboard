@@ -1,9 +1,11 @@
 import datetime
 import math
 import os
+import platform
 import random
 import re
 import sqlite3
+import urllib.parse
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
@@ -13,6 +15,12 @@ try:
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
@@ -34,6 +42,18 @@ if "escucha_continua_activa" not in st.session_state:
 
 if "pendiente_voz" not in st.session_state:
     st.session_state.pendiente_voz = None
+
+if "modo_medico" not in st.session_state:
+    st.session_state.modo_medico = False
+
+if "ollama_activo" not in st.session_state:
+    st.session_state.ollama_activo = False
+
+if "ollama_url" not in st.session_state:
+    st.session_state.ollama_url = "http://localhost:11434"
+
+if "ollama_modelo" not in st.session_state:
+    st.session_state.ollama_modelo = "llama3.2"
 
 PIN_SECRETO = "2805"
 DB_PATH = "jarvis_misiones.db"
@@ -310,6 +330,77 @@ def evaluar_calculo_seguro(texto_raw: str):
     return None
 
 
+def convertir_unidades_texto(t: str):
+    m = re.search(r"(-?\d+(?:[.,]\d+)?)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*(?:a|en|to|in)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)", t)
+    if not m:
+        return None
+    val = float(m.group(1).replace(",", "."))
+    u1 = m.group(2).replace("°", "")
+    u2 = m.group(3).replace("°", "")
+    if u1 == "millas":
+        u1 = "mi"
+    if u2 == "millas":
+        u2 = "mi"
+    if u1 == "libras":
+        u1 = "lb"
+    if u2 == "libras":
+        u2 = "lb"
+
+    long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
+    masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
+
+    if u1 in long_m and u2 in long_m:
+        out = (val * long_m[u1]) / long_m[u2]
+        return f"Conversión: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+    if u1 in masa_kg and u2 in masa_kg:
+        out = (val * masa_kg[u1]) / masa_kg[u2]
+        return f"Conversión: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+
+    temp_units = {"c", "f", "k"}
+    if u1 in temp_units and u2 in temp_units:
+        if u1 == "c":
+            c = val
+        elif u1 == "f":
+            c = (val - 32) * 5 / 9
+        else:
+            c = val - 273.15
+        if u2 == "c":
+            out = c
+        elif u2 == "f":
+            out = c * 9 / 5 + 32
+        else:
+            out = c + 273.15
+        return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out, 2):g} {u2.upper()}**."
+
+    return None
+
+
+def resumen_sistema_y_seguridad():
+    os_info = f"{platform.system()} {platform.release()}"
+    db_existe = os.path.exists(DB_PATH)
+    misiones_cant = len(obtener_misiones())
+    mem_cant = len(jarvis_mem.recent_facts(50))
+    cpu_txt = "N/D"
+    ram_txt = "N/D"
+    if PSUTIL_AVAILABLE:
+        try:
+            cpu_txt = f"{psutil.cpu_percent(interval=0.2)}%"
+            ram_txt = f"{psutil.virtual_memory().percent}%"
+        except Exception:
+            pass
+    sospechosos = [
+        f for f in os.listdir(".")
+        if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
+    ]
+    estado_vir = "Sin ejecutables sospechosos en el directorio de trabajo." if not sospechosos else f"Archivos ejecutables detectados en raíz: {', '.join(sospechosos[:5])}."
+    return (
+        f"Diagnóstico & Seguridad ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
+        f"SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), **{misiones_cant}** misiones y **{mem_cant}** memorias recientes. "
+        f"Revisión rápida: {estado_vir} "
+        "Optimización sugerida: purgar historial extenso del chat, limpiar misiones completadas y cerrar pestañas pesadas."
+    )
+
+
 def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str:
     pref = f"[{nucleo}] "
     if nucleo == "JARVIS":
@@ -330,14 +421,33 @@ def responder_conocimiento_base(t: str, raw: str):
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
         return "Una mosca tiene **6 patas** (tres pares articulados), como corresponde a todo insecto."
 
+    conv = convertir_unidades_texto(t)
+    if conv:
+        return conv
+
     calculo = evaluar_calculo_seguro(raw)
     if calculo:
         return calculo
 
+    if any(k in t for k in ["virus", "malware", "seguridad", "optimizar", "optimización", "optimizacion", "rendimiento", "diagnóstico", "diagnostico"]):
+        return resumen_sistema_y_seguridad()
+
+    if any(k in t for k in ["llamar", "llamada", "mensaje", "enviar mensaje", "whatsapp", "correo"]):
+        return (
+            "Módulo de **Llamadas y Mensajes**: puedes redactar el texto o número en el panel lateral de "
+            "**Modos & Utilidades Tácticas** para generar el enlace directo (`tel:` / `wa.me` / `mailto:`) sin salir de tu flujo."
+        )
+
+    if st.session_state.get("modo_medico", False) or any(k in t for k in ["síntoma", "sintoma", "dolor", "fiebre", "presión", "presion", "pulso", "medicina", "médico", "medico", "salud"]):
+        return (
+            "**Modo Médico (orientación general)**: para evaluar cualquier síntoma o parámetro clínico, "
+            "indica edad, intensidad, duración y signos de alarma. Esto es información general y no sustituye una evaluación médica presencial."
+        )
+
     if any(k in t for k in ["matemática", "matematica", "cálculo", "calculo", "álgebra", "algebra", "geometría", "geometria", "derivada", "integral"]):
         return (
             "En **matemática y cálculo**, modelamos cantidades, relaciones, tasas de cambio (derivadas) y acumulaciones (integrales). "
-            "Si me das una expresión numérica (como `25 * 18` o `sqrt(144)`), la calculo directo."
+            "Si me das una expresión numérica o conversión (como `10 km a mi` o `sqrt(144)`), la resuelvo directo."
         )
 
     if any(k in t for k in ["historia de la medicina", "historia medicina", "hipócrates", "hipocrates", "galeno", "antibiótico", "antibiotico", "penicilina", "vacuna", "pasteur", "fleming"]):
@@ -359,10 +469,10 @@ def responder_conocimiento_base(t: str, raw: str):
             "física, química, astronomía, termodinámica y mecánica cuántica."
         )
 
-    if any(k in t for k in ["tecnología", "tecnologia", "programación", "programacion", "algoritmo", "inteligencia artificial", "ia", "red", "redes", "ciberseguridad", "base de datos", "sqlite", "python", "cloud", "nube"]):
+    if any(k in t for k in ["tecnología", "tecnologia", "programación", "programacion", "algoritmo", "inteligencia artificial", "ia", "red", "redes", "ciberseguridad", "base de datos", "sqlite", "python", "cloud", "nube", "ollama"]):
         return (
-            "En **tecnología**, se integran hardware, software, redes, datos e inteligencia artificial para construir sistemas confiables, "
-            "rápidos, seguros y escalables."
+            "En **tecnología**, se integran hardware, software, redes, datos e inteligencia artificial —incluyendo ejecución local sin internet vía **Ollama**— "
+            "para construir sistemas confiables, rápidos, seguros y escalables."
         )
 
     if any(k in t for k in ["historia", "histórico", "historico", "antigüedad", "antiguedad", "edad media", "revolución", "revolucion", "guerra mundial", "independencia", "imperio", "civilización", "civilizacion", "chile"]):
@@ -378,26 +488,98 @@ def responder_pregunta_general_local(nucleo: str, texto_usuario: str, en_ingles:
     limpio = texto_usuario.strip()
     if en_ingles:
         cuerpo = (
-            f"Regarding '{limpio}', I am operating in local fallback mode without a live external model key, "
-            "so I can give you structured answers across science, technology, medical history, math, biology, and history, "
-            "or log this as a mission."
+            f"Regarding '{limpio}', I am running in local/offline-ready mode. "
+            "I can handle math conversions, system/security diagnostics, medical info, science, technology, "
+            "medical history, biology, and history, or save this as a mission."
         )
         return f"[{nucleo}] {cuerpo}"
 
     t = limpio.lower()
     if any(p in t for p in ["qué es", "que es", "quién fue", "quien fue", "quién es", "quien es", "cómo funciona", "como funciona", "por qué", "por que", "cuándo", "cuando", "dónde", "donde", "?"]):
         cuerpo = (
-            f"Para tu consulta sobre **{limpio}**, en modo local sin conexión a modelo externo puedo darte una respuesta "
-            "estructurada si corresponde a ciencias, tecnología, historia de la medicina, matemática y cálculo, biología "
-            "o historia; si es un tema puntual de otro rubro, dime qué aspecto exacto necesitas o si lo guardamos como misión."
+            f"Para tu consulta sobre **{limpio}**, puedo darte una respuesta directa en conversiones, diagnóstico/seguridad, "
+            "modo médico, ciencias, tecnología, historia de la medicina, matemática y cálculo, biología e historia; "
+            "si buscas un dato específico adicional, indícalo o regístralo como misión."
         )
         return estilizar_por_nucleo(nucleo, cuerpo, limpio)
 
     cuerpo = (
-        f"He registrado tu consulta sobre **{limpio}**. En modo respaldo local puedo responderte sobre ciencias, "
-        "tecnología, historia de la medicina, matemática y cálculo, biología e historia, o anotarlo como misión."
+        f"He registrado tu consulta sobre **{limpio}**. Puedo asistirte con conversiones, revisión de seguridad/optimización, "
+        "modo médico, ciencias, tecnología, historia de la medicina, matemática y cálculo, biología e historia."
     )
     return estilizar_por_nucleo(nucleo, cuerpo, limpio)
+
+
+def consultar_ollama_local(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    if not st.session_state.get("ollama_activo", False):
+        return ""
+    base_url = (st.session_state.get("ollama_url") or "http://localhost:11434").rstrip("/")
+    modelo = (st.session_state.get("ollama_modelo") or "llama3.2").strip()
+    idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en español."
+    system_prompt = (
+        f"Eres {nucleo}, asistente táctico en el Nodo Buin. Tratas a la usuaria de 'jefa'. "
+        f"Domina conversiones, seguridad/optimización, medicina, ciencias, tecnología e historia. {idioma_rule}"
+    )
+    try:
+        resp = requests.post(
+            f"{base_url}/api/chat",
+            json={
+                "model": modelo,
+                "stream": False,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": texto_usuario}
+                ]
+            },
+            timeout=12
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            msg = ((data.get("message") or {}).get("content") or "").strip()
+            if msg:
+                return f"[{nucleo} · Ollama] {msg}"
+    except Exception:
+        return ""
+    return ""
+
+
+def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    ollama_resp = consultar_ollama_local(nucleo, texto_usuario, idioma_voz)
+    if ollama_resp:
+        return ollama_resp
+
+    if not client_groq:
+        return ""
+    rec_mem = "; ".join(jarvis_mem.recent_facts(5))
+    estilo_nucleo = {
+        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
+        "VIERNES": "Eres VIERNES, rápida, directa y resolutiva.",
+        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin."
+    }.get(nucleo, "Eres un asistente táctico.")
+    idioma_rule = "Responde en inglés." if idioma_voz == "en-US" else "Responde en español."
+    modo_med = " Activa enfoque médico informativo con advertencia clínica." if st.session_state.get("modo_medico", False) else ""
+    instruccion_sistema = (
+        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Dominas ciencias, tecnología, historia de la medicina, "
+        f"matemática y cálculo, biología e historia, y respondes cualquier pregunta con claridad.{modo_med} {idioma_rule} "
+        f"{'Memorias recientes: ' + rec_mem if rec_mem else ''}"
+    )
+    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
+        {"role": m["role"], "content": m["content"]}
+        for m in st.session_state.mensajes
+    ]
+    for modelo in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        try:
+            completion = client_groq.chat.completions.create(
+                model=modelo,
+                messages=mensajes_api,
+                temperature=0.75
+            )
+            contenido = (completion.choices[0].message.content or "").strip()
+            if contenido:
+                return f"[{nucleo}] {contenido}"
+        except Exception:
+            continue
+    return ""
 
 
 def generar_respuesta_coherente(nucleo, texto_usuario):
@@ -406,7 +588,7 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if quiere_ingles(texto_usuario):
         base_en = (
             f"Understood, Boss. Switching to English for '{texto_usuario.strip()}'. "
-            "Science, technology, medical history, math, biology, and history are online."
+            "Conversions, diagnostics, medical mode, science, technology, medical history, math, biology, and history are ready."
         )
         if nucleo == "VIERNES":
             return f"[{nucleo}] Got it, Boss! {base_en}"
@@ -459,40 +641,6 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         )
 
     return responder_pregunta_general_local(nucleo, texto_usuario, en_ingles=False)
-
-
-def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
-    if not client_groq:
-        return ""
-    rec_mem = "; ".join(jarvis_mem.recent_facts(5))
-    estilo_nucleo = {
-        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
-        "VIERNES": "Eres VIERNES, rápida, directa y resolutiva.",
-        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin."
-    }.get(nucleo, "Eres un asistente táctico.")
-    idioma_rule = "Responde en inglés." if idioma_voz == "en-US" else "Responde en español."
-    instruccion_sistema = (
-        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Dominas ciencias, tecnología, historia de la medicina, "
-        f"matemática y cálculo, biología e historia, y respondes cualquier pregunta con claridad. {idioma_rule} "
-        f"{'Memorias recientes: ' + rec_mem if rec_mem else ''}"
-    )
-    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
-        {"role": m["role"], "content": m["content"]}
-        for m in st.session_state.mensajes
-    ]
-    for modelo in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
-        try:
-            completion = client_groq.chat.completions.create(
-                model=modelo,
-                messages=mensajes_api,
-                temperature=0.75
-            )
-            contenido = (completion.choices[0].message.content or "").strip()
-            if contenido:
-                return f"[{nucleo}] {contenido}"
-        except Exception:
-            continue
-    return ""
 
 
 if "mensajes" not in st.session_state:
@@ -601,6 +749,29 @@ with st.sidebar:
     st.session_state.voz_masculina_activa = st.toggle("Voz masculina", value=st.session_state.voz_masculina_activa)
     st.session_state.escucha_continua_activa = st.toggle("Escucha continua", value=st.session_state.escucha_continua_activa)
     st.caption('<span id="jarvis-ultima-voz">Última voz: en espera</span>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### ⚙️ Modos & Utilidades")
+    with st.expander("Médico, Seguridad, Comms & Ollama", expanded=False):
+        st.session_state.modo_medico = st.toggle("🩺 Modo Médico", value=st.session_state.modo_medico)
+        if st.button("🛡️ Revisión Virus y Optimización", use_container_width=True):
+            diag = resumen_sistema_y_seguridad()
+            st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {diag}"})
+            programar_voz(diag, "es-CL")
+            st.rerun()
+
+        st.session_state.ollama_activo = st.toggle("🖥️ Servidor Local (Ollama)", value=st.session_state.ollama_activo)
+        st.session_state.ollama_url = st.text_input("URL Ollama:", value=st.session_state.ollama_url)
+        st.session_state.ollama_modelo = st.text_input("Modelo Ollama:", value=st.session_state.ollama_modelo)
+
+        num_tel = st.text_input("Teléfono / Contacto:", placeholder="+569...")
+        txt_msg = st.text_input("Mensaje rápido:", placeholder="Hola, te escribo desde el Nodo Buin...")
+        if txt_msg.strip():
+            msg_enc = urllib.parse.quote(txt_msg.strip())
+            st.markdown(f'<a class="tactical-link-btn" href="https://wa.me/?text={msg_enc}" target="_blank">💬 Enviar por WhatsApp</a>', unsafe_allow_html=True)
+        if num_tel.strip():
+            tel_limpio = re.sub(r"[^+\d]", "", num_tel.strip())
+            st.markdown(f'<a class="tactical-link-btn" href="tel:{tel_limpio}">📞 Llamar {tel_limpio}</a>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("#### 💾 Memoria y Datos")
@@ -722,7 +893,7 @@ st.markdown(
     f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
     f'</h4>'
     '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Motor Táctico Neuronal Activo // Ciencias · Tecnología · Historia de la Medicina · Matemática y Cálculo · Biología · Historia'
+    'Motor Táctico Neuronal Activo // Conversiones · Seguridad/Optimización · Médico · Ollama · Ciencias · Historia'
     '</p>'
     '</div>',
     unsafe_allow_html=True
@@ -747,7 +918,7 @@ for m in st.session_state.mensajes:
     with st.chat_message(m["role"]):
         st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
 
-prompt_chat = st.chat_input("Escribe tu orden, cálculo o consulta...")
+prompt_chat = st.chat_input("Escribe tu orden, cálculo, conversión o consulta...")
 
 if prompt_chat:
     st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
