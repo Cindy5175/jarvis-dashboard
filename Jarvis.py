@@ -319,4 +319,309 @@ def evaluar_calculo_seguro(texto_raw: str):
     }
     try:
         resultado = eval(limpio, entorno, {})
-        if isinstance(
+        if isinstance(resultado, (int, float)) and not isinstance(resultado, bool):
+            if isinstance(resultado, float) and resultado.is_integer():
+                resultado = int(resultado)
+            elif isinstance(resultado, float):
+                resultado = round(resultado, 6)
+            return f"Resultado del cálculo `{limpio}`: **{resultado}**."
+    except Exception:
+        return None
+    return None
+
+
+def responder_dominios_conocimiento(t: str, raw: str):
+    calculo = evaluar_calculo_seguro(raw)
+    if calculo:
+        return calculo
+
+    if any(k in t for k in [
+        "biología", "biologia", "adn", "arn", "célula", "celula",
+        "genética", "genetica", "evolución", "evolucion", "mitosis",
+        "fotosíntesis", "fotosintesis"
+    ]):
+        return (
+            "En **biología**, la célula es la unidad básica de la vida: las eucariotas organizan su material genético en un núcleo y "
+            "cuentan con orgánulos como mitocondrias (ATP mediante respiración celular) y cloroplastos (fotosíntesis en plantas). "
+            "El **ADN** almacena la información hereditaria en doble hélice y el **ARN** media su transcripción y traducción a proteínas."
+        )
+
+    if any(k in t for k in [
+        "ciencia", "física", "fisica", "química", "quimica",
+        "termodinámica", "termodinamica", "cuántica", "cuantica",
+        "astronomía", "astronomia", "gravedad", "luz", "átomo",
+        "atomo", "entropía", "entropia"
+    ]):
+        return (
+            "En **ciencia**, los fenómenos se modelan con leyes contrastables y magnitudes físicas: desde la mecánica clásica y la "
+            "termodinámica hasta la relatividad, la mecánica cuántica y la estructura atómica y molecular en química. "
+            "Si buscas un tema puntual, indícalo directamente."
+        )
+
+    if any(k in t for k in [
+        "tecnología", "tecnologia", "programación", "programacion",
+        "algoritmo", "inteligencia artificial", "ia", "red", "redes",
+        "ciberseguridad", "base de datos", "sqlite", "python", "cloud", "nube"
+    ]):
+        return (
+            "En **tecnología**, los sistemas modernos combinan cómputo, redes, almacenamiento y modelos de software: "
+            "desde arquitecturas cliente-servidor y bases de datos relacionales (como SQLite) hasta automatización, APIs e inteligencia artificial, "
+            "cuidando latencia, seguridad, tolerancia a fallos y reproducibilidad."
+        )
+
+    if any(k in t for k in [
+        "medicina", "anatomía", "anatomia", "fisiología", "fisiologia",
+        "inmune", "inmunológico", "inmunologico", "sistema nervioso",
+        "cardiovascular", "farmaco", "fármaco", "vacuna", "salud"
+    ]):
+        return (
+            "En **medicina** y fisiología humana, el organismo mantiene la **homeostasis** mediante sistemas integrados "
+            "(nervioso, endocrino, cardiovascular, respiratorio, digestivo, renal e inmune). "
+            "Nota: esto es información académica general y no sustituye una evaluación médica presencial ni un diagnóstico clínico."
+        )
+
+    if any(k in t for k in [
+        "historia", "histórico", "historico", "antigüedad", "antiguedad",
+        "edad media", "revolución", "revolucion", "guerra mundial",
+        "independencia", "imperio", "civilización", "civilizacion", "chile"
+    ]):
+        return (
+            "En **historia**, los procesos humanos se analizan mediante fuentes, cronología y causalidad múltiple: "
+            "desde las primeras civilizaciones y la Antigüedad clásica hasta la Edad Media, la Edad Moderna, las revoluciones "
+            "y el siglo XX, observando cómo interactúan factores económicos, sociales, tecnológicos y geopolíticos."
+        )
+
+    return None
+
+
+def generar_respuesta_coherente(nucleo, texto_usuario):
+    prefijo = f"[{nucleo}] "
+    t = texto_usuario.strip().lower()
+
+    palabras_saludo = [
+        "hola", "buenas", "buenos días", "buenos dias",
+        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"
+    ]
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
+        return obtener_saludo_nucleo(nucleo)
+
+    if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
+        if nucleo == "JARVIS":
+            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
+        if nucleo == "VIERNES":
+            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
+        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+
+    resp_dominio = responder_dominios_conocimiento(t, texto_usuario)
+    if resp_dominio:
+        return f"{prefijo}{resp_dominio}"
+
+    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
+        if nucleo == "JARVIS":
+            return (
+                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
+            )
+        if nucleo == "VIERNES":
+            return (
+                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
+                "Abra **Finviz** o **ANT (Nasdaq)** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
+            )
+        return (
+            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa. "
+            "Tiene acceso directo a **Finviz** y **Nasdaq** en el panel de **Enlaces Financieros**."
+        )
+
+    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
+        econ = obtener_indicadores_chile()
+        if econ.get("ok"):
+            dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
+            return (
+                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
+                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
+            )
+
+    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+        hora_str = now_chile.strftime("%H:%M:%S")
+        return (
+            f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa. "
+            "El reloj superior sigue sincronizado."
+        )
+
+    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
+        return (
+            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
+            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
+        )
+
+    respuestas_generales = {
+        "JARVIS": [
+            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, puedo apoyarle en ciencia, tecnología, medicina, cálculos, historia o biología; ¿quiere que lo dejemos como misión o que abramos algún módulo del panel?",
+            f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. En respaldo local respondo lo que tengo a mano; dígame si necesita algo en particular."
+        ],
+        "VIERNES": [
+            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. Puedo ayudarle con ciencia, tecnología, medicina, cálculos, historia o biología, o anotarlo como misión.",
+            f"{prefijo}Anotado, jefa. Para *'{texto_usuario.strip()}'* no tengo un módulo dedicado aquí adentro, pero le ayudo con lo que necesite."
+        ],
+        "NOVA": [
+            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. En modo local le digo qué podemos hacer: ¿lo registramos o revisamos algún panel?",
+            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*. ¿Qué paso siguiente damos, jefa?"
+        ]
+    }
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
+        }
+    ]
+
+estilos_css = """
+    <style>
+        .stApp { background-color: #060913 !important; color: #00f3ff !important; }
+        .stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp div {
+            color: #00f3ff !important;
+            font-family: monospace;
+        }
+        [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons {
+            font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
+            color: #00f3ff !important;
+        }
+
+        [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
+        [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+        [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
+
+        .stButton>button {
+            background-color: #00f3ff !important;
+            border: 1.5px solid #00f3ff !important;
+            font-weight: bold;
+            font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+            width: 100%;
+            border-radius: 6px;
+            padding: 5px 10px !important;
+        }
+        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+        .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+
+        .econ-card {
+            border: 1px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2);
+        }
+        .econ-label { font-size: 0.75rem !important; opacity: 0.85; }
+        .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
+
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arc-ring {
+            width: 65px;
+            height: 65px;
+            border: 2.5px solid #00f3ff;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6);
+            margin-bottom: 8px;
+        }
+        .arc-triangle-inverted {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #00f3ff;
+            filter: drop-shadow(0 0 8px #00f3ff);
+        }
+
+        .tactical-link-btn {
+            display: block;
+            width: 100%;
+            background-color: #00f3ff;
+            color: #060913 !important;
+            text-align: center;
+            padding: 6px 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.76rem !important;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: monospace;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+            transition: all 0.25s ease;
+        }
+        .tactical-link-btn:hover {
+            background-color: #0088cc;
+            color: #ffffff !important;
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
+        }
+
+        .holo-brain-box {
+            border: 1.5px solid #00f3ff;
+            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
+            margin: 0 auto 20px auto;
+            max-width: 800px;
+        }
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
+
+if not st.session_state.get("autorizado", False):
+    st.markdown(
+        '<div style="text-align: center; margin-top: 50px;">'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Sistema")
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                st.success("Acceso concedido. Bienvenido de nuevo, jefa.")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    st.markdown("---")
+
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.
