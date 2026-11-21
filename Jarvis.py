@@ -728,4 +728,4 @@ def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
         return f"{prefijo}Protocolo de conocimiento extremo activado, señorita. Analizando a fondo sin rodeos."
     if any(
         t == s or t.startswith(s + " ") or t.startswith(s + ",")
-        for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]"
+       for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]
