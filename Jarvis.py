@@ -695,3 +695,49 @@ def responder_con_groq(nucleo: str, texto_usuario: str) -> str:
         f"Skills activas: {[s['id'] for s in SKILLS_REGISTRY]}. {ctx_mem} {ctx_chat} Sé conciso."
     )
     for modelo_cand in [GROQ_MODELO_ACTIVO, "llama-3.3-70b-versatile"]:
+        try:
+            chat = client_groq.chat.completions.create(
+                model=modelo_cand,
+                messages=[
+                    {"role": "system", "content": sys_msg},
+                    {"role": "user", "content": texto_usuario},
+                ],
+                temperature=0.7,
+                max_tokens=300,
+            )
+            contenido = (chat.choices[0].message.content or "").strip()
+            if contenido:
+                return f"[{nucleo}] {contenido}"
+        except Exception:
+            continue
+    return ""
+
+
+def generar_respuesta_coherente(nucleo: str, texto_usuario: str) -> str:
+    prefijo = f"[{nucleo}] "
+    raw = texto_usuario.strip()
+    t = raw.lower()
+    tokens = set(re.findall(r"[a-záéíóúñü0-9:]+", t))
+    memoria_ext = obtener_memoria_completa()
+    resp_bilingue_mem = _resolver_respuesta_bilingue_y_memoria(raw, memoria_ext)
+    if resp_bilingue_mem:
+        return f"{prefijo}{resp_bilingue_mem}"
+    if "protocolo extremo" in t:
+        return f"{prefijo}Protocolo de conocimiento extremo activado, señorita. Analizando a fondo sin rodeos."
+    if any(
+        t == s or t.startswith(s + " ") or t.startswith(s + ",")
+        for s in ["hola", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "holi", "qué tal", "que tal"]
+    ):
+        return obtener_saludo_nucleo(nucleo)
+    if "mosca" in tokens and ({"patas", "cuantas", "cuántas"} & tokens):
+        return f"{prefijo}Tiene **6 patas**, señorita. Y por lo general aterrizan justo cuando estorban."
+    for sk in SKILLS_REGISTRY:
+        if any(_coincide_clave(t, tokens, k) for k in sk["keys"]):
+            return sk["fn"](nucleo, t, raw)
+    if {"hora", "fecha"} & tokens or any(f in t for f in ["qué hora", "que hora", "día de hoy", "dia de hoy"]):
+        return f"{prefijo}En el Nodo Buin son las **{now_chile.strftime('%H:%M:%S')}** (hora de Chile), señorita."
+    ia_resp = responder_con_groq(nucleo, raw)
+    if ia_resp:
+        return ia_resp
+    return random.choice([
+        f"{prefijo}Entendido, señorita: *'{raw}'*. Puede usar `mapa`, `wendy`, `planetear`, `resumen`, `memor
