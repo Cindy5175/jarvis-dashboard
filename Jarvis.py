@@ -457,33 +457,50 @@ st.session_state.setdefault("voz_activa", True)
 st.session_state.setdefault("escucha_activa", True)
 st.session_state.setdefault("mensajes", [{"role": "assistant", "content": saludo_nucleo("JARVIS")}])
 
-# --- ESTILO OSCURO AZUL NEÓN ---
+# --- ESTILO OSCURO AZUL NEÓN (SIN PISAR ÍCONOS DE STREAMLIT) ---
 st.markdown(
     """
     <style>
       .stApp {
         background-color: #060913 !important;
         color: #00f3ff !important;
-        font-family: "Courier New", Courier, monospace !important;
       }
-      p, span, label, h1, h2, h3, h4, div, small {
+      .stApp, .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp label, .stApp small {
         color: #00f3ff !important;
         font-family: "Courier New", Courier, monospace !important;
       }
-      section[data-testid="stSidebar"] {
+      [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons {
+        font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
+        color: #00f3ff !important;
+      }
+      [data-testid="stSidebar"] {
         background-color: #080d1a !important;
         border-right: 1px solid rgba(0, 243, 255, 0.35) !important;
       }
-      .stButton > button {
+      .stButton > button,
+      .stButton > button *,
+      [data-testid="stBaseButton-secondary"],
+      [data-testid="stBaseButton-secondary"] * {
         background-color: #00f3ff !important;
         color: #060913 !important;
-        border: 1px solid #00f3ff !important;
+        border-color: #00f3ff !important;
         font-weight: 700 !important;
+        font-family: "Courier New", Courier, monospace !important;
+      }
+      .stButton > button {
         border-radius: 6px !important;
         width: 100% !important;
       }
-      .stButton > button p, .stButton > button span {
-        color: #060913 !important;
+      [data-testid="stChatMessage"] {
+        background-color: rgba(10, 20, 46, 0.72) !important;
+        border: 1px solid rgba(0, 243, 255, 0.25) !important;
+        border-radius: 10px !important;
+      }
+      [data-testid="stChatMessageAvatarAssistant"],
+      [data-testid="stChatMessageAvatarUser"] {
+        background-color: rgba(0, 243, 255, 0.14) !important;
+        color: #00f3ff !important;
+        border: 1px solid rgba(0, 243, 255, 0.45) !important;
       }
       .jarvis-panel {
         border: 1.5px solid #00f3ff;
@@ -526,6 +543,7 @@ st.markdown(
         padding: 8px 12px;
         border-radius: 6px;
         text-decoration: none;
+        font-family: "Courier New", Courier, monospace !important;
       }
       .kpi-box {
         border: 1px solid rgba(0, 243, 255, 0.45);
@@ -707,8 +725,10 @@ if memoria_externa:
 
 st.markdown("#### 💬 Consola de Comando")
 for msg in st.session_state.mensajes:
-    with st.chat_message(msg.get("role", "assistant")):
-        st.write(msg.get("content", ""))
+    role = msg.get("role", "assistant")
+    avatar = "🤖" if role == "assistant" else "🕶️"
+    with st.chat_message(role, avatar=avatar):
+        st.markdown(msg.get("content", ""))
 
 entrada = st.chat_input("Escribe una orden para JARVIS (ej: 'mapa', 'dólar', 'misión: revisar servidores', 'resumen')...")
 if entrada:
