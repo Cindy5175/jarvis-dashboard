@@ -32,6 +32,9 @@ if "voz_masculina_activa" not in st.session_state:
 if "escucha_continua_activa" not in st.session_state:
     st.session_state.escucha_continua_activa = True
 
+if "pendiente_voz" not in st.session_state:
+    st.session_state.pendiente_voz = None
+
 PIN_SECRETO = "2805"
 DB_PATH = "jarvis_misiones.db"
 
@@ -219,9 +222,18 @@ def limpiar_texto_voz(texto: str) -> str:
     return limpio[:450]
 
 
-def hablar_voz_masculina(texto: str, activa: bool = True, idioma: str = "es-CL"):
-    if not activa:
+def programar_voz(texto: str, idioma: str = "es-CL"):
+    if st.session_state.get("voz_masculina_activa", True):
+        st.session_state["pendiente_voz"] = {"texto": texto, "idioma": idioma}
+
+
+def reproducir_voz_pendiente():
+    pendiente = st.session_state.get("pendiente_voz")
+    if not pendiente or not st.session_state.get("voz_masculina_activa", True):
         return
+    st.session_state["pendiente_voz"] = None
+    texto = pendiente.get("texto", "")
+    idioma = pendiente.get("idioma", "es-CL")
     limpio = limpiar_texto_voz(texto)
     if not limpio:
         return
@@ -232,14 +244,17 @@ def hablar_voz_masculina(texto: str, activa: bool = True, idioma: str = "es-CL")
         .replace("\n", " ")
     )
     js_voz = (
-        "<script>(function(){try{if('speechSynthesis' in window){"
-        "window.speechSynthesis.cancel();"
+        "<script>(function(){try{if(!('speechSynthesis' in window))return;"
+        "function hablar(){try{window.speechSynthesis.cancel();"
         f"const u=new SpeechSynthesisUtterance('{escapado}');"
         f"u.lang='{idioma}';u.rate=1.02;u.pitch=0.84;"
         "const vs=window.speechSynthesis.getVoices()||[];"
         f"const prefLang='{idioma}'.slice(0,2);"
         "const v=vs.find(x=>((x.lang||'').toLowerCase().startsWith(prefLang)&&!/sabina|helena|zira|hazel|lucia|lucía|sofia|sofía|female|mujer/.test((x.name||'').toLowerCase())))||vs.find(x=>(x.lang||'').toLowerCase().startsWith(prefLang));"
-        "if(v)u.voice=v;window.speechSynthesis.speak(u);}}catch(e){}})();</script>"
+        "if(v)u.voice=v;window.speechSynthesis.speak(u);}catch(e){}}"
+        "if(window.speechSynthesis.getVoices().length>0){setTimeout(hablar,120);}"
+        "else{window.speechSynthesis.onvoiceschanged=function(){setTimeout(hablar,120);};setTimeout(hablar,350);}"
+        "}catch(e){}})();</script>"
     )
     components.html(js_voz, height=0)
 
@@ -359,8 +374,33 @@ def responder_conocimiento_base(t: str, raw: str):
     return None
 
 
+def responder_pregunta_general_local(nucleo: str, texto_usuario: str, en_ingles: bool = False) -> str:
+    limpio = texto_usuario.strip()
+    if en_ingles:
+        cuerpo = (
+            f"Regarding '{limpio}', I am operating in local fallback mode without a live external model key, "
+            "so I can give you structured answers across science, technology, medical history, math, biology, and history, "
+            "or log this as a mission."
+        )
+        return f"[{nucleo}] {cuerpo}"
+
+    t = limpio.lower()
+    if any(p in t for p in ["qué es", "que es", "quién fue", "quien fue", "quién es", "quien es", "cómo funciona", "como funciona", "por qué", "por que", "cuándo", "cuando", "dónde", "donde", "?"]):
+        cuerpo = (
+            f"Para tu consulta sobre **{limpio}**, en modo local sin conexión a modelo externo puedo darte una respuesta "
+            "estructurada si corresponde a ciencias, tecnología, historia de la medicina, matemática y cálculo, biología "
+            "o historia; si es un tema puntual de otro rubro, dime qué aspecto exacto necesitas o si lo guardamos como misión."
+        )
+        return estilizar_por_nucleo(nucleo, cuerpo, limpio)
+
+    cuerpo = (
+        f"He registrado tu consulta sobre **{limpio}**. En modo respaldo local puedo responderte sobre ciencias, "
+        "tecnología, historia de la medicina, matemática y cálculo, biología e historia, o anotarlo como misión."
+    )
+    return estilizar_por_nucleo(nucleo, cuerpo, limpio)
+
+
 def generar_respuesta_coherente(nucleo, texto_usuario):
-    prefijo = f"[{nucleo}] "
     t = texto_usuario.strip().lower()
 
     if quiere_ingles(texto_usuario):
@@ -369,10 +409,10 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             "Science, technology, medical history, math, biology, and history are online."
         )
         if nucleo == "VIERNES":
-            return f"{prefijo}Got it, Boss! {base_en}"
+            return f"[{nucleo}] Got it, Boss! {base_en}"
         if nucleo == "NOVA":
-            return f"{prefijo}Signal locked, Boss. {base_en}"
-        return f"{prefijo}{base_en} Naturally, I perform just as well in English."
+            return f"[{nucleo}] Signal locked, Boss. {base_en}"
+        return f"[{nucleo}] {base_en} Naturally, I perform just as well in English."
 
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
@@ -418,12 +458,41 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             texto_usuario
         )
 
-    msg_gen = (
-        f"He registrado tu consulta *'{texto_usuario.strip()}'*. "
-        "Puedo responderte en español o inglés sobre ciencias, tecnología, historia de la medicina, "
-        "matemática y cálculo, biología e historia, o anotarlo como misión."
+    return responder_pregunta_general_local(nucleo, texto_usuario, en_ingles=False)
+
+
+def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    if not client_groq:
+        return ""
+    rec_mem = "; ".join(jarvis_mem.recent_facts(5))
+    estilo_nucleo = {
+        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
+        "VIERNES": "Eres VIERNES, rápida, directa y resolutiva.",
+        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin."
+    }.get(nucleo, "Eres un asistente táctico.")
+    idioma_rule = "Responde en inglés." if idioma_voz == "en-US" else "Responde en español."
+    instruccion_sistema = (
+        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Dominas ciencias, tecnología, historia de la medicina, "
+        f"matemática y cálculo, biología e historia, y respondes cualquier pregunta con claridad. {idioma_rule} "
+        f"{'Memorias recientes: ' + rec_mem if rec_mem else ''}"
     )
-    return estilizar_por_nucleo(nucleo, msg_gen, texto_usuario)
+    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
+        {"role": m["role"], "content": m["content"]}
+        for m in st.session_state.mensajes
+    ]
+    for modelo in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        try:
+            completion = client_groq.chat.completions.create(
+                model=modelo,
+                messages=mensajes_api,
+                temperature=0.75
+            )
+            contenido = (completion.choices[0].message.content or "").strip()
+            if contenido:
+                return f"[{nucleo}] {contenido}"
+        except Exception:
+            continue
+    return ""
 
 
 if "mensajes" not in st.session_state:
@@ -522,10 +591,9 @@ with st.sidebar:
     )
     if nuevo_nucleo != st.session_state.nucleo_activo:
         st.session_state.nucleo_activo = nuevo_nucleo
-        st.session_state.mensajes.append({
-            "role": "assistant",
-            "content": obtener_saludo_nucleo(nuevo_nucleo)
-        })
+        saludo_n = obtener_saludo_nucleo(nuevo_nucleo)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_n})
+        programar_voz(saludo_n, "es-CL")
         st.rerun()
 
     st.markdown("---")
@@ -687,42 +755,16 @@ if prompt_chat:
         st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
 
     nucleo = st.session_state.nucleo_activo
-    prefijo = f"[{nucleo}] "
     idioma_voz = "en-US" if quiere_ingles(prompt_chat) else "es-CL"
 
     with st.chat_message("assistant"):
         with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
-            respuesta_ia = ""
-            try:
-                if client_groq:
-                    rec_mem = "; ".join(jarvis_mem.recent_facts(5))
-                    estilo_nucleo = {
-                        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
-                        "VIERNES": "Eres VIERNES, rápida, directa y resolutiva.",
-                        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin."
-                    }.get(nucleo, "Eres un asistente táctico.")
-                    idioma_rule = "Responde en inglés." if idioma_voz == "en-US" else "Responde en español."
-                    instruccion_sistema = (
-                        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Dominas ciencias, tecnología, historia de la medicina, "
-                        f"matemática y cálculo, biología e historia. {idioma_rule} "
-                        f"{'Memorias recientes: ' + rec_mem if rec_mem else ''}"
-                    )
-                    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
-                        {"role": m["role"], "content": m["content"]}
-                        for m in st.session_state.mensajes
-                    ]
-                    completion = client_groq.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=mensajes_api,
-                        temperature=0.75
-                    )
-                    respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
-                else:
-                    respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-            except Exception:
+            respuesta_ia = consultar_modelo_externo(nucleo, prompt_chat, idioma_voz)
+            if not respuesta_ia:
                 respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-
             st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
             st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-            hablar_voz_masculina(respuesta_ia, st.session_state.voz_masculina_activa, idioma=idioma_voz)
+            programar_voz(respuesta_ia, idioma_voz)
     st.rerun()
+
+reproducir_voz_pendiente()
