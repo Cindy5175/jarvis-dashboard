@@ -7,7 +7,41 @@ import requests
 import random
 import time
 import threading
+try:
+    from memoria_loader import obtener_memoria_completa
+except Exception:
+    def obtener_memoria_completa() -> str:
+        return ""
 
+try:
+    from modulo_ingles import detectar_solicitud_idioma, responder_en_ingles
+except Exception:
+    def detectar_solicitud_idioma(texto: str) -> str:
+        t = (texto or "").lower()
+        pistas_en = [
+            "in english", "speak english", "reply in english",
+            "hello", "hi ", "hi!", "hey", "what ", "how ", "status", "check"
+        ]
+        return "en" if any(p in t for p in pistas_en) else "es"
+
+    def responder_en_ingles(texto: str) -> str:
+        return f"Understood, Boss. Processing '{texto}' in English—try not to make me switch back just because you run out of vocabulary."
+
+
+def _resolver_respuesta_bilingue_y_memoria(mensaje_usuario: str, memoria_txt: str = "") -> str | None:
+    """Devuelve respuesta en inglés si aplica, o apoyo de memoria si se consulta; None para dejar pasar tu flujo normal."""
+    if not mensaje_usuario:
+        return None
+    if detectar_solicitud_idioma(mensaje_usuario) == "en":
+        return responder_en_ingles(mensaje_usuario)
+
+    t = mensaje_usuario.lower().strip()
+    if ("cumpleaños" in t or "memoria" in t or "recuerdas" in t) and memoria_txt:
+        return (
+            "Señorita, tengo la memoria cargada y disponible en el panel correspondiente. "
+            "Si gusta, continúo con el resto de sus órdenes."
+        )
+    return None
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
