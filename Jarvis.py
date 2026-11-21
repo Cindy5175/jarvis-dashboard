@@ -414,3 +414,15 @@ def limpiar_misiones():
 
 @st.cache_data(ttl=300)
 def obtener_indicadores_chile():
+    headers = {
+        "User-Agent": "Mozilla/5.0 JARVIS-Dashboard/1.0",
+        "Accept": "application/json",
+    }
+    for _ in range(2):
+        try:
+            resp = requests.get(
+                "https://mindicador.cl/api",
+                headers=headers,
+                timeout=10,
+            )
+            if
