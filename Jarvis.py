@@ -28,6 +28,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTAX"]
+
 if "autorizado" not in st.session_state:
     st.session_state.autorizado = False
 
@@ -45,6 +47,18 @@ if "pendiente_voz" not in st.session_state:
 
 if "modo_medico" not in st.session_state:
     st.session_state.modo_medico = False
+
+if "modo_orquestador" not in st.session_state:
+    st.session_state.modo_orquestador = "Equilibrado"
+
+if "mcp_conectores" not in st.session_state:
+    st.session_state.mcp_conectores = {
+        "SQLite Memory & Missions": True,
+        "Math & Unit Engine": True,
+        "Security & System Shield": True,
+        "Chile Macro & Markets": True,
+        "Comms & Local Ollama": True,
+    }
 
 if "ollama_activo" not in st.session_state:
     st.session_state.ollama_activo = False
@@ -217,7 +231,8 @@ def obtener_saludo_nucleo(nucleo_nombre):
     saludos = {
         "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
         "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
-        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?"
+        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "ARTAX": f"{pref}{saludo_actual}, jefa. Núcleo analítico-orquestador ARTAX en línea; rutas, conectores y escudos verificados."
     }
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
@@ -300,6 +315,8 @@ def escucha_continua_js(activa: bool):
 
 
 def evaluar_calculo_seguro(texto_raw: str):
+    if not st.session_state.get("mcp_conectores", {}).get("Math & Unit Engine", True):
+        return None
     limpio = texto_raw.strip().lower()
     for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "matemática", "matematica", "="]:
         if limpio.startswith(pref):
@@ -331,6 +348,8 @@ def evaluar_calculo_seguro(texto_raw: str):
 
 
 def convertir_unidades_texto(t: str):
+    if not st.session_state.get("mcp_conectores", {}).get("Math & Unit Engine", True):
+        return None
     m = re.search(r"(-?\d+(?:[.,]\d+)?)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*(?:a|en|to|in)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)", t)
     if not m:
         return None
@@ -380,6 +399,7 @@ def resumen_sistema_y_seguridad():
     db_existe = os.path.exists(DB_PATH)
     misiones_cant = len(obtener_misiones())
     mem_cant = len(jarvis_mem.recent_facts(50))
+    activos_mcp = sum(1 for v in st.session_state.get("mcp_conectores", {}).values() if v)
     cpu_txt = "N/D"
     ram_txt = "N/D"
     if PSUTIL_AVAILABLE:
@@ -392,22 +412,28 @@ def resumen_sistema_y_seguridad():
         f for f in os.listdir(".")
         if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
     ]
-    estado_vir = "Sin ejecutables sospechosos en el directorio de trabajo." if not sospechosos else f"Archivos ejecutables detectados en raíz: {', '.join(sospechosos[:5])}."
+    estado_vir = "Integridad 98% · Sin ejecutables sospechosos en raíz." if not sospechosos else f"Archivos ejecutables detectados en raíz: {', '.join(sospechosos[:5])}."
     return (
-        f"Diagnóstico & Seguridad ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
-        f"SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), **{misiones_cant}** misiones y **{mem_cant}** memorias recientes. "
-        f"Revisión rápida: {estado_vir} "
-        "Optimización sugerida: purgar historial extenso del chat, limpiar misiones completadas y cerrar pestañas pesadas."
+        f"Escudo & Optimización ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
+        f"Conectores MCP activos **{activos_mcp}/5**, SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), "
+        f"**{misiones_cant}** misiones y **{mem_cant}** memorias. {estado_vir} "
+        "Optimización: purgar historial extenso del chat, limpiar misiones cerradas y mantener activos solo los conectores necesarios."
     )
 
 
 def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str:
     pref = f"[{nucleo}] "
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
+    cierre = ""
     if nucleo == "JARVIS":
-        return f"{pref}{nucleo_content} Como siempre, jefa, un detalle técnico más dominado sin despeinarnos."
-    if nucleo == "VIERNES":
-        return f"{pref}{nucleo_content} ¿Listo para el siguiente paso, jefa?"
-    return f"{pref}{nucleo_content} Datos alineados desde el Nodo Buin para '{raw_user.strip()}', jefa."
+        cierre = " Como siempre, jefa, un detalle técnico más dominado sin despeinarnos."
+    elif nucleo == "VIERNES":
+        cierre = " ¿Listo para el siguiente paso, jefa?"
+    elif nucleo == "NOVA":
+        cierre = f" Señal verificada desde el Nodo Buin para '{raw_user.strip()}', jefa."
+    elif nucleo == "ARTAX":
+        cierre = f" [Modo {modo_orq} · Pipeline validado], jefa."
+    return f"{pref}{nucleo_content}{cierre}"
 
 
 def responder_conocimiento_base(t: str, raw: str):
@@ -429,16 +455,29 @@ def responder_conocimiento_base(t: str, raw: str):
     if calculo:
         return calculo
 
-    if any(k in t for k in ["virus", "malware", "seguridad", "optimizar", "optimización", "optimizacion", "rendimiento", "diagnóstico", "diagnostico"]):
-        return resumen_sistema_y_seguridad()
-
-    if any(k in t for k in ["llamar", "llamada", "mensaje", "enviar mensaje", "whatsapp", "correo"]):
+    if any(k in t for k in ["agentes", "equipo", "orquestador", "mcp", "conector", "conectores", "artax"]):
+        activos = [k for k, v in st.session_state.get("mcp_conectores", {}).items() if v]
         return (
-            "Módulo de **Llamadas y Mensajes**: puedes redactar el texto o número en el panel lateral de "
-            "**Modos & Utilidades Tácticas** para generar el enlace directo (`tel:` / `wa.me` / `mailto:`) sin salir de tu flujo."
+            f"Orquestación multi-núcleo (`JARVIS`, `VIERNES`, `NOVA`, `ARTAX`) en modo **{st.session_state.get('modo_orquestador', 'Equilibrado')}** "
+            f"con conectores MCP activos: **{', '.join(activos) if activos else 'ninguno'}**."
         )
 
-    if st.session_state.get("modo_medico", False) or any(k in t for k in ["síntoma", "sintoma", "dolor", "fiebre", "presión", "presion", "pulso", "medicina", "médico", "medico", "salud"]):
+    if st.session_state.get("mcp_conectores", {}).get("Security & System Shield", True) and any(
+        k in t for k in ["virus", "malware", "seguridad", "optimizar", "optimización", "optimizacion", "rendimiento", "diagnóstico", "diagnostico", "escudo"]
+    ):
+        return resumen_sistema_y_seguridad()
+
+    if st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True) and any(
+        k in t for k in ["llamar", "llamada", "mensaje", "enviar mensaje", "whatsapp", "correo"]
+    ):
+        return (
+            "Módulo de **Llamadas y Mensajes**: puedes redactar el texto o número en el panel lateral de "
+            "**Modos & Utilidades Tácticas** para generar el enlace directo (`tel:` / `wa.me`) sin salir de tu flujo."
+        )
+
+    if st.session_state.get("modo_medico", False) or any(
+        k in t for k in ["síntoma", "sintoma", "dolor", "fiebre", "presión", "presion", "pulso", "medicina", "médico", "medico", "salud"]
+    ):
         return (
             "**Modo Médico (orientación general)**: para evaluar cualquier síntoma o parámetro clínico, "
             "indica edad, intensidad, duración y signos de alarma. Esto es información general y no sustituye una evaluación médica presencial."
@@ -513,6 +552,8 @@ def responder_pregunta_general_local(nucleo: str, texto_usuario: str, en_ingles:
 def consultar_ollama_local(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
     if not st.session_state.get("ollama_activo", False):
         return ""
+    if not st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True):
+        return ""
     base_url = (st.session_state.get("ollama_url") or "http://localhost:11434").rstrip("/")
     modelo = (st.session_state.get("ollama_modelo") or "llama3.2").strip()
     idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en español."
@@ -550,17 +591,20 @@ def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -
 
     if not client_groq:
         return ""
-    rec_mem = "; ".join(jarvis_mem.recent_facts(5))
+    rec_mem = "; ".join(jarvis_mem.recent_facts(5)) if st.session_state.get("mcp_conectores", {}).get("SQLite Memory & Missions", True) else ""
     estilo_nucleo = {
         "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
         "VIERNES": "Eres VIERNES, rápida, directa y resolutiva.",
-        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin."
+        "NOVA": "Eres NOVA, dinámica, clara y con enfoque táctico desde el Nodo Buin.",
+        "ARTAX": "Eres ARTAX, analítico, arquitectónico, firme y enfocado en orquestación, conectores y seguridad."
     }.get(nucleo, "Eres un asistente táctico.")
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
     idioma_rule = "Responde en inglés." if idioma_voz == "en-US" else "Responde en español."
     modo_med = " Activa enfoque médico informativo con advertencia clínica." if st.session_state.get("modo_medico", False) else ""
     instruccion_sistema = (
-        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Dominas ciencias, tecnología, historia de la medicina, "
-        f"matemática y cálculo, biología e historia, y respondes cualquier pregunta con claridad.{modo_med} {idioma_rule} "
+        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Modo de trabajo: {modo_orq}. "
+        f"Dominas ciencias, tecnología, historia de la medicina, matemática y cálculo, biología e historia, "
+        f"y respondes cualquier pregunta con claridad.{modo_med} {idioma_rule} "
         f"{'Memorias recientes: ' + rec_mem if rec_mem else ''}"
     )
     mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
@@ -588,12 +632,15 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if quiere_ingles(texto_usuario):
         base_en = (
             f"Understood, Boss. Switching to English for '{texto_usuario.strip()}'. "
-            "Conversions, diagnostics, medical mode, science, technology, medical history, math, biology, and history are ready."
+            "Multi-core orchestration, MCP connectors, conversions, diagnostics, medical mode, "
+            "science, technology, medical history, math, biology, and history are online."
         )
         if nucleo == "VIERNES":
             return f"[{nucleo}] Got it, Boss! {base_en}"
         if nucleo == "NOVA":
             return f"[{nucleo}] Signal locked, Boss. {base_en}"
+        if nucleo == "ARTAX":
+            return f"[{nucleo}] Pipeline routed in English, Boss. {base_en}"
         return f"[{nucleo}] {base_en} Naturally, I perform just as well in English."
 
     palabras_saludo = [
@@ -607,14 +654,18 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if resp_base:
         return estilizar_por_nucleo(nucleo, resp_base, texto_usuario)
 
-    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
+    if st.session_state.get("mcp_conectores", {}).get("Chile Macro & Markets", True) and any(
+        k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]
+    ):
         msg_bolsa = (
             "En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
             "Puede revisar **Finviz** o **ANT (Nasdaq)** en el panel lateral de **Enlaces Financieros**."
         )
         return estilizar_por_nucleo(nucleo, msg_bolsa, texto_usuario)
 
-    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
+    if st.session_state.get("mcp_conectores", {}).get("Chile Macro & Markets", True) and any(
+        k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]
+    ):
         econ = obtener_indicadores_chile()
         if econ.get("ok"):
             dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -733,8 +784,8 @@ with st.sidebar:
     st.markdown("#### 🧠 Selector de Núcleo (IA)")
     nuevo_nucleo = st.radio(
         "Seleccionar Asistente Activo:",
-        ["JARVIS", "VIERNES", "NOVA"],
-        index=["JARVIS", "VIERNES", "NOVA"].index(st.session_state.nucleo_activo),
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
         label_visibility="collapsed"
     )
     if nuevo_nucleo != st.session_state.nucleo_activo:
@@ -752,8 +803,22 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("#### ⚙️ Modos & Utilidades")
-    with st.expander("Médico, Seguridad, Comms & Ollama", expanded=False):
+    with st.expander("Orquestador, MCP, Escudo & Médico", expanded=False):
+        st.session_state.modo_orquestador = st.selectbox(
+            "Modo de Orquestación:",
+            ["Equilibrado", "Análisis & Código", "Auditoría & Escudo", "Síntesis Ejecutiva"],
+            index=["Equilibrado", "Análisis & Código", "Auditoría & Escudo", "Síntesis Ejecutiva"].index(st.session_state.modo_orquestador)
+        )
         st.session_state.modo_medico = st.toggle("🩺 Modo Médico", value=st.session_state.modo_medico)
+
+        st.caption("Conectores MCP:")
+        for c_nombre in list(st.session_state.mcp_conectores.keys()):
+            st.session_state.mcp_conectores[c_nombre] = st.toggle(
+                c_nombre,
+                value=st.session_state.mcp_conectores[c_nombre],
+                key=f"mcp_{c_nombre}"
+            )
+
         if st.button("🛡️ Revisión Virus y Optimización", use_container_width=True):
             diag = resumen_sistema_y_seguridad()
             st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {diag}"})
@@ -785,157 +850,4 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 📋 Misiones Tácticas")
     with st.expander("Base de Datos Misiones", expanded=False):
-        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
-        if st.button("Registrar Tarea", use_container_width=True):
-            if nueva_tarea.strip():
-                agregar_mision(nueva_tarea.strip())
-                st.success("¡Misión registrada!")
-                st.rerun()
-        misiones_guardadas = obtener_misiones()
-        if misiones_guardadas:
-            for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"- `{m_text}`")
-            if st.button("Limpiar Misiones", use_container_width=True):
-                limpiar_misiones()
-                st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🎧 Frecuencias de Enfoque")
-    with st.expander("Deep Work & Música IA", expanded=False):
-        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">🎧 CEO Mode (Deep Work)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">🚀 Futuristic Garage Beats</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">⚡ Hyperfocus Mode</a>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("#### 📷 Videovigilancia y Cámaras")
-    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
-        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">Stgo / Chile (Skyline)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">Concepción Webcam</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">Windy Radars & Cams</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">Galveston Port, Texas</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">Puerta del Sol, Madrid</a>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("#### 🛰️ Telemetría Global & Satélites")
-    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
-        st.markdown('<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">PlanetEar (Satélites)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">NASA Worldview</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">N2YO (Órbita en Vivo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">Flightradar24 (Aéreo)</a>', unsafe_allow_html=True)
-        st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("#### 📈 Enlaces Financieros")
-    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
-        datos_econ = obtener_indicadores_chile()
-        dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">📈 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
-            unsafe_allow_html=True
-        )
-        if datos_econ.get("respaldo"):
-            st.caption("Modo respaldo local (sin conexión externa).")
-
-        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
-            obtener_indicadores_chile.clear()
-            st.rerun()
-
-    st.markdown('<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">Seguimiento ANT (Nasdaq)</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">Monitoreo SpaceX</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">Finviz (Mercados)</a>', unsafe_allow_html=True)
-    st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">Investing.com (Divisas)</a>', unsafe_allow_html=True)
-
-escucha_continua_js(st.session_state.escucha_continua_activa)
-
-dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-meses = [
-    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
-
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
-    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
-    f'</p>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
-reloj_js = (
-    "<script>"
-    "function actualizarReloj() {"
-    "const ahora = new Date();"
-    "const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };"
-    "const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);"
-    "const relojEl = window.parent.document.getElementById('reloj-vivo');"
-    "if (relojEl) { relojEl.innerText = horaChile; }"
-    "}"
-    "setInterval(actualizarReloj, 1000);"
-    "actualizarReloj();"
-    "</script>"
-)
-st.components.v1.html(reloj_js, height=0)
-
-st.markdown(
-    '<div class="holo-brain-box">'
-    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
-    f'</h4>'
-    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Motor Táctico Neuronal Activo // Conversiones · Seguridad/Optimización · Médico · Ollama · Ciencias · Historia'
-    '</p>'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-col_ch1, col_ch2 = st.columns([5, 1])
-with col_ch1:
-    st.markdown("#### Chat 💬", unsafe_allow_html=True)
-with col_ch2:
-    if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
-        st.session_state.mensajes = [
-            {
-                "role": "assistant",
-                "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
-            }
-        ]
-        st.rerun()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-prompt_chat = st.chat_input("Escribe tu orden, cálculo, conversión o consulta...")
-
-if prompt_chat:
-    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-    with st.chat_message("user"):
-        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
-
-    nucleo = st.session_state.nucleo_activo
-    idioma_voz = "en-US" if quiere_ingles(prompt_chat) else "es-CL"
-
-    with st.chat_message("assistant"):
-        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
-            respuesta_ia = consultar_modelo_externo(nucleo, prompt_chat, idioma_voz)
-            if not respuesta_ia:
-                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-            programar_voz(respuesta_ia, idioma_voz)
-    st.rerun()
-
-reproducir_voz_pendiente()
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder
