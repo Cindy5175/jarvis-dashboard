@@ -850,4 +850,158 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 📋 Misiones Tácticas")
     with st.expander("Base de Datos Misiones", expanded=False):
-        nueva_tarea = st.text_input("Nueva Misión:", placeholder
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada!")
+                st.rerun()
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🎧 Frecuencias de Enfoque")
+    with st.expander("Deep Work & Música IA", expanded=False):
+        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">🎧 CEO Mode (Deep Work)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">🚀 Futuristic Garage Beats</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">⚡ Hyperfocus Mode</a>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### 📷 Videovigilancia y Cámaras")
+    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
+        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">Stgo / Chile (Skyline)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">Concepción Webcam</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">Windy Radars & Cams</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">Galveston Port, Texas</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">Puerta del Sol, Madrid</a>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### 🛰️ Telemetría Global & Satélites")
+    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
+        st.markdown('<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">OSIRIS (Ojo de Dios)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">PlanetEar (Satélites)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">NASA Worldview</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">N2YO (Órbita en Vivo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">Flightradar24 (Aéreo)</a>', unsafe_allow_html=True)
+        st.markdown('<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">Cybermap (Ciberataques)</a>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### 📈 Enlaces Financieros")
+    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        datos_econ = obtener_indicadores_chile()
+        dolar_fmt = f"${datos_econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        euro_fmt = f"${datos_econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        uf_fmt = f"${datos_econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        st.markdown(
+            f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
+            f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
+            f'<div class="econ-card"><span class="econ-label">📈 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
+            unsafe_allow_html=True
+        )
+        if datos_econ.get("respaldo"):
+            st.caption("Modo respaldo local (sin conexión externa).")
+
+        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
+            obtener_indicadores_chile.clear()
+            st.rerun()
+
+    st.markdown('<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">Seguimiento ANT (Nasdaq)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">Monitoreo SpaceX</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">Finviz (Mercados)</a>', unsafe_allow_html=True)
+    st.markdown('<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">Investing.com (Divisas)</a>', unsafe_allow_html=True)
+
+escucha_continua_js(st.session_state.escucha_continua_activa)
+
+dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+meses = [
+    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+]
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
+    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">--:--:--</span> ]'
+    f'</p>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+reloj_js = (
+    "<script>"
+    "function actualizarReloj() {"
+    "const ahora = new Date();"
+    "const opciones = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };"
+    "const horaChile = new Intl.DateTimeFormat('es-CL', opciones).format(ahora);"
+    "const relojEl = window.parent.document.getElementById('reloj-vivo');"
+    "if (relojEl) { relojEl.innerText = horaChile; }"
+    "}"
+    "setInterval(actualizarReloj, 1000);"
+    "actualizarReloj();"
+    "</script>"
+)
+st.components.v1.html(reloj_js, height=0)
+
+mcp_activos_count = sum(1 for v in st.session_state.mcp_conectores.values() if v)
+st.markdown(
+    '<div class="holo-brain-box">'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
+    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}] · {st.session_state.modo_orquestador.upper()}'
+    f'</h4>'
+    f'<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
+    f'MCP Activos: {mcp_activos_count}/5 // Escudo · Conversiones · Médico · Ollama · Ciencias · Historia'
+    f'</p>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+col_ch1, col_ch2 = st.columns([5, 1])
+with col_ch1:
+    st.markdown("#### Chat 💬", unsafe_allow_html=True)
+with col_ch2:
+    if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
+        st.session_state.mensajes = [
+            {
+                "role": "assistant",
+                "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
+            }
+        ]
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+prompt_chat = st.chat_input("Escribe tu orden, cálculo, conversión o consulta...")
+
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+
+    nucleo = st.session_state.nucleo_activo
+    idioma_voz = "en-US" if quiere_ingles(prompt_chat) else "es-CL"
+
+    with st.chat_message("assistant"):
+        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
+            respuesta_ia = consultar_modelo_externo(nucleo, prompt_chat, idioma_voz)
+            if not respuesta_ia:
+                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+            programar_voz(respuesta_ia, idioma_voz)
+    st.rerun()
+
+reproducir_voz_pendiente()
