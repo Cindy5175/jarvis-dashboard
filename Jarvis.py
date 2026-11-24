@@ -1,28 +1,24 @@
 import datetime
 import math
 import os
-import platform
+import random
 import re
 import sqlite3
-import urllib.parse
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
 try:
     from groq import Groq
+    GROQ_AVAILABLE = True
 except Exception:
     Groq = None
-
-try:
-    import psutil
-except Exception:
-    psutil = None
+    GROQ_AVAILABLE = False
 
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
@@ -44,14 +40,9 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
-st.session_state.setdefault("modo_medico", False)
-st.session_state.setdefault("modo_orquestador", "Equilibrado")
-st.session_state.setdefault("ollama_activo", False)
-st.session_state.setdefault("ollama_url", "http://localhost:11434")
-st.session_state.setdefault("ollama_modelo", "llama3.2")
 
 PIN_SECRETO = "2805"
-DB_PATH = "jarvis_misiones.db"
+fn_db = "jarvis_misiones.db"
 BUIN_LAT = -33.7325
 BUIN_LON = -70.7422
 
@@ -61,43 +52,29 @@ try:
 except Exception:
     API_KEY_GROQ = os.environ.get("GROQ_API_KEY", "")
 
-client_groq = Groq(api_key=API_KEY_GROQ) if (Groq and API_KEY_GROQ) else None
-
-
-def obtener_hora_chile():
-    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
-    return datetime.datetime.now(tz_chile)
-
-
-def obtener_saludo_por_hora(ahora):
-    hora = ahora.hour
-    if 0 <= hora < 12:
-        return "Buenos dias"
-    if 12 <= hora < 20:
-        return "Buenas tardes"
-    return "Buenas noches"
+client_groq = None
+if GROQ_AVAILABLE and API_KEY_GROQ:
+    try:
+        client_groq = Groq(api_key=API_KEY_GROQ)
+    except Exception:
+        client_groq = None
 
 
 def init_db():
     try:
-        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
-        cur = conn.cursor()
-        cur.execute(
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute(
             "CREATE TABLE IF NOT EXISTS misiones ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "tarea TEXT NOT NULL, "
             "estado TEXT DEFAULT 'Pendiente')"
         )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS remedios ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "nombre TEXT NOT NULL, "
-            "horario TEXT DEFAULT '08:00')"
-        )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS notas ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "texto TEXT NOT NULL)"
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS memory ("
+            "key_id TEXT PRIMARY KEY, "
+            "fact_text TEXT, "
+            "category TEXT)"
         )
         conn.commit()
         conn.close()
@@ -108,31 +85,76 @@ def init_db():
 init_db()
 
 
-def db_add(tabla, cols, vals):
+class JarvisMemory:
+    def __init__(self, db_path=fn_db):
+        self.db_path = db_path
+
+    def remember_fact(self, key_id: str, fact_text: str):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
+                (key_id, fact_text, "general"),
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+    def get_recent_facts(self, limit: int = 5):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("SELECT fact_text FROM memory ORDER BY rowid DESC LIMIT ?", (limit,))
+            rows = [r[0] for r in cursor.fetchall() if r and r[0]]
+            conn.close()
+            return rows
+        except Exception:
+            return []
+
+    def clear_facts(self):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM memory")
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+
+jarvis_mem = JarvisMemory()
+
+
+def agregar_mision(tarea):
     try:
-        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
-        placeholders = ",".join("?" for _ in vals)
-        conn.cursor().execute(f"INSERT INTO {tabla} ({cols}) VALUES ({placeholders})", vals)
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
         conn.commit()
         conn.close()
     except Exception:
         pass
 
 
-def db_all(tabla, cols):
+def obtener_misiones():
     try:
-        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
-        rows = conn.cursor().execute(f"SELECT {cols} FROM {tabla}").fetchall()
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, tarea, estado FROM misiones")
+        rows = cursor.fetchall()
         conn.close()
         return rows
     except Exception:
         return []
 
 
-def db_clear(tabla):
+def limpiar_misiones():
     try:
-        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
-        conn.cursor().execute(f"DELETE FROM {tabla}")
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM misiones")
         conn.commit()
         conn.close()
     except Exception:
@@ -145,26 +167,33 @@ def obtener_indicadores_chile():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) JARVIS-Dashboard/1.0",
         "Accept": "application/json",
     }
-    try:
-        resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=4)
-        if resp.status_code == 200:
-            data = resp.json()
-            dolar = data.get("dolar", {}).get("valor")
-            euro = data.get("euro", {}).get("valor")
-            uf = data.get("uf", {}).get("valor")
-            if dolar and euro and uf:
-                return {
-                    "dolar": float(dolar),
-                    "euro": float(euro),
-                    "uf": float(uf),
-                    "respaldo": False,
-                }
-    except Exception:
-        pass
+    for _ in range(2):
+        try:
+            resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                dolar = data.get("dolar", {}).get("valor")
+                euro = data.get("euro", {}).get("valor")
+                uf = data.get("uf", {}).get("valor")
+                utm = data.get("utm", {}).get("valor")
+                if dolar and euro and uf:
+                    return {
+                        "dolar": float(dolar),
+                        "euro": float(euro),
+                        "uf": float(uf),
+                        "utm": float(utm) if utm else 0.0,
+                        "ok": True,
+                        "respaldo": False,
+                    }
+        except Exception:
+            pass
+
     return {
-        "dolar": 950.0,
-        "euro": 1030.0,
-        "uf": 38000.0,
+        "dolar": 950.00,
+        "euro": 1030.00,
+        "uf": 38000.00,
+        "utm": 67000.00,
+        "ok": True,
         "respaldo": True,
     }
 
@@ -192,7 +221,7 @@ def obtener_clima_buin():
         f"&current=temperature_2m,weather_code&timezone=America%2FSantiago"
     )
     try:
-        resp = requests.get(url, timeout=4)
+        resp = requests.get(url, timeout=5)
         if resp.status_code == 200:
             current = resp.json().get("current") or {}
             temp = current.get("temperature_2m")
@@ -211,25 +240,31 @@ def fmt_clp(valor):
     return "$" + f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def obtener_saludo_nucleo(nucleo):
+def obtener_hora_chile():
+    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+    return datetime.datetime.now(tz_chile)
+
+
+def obtener_saludo_actual(ahora):
+    hora = ahora.hour
+    if 0 <= hora < 12:
+        return "Buenos días"
+    if 12 <= hora < 20:
+        return "Buenas tardes"
+    return "Buenas noches"
+
+
+def obtener_saludo_nucleo(nucleo_nombre):
     ahora = obtener_hora_chile()
-    saludo = obtener_saludo_por_hora(ahora)
-    frases = {
-        "JARVIS": f"[{nucleo}] {saludo}, jefa. Nucleo y protocolo de conocimiento listos; diga que calculamos o investigamos hoy.",
-        "VIERNES": f"[{nucleo}] {saludo}, jefa. Motor de calculo y base de conocimiento activos. A que le entramos?",
-        "NOVA": f"[{nucleo}] {saludo}, jefa. Senal recibida desde el Nodo Buin con protocolo completo activo.",
-        "ARTEX": f"[{nucleo}] {saludo}, jefa. Nucleo ARTEX en linea con protocolo unificado bajo control.",
+    saludo_actual = obtener_saludo_actual(ahora)
+    pref = f"[{nucleo_nombre}] "
+    saludos = {
+        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "ARTEX": f"{pref}¡{saludo_actual}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
     }
-    return frases.get(nucleo, f"[{nucleo}] {saludo}, jefa. En linea y a su servicio.")
-
-
-def quiere_ingles(texto):
-    t = (texto or "").lower()
-    pistas = [
-        "en ingles", "responde en ingles", "habla en ingles",
-        "in english", "speak english", "reply in english", "answer in english",
-    ]
-    return any(p in t for p in pistas)
+    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
 
 
 def programar_voz(texto, idioma="es-CL"):
@@ -265,92 +300,6 @@ def reproducir_voz_pendiente():
         pass
 
 
-def renderizar_reloj_buin_vivo(ahora_chile):
-    init_epoch_ms = int(ahora_chile.timestamp() * 1000)
-    html_reloj = f"""
-    <div id="reloj-buin-vivo" style="
-        text-align: right;
-        color: #00f3ff;
-        font-family: monospace;
-        font-size: 0.80rem;
-        padding-top: 8px;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    ">NODO BUIN · {ahora_chile.strftime('%d/%m/%Y')} · {ahora_chile.strftime('%H:%M:%S')}</div>
-    <script>
-    (function() {{
-        const el = document.getElementById("reloj-buin-vivo");
-        if (!el) return;
-        const offsetMs = -3 * 3600 * 1000;
-        const serverStart = {init_epoch_ms};
-        const clientStart = Date.now();
-        function pad2(n) {{ return n < 10 ? "0" + n : "" + n; }}
-        function tick() {{
-            const elapsed = Date.now() - clientStart;
-            const d = new Date(serverStart + elapsed + offsetMs);
-            const dia = pad2(d.getUTCDate());
-            const mes = pad2(d.getUTCMonth() + 1);
-            const anio = d.getUTCFullYear();
-            const hh = pad2(d.getUTCHours());
-            const mm = pad2(d.getUTCMinutes());
-            const ss = pad2(d.getUTCSeconds());
-            el.textContent = "NODO BUIN · " + dia + "/" + mes + "/" + anio + " · " + hh + ":" + mm + ":" + ss;
-        }}
-        tick();
-        if (window.__jarvisRelojInterval) clearInterval(window.__jarvisRelojInterval);
-        window.__jarvisRelojInterval = setInterval(tick, 1000);
-    }})();
-    </script>
-    """
-    try:
-        components.html(html_reloj, height=34)
-    except Exception:
-        st.markdown(
-            f"<div style='text-align:right;font-size:0.80rem;padding-top:8px;'>"
-            f"NODO BUIN · {ahora_chile.strftime('%d/%m/%Y')} · {ahora_chile.strftime('%H:%M:%S')}"
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-
-
-def generar_informe_diario_hablado(nucleo, hablar=True):
-    ahora = obtener_hora_chile()
-    econ = obtener_indicadores_chile()
-    clima = obtener_clima_buin()
-    misiones = db_all("misiones", "tarea, estado")
-    remedios = db_all("remedios", "nombre, horario")
-    notas = db_all("notas", "texto")
-
-    if clima.get("temp_c") is not None:
-        clima_txt = f"Clima en Buin: {clima['temp_c']} grados y {clima['condicion']}."
-    else:
-        clima_txt = "Clima en Buin: sin lectura en vivo en este momento."
-
-    fin_txt = (
-        f"Finanzas: Dolar {fmt_clp(econ['dolar'])}, "
-        f"Euro {fmt_clp(econ['euro'])} y UF {fmt_clp(econ['uf'])}."
-    )
-    rem_txt = (
-        "Recordatorios de remedios: " + ", ".join(f"{r[0]} ({r[1]})" for r in remedios[:4]) + "."
-        if remedios
-        else "Sin remedios registrados por ahora."
-    )
-    mis_txt = (
-        f"Tienes {len(misiones)} mision(es): " + ", ".join(m[0] for m in misiones[:3]) + "."
-        if misiones
-        else "Sin misiones pendientes."
-    )
-    not_txt = f" Notas: {', '.join(n[0] for n in notas[-2:])}." if notas else ""
-
-    informe = (
-        f"[{nucleo}] Informe diario del Nodo Buin, {ahora.strftime('%d/%m/%Y')}, "
-        f"{ahora.strftime('%H:%M')} horas. {clima_txt} {fin_txt} {rem_txt} {mis_txt}{not_txt} Todo listo, jefa."
-    )
-    if hablar:
-        programar_voz(informe, idioma="es-CL")
-    return informe
-
-
 def resolver_calculo_o_unidad(texto_raw):
     t = (texto_raw or "").strip().lower()
 
@@ -360,7 +309,7 @@ def resolver_calculo_o_unidad(texto_raw):
         base = float(mp.group(2).replace(",", "."))
         val = (pct / 100.0) * base
         res = int(val) if val.is_integer() else round(val, 6)
-        return f"Calculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
+        return f"Cálculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
 
     mu = re.search(
         r"(-?\d+(?:[.,]\d+)?)\s*"
@@ -388,20 +337,20 @@ def resolver_calculo_o_unidad(texto_raw):
         vel_ms = {"m/s": 1.0, "km/h": 1.0 / 3.6}
 
         if u1 in long_m and u2 in long_m:
-            return f"Conversion de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
+            return f"Conversión de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
         if u1 in masa_kg and u2 in masa_kg:
-            return f"Conversion de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
+            return f"Conversión de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
         if u1 in vol_l and u2 in vol_l:
-            return f"Conversion de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
+            return f"Conversión de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
         if u1 in vel_ms and u2 in vel_ms:
-            return f"Conversion de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
+            return f"Conversión de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
         if u1 in {"c", "f", "k"} and u2 in {"c", "f", "k"}:
             c = val if u1 == "c" else ((val - 32) * 5 / 9 if u1 == "f" else val - 273.15)
             out_t = c if u2 == "c" else (c * 9 / 5 + 32 if u2 == "f" else c + 273.15)
-            return f"Conversion termica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
+            return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
 
     expr = t
-    for pref in ["calcula", "calcular", "cuanto es", "resuelve", "aritmetica", "matematica", "="]:
+    for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "aritmetica", "aritmética", "matematica", "matemática", "="]:
         if expr.startswith(pref):
             expr = expr[len(pref):].strip()
     expr = expr.replace("×", "*").replace("÷", "/").replace("^", "**").replace(",", ".")
@@ -431,388 +380,416 @@ def resolver_calculo_o_unidad(texto_raw):
             res = eval(expr, env, {})
             if isinstance(res, (int, float)) and not isinstance(res, bool):
                 out = int(res) if (isinstance(res, float) and res.is_integer()) else (round(res, 6) if isinstance(res, float) else res)
-                return f"Resultado del calculo `{expr}`: **{out}**."
+                return f"Resultado del cálculo `{expr}`: **{out}**."
         except Exception:
             return None
     return None
 
 
-def resumen_escudo_sistema():
-    os_txt = f"{platform.system()} {platform.release()}"
-    cpu_txt = "N/D"
-    ram_txt = "N/D"
-    if psutil:
-        try:
-            cpu_txt = f"{psutil.cpu_percent(interval=0.05)}%"
-            ram_txt = f"{psutil.virtual_memory().percent}%"
-        except Exception:
-            pass
-    sospechosos = []
-    try:
-        sospechosos = [
-            f for f in os.listdir(".")
-            if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
-        ]
-    except Exception:
-        pass
-    estado = "Sin ejecutables sospechosos en raiz." if not sospechosos else f"Ejecutables en raiz: {', '.join(sospechosos[:4])}."
-    return f"Escudo ({os_txt}): CPU **{cpu_txt}**, RAM **{ram_txt}**, SQLite `{DB_PATH}` activo. {estado}"
-
-
-def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
-    estilo = {
-        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
-        "VIERNES": "Eres VIERNES, rapida, directa y resolutiva.",
-        "NOVA": "Eres NOVA, dinamica, clara y con enfoque tactico desde el Nodo Buin.",
-        "ARTEX": "Eres ARTEX, analitico, preciso, firme y enfocado en orquestacion y control.",
-    }.get(nucleo, "Eres un asistente tactico.")
-    idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en espanol."
-    modo_med = " Activa enfoque medico informativo con advertencia clinica." if st.session_state.get("modo_medico", False) else ""
-    notas_rec = "; ".join(n[0] for n in db_all("notas", "texto")[-4:])
-    mem_txt = f" Notas guardadas: {notas_rec}." if notas_rec else ""
-    sys_prompt = (
-        f"{estilo} Tratas a la usuaria de 'jefa'. Modo: {st.session_state.get('modo_orquestador', 'Equilibrado')}. "
-        f"{PROTOCOLO_CONOCIMIENTO_BASE}{modo_med} {idioma_rule}{mem_txt}"
-    )
-
-    if st.session_state.get("ollama_activo", False):
-        try:
-            base_url = (st.session_state.get("ollama_url") or "http://localhost:11434").rstrip("/")
-            modelo = (st.session_state.get("ollama_modelo") or "llama3.2").strip()
-            resp = requests.post(
-                f"{base_url}/api/chat",
-                json={
-                    "model": modelo,
-                    "stream": False,
-                    "messages": [
-                        {"role": "system", "content": sys_prompt},
-                        {"role": "user", "content": texto_usuario},
-                    ],
-                },
-                timeout=4,
-            )
-            if resp.status_code == 200:
-                msg = ((resp.json().get("message") or {}).get("content") or "").strip()
-                if msg:
-                    return f"[{nucleo} · Ollama] {msg}"
-        except Exception:
-            pass
-
-    if client_groq:
-        mensajes_api = [{"role": "system", "content": sys_prompt}] + [
-            {"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes[-8:]
-        ]
-        for modelo in ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]:
-            try:
-                comp = client_groq.chat.completions.create(
-                    model=modelo,
-                    messages=mensajes_api,
-                    temperature=0.65,
-                    timeout=5,
-                )
-                contenido = (comp.choices[0].message.content or "").strip()
-                if contenido:
-                    return f"[{nucleo}] {contenido}"
-            except Exception:
-                continue
-    return ""
-
-
 def generar_respuesta_coherente(nucleo, texto_usuario):
     ahora = obtener_hora_chile()
+    prefijo = f"[{nucleo}] "
     t = (texto_usuario or "").strip().lower()
 
-    if quiere_ingles(texto_usuario):
-        return (
-            f"[{nucleo}] Understood, Boss. Shared knowledge protocol (biology, mathematics, arithmetic, "
-            f"geography, history, science & technology, and calculations) is active for '{texto_usuario.strip()}'."
-        )
-
-    saludos = ["hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "holi", "que tal"]
-    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in saludos):
+    palabras_saludo = [
+        "hola", "buenas", "buenos días", "buenos dias",
+        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal",
+    ]
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
         return obtener_saludo_nucleo(nucleo)
 
-    if any(k in t for k in ["informe diario", "resumen del dia", "reporte diario", "briefing"]):
-        return generar_informe_diario_hablado(nucleo, hablar=True)
+    if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
+        if nucleo == "JARVIS":
+            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
+        if nucleo == "VIERNES":
+            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
+        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+
+    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
+        if nucleo == "JARVIS":
+            return (
+                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
+            )
+        if nucleo == "VIERNES":
+            return (
+                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
+                "Abra **Finviz** o **ANT (Nasdaq)** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
+            )
+        return (
+            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa. "
+            "Tiene acceso directo a **Finviz** y **Nasdaq** en el panel de **Enlaces Financieros**."
+        )
+
+    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
+        econ = obtener_indicadores_chile()
+        if econ.get("ok"):
+            dolar_fmt = fmt_clp(econ["dolar"])
+            euro_fmt = fmt_clp(econ["euro"])
+            uf_fmt = fmt_clp(econ["uf"])
+            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
+            return (
+                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
+                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
+            )
 
     if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
         clima = obtener_clima_buin()
         if clima.get("temp_c") is not None:
-            return f"[{nucleo}] En Buin hay **{clima['temp_c']}°C** y el cielo esta **{clima['condicion']}**, jefa."
-        return f"[{nucleo}] No pude obtener la temperatura en vivo en este momento, jefa."
+            return f"{prefijo}En Buin hay **{clima['temp_c']}°C** y el cielo está **{clima['condicion']}**, jefa."
+        return f"{prefijo}Sin lectura meteorológica en vivo en este momento, jefa."
 
-    if any(k in t for k in ["dolar", "euro", "uf", "indicadores", "divisa", "moneda"]):
-        econ = obtener_indicadores_chile()
+    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+        hora_str = ahora.strftime("%H:%M:%S")
         return (
-            f"[{nucleo}] Dolar **{fmt_clp(econ['dolar'])}**, Euro **{fmt_clp(econ['euro'])}** "
-            f"y UF **{fmt_clp(econ['uf'])}**, jefa."
+            f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa. "
+            "El reloj superior sigue sincronizado."
         )
 
-    if any(k in t for k in ["hora", "que hora", "fecha", "dia de hoy"]):
+    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
         return (
-            f"[{nucleo}] En el Nodo Buin hoy es **{ahora.strftime('%d/%m/%Y')}** "
-            f"y son las **{ahora.strftime('%H:%M:%S')}** (hora de Chile), jefa."
+            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
+            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
         )
-
-    if any(k in t for k in ["virus", "malware", "seguridad", "escudo", "diagnostico", "sistema"]):
-        return f"[{nucleo}] {resumen_escudo_sistema()}"
 
     calc = resolver_calculo_o_unidad(texto_usuario)
     if calc:
-        return f"[{nucleo}] {calc}"
+        return f"{prefijo}{calc}"
 
     if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
-        aviso_med = (
-            " (Nota informativa: si presentas molestias o sintomas reales, consulta a un profesional de salud)."
-            if st.session_state.get("modo_medico", False)
-            else ""
-        )
         return (
-            f"[{nucleo}] **Fisiologia del corazon ({texto_usuario.strip()})**: es un organo muscular hueco "
-            "con cuatro cavidades (dos auriculas y dos ventriculos) que bombea sangre por los circuitos "
-            "pulmonar y sistemico mediante ciclos de sistole y diastole, regulados por el sistema de "
-            "conduccion electrica (nodo sinusal, nodo auriculoventricular y haz de His).{aviso_med}"
-        ).format(aviso_med=aviso_med)
+            f"{prefijo}**Fisiología del corazón ({texto_usuario.strip()})**: es un órgano muscular hueco "
+            "con cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre por los circuitos "
+            "pulmonar y sistémico mediante ciclos de sístole y diástole, regulados por el sistema de "
+            "conducción eléctrica (nodo sinusal, nodo auriculoventricular y haz de His)."
+        )
 
     if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
         return (
-            f"[{nucleo}] **Biologia ({texto_usuario.strip()})**: la celula es la unidad basica de la vida; "
-            "el ADN codifica la informacion genetica (transcripcion a ARN y traduccion a proteinas), y la energia "
+            f"{prefijo}**Biología ({texto_usuario.strip()})**: la célula es la unidad básica de la vida; "
+            "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
             "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
         )
 
     if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
         return (
-            f"[{nucleo}] **Geografia ({texto_usuario.strip()})**: estudia relieves, climas, hidrografia, "
-            "poblacion y territorio. En Chile destacan la cordillera de los Andes, la depresion intermedia, "
+            f"{prefijo}**Geografía ({texto_usuario.strip()})**: estudia relieves, climas, hidrografía, "
+            "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
             "la cordillera de la Costa y las planicies litorales."
         )
 
     if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
         return (
-            f"[{nucleo}] **Historia ({texto_usuario.strip()})**: se analiza por causas estructurales y coyunturales, "
-            "actores, cronologia y consecuencias. Indica periodo, lugar o evento exacto para detallarlo."
+            f"{prefijo}**Historia ({texto_usuario.strip()})**: se analiza por causas estructurales y coyunturales, "
+            "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
         )
 
     if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
         return (
-            f"[{nucleo}] **Ciencia y Tecnologia ({texto_usuario.strip()})**: integra modelos, magnitudes y unidades "
-            "del SI con aplicacion practica. Tambien puedes pedir calculos directos o conversiones."
+            f"{prefijo}**Ciencia y Tecnología ({texto_usuario.strip()})**: integra modelos, magnitudes y unidades "
+            "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
         )
 
-    return (
-        f"[{nucleo}] Protocolo de conocimiento activo (biologia, matematicas, aritmetica, geografia, "
-        f"historia, ciencia y tecnologia y calculos). Consulta registrada: **{texto_usuario.strip()}**, jefa."
-    )
+    respuestas_generales = {
+        "JARVIS": [
+            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, protocolo de conocimiento activo; ¿quiere que lo dejemos como misión o que abramos algún módulo del panel?",
+            f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame si necesita cálculos, análisis o registro en memoria."
+        ],
+        "VIERNES": [
+            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. Protocolo listo para resolver o anotar lo que necesite.",
+            f"{prefijo}Anotado, jefa. ¿Qué paso siguiente damos con *'{texto_usuario.strip()}'*?"
+        ],
+        "NOVA": [
+            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. ¿Lo registramos en memoria o revisamos algún módulo del Nodo Buin?",
+            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*. ¿En qué más le apoyo, jefa?"
+        ],
+        "ARTEX": [
+            f"{prefijo}Directiva registrada: *'{texto_usuario.strip()}'*, jefa. Protocolo de conocimiento y control activo.",
+        ],
+    }
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
 
 
 st.session_state.setdefault(
     "mensajes",
-    [{"role": "assistant", "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)}],
+    [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo),
+        }
+    ],
 )
 
-st.markdown(
-    """
+estilos_css = """
     <style>
-    .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-    .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
-        color: #00f3ff !important; font-family: monospace;
-    }
-    [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons,
-    [data-testid="stExpander"] svg, [data-testid="stSidebar"] svg {
-        font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
-        color: #00f3ff !important;
-    }
-    [data-testid="stExpander"] summary {
-        display: flex !important; align-items: center !important; gap: 6px !important;
-    }
-    .stButton>button {
-        background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
-        font-weight: bold; width: 100%; border-radius: 6px; padding: 5px 10px !important;
-    }
-    .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-    .econ-card {
-        border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);
-        border-radius: 6px; padding: 8px 10px; margin: 5px 0;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .arc-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 10px; }
-    .arc-ring {
-        width: 64px; height: 64px; border: 2.5px solid #00f3ff; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        background: radial-gradient(circle, rgba(0,243,255,0.35) 0%, #060913 75%);
-        box-shadow: 0 0 18px rgba(0, 243, 255, 0.75); margin-bottom: 8px;
-    }
-    .arc-tri {
-        width: 0; height: 0; border-left: 11px solid transparent;
-        border-right: 11px solid transparent; border-top: 19px solid #00f3ff;
-    }
-    .tactical-link {
-        display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;
-        text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 6px;
-        text-decoration: none; font-weight: bold; font-size: 0.78rem !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
+        .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
+            color: #00f3ff !important; font-family: monospace;
+        }
+        [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons,
+        [data-testid="stExpander"] svg, [data-testid="stSidebar"] svg {
+            font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
+            color: #00f3ff !important;
+        }
+        [data-testid="stExpander"] summary {
+            display: flex !important; align-items: center !important; gap: 6px !important;
+        }
 
-if not st.session_state.autorizado:
+        [data-testid="stSidebar"] h3 { font-size: 1.05rem !important; }
+        [data-testid="stSidebar"] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+        [data-testid="stSidebar"] summary p { font-size: 0.80rem !important; }
+
+        .stButton>button {
+            background-color: #00f3ff !important;
+            border: 1.5px solid #00f3ff !important;
+            font-weight: bold;
+            font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+            width: 100%;
+            border-radius: 6px;
+            padding: 5px 10px !important;
+        }
+        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+        .stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+
+        .econ-card {
+            border: 1px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2);
+        }
+        .econ-label { font-size: 0.75rem !important; opacity: 0.85; color: #00f3ff !important; }
+        .econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; color: #00f3ff !important; }
+
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arc-ring {
+            width: 65px;
+            height: 65px;
+            border: 2.5px solid #00f3ff;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6);
+            margin-bottom: 8px;
+        }
+        .arc-triangle-inverted {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #00f3ff;
+            filter: drop-shadow(0 0 8px #00f3ff);
+        }
+
+        .tactical-link-btn {
+            display: block;
+            width: 100%;
+            background-color: #00f3ff;
+            color: #060913 !important;
+            text-align: center;
+            padding: 6px 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.76rem !important;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: monospace;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+            transition: all 0.25s ease;
+        }
+        .tactical-link-btn:hover {
+            background-color: #0088cc;
+            color: #ffffff !important;
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
+        }
+
+        .holo-brain-box {
+            border: 1.5px solid #00f3ff;
+            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
+            margin: 0 auto 20px auto;
+            max-width: 800px;
+        }
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
+
+if not st.session_state.get("autorizado", False):
     st.markdown(
-        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
-        "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3></div>",
+        '<div style="text-align: center; margin-top: 50px;">'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        '</div>',
         unsafe_allow_html=True,
     )
-    pin_ingresado = st.text_input("Ingrese PIN de autorizacion", type="password")
-    if st.button("DESBLOQUEAR NUCLEO"):
-        if pin_ingresado == PIN_SECRETO:
-            st.session_state.autorizado = True
-            ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
-            st.session_state.mensajes = [{"role": "assistant", "content": ini}]
-            programar_voz(ini, idioma="es-CL")
-            st.rerun()
-        else:
-            st.error("PIN incorrecto.")
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Sistema")
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+                st.session_state.mensajes = [{"role": "assistant", "content": ini}]
+                programar_voz(ini, idioma="es-CL")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    reproducir_voz_pendiente()
     st.stop()
 
 with st.sidebar:
-    st.markdown(
-        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
-        "<h3>NODO BUIN</h3></div>",
-        unsafe_allow_html=True,
-    )
-    nucleo_sel = st.selectbox(
-        "Nucleo Activo",
-        NUCLEOS_DISPONIBLES,
-        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
-    )
-    if nucleo_sel != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nucleo_sel
-        cam = obtener_saludo_nucleo(nucleo_sel)
-        st.session_state.mensajes.append({"role": "assistant", "content": cam})
-        programar_voz(cam, idioma="es-CL")
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    st.markdown("---")
+
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
 
     st.session_state.voz_masculina_activa = st.checkbox(
-        "Voz activa",
+        "🔊 Voz activa",
         value=st.session_state.voz_masculina_activa,
     )
-    if st.button("Informe diario hablado"):
-        informe = generar_informe_diario_hablado(st.session_state.nucleo_activo, hablar=True)
-        st.session_state.mensajes.append({"role": "assistant", "content": informe})
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
+        label_visibility="collapsed",
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        saludo_cam = obtener_saludo_nucleo(nuevo_nucleo)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
+        programar_voz(saludo_cam, idioma="es-CL")
         st.rerun()
 
-    clima_sb = obtener_clima_buin()
-    clima_sb_txt = f"{clima_sb['temp_c']}°C · {clima_sb['condicion']}" if clima_sb["temp_c"] is not None else clima_sb["condicion"]
-    st.markdown(
-        f"<div class='econ-card'><span>CLIMA BUIN</span><b>{clima_sb_txt}</b></div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("---")
+    st.markdown("#### 💾 Memoria y Datos")
+    with st.expander("Gestionar Memoria SQLite", expanded=False):
+        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
+        if st.button("Guardar en Memoria", use_container_width=True):
+            if dato_mem.strip():
+                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
+                st.success("¡Memoria guardada!")
+        for fact in jarvis_mem.get_recent_facts(4):
+            st.markdown(f"- `{fact}`")
+        if st.button("Purgar Memoria", use_container_width=True):
+            jarvis_mem.clear_facts()
+            st.rerun()
 
-    econ = obtener_indicadores_chile()
-    st.markdown("#### Indicadores Chile")
-    for etiqueta, clave in [("DOLAR", "dolar"), ("EURO", "euro"), ("UF", "uf")]:
+    st.markdown("---")
+    st.markdown("#### 📋 Misiones Tácticas")
+    with st.expander("Base de Datos Misiones", expanded=False):
+        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
+        if st.button("Registrar Tarea", use_container_width=True):
+            if nueva_tarea.strip():
+                agregar_mision(nueva_tarea.strip())
+                st.success("¡Misión registrada!")
+                st.rerun()
+        misiones_guardadas = obtener_misiones()
+        if misiones_guardadas:
+            for m_id, m_text, m_est in misiones_guardadas:
+                st.markdown(f"- `{m_text}`")
+            if st.button("Limpiar Misiones", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🎧 Frecuencias de Enfoque")
+    with st.expander("Deep Work & Música IA", expanded=False):
         st.markdown(
-            f"<div class='econ-card'><span>{etiqueta}</span><b>{fmt_clp(econ[clave])}</b></div>",
+            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">'
+            '🎧 CEO Mode (Deep Work)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">'
+            '🚀 Futuristic Garage Beats'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">'
+            '⚡ Hyperfocus Mode'
+            '</a>',
             unsafe_allow_html=True,
         )
 
-    with st.expander("Misiones & Remedios"):
-        nueva_mision = st.text_input("Nueva mision", key="input_nueva_mision")
-        if st.button("Guardar mision") and nueva_mision.strip():
-            db_add("misiones", "tarea", (nueva_mision.strip(),))
-            st.rerun()
-        for tarea, estado in db_all("misiones", "tarea, estado"):
-            st.write(f"• {tarea} ({estado})")
-        if st.button("Limpiar misiones"):
-            db_clear("misiones")
-            st.rerun()
-
-        st.markdown("#### Remedios")
-        nombre_rem = st.text_input("Remedio", key="input_remedio_nombre")
-        horario_rem = st.text_input("Horario / Momento", value="08:00", key="input_remedio_horario")
-        if st.button("Guardar remedio") and nombre_rem.strip():
-            db_add("remedios", "nombre, horario", (nombre_rem.strip(), horario_rem.strip()))
-            st.rerun()
-        for rem_nom, rem_hor in db_all("remedios", "nombre, horario"):
-            st.write(f"• {rem_nom} — {rem_hor}")
-        if st.button("Limpiar remedios"):
-            db_clear("remedios")
-            st.rerun()
-
-    with st.expander("Memoria & Calculo Rapido"):
-        nota_txt = st.text_input("Guardar nota en memoria", key="input_nota_mem")
-        if st.button("Guardar nota") and nota_txt.strip():
-            db_add("notas", "texto", (nota_txt.strip(),))
-            st.rerun()
-        for (n_txt,) in db_all("notas", "texto")[-5:]:
-            st.write(f"• {n_txt}")
-        if st.button("Limpiar notas"):
-            db_clear("notas")
-            st.rerun()
-
-        expr_rapida = st.text_input("Calculo / conversion rapida", key="input_calc_rapido")
-        if st.button("Ejecutar calculo") and expr_rapida.strip():
-            res_c = resolver_calculo_o_unidad(expr_rapida.strip()) or "Expresion no reconocida."
-            st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {res_c}"})
-            st.rerun()
-
-    with st.expander("Enlaces & Utilidades"):
+    st.markdown("---")
+    st.markdown("#### 📷 Videovigilancia y Cámaras")
+    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
         st.markdown(
-            "<a class='tactical-link' href='https://finviz.com' target='_blank'>FINVIZ</a>"
-            "<a class='tactical-link' href='https://www.nasdaq.com/market-activity/stocks/ant' target='_blank'>ANT (NASDAQ)</a>",
+            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">'
+            'Stgo / Chile (Skyline)'
+            '</a>',
             unsafe_allow_html=True,
         )
-        if st.button("Diagnostico Escudo"):
-            st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {resumen_escudo_sistema()}"})
-            st.rerun()
-
-        st.session_state.modo_medico = st.checkbox("Modo Medico", value=st.session_state.modo_medico)
-        st.session_state.modo_orquestador = st.selectbox(
-            "Modo Orquestador",
-            ["Equilibrado", "Tactico", "Rapido"],
-            index=["Equilibrado", "Tactico", "Rapido"].index(st.session_state.modo_orquestador),
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">'
+            'Concepción Webcam'
+            '</a>',
+            unsafe_allow_html=True,
         )
-        st.session_state.ollama_activo = st.checkbox("Ollama Local", value=st.session_state.ollama_activo)
-        if st.session_state.ollama_activo:
-            st.session_state.ollama_url = st.text_input("URL Ollama", value=st.session_state.ollama_url)
-            st.session_state.ollama_modelo = st.text_input("Modelo Ollama", value=st.session_state.ollama_modelo)
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">'
+            'Windy Radars & Cams'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">'
+            'Galveston Port, Texas'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">'
+            'Puerta del Sol, Madrid'
+            '</a>',
+            unsafe_allow_html=True,
+        )
 
-        destino_msg = st.text_input("Telefono / Mensaje", key="destino_msg")
-        num_limpio = re.sub(r"[^\d+]", "", destino_msg or "")
-        if num_limpio:
-            st.markdown(
-                f"<a class='tactical-link' href='tel:{urllib.parse.quote(num_limpio)}'>LLAMAR</a>"
-                f"<a class='tactical-link' href='https://wa.me/{num_limpio.lstrip('+')}' target='_blank'>WHATSAPP</a>",
-                unsafe_allow_html=True,
-            )
-
-ahora_vista = obtener_hora_chile()
-col_1, col_2 = st.columns([2, 1])
-with col_1:
-    st.markdown("### J.A.R.V.I.S. // NUCLEO TACTICO")
-with col_2:
-    renderizar_reloj_buin_vivo(ahora_vista)
-
-for msg in st.session_state.mensajes:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-prompt_usuario = st.chat_input("Escribe una orden, calculo o consulta...")
-if prompt_usuario and prompt_usuario.strip():
-    texto_limpio = prompt_usuario.strip()
-    st.session_state.mensajes.append({"role": "user", "content": texto_limpio})
-
-    idioma_resp = "en-US" if quiere_ingles(texto_limpio) else "es-CL"
-    nucleo_act = st.session_state.nucleo_activo
-
-    respuesta = consultar_modelo_externo(nucleo_act, texto_limpio, idioma_resp)
-    if not respuesta:
-        respuesta = generar_respuesta_coherente(nucleo_act, texto_limpio)
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    if st.session_state.get("pendiente_voz") is None:
-        programar_voz(respuesta, idioma=idioma_resp)
-    st.rerun()
-
-reproducir_voz_pendiente()
+    st.markdown("---")
+    st.markdown("#### 🛰️ Telemetría Global & Satélites")
+    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">'
+            'OSIRIS (Ojo de Dios)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href
