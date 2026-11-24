@@ -792,4 +792,191 @@ with st.sidebar:
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<a class="tactical-link-btn" href
+            '<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">'
+            'PlanetEar (Satélites)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">'
+            'NASA Worldview'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">'
+            'N2YO (Órbita en Vivo)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">'
+            'Flightradar24 (Aéreo)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">'
+            'Cybermap (Ciberataques)'
+            '</a>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.markdown("#### 📈 Enlaces Financieros")
+    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
+        datos_econ = obtener_indicadores_chile()
+        dolar_fmt = fmt_clp(datos_econ["dolar"])
+        euro_fmt = fmt_clp(datos_econ["euro"])
+        uf_fmt = fmt_clp(datos_econ["uf"])
+
+        st.markdown(
+            f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
+            f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
+            f'<div class="econ-card"><span class="econ-label">📈 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
+            unsafe_allow_html=True,
+        )
+        if datos_econ.get("respaldo"):
+            st.caption("Modo respaldo local (sin conexión externa).")
+
+        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
+            obtener_indicadores_chile.clear()
+            st.rerun()
+
+    st.markdown(
+        '<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">'
+        'Seguimiento ANT (Nasdaq)'
+        '</a>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">'
+        'Monitoreo SpaceX'
+        '</a>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">'
+        'Finviz (Mercados)'
+        '</a>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">'
+        'Investing.com (Divisas)'
+        '</a>',
+        unsafe_allow_html=True,
+    )
+
+now_chile = obtener_hora_chile()
+dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+meses = [
+    "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
+fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+clima_buin = obtener_clima_buin()
+clima_str = f" · {clima_buin['temp_c']}°C ({clima_buin['condicion']})" if clima_buin.get("temp_c") is not None else ""
+
+st.markdown(
+    f'<div class="arc-reactor-container">'
+    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
+    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
+    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
+    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">{now_chile.strftime("%H:%M:%S")}</span>{clima_str} ]'
+    f'</p>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
+
+reloj_js = (
+    "<script>"
+    "(function() {"
+    "function actualizarReloj() {"
+    "const ahora = new Date();"
+    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
+    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
+    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
+    "if (relojEl) { relojEl.innerText = horaChile; }"
+    "}"
+    "actualizarReloj();"
+    "if (window.parent.__jarvisRelojTimer) clearInterval(window.parent.__jarvisRelojTimer);"
+    "window.parent.__jarvisRelojTimer = setInterval(actualizarReloj, 1000);"
+    "})();"
+    "</script>"
+)
+components.html(reloj_js, height=0)
+
+st.markdown(
+    '<div class="holo-brain-box">'
+    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
+    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
+    f'</h4>'
+    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
+    'Motor Táctico Neuronal Activo // Protocolo de Conocimiento y Enlace Directo'
+    '</p>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+st.markdown("---")
+
+col_ch1, col_ch2 = st.columns([5, 1])
+with col_ch1:
+    st.markdown("#### Chat 💬", unsafe_allow_html=True)
+with col_ch2:
+    if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
+        purga_msg = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+        st.session_state.mensajes = [{"role": "assistant", "content": purga_msg}]
+        programar_voz(purga_msg, idioma="es-CL")
+        st.rerun()
+
+for m in st.session_state.mensajes:
+    with st.chat_message(m["role"]):
+        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
+
+prompt_chat = st.chat_input("Escribe tu orden o consulta para JARVIS...")
+
+if prompt_chat:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
+    with st.chat_message("user"):
+        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
+
+    nucleo = st.session_state.nucleo_activo
+    prefijo = f"[{nucleo}] "
+
+    with st.chat_message("assistant"):
+        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
+            respuesta_ia = ""
+            try:
+                if client_groq:
+                    recuerdos = jarvis_mem.get_recent_facts(4)
+                    mem_ctx = f" Recuerdos guardados: {'; '.join(recuerdos)}." if recuerdos else ""
+                    instruccion_sistema = (
+                        f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
+                        f"Tratas a la usuaria de 'jefa'. Eres brillante, leal, extremadamente eficiente y tienes un toque sutil de sarcasmo elegante. "
+                        f"{PROTOCOLO_CONOCIMIENTO_BASE}{mem_ctx}"
+                    )
+                    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
+                        {"role": m["role"], "content": m["content"]}
+                        for m in st.session_state.mensajes[-10:]
+                    ]
+                    completion = client_groq.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=mensajes_api,
+                        temperature=0.75,
+                    )
+                    respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
+                else:
+                    respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
+            except Exception:
+                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
+
+            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
+            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
+            if st.session_state.get("pendiente_voz") is None:
+                programar_voz(respuesta_ia, idioma="es-CL")
+    st.rerun()
+
+reproducir_voz_pendiente()
