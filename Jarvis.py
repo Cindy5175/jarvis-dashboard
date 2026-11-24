@@ -16,7 +16,7 @@ except Exception:
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
@@ -517,71 +517,4 @@ st.markdown(
         background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
         font-weight: bold; width: 100%; border-radius: 6px; padding: 5px 10px !important;
     }
-    .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-    .econ-card {
-        border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);
-        border-radius: 6px; padding: 8px 10px; margin: 5px 0;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .arc-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 10px; }
-    .arc-ring {
-        width: 64px; height: 64px; border: 2.5px solid #00f3ff; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        background: radial-gradient(circle, rgba(0,243,255,0.35) 0%, #060913 75%);
-        box-shadow: 0 0 18px rgba(0, 243, 255, 0.75); margin-bottom: 8px;
-    }
-    .arc-tri {
-        width: 0; height: 0; border-left: 11px solid transparent;
-        border-right: 11px solid transparent; border-top: 19px solid #00f3ff;
-    }
-    .tactical-link {
-        display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;
-        text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 6px;
-        text-decoration: none; font-weight: bold; font-size: 0.78rem !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-if not st.session_state.autorizado:
-    st.markdown(
-        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
-        "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3></div>",
-        unsafe_allow_html=True,
-    )
-    pin_ingresado = st.text_input("Ingrese PIN de autorizacion", type="password")
-    if st.button("DESBLOQUEAR NUCLEO"):
-        if pin_ingresado == PIN_SECRETO:
-            st.session_state.autorizado = True
-            ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
-            st.session_state.mensajes = [{"role": "assistant", "content": ini}]
-            programar_voz(ini, idioma="es-CL")
-            st.rerun()
-        else:
-            st.error("PIN incorrecto.")
-    st.stop()
-
-with st.sidebar:
-    st.markdown(
-        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
-        "<h3>NODO BUIN</h3></div>",
-        unsafe_allow_html=True,
-    )
-    nucleo_sel = st.selectbox(
-        "Nucleo Activo",
-        NUCLEOS_DISPONIBLES,
-        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
-    )
-    if nucleo_sel != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nucleo_sel
-        cam = obtener_saludo_nucleo(nucleo_sel)
-        st.session_state.mensajes.append({"role": "assistant", "content": cam})
-        programar_voz(cam, idioma="es-CL")
-        st.rerun()
-
-    st.session_state.voz_masculina_activa = st.checkbox(
-        "Voz activa",
-        value=st.session_state.voz_masculina_activa,
-    )
-    if st.button("Informe diario
+    .stButton>button p, .stButton>button span { color: #060
