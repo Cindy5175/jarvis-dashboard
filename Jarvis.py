@@ -550,4 +550,133 @@ if not st.session_state.autorizado:
         "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3></div>",
         unsafe_allow_html=True,
     )
-    pin_
+    pin_ingresado = st.text_input("Ingrese PIN de autorizacion", type="password")
+    if st.button("DESBLOQUEAR NUCLEO"):
+        if pin_ingresado == PIN_SECRETO:
+            st.session_state.autorizado = True
+            ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+            st.session_state.mensajes = [{"role": "assistant", "content": ini}]
+            programar_voz(ini, idioma="es-CL")
+            st.rerun()
+        else:
+            st.error("PIN incorrecto.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown(
+        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
+        "<h3>NODO BUIN</h3></div>",
+        unsafe_allow_html=True,
+    )
+    nucleo_sel = st.selectbox(
+        "Nucleo Activo",
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
+    )
+    if nucleo_sel != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nucleo_sel
+        cam = obtener_saludo_nucleo(nucleo_sel)
+        st.session_state.mensajes.append({"role": "assistant", "content": cam})
+        programar_voz(cam, idioma="es-CL")
+        st.rerun()
+
+    st.session_state.voz_masculina_activa = st.checkbox(
+        "Voz activa",
+        value=st.session_state.voz_masculina_activa,
+    )
+    if st.button("Informe diario hablado"):
+        informe = generar_informe_diario_hablado(st.session_state.nucleo_activo, hablar=True)
+        st.session_state.mensajes.append({"role": "assistant", "content": informe})
+        st.rerun()
+
+    econ = obtener_indicadores_chile()
+    st.markdown("#### Indicadores Chile")
+    for etiqueta, clave in [("DOLAR", "dolar"), ("EURO", "euro"), ("UF", "uf")]:
+        st.markdown(
+            f"<div class='econ-card'><span>{etiqueta}</span><b>{fmt_clp(econ[clave])}</b></div>",
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("Misiones & Remedios"):
+        nueva_mision = st.text_input("Nueva mision", key="input_nueva_mision")
+        if st.button("Guardar mision") and nueva_mision.strip():
+            db_add("misiones", "tarea", (nueva_mision.strip(),))
+            st.rerun()
+        for tarea, estado in db_all("misiones", "tarea, estado"):
+            st.write(f"• {tarea} ({estado})")
+        if st.button("Limpiar misiones"):
+            db_clear("misiones")
+            st.rerun()
+
+        st.markdown("#### Remedios")
+        nombre_rem = st.text_input("Remedio", key="input_remedio_nombre")
+        horario_rem = st.text_input("Horario / Momento", value="08:00", key="input_remedio_horario")
+        if st.button("Guardar remedio") and nombre_rem.strip():
+            db_add("remedios", "nombre, horario", (nombre_rem.strip(), horario_rem.strip()))
+            st.rerun()
+        for rem_nom, rem_hor in db_all("remedios", "nombre, horario"):
+            st.write(f"• {rem_nom} — {rem_hor}")
+        if st.button("Limpiar remedios"):
+            db_clear("remedios")
+            st.rerun()
+
+    with st.expander("Enlaces & Utilidades"):
+        st.markdown(
+            "<a class='tactical-link' href='https://finviz.com' target='_blank'>FINVIZ</a>"
+            "<a class='tactical-link' href='https://www.nasdaq.com/market-activity/stocks/ant' target='_blank'>ANT (NASDAQ)</a>",
+            unsafe_allow_html=True,
+        )
+        st.session_state.modo_medico = st.checkbox("Modo Medico", value=st.session_state.modo_medico)
+        st.session_state.modo_orquestador = st.selectbox(
+            "Modo Orquestador",
+            ["Equilibrado", "Tactico", "Rapido"],
+            index=["Equilibrado", "Tactico", "Rapido"].index(st.session_state.modo_orquestador),
+        )
+        st.session_state.ollama_activo = st.checkbox("Ollama Local", value=st.session_state.ollama_activo)
+        if st.session_state.ollama_activo:
+            st.session_state.ollama_url = st.text_input("URL Ollama", value=st.session_state.ollama_url)
+            st.session_state.ollama_modelo = st.text_input("Modelo Ollama", value=st.session_state.ollama_modelo)
+
+        destino_msg = st.text_input("Telefono / Mensaje", key="destino_msg")
+        num_limpio = re.sub(r"[^\d+]", "", destino_msg or "")
+        if num_limpio:
+            st.markdown(
+                f"<a class='tactical-link' href='tel:{urllib.parse.quote(num_limpio)}'>LLAMAR</a>"
+                f"<a class='tactical-link' href='https://wa.me/{num_limpio.lstrip('+')}' target='_blank'>WHATSAPP</a>",
+                unsafe_allow_html=True,
+            )
+
+ahora_vista = obtener_hora_chile()
+col_1, col_2 = st.columns([2, 1])
+with col_1:
+    st.markdown("### J.A.R.V.I.S. // NUCLEO TACTICO")
+with col_2:
+    st.markdown(
+        f"<div style='text-align:right;font-size:0.80rem;padding-top:8px;'>"
+        f"NODO BUIN · {ahora_vista.strftime('%d/%m/%Y')} · {ahora_vista.strftime('%H:%M:%S')}"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+for msg in st.session_state.mensajes:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt_usuario = st.chat_input("Escribe una orden, calculo o consulta...")
+if prompt_usuario and prompt_usuario.strip():
+    texto_limpio = prompt_usuario.strip()
+    st.session_state.mensajes.append({"role": "user", "content": texto_limpio})
+
+    idioma_resp = "en-US" if quiere_ingles(texto_limpio) else "es-CL"
+    nucleo_act = st.session_state.nucleo_activo
+
+    respuesta = consultar_modelo_externo(nucleo_act, texto_limpio, idioma_resp)
+    if not respuesta:
+        respuesta = generar_respuesta_coherente(nucleo_act, texto_limpio)
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    if st.session_state.get("pendiente_voz") is None:
+        programar_voz(respuesta, idioma=idioma_resp)
+    st.rerun()
+
+reproducir_voz_pendiente()
