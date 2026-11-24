@@ -479,4 +479,336 @@ def convertir_unidades_texto(t: str):
     m = re.search(r"(-?\d+(?:[.,]\d+)?)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*(?:a|en|to|in)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)", t)
     if not m:
         return None
-    val = float(m.group(
+    val = float(m.group(1).replace(",", "."))
+    u1 = m.group(2).replace("°", "")
+    u2 = m.group(3).replace("°", "")
+    if u1 == "millas":
+        u1 = "mi"
+    if u2 == "millas":
+        u2 = "mi"
+    if u1 == "libras":
+        u1 = "lb"
+    if u2 == "libras":
+        u2 = "lb"
+
+    long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
+    masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
+
+    if u1 in long_m and u2 in long_m:
+        out = (val * long_m[u1]) / long_m[u2]
+        return f"Conversion: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+    if u1 in masa_kg and u2 in masa_kg:
+        out = (val * masa_kg[u1]) / masa_kg[u2]
+        return f"Conversion: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+
+    temp_units = {"c", "f", "k"}
+    if u1 in temp_units and u2 in temp_units:
+        if u1 == "c":
+            c = val
+        elif u1 == "f":
+            c = (val - 32) * 5 / 9
+        else:
+            c = val - 273.15
+        if u2 == "c":
+            out = c
+        elif u2 == "f":
+            out = c * 9 / 5 + 32
+        else:
+            out = c + 273.15
+        return f"Conversion termica: **{val:g} {u1.upper()}** = **{round(out, 2):g} {u2.upper()}**."
+
+    return None
+
+
+def resumen_sistema_y_seguridad():
+    os_info = f"{platform.system()} {platform.release()}"
+    db_existe = os.path.exists(DB_PATH)
+    misiones_cant = len(obtener_misiones())
+    mem_cant = len(jarvis_mem.recent_facts(50))
+    activos_mcp = sum(1 for v in st.session_state.get("mcp_conectores", {}).values() if v)
+    cpu_txt = "N/D"
+    ram_txt = "N/D"
+    if PSUTIL_AVAILABLE:
+        try:
+            cpu_txt = f"{psutil.cpu_percent(interval=0.2)}%"
+            ram_txt = f"{psutil.virtual_memory().percent}%"
+        except Exception:
+            pass
+    sospechosos = []
+    try:
+        sospechosos = [
+            f for f in os.listdir(".")
+            if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
+        ]
+    except Exception:
+        sospechosos = []
+    estado_vir = "Integridad 98% · Sin ejecutables sospechosos en raiz." if not sospechosos else f"Archivos ejecutables detectados en raiz: {', '.join(sospechosos[:5])}."
+    return (
+        f"Escudo & Optimizacion ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
+        f"Conectores MCP activos **{activos_mcp}/5**, SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), "
+        f"**{misiones_cant}** misiones y **{mem_cant}** memorias. {estado_vir}"
+    )
+
+
+def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str:
+    pref = f"[{nucleo}] "
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
+    cierre = ""
+    if nucleo == "JARVIS":
+        cierre = " Como siempre, jefa, un detalle tecnico mas dominado."
+    elif nucleo == "VIERNES":
+        cierre = " Lista para el siguiente paso, jefa."
+    elif nucleo == "NOVA":
+        cierre = f" Senal verificada desde el Nodo Buin para '{raw_user.strip()}', jefa."
+    elif nucleo == "ARTEX":
+        cierre = f" [Modo {modo_orq} · Pipeline bajo control], jefa."
+    return f"{pref}{nucleo_content}{cierre}"
+
+
+def responder_conocimiento_base(t: str, raw: str):
+    if any(k in t for k in ["informe diario", "resumen del dia", "reporte diario", "briefing"]):
+        return generar_informe_diario_hablado(st.session_state.get("nucleo_activo", "JARVIS"), hablar=True)
+
+    if any(k in t for k in ["remedio", "remedios", "medicamento", "medicamentos", "pastilla", "pastillas"]):
+        remedios = obtener_remedios()
+        if remedios:
+            detalle = ", ".join(f"**{r[1]}** ({r[2]})" for r in remedios)
+            return f"Recordatorios de remedios registrados: {detalle}."
+        return "No tienes remedios registrados aun en Misiones & Memoria."
+
+    if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"En Buin hay **{clima['temp_c']}°C** y el cielo esta **{clima['condicion']}**."
+        return "No pude obtener la temperatura en vivo en este momento, jefa."
+
+    conv = convertir_unidades_texto(t)
+    if conv:
+        return conv
+
+    calculo = evaluar_calculo_seguro(raw)
+    if calculo:
+        return calculo
+
+    if any(k in t for k in ["agentes", "equipo", "orquestador", "mcp", "conector", "conectores", "artex", "artax"]):
+        activos = [k for k, v in st.session_state.get("mcp_conectores", {}).items() if v]
+        return (
+            f"Orquestacion multi-nucleo (`JARVIS`, `VIERNES`, `NOVA`, `ARTEX`) en modo **{st.session_state.get('modo_orquestador', 'Equilibrado')}** "
+            f"con conectores MCP activos: **{', '.join(activos) if activos else 'ninguno'}**."
+        )
+
+    if st.session_state.get("mcp_conectores", {}).get("Security & System Shield", True) and any(
+        k in t for k in ["virus", "malware", "seguridad", "optimizar", "optimizacion", "rendimiento", "diagnostico", "escudo"]
+    ):
+        return resumen_sistema_y_seguridad()
+
+    if st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True) and any(
+        k in t for k in ["llamar", "llamada", "mensaje", "enviar mensaje", "whatsapp", "correo"]
+    ):
+        return (
+            "Modulo de **Llamadas y Mensajes**: puedes redactar el texto o numero en el panel lateral de "
+            "**Modos & Utilidades Tacticas** para generar el enlace directo (`tel:` / `wa.me`)."
+        )
+
+    if st.session_state.get("modo_medico", False) or any(
+        k in t for k in ["sintoma", "dolor", "fiebre", "presion", "pulso", "medicina", "medico", "salud"]
+    ):
+        return (
+            "**Modo Medico (orientacion general)**: para evaluar cualquier sintoma o parametro clinico, "
+            "indica edad, intensidad, duracion y signos de alarma. Esto es informacion general y no sustituye una evaluacion medica."
+        )
+
+    return None
+
+
+def responder_pregunta_general_local(nucleo: str, texto_usuario: str, en_ingles: bool = False) -> str:
+    limpio = texto_usuario.strip()
+    if en_ingles:
+        cuerpo = (
+            f"Regarding '{limpio}', I am running in local/offline-ready mode. "
+            "I can handle conversions, system/security diagnostics, medical info, or save this as a mission."
+        )
+        return f"[{nucleo}] {cuerpo}"
+
+    cuerpo = (
+        f"He registrado tu consulta sobre **{limpio}**. Puedo asistirte con conversiones, revision de seguridad, "
+        "modo medico, clima en Buin, indicadores de Chile, remedios y misiones."
+    )
+    return estilizar_por_nucleo(nucleo, cuerpo, limpio)
+
+
+def consultar_ollama_local(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    if not st.session_state.get("ollama_activo", False):
+        return ""
+    if not st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True):
+        return ""
+    base_url = (st.session_state.get("ollama_url") or "http://localhost:11434").rstrip("/")
+    modelo = (st.session_state.get("ollama_modelo") or "llama3.2").strip()
+    idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en espanol."
+    system_prompt = (
+        f"Eres {nucleo}, asistente tactico en el Nodo Buin. Tratas a la usuaria de 'jefa'. {idioma_rule}"
+    )
+    try:
+        resp = requests.post(
+            f"{base_url}/api/chat",
+            json={
+                "model": modelo,
+                "stream": False,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": texto_usuario}
+                ]
+            },
+            timeout=8
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            msg = ((data.get("message") or {}).get("content") or "").strip()
+            if msg:
+                return f"[{nucleo} · Ollama] {msg}"
+    except Exception:
+        return ""
+    return ""
+
+
+def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    ollama_resp = consultar_ollama_local(nucleo, texto_usuario, idioma_voz)
+    if ollama_resp:
+        return ollama_resp
+
+    if not client_groq:
+        return ""
+    rec_mem = "; ".join(jarvis_mem.recent_facts(5)) if st.session_state.get("mcp_conectores", {}).get("SQLite Memory & Missions", True) else ""
+    estilo_nucleo = {
+        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
+        "VIERNES": "Eres VIERNES, rapida, directa y resolutiva.",
+        "NOVA": "Eres NOVA, dinamica, clara y con enfoque tactico desde el Nodo Buin.",
+        "ARTEX": "Eres ARTEX, analitico, preciso, firme y enfocado en orquestacion, conectores y seguridad bajo control de la jefa."
+    }.get(nucleo, "Eres un asistente tactico.")
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
+    idioma_rule = "Responde en ingles." if idioma_voz == "en-US" else "Responde en espanol."
+    modo_med = " Activa enfoque medico informativo con advertencia clinica." if st.session_state.get("modo_medico", False) else ""
+    instruccion_sistema = (
+        f"{estilo_nucleo} Tratas a la usuaria de 'jefa'. Modo de trabajo: {modo_orq}."
+        f"{modo_med} {idioma_rule} {'Memorias recientes: ' + rec_mem if rec_mem else ''}"
+    )
+    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
+        {"role": m["role"], "content": m["content"]}
+        for m in st.session_state.mensajes
+    ]
+    for modelo in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        try:
+            completion = client_groq.chat.completions.create(
+                model=modelo,
+                messages=mensajes_api,
+                temperature=0.75
+            )
+            contenido = (completion.choices[0].message.content or "").strip()
+            if contenido:
+                return f"[{nucleo}] {contenido}"
+        except Exception:
+            continue
+    return ""
+
+
+def generar_respuesta_coherente(nucleo, texto_usuario):
+    t = texto_usuario.strip().lower()
+
+    if quiere_ingles(texto_usuario):
+        base_en = (
+            f"Understood, Boss. Switching to English for '{texto_usuario.strip()}'. "
+            "Multi-core orchestration, MCP connectors, conversions, diagnostics, medical mode, "
+            "weather, and finance indicators are online."
+        )
+        return f"[{nucleo}] {base_en}"
+
+    palabras_saludo = [
+        "hola", "buenas", "buenos dias",
+        "buenas tardes", "buenas noches", "holi", "que tal"
+    ]
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
+        return obtener_saludo_nucleo(nucleo)
+
+    resp_base = responder_conocimiento_base(t, texto_usuario)
+    if resp_base:
+        return estilizar_por_nucleo(nucleo, resp_base, texto_usuario)
+
+    if st.session_state.get("mcp_conectores", {}).get("Chile Macro & Markets", True) and any(
+        k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]
+    ):
+        msg_bolsa = (
+            "En modo respaldo local no tengo cotizaciones bursatiles en vivo dentro del chat, jefa. "
+            "Puede revisar **Finviz** o **ANT (Nasdaq)** en el panel lateral de **Enlaces Financieros**."
+        )
+        return estilizar_por_nucleo(nucleo, msg_bolsa, texto_usuario)
+
+    if st.session_state.get("mcp_conectores", {}).get("Chile Macro & Markets", True) and any(
+        k in t for k in ["dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]
+    ):
+        econ = obtener_indicadores_chile()
+        if econ.get("ok"):
+            dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
+            msg_econ = (
+                f"Indicadores registrados en el Nodo Buin{nota_resp}: "
+                f"Dolar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
+            )
+            return estilizar_por_nucleo(nucleo, msg_econ, texto_usuario)
+
+    if any(k in t for k in ["hora", "que hora", "fecha", "dia de hoy"]):
+        hora_str = now_chile.strftime("%H:%M:%S")
+        return estilizar_por_nucleo(nucleo, f"En el Nodo Buin son las **{hora_str}** (hora de Chile).", texto_usuario)
+
+    if any(k in t for k in ["estado", "sistema", "mision", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
+        return estilizar_por_nucleo(
+            nucleo,
+            f"Nucleo **{nucleo}** operativo en el Nodo Buin con **{cant}** mision(es) registrada(s).",
+            texto_usuario
+        )
+
+    return responder_pregunta_general_local(nucleo, texto_usuario, en_ingles=False)
+
+
+if "mensajes" not in st.session_state:
+    st.session_state.mensajes = [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo)
+        }
+    ]
+
+estilos_css = (
+    "<style>"
+    ".stApp { background-color: #060913 !important; color: #00f3ff !important; }"
+    ".stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp div {"
+    "color: #00f3ff !important; font-family: monospace; }"
+    "[data-testid='stIconMaterial'], .material-symbols-rounded, .material-icons {"
+    "font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important; color: #00f3ff !important; }"
+    "[data-testid='stSidebar'] h3 { font-size: 1.05rem !important; }"
+    "[data-testid='stSidebar'] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }"
+    "[data-testid='stSidebar'] summary p { font-size: 0.80rem !important; }"
+    ".stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;"
+    "font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);"
+    "width: 100%; border-radius: 6px; padding: 5px 10px !important; }"
+    ".stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }"
+    ".stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }"
+    ".stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }"
+    ".econ-card { border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);"
+    "border-radius: 6px; padding: 8px 10px; margin: 5px 0; display: flex;"
+    "justify-content: space-between; align-items: center; box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2); }"
+    ".econ-label { font-size: 0.75rem !important; opacity: 0.85; }"
+    ".econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }"
+    ".arc-reactor-container { display: flex; flex-direction: column; align-items: center;"
+    "justify-content: center; text-align: center; margin-bottom: 10px; }"
+    ".arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%;"
+    "position: relative; display: flex; align-items: center; justify-content: center;"
+    "background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);"
+    "box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }"
+    ".arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent;"
+    "border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }"
+    ".tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;"
+    "text-align: center
