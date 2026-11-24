@@ -369,46 +369,4 @@ def programar_voz(texto: str, idioma: str = "es-CL"):
 
 def reproducir_voz_pendiente():
     pendiente = st.session_state.get("pendiente_voz")
-    if not pendiente or not st.session_state.get("voz_masculina_activa", True):
-        return
-    st.session_state["pendiente_voz"] = None
-    texto = pendiente.get("texto", "")
-    idioma = pendiente.get("idioma", "es-CL")
-    limpio = limpiar_texto_voz(texto)
-    if not limpio:
-        return
-    escapado = (
-        limpio.replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("'", "\\'")
-        .replace("\r", " ")
-        .replace("\n", " ")
-    )
-    pref_lang = idioma[:2].lower()
-    js_voz = (
-        "<script>(function(){try{if(!('speechSynthesis' in window))return;"
-        "function hablar(){try{window.speechSynthesis.cancel();"
-        f'const u=new SpeechSynthesisUtterance("{escapado}");'
-        f"u.lang='{idioma}';u.rate=1.02;u.pitch=0.84;"
-        "const vs=window.speechSynthesis.getVoices()||[];"
-        f"const v=vs.find(x=>((x.lang||'').toLowerCase().startsWith('{pref_lang}')&&!/sabina|helena|zira|hazel|lucia|sofia|female|mujer/.test((x.name||'').toLowerCase())))||vs.find(x=>(x.lang||'').toLowerCase().startsWith('{pref_lang}'));"
-        "if(v)u.voice=v;window.speechSynthesis.speak(u);}catch(e){}}"
-        "if(window.speechSynthesis.getVoices().length>0){setTimeout(hablar,120);}"
-        "else{window.speechSynthesis.onvoiceschanged=function(){setTimeout(hablar,120);};setTimeout(hablar,350);}"
-        "}catch(e){}})();</script>"
-    )
-    try:
-        components.html(js_voz, height=0)
-    except Exception:
-        pass
-
-
-def generar_informe_diario_hablado(nucleo: str = "JARVIS", hablar: bool = True) -> str:
-    ahora = obtener_hora_chile()
-    econ = obtener_indicadores_chile()
-    clima = obtener_clima_buin()
-    misiones = obtener_misiones()
-    remedios = obtener_remedios()
-    memorias = (
-        jarvis_mem.recent_facts(2)
-        if st.session
+    if not pendiente or not st.session_state.get("voz_masculina_activa",
