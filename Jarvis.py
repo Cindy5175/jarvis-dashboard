@@ -369,4 +369,11 @@ def programar_voz(texto: str, idioma: str = "es-CL"):
 
 def reproducir_voz_pendiente():
     pendiente = st.session_state.get("pendiente_voz")
-    if not pendiente or not st.session_state.get("voz_masculina_activa",
+    if not pendiente or not st.session_state.get("voz_masculina_activa", True):
+        return
+    st.session_state["pendiente_voz"] = None
+    texto = pendiente.get("texto", "")
+    idioma = pendiente.get("idioma", "es-CL")
+    limpio = limpiar_texto_voz(texto)
+    if not limpio:
+        return
