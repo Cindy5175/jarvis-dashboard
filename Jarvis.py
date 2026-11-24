@@ -237,7 +237,7 @@ def programar_voz(texto, idioma="es-CL"):
         limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace ", texto or "")
         limpio = re.sub(r"https?://\S+", " enlace ", limpio)
         limpio = re.sub(r"[*_`#>\[\]]+", " ", limpio)
-        limpio = re.sub(r"\s+", " ", limpio).strip()[:650]
+        limpio = re.sub(r"\s+", " ", limpio).strip()[:420]
         if limpio:
             st.session_state["pendiente_voz"] = {"texto": limpio, "idioma": idioma}
 
@@ -251,13 +251,16 @@ def reproducir_voz_pendiente():
     lang = pendiente["idioma"]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
+        "setTimeout(function(){try{"
         "window.speechSynthesis.cancel();"
         f'const u=new SpeechSynthesisUtterance("{txt}");'
         f"u.lang='{lang}';u.rate=1.02;u.pitch=0.84;"
-        "window.speechSynthesis.speak(u);}catch(e){}})();</script>"
+        "window.speechSynthesis.speak(u);"
+        "}catch(e){}},120);"
+        "}catch(e){}})();</script>"
     )
     try:
-        components.html(js_voz, height=0)
+        components.html(js_voz, height=1)
     except Exception:
         pass
 
@@ -440,7 +443,7 @@ def resumen_escudo_sistema():
     ram_txt = "N/D"
     if psutil:
         try:
-            cpu_txt = f"{psutil.cpu_percent(interval=0.1)}%"
+            cpu_txt = f"{psutil.cpu_percent(interval=0.05)}%"
             ram_txt = f"{psutil.virtual_memory().percent}%"
         except Exception:
             pass
@@ -486,7 +489,7 @@ def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
                         {"role": "user", "content": texto_usuario},
                     ],
                 },
-                timeout=8,
+                timeout=4,
             )
             if resp.status_code == 200:
                 msg = ((resp.json().get("message") or {}).get("content") or "").strip()
@@ -497,14 +500,15 @@ def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
 
     if client_groq:
         mensajes_api = [{"role": "system", "content": sys_prompt}] + [
-            {"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes
+            {"role": m["role"], "content": m["content"]} for m in st.session_state.mensajes[-8:]
         ]
-        for modelo in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        for modelo in ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]:
             try:
                 comp = client_groq.chat.completions.create(
                     model=modelo,
                     messages=mensajes_api,
                     temperature=0.65,
+                    timeout=5,
                 )
                 contenido = (comp.choices[0].message.content or "").strip()
                 if contenido:
@@ -516,7 +520,7 @@ def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
 
 def generar_respuesta_coherente(nucleo, texto_usuario):
     ahora = obtener_hora_chile()
-    t = texto_usuario.strip().lower()
+    t = (texto_usuario or "").strip().lower()
 
     if quiere_ingles(texto_usuario):
         return (
@@ -557,27 +561,40 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if calc:
         return f"[{nucleo}] {calc}"
 
-    if any(k in t for k in ["biologia", "celula", "adn", "genetica", "ecosistema", "fotosintesis", "evolucion"]):
+    if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
+        aviso_med = (
+            " (Nota informativa: si presentas molestias o sintomas reales, consulta a un profesional de salud)."
+            if st.session_state.get("modo_medico", False)
+            else ""
+        )
+        return (
+            f"[{nucleo}] **Fisiologia del corazon ({texto_usuario.strip()})**: es un organo muscular hueco "
+            "con cuatro cavidades (dos auriculas y dos ventriculos) que bombea sangre por los circuitos "
+            "pulmonar y sistemico mediante ciclos de sistole y diastole, regulados por el sistema de "
+            "conduccion electrica (nodo sinusal, nodo auriculoventricular y haz de His).{aviso_med}"
+        ).format(aviso_med=aviso_med)
+
+    if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
         return (
             f"[{nucleo}] **Biologia ({texto_usuario.strip()})**: la celula es la unidad basica de la vida; "
             "el ADN codifica la informacion genetica (transcripcion a ARN y traduccion a proteinas), y la energia "
             "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
         )
 
-    if any(k in t for k in ["geografia", "capital", "cordillera", "rio", "continente", "hemisferio", "latitud", "longitud"]):
+    if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
         return (
             f"[{nucleo}] **Geografia ({texto_usuario.strip()})**: estudia relieves, climas, hidrografia, "
             "poblacion y territorio. En Chile destacan la cordillera de los Andes, la depresion intermedia, "
             "la cordillera de la Costa y las planicies litorales."
         )
 
-    if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "imperio", "independencia", "epoca"]):
+    if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
         return (
             f"[{nucleo}] **Historia ({texto_usuario.strip()})**: se analiza por causas estructurales y coyunturales, "
             "actores, cronologia y consecuencias. Indica periodo, lugar o evento exacto para detallarlo."
         )
 
-    if any(k in t for k in ["fisica", "quimica", "atomo", "energia", "velocidad", "fuerza", "tecnologia", "algoritmo", "python", "astronomia"]):
+    if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
         return (
             f"[{nucleo}] **Ciencia y Tecnologia ({texto_usuario.strip()})**: integra modelos, magnitudes y unidades "
             "del SI con aplicacion practica. Tambien puedes pedir calculos directos o conversiones."
