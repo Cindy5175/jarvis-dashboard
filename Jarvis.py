@@ -1,6 +1,7 @@
 import datetime
 import math
 import os
+import platform
 import re
 import sqlite3
 import urllib.parse
@@ -12,6 +13,11 @@ try:
     from groq import Groq
 except Exception:
     Groq = None
+
+try:
+    import psutil
+except Exception:
+    psutil = None
 
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
@@ -87,6 +93,11 @@ def init_db():
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "nombre TEXT NOT NULL, "
             "horario TEXT DEFAULT '08:00')"
+        )
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS notas ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "texto TEXT NOT NULL)"
         )
         conn.commit()
         conn.close()
@@ -257,6 +268,7 @@ def generar_informe_diario_hablado(nucleo, hablar=True):
     clima = obtener_clima_buin()
     misiones = db_all("misiones", "tarea, estado")
     remedios = db_all("remedios", "nombre, horario")
+    notas = db_all("notas", "texto")
 
     if clima.get("temp_c") is not None:
         clima_txt = f"Clima en Buin: {clima['temp_c']} grados y {clima['condicion']}."
@@ -277,10 +289,11 @@ def generar_informe_diario_hablado(nucleo, hablar=True):
         if misiones
         else "Sin misiones pendientes."
     )
+    not_txt = f" Notas: {', '.join(n[0] for n in notas[-2:])}." if notas else ""
 
     informe = (
         f"[{nucleo}] Informe diario del Nodo Buin, {ahora.strftime('%d/%m/%Y')}, "
-        f"{ahora.strftime('%H:%M')} horas. {clima_txt} {fin_txt} {rem_txt} {mis_txt} Todo listo, jefa."
+        f"{ahora.strftime('%H:%M')} horas. {clima_txt} {fin_txt} {rem_txt} {mis_txt}{not_txt} Todo listo, jefa."
     )
     if hablar:
         programar_voz(informe, idioma="es-CL")
@@ -373,6 +386,28 @@ def resolver_calculo_o_unidad(texto_raw):
     return None
 
 
+def resumen_escudo_sistema():
+    os_txt = f"{platform.system()} {platform.release()}"
+    cpu_txt = "N/D"
+    ram_txt = "N/D"
+    if psutil:
+        try:
+            cpu_txt = f"{psutil.cpu_percent(interval=0.1)}%"
+            ram_txt = f"{psutil.virtual_memory().percent}%"
+        except Exception:
+            pass
+    sospechosos = []
+    try:
+        sospechosos = [
+            f for f in os.listdir(".")
+            if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
+        ]
+    except Exception:
+        pass
+    estado = "Sin ejecutables sospechosos en raiz." if not sospechosos else f"Ejecutables en raiz: {', '.join(sospechosos[:4])}."
+    return f"Escudo ({os_txt}): CPU **{cpu_txt}**, RAM **{ram_txt}**, SQLite `{DB_PATH}` activo. {estado}"
+
+
 def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
     estilo = {
         "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
@@ -382,9 +417,11 @@ def consultar_modelo_externo(nucleo, texto_usuario, idioma_voz):
     }.get(nucleo, "Eres un asistente tactico.")
     idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en espanol."
     modo_med = " Activa enfoque medico informativo con advertencia clinica." if st.session_state.get("modo_medico", False) else ""
+    notas_rec = "; ".join(n[0] for n in db_all("notas", "texto")[-4:])
+    mem_txt = f" Notas guardadas: {notas_rec}." if notas_rec else ""
     sys_prompt = (
         f"{estilo} Tratas a la usuaria de 'jefa'. Modo: {st.session_state.get('modo_orquestador', 'Equilibrado')}. "
-        f"{PROTOCOLO_CONOCIMIENTO_BASE}{modo_med} {idioma_rule}"
+        f"{PROTOCOLO_CONOCIMIENTO_BASE}{modo_med} {idioma_rule}{mem_txt}"
     )
 
     if st.session_state.get("ollama_activo", False):
@@ -465,6 +502,9 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             f"y son las **{ahora.strftime('%H:%M:%S')}** (hora de Chile), jefa."
         )
 
+    if any(k in t for k in ["virus", "malware", "seguridad", "escudo", "diagnostico", "sistema"]):
+        return f"[{nucleo}] {resumen_escudo_sistema()}"
+
     calc = resolver_calculo_o_unidad(texto_usuario)
     if calc:
         return f"[{nucleo}] {calc}"
@@ -510,8 +550,16 @@ st.markdown(
     """
     <style>
     .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-    .stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp div {
+    .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
         color: #00f3ff !important; font-family: monospace;
+    }
+    [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons,
+    [data-testid="stExpander"] svg, [data-testid="stSidebar"] svg {
+        font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
+        color: #00f3ff !important;
+    }
+    [data-testid="stExpander"] summary {
+        display: flex !important; align-items: center !important; gap: 6px !important;
     }
     .stButton>button {
         background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
@@ -589,6 +637,13 @@ with st.sidebar:
         st.session_state.mensajes.append({"role": "assistant", "content": informe})
         st.rerun()
 
+    clima_sb = obtener_clima_buin()
+    clima_sb_txt = f"{clima_sb['temp_c']}°C · {clima_sb['condicion']}" if clima_sb["temp_c"] is not None else clima_sb["condicion"]
+    st.markdown(
+        f"<div class='econ-card'><span>CLIMA BUIN</span><b>{clima_sb_txt}</b></div>",
+        unsafe_allow_html=True,
+    )
+
     econ = obtener_indicadores_chile()
     st.markdown("#### Indicadores Chile")
     for etiqueta, clave in [("DOLAR", "dolar"), ("EURO", "euro"), ("UF", "uf")]:
@@ -620,12 +675,33 @@ with st.sidebar:
             db_clear("remedios")
             st.rerun()
 
+    with st.expander("Memoria & Calculo Rapido"):
+        nota_txt = st.text_input("Guardar nota en memoria", key="input_nota_mem")
+        if st.button("Guardar nota") and nota_txt.strip():
+            db_add("notas", "texto", (nota_txt.strip(),))
+            st.rerun()
+        for (n_txt,) in db_all("notas", "texto")[-5:]:
+            st.write(f"• {n_txt}")
+        if st.button("Limpiar notas"):
+            db_clear("notas")
+            st.rerun()
+
+        expr_rapida = st.text_input("Calculo / conversion rapida", key="input_calc_rapido")
+        if st.button("Ejecutar calculo") and expr_rapida.strip():
+            res_c = resolver_calculo_o_unidad(expr_rapida.strip()) or "Expresion no reconocida."
+            st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {res_c}"})
+            st.rerun()
+
     with st.expander("Enlaces & Utilidades"):
         st.markdown(
             "<a class='tactical-link' href='https://finviz.com' target='_blank'>FINVIZ</a>"
             "<a class='tactical-link' href='https://www.nasdaq.com/market-activity/stocks/ant' target='_blank'>ANT (NASDAQ)</a>",
             unsafe_allow_html=True,
         )
+        if st.button("Diagnostico Escudo"):
+            st.session_state.mensajes.append({"role": "assistant", "content": f"[{st.session_state.nucleo_activo}] {resumen_escudo_sistema()}"})
+            st.rerun()
+
         st.session_state.modo_medico = st.checkbox("Modo Medico", value=st.session_state.modo_medico)
         st.session_state.modo_orquestador = st.selectbox(
             "Modo Orquestador",
