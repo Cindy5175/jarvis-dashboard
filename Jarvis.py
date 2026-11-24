@@ -262,6 +262,54 @@ def reproducir_voz_pendiente():
         pass
 
 
+def renderizar_reloj_buin_vivo(ahora_chile):
+    init_epoch_ms = int(ahora_chile.timestamp() * 1000)
+    html_reloj = f"""
+    <div id="reloj-buin-vivo" style="
+        text-align: right;
+        color: #00f3ff;
+        font-family: monospace;
+        font-size: 0.80rem;
+        padding-top: 8px;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    ">NODO BUIN · {ahora_chile.strftime('%d/%m/%Y')} · {ahora_chile.strftime('%H:%M:%S')}</div>
+    <script>
+    (function() {{
+        const el = document.getElementById("reloj-buin-vivo");
+        if (!el) return;
+        const offsetMs = -3 * 3600 * 1000;
+        const serverStart = {init_epoch_ms};
+        const clientStart = Date.now();
+        function pad2(n) {{ return n < 10 ? "0" + n : "" + n; }}
+        function tick() {{
+            const elapsed = Date.now() - clientStart;
+            const d = new Date(serverStart + elapsed + offsetMs);
+            const dia = pad2(d.getUTCDate());
+            const mes = pad2(d.getUTCMonth() + 1);
+            const anio = d.getUTCFullYear();
+            const hh = pad2(d.getUTCHours());
+            const mm = pad2(d.getUTCMinutes());
+            const ss = pad2(d.getUTCSeconds());
+            el.textContent = "NODO BUIN · " + dia + "/" + mes + "/" + anio + " · " + hh + ":" + mm + ":" + ss;
+        }}
+        tick();
+        if (window.__jarvisRelojInterval) clearInterval(window.__jarvisRelojInterval);
+        window.__jarvisRelojInterval = setInterval(tick, 1000);
+    }})();
+    </script>
+    """
+    try:
+        components.html(html_reloj, height=34)
+    except Exception:
+        st.markdown(
+            f"<div style='text-align:right;font-size:0.80rem;padding-top:8px;'>"
+            f"NODO BUIN · {ahora_chile.strftime('%d/%m/%Y')} · {ahora_chile.strftime('%H:%M:%S')}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+
 def generar_informe_diario_hablado(nucleo, hablar=True):
     ahora = obtener_hora_chile()
     econ = obtener_indicadores_chile()
@@ -727,12 +775,7 @@ col_1, col_2 = st.columns([2, 1])
 with col_1:
     st.markdown("### J.A.R.V.I.S. // NUCLEO TACTICO")
 with col_2:
-    st.markdown(
-        f"<div style='text-align:right;font-size:0.80rem;padding-top:8px;'>"
-        f"NODO BUIN · {ahora_vista.strftime('%d/%m/%Y')} · {ahora_vista.strftime('%H:%M:%S')}"
-        f"</div>",
-        unsafe_allow_html=True,
-    )
+    renderizar_reloj_buin_vivo(ahora_vista)
 
 for msg in st.session_state.mensajes:
     with st.chat_message(msg["role"]):
