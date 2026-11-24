@@ -872,3 +872,106 @@ with st.sidebar:
     st.session_state.voz_masculina_activa = st.checkbox(
         "Voz activa",
         value=st.session_state.voz_masculina_activa
+    )
+
+    if st.button("Informe diario hablado"):
+        informe = generar_informe_diario_hablado(st.session_state.nucleo_activo, hablar=True)
+        st.session_state.mensajes.append({"role": "assistant", "content": informe})
+        st.rerun()
+
+    st.markdown("#### Indicadores Chile")
+    econ = obtener_indicadores_chile()
+    dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    st.markdown(
+        f"<div class='econ-card'><span class='econ-label'>DOLAR</span><span class='econ-val'>{dolar_fmt}</span></div>"
+        f"<div class='econ-card'><span class='econ-label'>EURO</span><span class='econ-val'>{euro_fmt}</span></div>"
+        f"<div class='econ-card'><span class='econ-label'>UF</span><span class='econ-val'>{uf_fmt}</span></div>",
+        unsafe_allow_html=True
+    )
+
+    with st.expander("Misiones & Memoria"):
+        nueva_mision = st.text_input("Nueva mision", key="input_nueva_mision")
+        if st.button("Guardar mision") and nueva_mision.strip():
+            agregar_mision(nueva_mision.strip())
+            jarvis_mem.remember_fact(
+                key_id=now_chile.strftime("%Y%m%d%H%M%S"),
+                fact_text=nueva_mision.strip(),
+                category="mision"
+            )
+            st.rerun()
+        misiones_actuales = obtener_misiones()
+        for _, tarea, estado in misiones_actuales:
+            st.write(f"• {tarea} ({estado})")
+        if misiones_actuales and st.button("Limpiar misiones"):
+            limpiar_misiones()
+            st.rerun()
+
+        st.markdown("#### Remedios")
+        nombre_rem = st.text_input("Remedio", key="input_remedio_nombre")
+        horario_rem = st.text_input("Horario / Momento", value="08:00", key="input_remedio_horario")
+        if st.button("Guardar remedio") and nombre_rem.strip():
+            agregar_remedio(nombre_rem.strip(), horario_rem.strip())
+            st.rerun()
+        remedios_actuales = obtener_remedios()
+        for _, rem_nom, rem_hor in remedios_actuales:
+            st.write(f"• {rem_nom} — {rem_hor}")
+        if remedios_actuales and st.button("Limpiar remedios"):
+            limpiar_remedios()
+            st.rerun()
+
+    with st.expander("Enlaces Financieros"):
+        st.markdown(
+            "<a class='tactical-link-btn' href='https://finviz.com' target='_blank'>FINVIZ</a>"
+            "<a class='tactical-link-btn' href='https://www.nasdaq.com/market-activity/stocks/ant' target='_blank'>ANT (NASDAQ)</a>",
+            unsafe_allow_html=True
+        )
+
+    with st.expander("Modos & Utilidades Tacticas"):
+        st.session_state.modo_medico = st.checkbox("Modo Medico", value=st.session_state.modo_medico)
+        st.session_state.modo_orquestador = st.selectbox(
+            "Modo Orquestador",
+            ["Equilibrado", "Tactico", "Rapido"],
+            index=["Equilibrado", "Tactico", "Rapido"].index(st.session_state.modo_orquestador)
+        )
+        st.session_state.ollama_activo = st.checkbox("Ollama Local", value=st.session_state.ollama_activo)
+        if st.session_state.ollama_activo:
+            st.session_state.ollama_url = st.text_input("URL Ollama", value=st.session_state.ollama_url)
+            st.session_state.ollama_modelo = st.text_input("Modelo Ollama", value=st.session_state.ollama_modelo)
+
+        destino_msg = st.text_input("Telefono / Mensaje", key="destino_msg")
+        if destino_msg.strip():
+            num_limpio = re.sub(r"[^\d+]", "", destino_msg)
+            if num_limpio:
+                wa_num = num_limpio.lstrip("+")
+                st.markdown(
+                    f"<a class='tactical-link-btn' href='tel:{urllib.parse.quote(num_limpio)}'>LLAMAR</a>"
+                    f"<a class='tactical-link-btn' href='https://wa.me/{wa_num}' target='_blank'>WHATSAPP</a>",
+                    unsafe_allow_html=True
+                )
+
+st.markdown("### J.A.R.V.I.S. // NUCLEO TACTICO")
+
+for msg in st.session_state.mensajes:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt_usuario = st.chat_input("Escribe una orden o consulta...")
+if prompt_usuario and prompt_usuario.strip():
+    texto_limpio = prompt_usuario.strip()
+    st.session_state.mensajes.append({"role": "user", "content": texto_limpio})
+
+    idioma_resp = "en-US" if quiere_ingles(texto_limpio) else "es-CL"
+    nucleo_act = st.session_state.nucleo_activo
+
+    respuesta = consultar_modelo_externo(nucleo_act, texto_limpio, idioma_resp)
+    if not respuesta:
+        respuesta = generar_respuesta_coherente(nucleo_act, texto_limpio)
+
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    if st.session_state.get("pendiente_voz") is None:
+        programar_voz(respuesta, idioma=idioma_resp)
+    st.rerun()
+
+reproducir_voz_pendiente()
