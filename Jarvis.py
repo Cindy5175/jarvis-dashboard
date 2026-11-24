@@ -70,6 +70,8 @@ if "ollama_modelo" not in st.session_state:
 
 PIN_SECRETO = "2805"
 DB_PATH = "jarvis_misiones.db"
+BUIN_LAT = -33.7325
+BUIN_LON = -70.7422
 
 API_KEY_GROQ = ""
 try:
@@ -100,6 +102,12 @@ def init_db():
             "key_id TEXT PRIMARY KEY, "
             "fact_text TEXT, "
             "category TEXT)"
+        )
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS remedios ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "nombre TEXT NOT NULL, "
+            "horario TEXT DEFAULT 'Pendiente')"
         )
         conn.commit()
         conn.close()
@@ -176,6 +184,43 @@ def limpiar_misiones():
         pass
 
 
+def agregar_remedio(nombre: str, horario: str = "Día"):
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO remedios (nombre, horario) VALUES (?, ?)",
+            (nombre.strip(), (horario or "Día").strip())
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+def obtener_remedios():
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nombre, horario FROM remedios")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
+
+def limpiar_remedios():
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM remedios")
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
 @st.cache_data(ttl=300)
 def obtener_indicadores_chile():
     headers = {
@@ -210,6 +255,52 @@ def obtener_indicadores_chile():
         "utm": 67000.00,
         "ok": True,
         "respaldo": True
+    }
+
+
+def describir_clima_codigo(code: int) -> str:
+    mapa = {
+        0: "despejado",
+        1: "mayormente despejado",
+        2: "parcialmente nublado",
+        3: "nublado",
+        45: "con neblina",
+        48: "con escarcha o neblina",
+        51: "con llovizna leve",
+        61: "con lluvia leve",
+        63: "con lluvia moderada",
+        80: "con chubascos",
+        95: "con tormenta eléctrica",
+    }
+    return mapa.get(code, "condiciones variables")
+
+
+@st.cache_data(ttl=600)
+def obtener_clima_buin():
+    url = (
+        f"https://api.open-meteo.com/v1/forecast"
+        f"?latitude={BUIN_LAT}&longitude={BUIN_LON}"
+        f"&current=temperature_2m,weather_code&timezone=America%2FSantiago"
+    )
+    try:
+        resp = requests.get(url, timeout=6)
+        if resp.status_code == 200:
+            data = resp.json()
+            current = data.get("current") or {}
+            temp = current.get("temperature_2m")
+            code = int(current.get("weather_code", 0))
+            if temp is not None:
+                return {
+                    "temp_c": round(float(temp), 1),
+                    "condicion": describir_clima_codigo(code),
+                    "respaldo": False,
+                }
+    except Exception:
+        pass
+    return {
+        "temp_c": None,
+        "condicion": "sin lectura en vivo",
+        "respaldo": True,
     }
 
 
@@ -253,7 +344,7 @@ def limpiar_texto_voz(texto: str) -> str:
     limpio = re.sub(r"https?://\S+", " enlace ", limpio)
     limpio = re.sub(r"[*_`#>\[\]]+", "", limpio)
     limpio = re.sub(r"\s+", " ", limpio).strip()
-    return limpio[:550]
+    return limpio[:700]
 
 
 def programar_voz(texto: str, idioma: str = "es-CL"):
@@ -316,9 +407,11 @@ def escucha_continua_js(activa: bool):
 
 def generar_informe_diario_hablado(nucleo: str = "JARVIS", hablar: bool = True) -> str:
     econ = obtener_indicadores_chile()
+    clima = obtener_clima_buin()
     misiones = obtener_misiones()
+    remedios = obtener_remedios()
     memorias = (
-        jarvis_mem.recent_facts(3)
+        jarvis_mem.recent_facts(2)
         if st.session_state.get("mcp_conectores", {}).get("SQLite Memory & Missions", True)
         else []
     )
@@ -326,29 +419,40 @@ def generar_informe_diario_hablado(nucleo: str = "JARVIS", hablar: bool = True) 
     hora_txt = now_chile.strftime("%H:%M")
     fecha_txt = now_chile.strftime("%d/%m/%Y")
 
+    if clima.get("temp_c") is not None:
+        clima_txt = f"Clima en Buin: {clima['temp_c']} grados y {clima['condicion']}."
+    else:
+        clima_txt = "Clima en Buin: sin lectura en vivo en este momento."
+
     dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    finanzas_txt = f"Finanzas: Dólar en {dolar_fmt}, Euro en {euro_fmt} y UF en {uf_fmt}."
+
+    if remedios:
+        lista_rem = ", ".join(f"{r[1]} ({r[2]})" for r in remedios[:4])
+        remedios_txt = f"Recordatorios de remedios: {lista_rem}."
+    else:
+        remedios_txt = "Sin remedios registrados por ahora."
 
     if misiones:
         resumen_misiones = (
-            f"Tienes {len(misiones)} misión(es) registrada(s): "
+            f"Tienes {len(misiones)} misión(es): "
             + ", ".join(m[1] for m in misiones[:3])
             + "."
         )
     else:
-        resumen_misiones = "No tienes misiones pendientes registradas en este momento."
+        resumen_misiones = "Sin misiones pendientes."
 
     resumen_mem = (
-        f" Recordatorios o notas recientes: {'; '.join(memorias)}."
+        f" Notas recientes: {'; '.join(memorias)}."
         if memorias
         else ""
     )
 
     texto_informe = (
         f"[{nucleo}] Informe diario del Nodo Buin, {fecha_txt}, {hora_txt} horas. "
-        f"Dólar observado en {dolar_fmt}, Euro en {euro_fmt} y UF en {uf_fmt}. "
-        f"{resumen_misiones}{resumen_mem} Todo listo, jefa."
+        f"{clima_txt} {finanzas_txt} {remedios_txt} {resumen_misiones}{resumen_mem} Todo listo, jefa."
     )
 
     if hablar:
@@ -482,6 +586,19 @@ def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str
 def responder_conocimiento_base(t: str, raw: str):
     if any(k in t for k in ["informe diario", "resumen del día", "resumen del dia", "reporte diario", "briefing"]):
         return generar_informe_diario_hablado(st.session_state.get("nucleo_activo", "JARVIS"), hablar=True)
+
+    if any(k in t for k in ["remedio", "remedios", "medicamento", "medicamentos", "pastilla", "pastillas"]):
+        remedios = obtener_remedios()
+        if remedios:
+            detalle = ", ".join(f"**{r[1]}** ({r[2]})" for r in remedios)
+            return f"Recordatorios de remedios registrados: {detalle}."
+        return "No tienes remedios registrados aún en Misiones & Memoria."
+
+    if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"En Buin hay **{clima['temp_c']}°C** y el cielo está **{clima['condicion']}**."
+        return "No pude obtener la temperatura en vivo en este momento, jefa."
 
     if "pesa el corazón" in t or "pesa el corazon" in t or "peso del corazón" in t or "peso del corazon" in t:
         return (
@@ -779,148 +896,4 @@ estilos_css = (
     "border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }"
     ".tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;"
     "text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 6px; text-decoration: none;"
-    "font-weight: bold; font-size: 0.78rem !important; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); }"
-    ".tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; }"
-    "</style>"
-)
-st.markdown(estilos_css, unsafe_allow_html=True)
-
-if not st.session_state.autorizado:
-    st.markdown(
-        "<div class='arc-reactor-container'>"
-        "<div class='arc-ring'><div class='arc-triangle-inverted'></div></div>"
-        "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3>"
-        "</div>",
-        unsafe_allow_html=True
-    )
-    pin_ingresado = st.text_input("Ingrese PIN de autorización", type="password")
-    if st.button("DESBLOQUEAR NÚCLEO"):
-        if pin_ingresado == PIN_SECRETO:
-            st.session_state.autorizado = True
-            saludo_ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
-            st.session_state.mensajes = [{"role": "assistant", "content": saludo_ini}]
-            programar_voz(saludo_ini, idioma="es-CL")
-            st.rerun()
-        else:
-            st.error("PIN incorrecto.")
-    st.stop()
-
-with st.sidebar:
-    st.markdown(
-        "<div class='arc-reactor-container'>"
-        "<div class='arc-ring'><div class='arc-triangle-inverted'></div></div>"
-        "<h3>NODO BUIN</h3>"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    nucleo_sel = st.selectbox(
-        "Núcleo Activo",
-        NUCLEOS_DISPONIBLES,
-        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo)
-    )
-    if nucleo_sel != st.session_state.nucleo_activo:
-        st.session_state.nucleo_activo = nucleo_sel
-        saludo_cam = obtener_saludo_nucleo(nucleo_sel)
-        st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
-        programar_voz(saludo_cam, idioma="es-CL")
-        st.rerun()
-
-    st.session_state.voz_masculina_activa = st.checkbox(
-        "Voz activa",
-        value=st.session_state.voz_masculina_activa
-    )
-    st.session_state.escucha_continua_activa = st.checkbox(
-        "Escucha continua",
-        value=st.session_state.escucha_continua_activa
-    )
-
-    if st.button("Informe diario hablado"):
-        informe = generar_informe_diario_hablado(st.session_state.nucleo_activo, hablar=True)
-        st.session_state.mensajes.append({"role": "assistant", "content": informe})
-        st.rerun()
-
-    st.markdown("#### Indicadores Chile")
-    econ = obtener_indicadores_chile()
-    dolar_fmt = f"${econ['dolar']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    euro_fmt = f"${econ['euro']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    uf_fmt = f"${econ['uf']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    st.markdown(
-        f"<div class='econ-card'><span class='econ-label'>DÓLAR</span><span class='econ-val'>{dolar_fmt}</span></div>"
-        f"<div class='econ-card'><span class='econ-label'>EURO</span><span class='econ-val'>{euro_fmt}</span></div>"
-        f"<div class='econ-card'><span class='econ-label'>UF</span><span class='econ-val'>{uf_fmt}</span></div>",
-        unsafe_allow_html=True
-    )
-
-    with st.expander("Misiones & Memoria"):
-        nueva_mision = st.text_input("Nueva misión", key="input_nueva_mision")
-        if st.button("Guardar misión") and nueva_mision.strip():
-            agregar_mision(nueva_mision.strip())
-            jarvis_mem.remember_fact(
-                key_id=now_chile.strftime("%Y%m%d%H%M%S"),
-                fact_text=nueva_mision.strip(),
-                category="mision"
-            )
-            st.rerun()
-        misiones_actuales = obtener_misiones()
-        for _, tarea, estado in misiones_actuales:
-            st.write(f"• {tarea} ({estado})")
-        if misiones_actuales and st.button("Limpiar misiones"):
-            limpiar_misiones()
-            st.rerun()
-
-    with st.expander("Enlaces Financieros"):
-        st.markdown(
-            "<a class='tactical-link-btn' href='https://finviz.com' target='_blank'>FINVIZ</a>"
-            "<a class='tactical-link-btn' href='https://www.nasdaq.com/market-activity/stocks/ant' target='_blank'>ANT (NASDAQ)</a>",
-            unsafe_allow_html=True
-        )
-
-    with st.expander("Modos & Utilidades Tácticas"):
-        st.session_state.modo_medico = st.checkbox("Modo Médico", value=st.session_state.modo_medico)
-        st.session_state.modo_orquestador = st.selectbox(
-            "Modo Orquestador",
-            ["Equilibrado", "Táctico", "Rápido"],
-            index=["Equilibrado", "Táctico", "Rápido"].index(st.session_state.modo_orquestador)
-        )
-        st.session_state.ollama_activo = st.checkbox("Ollama Local", value=st.session_state.ollama_activo)
-        if st.session_state.ollama_activo:
-            st.session_state.ollama_url = st.text_input("URL Ollama", value=st.session_state.ollama_url)
-            st.session_state.ollama_modelo = st.text_input("Modelo Ollama", value=st.session_state.ollama_modelo)
-
-        destino_msg = st.text_input("Teléfono / Mensaje", key="destino_msg")
-        if destino_msg.strip():
-            num_limpio = re.sub(r"[^\d+]", "", destino_msg)
-            if num_limpio:
-                st.markdown(
-                    f"<a class='tactical-link-btn' href='tel:{urllib.parse.quote(num_limpio)}'>LLAMAR</a>"
-                    f"<a class='tactical-link-btn' href='https://wa.me/{num_limpio.lstrip(\"+\")}' target='_blank'>WHATSAPP</a>",
-                    unsafe_allow_html=True
-                )
-
-st.markdown("### J.A.R.V.I.S. // NÚCLEO TÁCTICO")
-st.markdown("<div id='jarvis-ultima-voz' style='font-size:0.75rem; opacity:0.8;'>Última voz: —</div>", unsafe_allow_html=True)
-
-for msg in st.session_state.mensajes:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-prompt_usuario = st.chat_input("Escribe una orden o consulta...")
-if prompt_usuario and prompt_usuario.strip():
-    texto_limpio = prompt_usuario.strip()
-    st.session_state.mensajes.append({"role": "user", "content": texto_limpio})
-
-    idioma_resp = "en-US" if quiere_ingles(texto_limpio) else "es-CL"
-    nucleo_act = st.session_state.nucleo_activo
-
-    respuesta = consultar_modelo_externo(nucleo_act, texto_limpio, idioma_resp)
-    if not respuesta:
-        respuesta = generar_respuesta_coherente(nucleo_act, texto_limpio)
-
-    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    if st.session_state.get("pendiente_voz") is None:
-        programar_voz(respuesta, idioma=idioma_resp)
-    st.rerun()
-
-escucha_continua_js(st.session_state.escucha_continua_activa)
-reproducir_voz_pendiente()
+    "font-weight: bold; font-size: 0.
