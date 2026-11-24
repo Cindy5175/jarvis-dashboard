@@ -483,6 +483,20 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     prefijo = f"[{nucleo}] "
     t = (texto_usuario or "").strip().lower()
 
+    frases_despierto = [
+        "estas despierto", "estás despierto", "estas despierta", "estás despierta",
+        "estas ahi", "estás ahí", "estas ahi?", "estás ahí?",
+        "estas despierto?", "estás despierto?", "estas despierta?", "estás despierta?",
+    ]
+    if any(k in t for k in frases_despierto):
+        if nucleo == "JARVIS":
+            return f"{prefijo}Para usted, señorita, siempre."
+        if nucleo == "VIERNES":
+            return f"{prefijo}¡Siempre despierta para usted, señorita!"
+        if nucleo == "NOVA":
+            return f"{prefijo}En guardia y despierta para usted, señorita, siempre."
+        return f"{prefijo}Operativo y atento para usted, señorita, siempre."
+
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
         "buenas tardes", "buenas noches", "holi", "qué tal", "que tal",
