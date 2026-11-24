@@ -517,4 +517,37 @@ st.markdown(
         background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
         font-weight: bold; width: 100%; border-radius: 6px; padding: 5px 10px !important;
     }
-    .stButton>button p, .stButton>button span { color: #060
+    .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+    .econ-card {
+        border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);
+        border-radius: 6px; padding: 8px 10px; margin: 5px 0;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .arc-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 10px; }
+    .arc-ring {
+        width: 64px; height: 64px; border: 2.5px solid #00f3ff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: radial-gradient(circle, rgba(0,243,255,0.35) 0%, #060913 75%);
+        box-shadow: 0 0 18px rgba(0, 243, 255, 0.75); margin-bottom: 8px;
+    }
+    .arc-tri {
+        width: 0; height: 0; border-left: 11px solid transparent;
+        border-right: 11px solid transparent; border-top: 19px solid #00f3ff;
+    }
+    .tactical-link {
+        display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;
+        text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 6px;
+        text-decoration: none; font-weight: bold; font-size: 0.78rem !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+if not st.session_state.autorizado:
+    st.markdown(
+        "<div class='arc-wrap'><div class='arc-ring'><div class='arc-tri'></div></div>"
+        "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3></div>",
+        unsafe_allow_html=True,
+    )
+    pin_
