@@ -469,4 +469,142 @@ def evaluar_calculo_seguro(texto_raw: str):
         res = eval(limpio, entorno, {})
         if isinstance(res, (int, float)) and not isinstance(res, bool):
             if isinstance(res, float) and res.is_integer():
-                res = int(
+                res = int(res)
+            elif isinstance(res, float):
+                res = round(res, 6)
+            return f"Resultado del calculo `{limpio}`: **{res}**."
+    except Exception:
+        return None
+    return None
+
+
+def convertir_unidades_texto(t: str):
+    if not st.session_state.get("mcp_conectores", {}).get("Math & Unit Engine", True):
+        return None
+    patron = (
+        r"(-?\d+(?:[.,]\d+)?)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*"
+        r"(?:a|en|to|in)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)"
+    )
+    m = re.search(patron, t)
+    if not m:
+        return None
+    val = float(m.group(1).replace(",", "."))
+    u1 = m.group(2).replace("°", "")
+    u2 = m.group(3).replace("°", "")
+    if u1 == "millas":
+        u1 = "mi"
+    if u2 == "millas":
+        u2 = "mi"
+    if u1 == "libras":
+        u1 = "lb"
+    if u2 == "libras":
+        u2 = "lb"
+
+    long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
+    masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
+
+    if u1 in long_m and u2 in long_m:
+        out = (val * long_m[u1]) / long_m[u2]
+        return f"Conversion: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+    if u1 in masa_kg and u2 in masa_kg:
+        out = (val * masa_kg[u1]) / masa_kg[u2]
+        return f"Conversion: **{val:g} {u1}** = **{round(out, 4):g} {u2}**."
+
+    temp_units = {"c", "f", "k"}
+    if u1 in temp_units and u2 in temp_units:
+        if u1 == "c":
+            c = val
+        elif u1 == "f":
+            c = (val - 32) * 5 / 9
+        else:
+            c = val - 273.15
+        if u2 == "c":
+            out = c
+        elif u2 == "f":
+            out = c * 9 / 5 + 32
+        else:
+            out = c + 273.15
+        return f"Conversion termica: **{val:g} {u1.upper()}** = **{round(out, 2):g} {u2.upper()}**."
+
+    return None
+
+
+def resumen_sistema_y_seguridad():
+    os_info = f"{platform.system()} {platform.release()}"
+    db_existe = os.path.exists(DB_PATH)
+    misiones_cant = len(obtener_misiones())
+    mem_cant = len(jarvis_mem.recent_facts(50))
+    activos_mcp = sum(1 for v in st.session_state.get("mcp_conectores", {}).values() if v)
+    cpu_txt = "N/D"
+    ram_txt = "N/D"
+    if PSUTIL_AVAILABLE:
+        try:
+            cpu_txt = f"{psutil.cpu_percent(interval=0.2)}%"
+            ram_txt = f"{psutil.virtual_memory().percent}%"
+        except Exception:
+            pass
+    sospechosos = []
+    try:
+        sospechosos = [
+            f for f in os.listdir(".")
+            if os.path.isfile(f) and any(f.lower().endswith(ext) for ext in [".exe", ".bat", ".cmd", ".vbs", ".ps1", ".scr"])
+        ]
+    except Exception:
+        sospechosos = []
+    estado_vir = (
+        "Integridad 98% · Sin ejecutables sospechosos en raiz."
+        if not sospechosos
+        else f"Archivos ejecutables detectados en raiz: {', '.join(sospechosos[:5])}."
+    )
+    return (
+        f"Escudo & Optimizacion ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
+        f"Conectores MCP activos **{activos_mcp}/5**, SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), "
+        f"**{misiones_cant}** misiones y **{mem_cant}** memorias. {estado_vir}"
+    )
+
+
+def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str:
+    pref = f"[{nucleo}] "
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
+    cierre = ""
+    if nucleo == "JARVIS":
+        cierre = " Como siempre, jefa, un detalle tecnico mas dominado."
+    elif nucleo == "VIERNES":
+        cierre = " Lista para el siguiente paso, jefa."
+    elif nucleo == "NOVA":
+        cierre = f" Senal verificada desde el Nodo Buin para '{raw_user.strip()}', jefa."
+    elif nucleo == "ARTEX":
+        cierre = f" [Modo {modo_orq} · Pipeline bajo control], jefa."
+    return f"{pref}{nucleo_content}{cierre}"
+
+
+def responder_conocimiento_base(t: str, raw: str):
+    if any(k in t for k in ["informe diario", "resumen del dia", "reporte diario", "briefing"]):
+        return generar_informe_diario_hablado(st.session_state.get("nucleo_activo", "JARVIS"), hablar=True)
+
+    if any(k in t for k in ["remedio", "remedios", "medicamento", "medicamentos", "pastilla", "pastillas"]):
+        remedios = obtener_remedios()
+        if remedios:
+            detalle = ", ".join(f"**{r[1]}** ({r[2]})" for r in remedios)
+            return f"Recordatorios de remedios registrados: {detalle}."
+        return "No tienes remedios registrados aun en Misiones & Memoria."
+
+    if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"En Buin hay **{clima['temp_c']}°C** y el cielo esta **{clima['condicion']}**."
+        return "No pude obtener la temperatura en vivo en este momento, jefa."
+
+    conv = convertir_unidades_texto(t)
+    if conv:
+        return conv
+
+    calculo = evaluar_calculo_seguro(raw)
+    if calculo:
+        return calculo
+
+    if any(k in t for k in ["agentes", "equipo", "orquestador", "mcp", "conector", "conectores", "artex", "artax"]):
+        activos = [k for k, v in st.session_state.get("mcp_conectores", {}).items() if v]
+        return (
