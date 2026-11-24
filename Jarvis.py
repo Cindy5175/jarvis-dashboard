@@ -369,7 +369,7 @@ def reproducir_voz_pendiente():
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
         "function hablar(){try{window.speechSynthesis.cancel();"
-        f"const u=new SpeechSynthesisUtterance(\"{escapado}\");"
+        f'const u=new SpeechSynthesisUtterance("{escapado}");'
         f"u.lang='{idioma}';u.rate=1.02;u.pitch=0.84;"
         "const vs=window.speechSynthesis.getVoices()||[];"
         f"const v=vs.find(x=>((x.lang||'').toLowerCase().startsWith('{pref_lang}')&&!/sabina|helena|zira|hazel|lucia|sofia|female|mujer/.test((x.name||'').toLowerCase())))||vs.find(x=>(x.lang||'').toLowerCase().startsWith('{pref_lang}'));"
@@ -476,7 +476,13 @@ def evaluar_calculo_seguro(texto_raw: str):
 def convertir_unidades_texto(t: str):
     if not st.session_state.get("mcp_conectores", {}).get("Math & Unit Engine", True):
         return None
-    m = re.search(r"(-?\d+(?:[.,]\d+)?)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*(?:a|en|to|in)\s*(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)", t)
+    patron = (
+        r"(-?\d+(?:[.,]\d+)?)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)\s*"
+        r"(?:a|en|to|in)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|c|°c|f|°f|k)"
+    )
+    m = re.search(patron, t)
     if not m:
         return None
     val = float(m.group(1).replace(",", "."))
@@ -542,7 +548,11 @@ def resumen_sistema_y_seguridad():
         ]
     except Exception:
         sospechosos = []
-    estado_vir = "Integridad 98% · Sin ejecutables sospechosos en raiz." if not sospechosos else f"Archivos ejecutables detectados en raiz: {', '.join(sospechosos[:5])}."
+    estado_vir = (
+        "Integridad 98% · Sin ejecutables sospechosos en raiz."
+        if not sospechosos
+        else f"Archivos ejecutables detectados en raiz: {', '.join(sospechosos[:5])}."
+    )
     return (
         f"Escudo & Optimizacion ({os_info}): CPU **{cpu_txt}**, RAM **{ram_txt}**, "
         f"Conectores MCP activos **{activos_mcp}/5**, SQLite `{DB_PATH}` ({'OK' if db_existe else 'nuevo'}), "
@@ -781,34 +791,84 @@ if "mensajes" not in st.session_state:
         }
     ]
 
-estilos_css = (
-    "<style>"
-    ".stApp { background-color: #060913 !important; color: #00f3ff !important; }"
-    ".stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp div {"
-    "color: #00f3ff !important; font-family: monospace; }"
-    "[data-testid='stIconMaterial'], .material-symbols-rounded, .material-icons {"
-    "font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important; color: #00f3ff !important; }"
-    "[data-testid='stSidebar'] h3 { font-size: 1.05rem !important; }"
-    "[data-testid='stSidebar'] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }"
-    "[data-testid='stSidebar'] summary p { font-size: 0.80rem !important; }"
-    ".stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;"
-    "font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);"
-    "width: 100%; border-radius: 6px; padding: 5px 10px !important; }"
-    ".stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }"
-    ".stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }"
-    ".stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }"
-    ".econ-card { border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);"
-    "border-radius: 6px; padding: 8px 10px; margin: 5px 0; display: flex;"
-    "justify-content: space-between; align-items: center; box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2); }"
-    ".econ-label { font-size: 0.75rem !important; opacity: 0.85; }"
-    ".econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }"
-    ".arc-reactor-container { display: flex; flex-direction: column; align-items: center;"
-    "justify-content: center; text-align: center; margin-bottom: 10px; }"
-    ".arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%;"
-    "position: relative; display: flex; align-items: center; justify-content: center;"
-    "background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);"
-    "box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }"
-    ".arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent;"
-    "border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }"
-    ".tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;"
-    "text-align: center
+estilos_css = """
+<style>
+.stApp { background-color: #060913 !important; color: #00f3ff !important; }
+.stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp div {
+color: #00f3ff !important; font-family: monospace; }
+[data-testid='stIconMaterial'], .material-symbols-rounded, .material-icons {
+font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important; color: #00f3ff !important; }
+[data-testid='stSidebar'] h3 { font-size: 1.05rem !important; }
+[data-testid='stSidebar'] h4 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+[data-testid='stSidebar'] summary p { font-size: 0.80rem !important; }
+.stButton>button { background-color: #00f3ff !important; border: 1.5px solid #00f3ff !important;
+font-weight: bold; font-family: monospace; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+width: 100%; border-radius: 6px; padding: 5px 10px !important; }
+.stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+.stButton>button:hover { background-color: #0088cc !important; box-shadow: 0 0 15px rgba(0, 243, 255, 0.9); }
+.stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+.econ-card { border: 1px solid #00f3ff; background: rgba(0, 243, 255, 0.06);
+border-radius: 6px; padding: 8px 10px; margin: 5px 0; display: flex;
+justify-content: space-between; align-items: center; box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.2); }
+.econ-label { font-size: 0.75rem !important; opacity: 0.85; }
+.econ-val { font-size: 0.85rem !important; font-weight: bold; text-shadow: 0 0 6px #00f3ff; }
+.arc-reactor-container { display: flex; flex-direction: column; align-items: center;
+justify-content: center; text-align: center; margin-bottom: 10px; }
+.arc-ring { width: 65px; height: 65px; border: 2.5px solid #00f3ff; border-radius: 50%;
+position: relative; display: flex; align-items: center; justify-content: center;
+background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 10px rgba(0, 243, 255, 0.6); margin-bottom: 8px; }
+.arc-triangle-inverted { width: 0; height: 0; border-left: 12px solid transparent;
+border-right: 12px solid transparent; border-top: 20px solid #00f3ff; filter: drop-shadow(0 0 8px #00f3ff); }
+.tactical-link-btn { display: block; width: 100%; background-color: #00f3ff; color: #060913 !important;
+text-align: center; padding: 6px 10px; margin: 5px 0; border-radius: 6px; text-decoration: none;
+font-weight: bold; font-size: 0.78rem !important; box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); }
+.tactical-link-btn:hover { background-color: #0088cc; color: #ffffff !important; }
+</style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
+
+if not st.session_state.autorizado:
+    st.markdown(
+        "<div class='arc-reactor-container'>"
+        "<div class='arc-ring'><div class='arc-triangle-inverted'></div></div>"
+        "<h3>J.A.R.V.I.S. // ACCESO RESTRINGIDO</h3>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+    pin_ingresado = st.text_input("Ingrese PIN de autorizacion", type="password")
+    if st.button("DESBLOQUEAR NUCLEO"):
+        if pin_ingresado == PIN_SECRETO:
+            st.session_state.autorizado = True
+            saludo_ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+            st.session_state.mensajes = [{"role": "assistant", "content": saludo_ini}]
+            programar_voz(saludo_ini, idioma="es-CL")
+            st.rerun()
+        else:
+            st.error("PIN incorrecto.")
+    st.stop()
+
+with st.sidebar:
+    st.markdown(
+        "<div class='arc-reactor-container'>"
+        "<div class='arc-ring'><div class='arc-triangle-inverted'></div></div>"
+        "<h3>NODO BUIN</h3>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    nucleo_sel = st.selectbox(
+        "Nucleo Activo",
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo)
+    )
+    if nucleo_sel != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nucleo_sel
+        saludo_cam = obtener_saludo_nucleo(nucleo_sel)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
+        programar_voz(saludo_cam, idioma="es-CL")
+        st.rerun()
+
+    st.session_state.voz_masculina_activa = st.checkbox(
+        "Voz activa",
+        value=st.session_state.voz_masculina_activa
