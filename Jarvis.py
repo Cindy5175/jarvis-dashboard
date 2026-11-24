@@ -580,4 +580,125 @@ def estilizar_por_nucleo(nucleo: str, nucleo_content: str, raw_user: str) -> str
     return f"{pref}{nucleo_content}{cierre}"
 
 
-def responder_conocimiento
+def responder_conocimiento_base(t: str, raw: str):
+    if any(k in t for k in ["informe diario", "resumen del dia", "reporte diario", "briefing"]):
+        return generar_informe_diario_hablado(st.session_state.get("nucleo_activo", "JARVIS"), hablar=True)
+
+    if any(k in t for k in ["remedio", "remedios", "medicamento", "medicamentos", "pastilla", "pastillas"]):
+        remedios = obtener_remedios()
+        if remedios:
+            detalle = ", ".join(f"**{r[1]}** ({r[2]})" for r in remedios)
+            return f"Recordatorios de remedios registrados: {detalle}."
+        return "No tienes remedios registrados aun en Misiones & Memoria."
+
+    if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"En Buin hay **{clima['temp_c']}°C** y el cielo esta **{clima['condicion']}**."
+        return "No pude obtener la temperatura en vivo en este momento, jefa."
+
+    conv = convertir_unidades_texto(t)
+    if conv:
+        return conv
+
+    calculo = evaluar_calculo_seguro(raw)
+    if calculo:
+        return calculo
+
+    if any(k in t for k in ["agentes", "equipo", "orquestador", "mcp", "conector", "conectores", "artex", "artax"]):
+        activos = [k for k, v in st.session_state.get("mcp_conectores", {}).items() if v]
+        return (
+            f"Orquestacion multi-nucleo (`JARVIS`, `VIERNES`, `NOVA`, `ARTEX`) en modo **{st.session_state.get('modo_orquestador', 'Equilibrado')}** "
+            f"con conectores MCP activos: **{', '.join(activos) if activos else 'ninguno'}**."
+        )
+
+    if st.session_state.get("mcp_conectores", {}).get("Security & System Shield", True) and any(
+        k in t for k in ["virus", "malware", "seguridad", "optimizar", "optimizacion", "rendimiento", "diagnostico", "escudo"]
+    ):
+        return resumen_sistema_y_seguridad()
+
+    if st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True) and any(
+        k in t for k in ["llamar", "llamada", "mensaje", "enviar mensaje", "whatsapp", "correo"]
+    ):
+        return (
+            "Modulo de **Llamadas y Mensajes**: puedes redactar el texto o numero en el panel lateral de "
+            "**Modos & Utilidades Tacticas** para generar el enlace directo (`tel:` / `wa.me`)."
+        )
+
+    if st.session_state.get("modo_medico", False) or any(
+        k in t for k in ["sintoma", "dolor", "fiebre", "presion", "pulso", "medicina", "medico", "salud"]
+    ):
+        return (
+            "**Modo Medico (orientacion general)**: para evaluar cualquier sintoma o parametro clinico, "
+            "indica edad, intensidad, duracion y signos de alarma. Esto es informacion general y no sustituye una evaluacion medica."
+        )
+
+    return None
+
+
+def responder_pregunta_general_local(nucleo: str, texto_usuario: str, en_ingles: bool = False) -> str:
+    limpio = texto_usuario.strip()
+    if en_ingles:
+        cuerpo = (
+            f"Regarding '{limpio}', I am running in local/offline-ready mode. "
+            "I can handle conversions, system/security diagnostics, medical info, or save this as a mission."
+        )
+        return f"[{nucleo}] {cuerpo}"
+
+    cuerpo = (
+        f"He registrado tu consulta sobre **{limpio}**. Puedo asistirte con conversiones, revision de seguridad, "
+        "modo medico, clima en Buin, indicadores de Chile, remedios y misiones."
+    )
+    return estilizar_por_nucleo(nucleo, cuerpo, limpio)
+
+
+def consultar_ollama_local(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    if not st.session_state.get("ollama_activo", False):
+        return ""
+    if not st.session_state.get("mcp_conectores", {}).get("Comms & Local Ollama", True):
+        return ""
+    base_url = (st.session_state.get("ollama_url") or "http://localhost:11434").rstrip("/")
+    modelo = (st.session_state.get("ollama_modelo") or "llama3.2").strip()
+    idioma_rule = "Respond in English." if idioma_voz == "en-US" else "Responde en espanol."
+    system_prompt = (
+        f"Eres {nucleo}, asistente tactico en el Nodo Buin. Tratas a la usuaria de 'jefa'. {idioma_rule}"
+    )
+    try:
+        resp = requests.post(
+            f"{base_url}/api/chat",
+            json={
+                "model": modelo,
+                "stream": False,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": texto_usuario}
+                ]
+            },
+            timeout=8
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            msg = ((data.get("message") or {}).get("content") or "").strip()
+            if msg:
+                return f"[{nucleo} · Ollama] {msg}"
+    except Exception:
+        return ""
+    return ""
+
+
+def consultar_modelo_externo(nucleo: str, texto_usuario: str, idioma_voz: str) -> str:
+    ollama_resp = consultar_ollama_local(nucleo, texto_usuario, idioma_voz)
+    if ollama_resp:
+        return ollama_resp
+
+    if not client_groq:
+        return ""
+    rec_mem = "; ".join(jarvis_mem.recent_facts(5)) if st.session_state.get("mcp_conectores", {}).get("SQLite Memory & Missions", True) else ""
+    estilo_nucleo = {
+        "JARVIS": "Eres JARVIS, elegante, preciso y con sarcasmo fino.",
+        "VIERNES": "Eres VIERNES, rapida, directa y resolutiva.",
+        "NOVA": "Eres NOVA, dinamica, clara y con enfoque tactico desde el Nodo Buin.",
+        "ARTEX": "Eres ARTEX, analitico, preciso, firme y enfocado en orquestacion, conectores y seguridad bajo control de la jefa."
+    }.get(nucleo, "Eres un asistente tactico.")
+    modo_orq = st.session_state.get("modo_orquestador", "Equilibrado")
+    idioma_rule = "Responde en ingles." if idioma_voz
