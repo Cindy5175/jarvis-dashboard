@@ -478,10 +478,51 @@ def resolver_calculo_o_unidad(texto_raw):
     return None
 
 
+def construir_mensajes_conversacion(nucleo, texto_usuario):
+    ahora = obtener_hora_chile()
+    recuerdos = jarvis_mem.get_recent_facts(6)
+    perfiles = {
+        "JARVIS": "Eres JARVIS, asistente principal de la jefa en el Nodo Buin, Chile. Hablas con calidez, elegancia, fluidez natural y un toque sutil de ingenio irónico sin sonar robótico.",
+        "VIERNES": "Eres VIERNES, asistente ágil, cercana y directa de la jefa en el Nodo Buin, Chile. Respondes con ritmo conversacional fluido y práctico.",
+        "NOVA": "Eres NOVA, núcleo de exploración y análisis de la jefa en el Nodo Buin, Chile. Tienes un tono atento, fluido y curioso.",
+        "ARTEX": "Eres ARTEX, núcleo táctico de precisión de la jefa en el Nodo Buin, Chile. Respondes con claridad, fluidez y rigor.",
+    }
+    sys_prompt = (
+        f"{perfiles.get(nucleo, perfiles['JARVIS'])} "
+        f"Hora actual en Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. "
+        "Mantén continuidad con el hilo previo de la conversación, evita repetir saludos si ya están conversando "
+        "y responde de forma natural y coherente. "
+        f"{PROTOCOLO_CONOCIMIENTO_BASE}"
+    )
+    if recuerdos:
+        sys_prompt += " Datos recordados en memoria: " + " | ".join(recuerdos)
+
+    msgs = [{"role": "system", "content": sys_prompt}]
+    historial_previo = st.session_state.get("mensajes", [])[-8:]
+    for item in historial_previo:
+        rol = item.get("role")
+        contenido = item.get("content", "")
+        if rol in {"user", "assistant"} and contenido:
+            contenido_limpio = re.sub(r"^\[[^\]]+\]\s*", "", contenido)
+            msgs.append({"role": rol, "content": contenido_limpio})
+
+    if not msgs or msgs[-1].get("role") != "user" or msgs[-1].get("content") != texto_usuario:
+        msgs.append({"role": "user", "content": texto_usuario})
+    return msgs
+
+
 def generar_respuesta_coherente(nucleo, texto_usuario):
     ahora = obtener_hora_chile()
     prefijo = f"[{nucleo}] "
-    t = (texto_usuario or "").strip().lower()
+    raw = (texto_usuario or "").strip()
+    t = raw.lower()
+
+    if t.startswith("recuerda ") or t.startswith("recuérdame ") or t.startswith("recuerdame "):
+        partes = raw.split(" ", 1)
+        dato = partes[1].strip() if len(partes) > 1 else ""
+        if dato:
+            jarvis_mem.remember_fact(f"fact_{int(ahora.timestamp())}", dato)
+            return f"{prefijo}Listo, jefa, queda guardado en memoria: **{dato}**. ¿Seguimos con eso o cambiamos de tema?"
 
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
@@ -546,13 +587,29 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
         )
 
-    calc = resolver_calculo_o_unidad(texto_usuario)
+    calc = resolver_calculo_o_unidad(raw)
     if calc:
         return f"{prefijo}{calc}"
 
+    if client_groq is not None:
+        try:
+            mensajes_ctx = construir_mensajes_conversacion(nucleo, raw)
+            resp = client_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=mensajes_ctx,
+                temperature=0.65,
+                max_tokens=600,
+            )
+            contenido = (resp.choices[0].message.content or "").strip()
+            if contenido:
+                contenido = re.sub(r"^\[[^\]]+\]\s*", "", contenido)
+                return f"{prefijo}{contenido}"
+        except Exception:
+            pass
+
     if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
         return (
-            f"{prefijo}**Fisiología del corazón ({texto_usuario.strip()})**: es un órgano muscular hueco "
+            f"{prefijo}**Fisiología del corazón ({raw})**: es un órgano muscular hueco "
             "con cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre por los circuitos "
             "pulmonar y sistémico mediante ciclos de sístole y diástole, regulados por el sistema de "
             "conducción eléctrica (nodo sinusal, nodo auriculoventricular y haz de His)."
@@ -560,45 +617,45 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
 
     if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
         return (
-            f"{prefijo}**Biología ({texto_usuario.strip()})**: la célula es la unidad básica de la vida; "
+            f"{prefijo}**Biología ({raw})**: la célula es la unidad básica de la vida; "
             "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
             "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
         )
 
     if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
         return (
-            f"{prefijo}**Geografía ({texto_usuario.strip()})**: estudia relieves, climas, hidrografía, "
+            f"{prefijo}**Geografía ({raw})**: estudia relieves, climas, hidrografía, "
             "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
             "la cordillera de la Costa y las planicies litorales."
         )
 
     if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
         return (
-            f"{prefijo}**Historia ({texto_usuario.strip()})**: se analiza por causas estructurales y coyunturales, "
+            f"{prefijo}**Historia ({raw})**: se analiza por causas estructurales y coyunturales, "
             "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
         )
 
     if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
         return (
-            f"{prefijo}**Ciencia y Tecnología ({texto_usuario.strip()})**: integra modelos, magnitudes y unidades "
+            f"{prefijo}**Ciencia y Tecnología ({raw})**: integra modelos, magnitudes y unidades "
             "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
         )
 
     respuestas_generales = {
         "JARVIS": [
-            f"{prefijo}Entendido, jefa. Sobre *'{texto_usuario.strip()}'*, protocolo de conocimiento activo; ¿quiere que lo dejemos como misión o que abramos algún módulo del panel?",
-            f"{prefijo}Tomo nota de *'{texto_usuario.strip()}'*, jefa. Dígame si necesita cálculos, análisis o registro en memoria."
+            f"{prefijo}Entendido, jefa. Sobre *'{raw}'*, seguimos el hilo aquí mismo; ¿quiere que lo dejemos como misión o que abramos algún módulo del panel?",
+            f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame cómo quiere continuar y lo vamos armando paso a paso."
         ],
         "VIERNES": [
-            f"{prefijo}Recibido, jefa: *'{texto_usuario.strip()}'*. Protocolo listo para resolver o anotar lo que necesite.",
-            f"{prefijo}Anotado, jefa. ¿Qué paso siguiente damos con *'{texto_usuario.strip()}'*?"
+            f"{prefijo}Recibido, jefa: *'{raw}'*. Vamos directo al grano: ¿qué hacemos con eso ahora?",
+            f"{prefijo}Anotado, jefa. ¿Qué paso siguiente damos con *'{raw}'*?"
         ],
         "NOVA": [
-            f"{prefijo}Señal clara sobre *'{texto_usuario.strip()}'*, jefa. ¿Lo registramos en memoria o revisamos algún módulo del Nodo Buin?",
-            f"{prefijo}Procesado en el Nodo Buin: *'{texto_usuario.strip()}'*. ¿En qué más le apoyo, jefa?"
+            f"{prefijo}Señal clara sobre *'{raw}'*, jefa. ¿Lo registramos en memoria o revisamos algún módulo del Nodo Buin?",
+            f"{prefijo}Procesado en el Nodo Buin: *'{raw}'*. ¿En qué más le apoyo, jefa?"
         ],
         "ARTEX": [
-            f"{prefijo}Directiva registrada: *'{texto_usuario.strip()}'*, jefa. Protocolo de conocimiento y control activo.",
+            f"{prefijo}Directiva registrada: *'{raw}'*, jefa. Protocolo de conocimiento y control activo.",
         ],
     }
     return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
@@ -755,6 +812,13 @@ if not st.session_state.get("autorizado", False):
     st.stop()
 
 with st.sidebar:
+    st.markdown(
+        '<div class="arc-reactor-container">'
+        '<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+        '<h3>⚡ NODO BUIN // IA</h3>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
     st.markdown("### 🛡️ Arsenal de Módulos")
     st.markdown("---")
 
@@ -788,290 +852,60 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 💾 Memoria y Datos")
-    with st.expander("Gestionar Memoria SQLite", expanded=False):
-        dato_mem = st.text_input("Dato a guardar:", placeholder="Ej: Preferencia...")
-        if st.button("Guardar en Memoria", use_container_width=True):
-            if dato_mem.strip():
-                jarvis_mem.remember_fact(f"mem_{datetime.datetime.now().timestamp()}", dato_mem.strip())
-                st.success("¡Memoria guardada!")
-        for fact in jarvis_mem.get_recent_facts(4):
-            st.markdown(f"- `{fact}`")
-        if st.button("Purgar Memoria", use_container_width=True):
+    with st.expander("📡 Enlaces Financieros"):
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
+            '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>',
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("🎯 Misiones Activas"):
+        mision_txt = st.text_input("Nueva misión:", placeholder="Ej. Revisar indicadores...")
+        c1, c2 = st.columns(2)
+        if c1.button("➕ Añadir", use_container_width=True):
+            if mision_txt.strip():
+                agregar_mision(mision_txt.strip())
+                st.rerun()
+        if c2.button("🗑️ Borrar", use_container_width=True):
+            limpiar_misiones()
+            st.rerun()
+
+        misiones_actuales = obtener_misiones()
+        if misiones_actuales:
+            for mid, tarea, estado in misiones_actuales:
+                st.markdown(f"- **#{mid}** {tarea} *({estado})*")
+        else:
+            st.caption("Sin misiones activas.")
+
+    with st.expander("🧠 Memoria del Núcleo"):
+        recuerdos = jarvis_mem.get_recent_facts(6)
+        if recuerdos:
+            for r_item in recuerdos:
+                st.markdown(f"- {r_item}")
+        else:
+            st.caption("Sin recuerdos guardados aún.")
+        if st.button("🧹 Limpiar Memoria", use_container_width=True):
             jarvis_mem.clear_facts()
             st.rerun()
 
-    st.markdown("---")
-    st.markdown("#### 📋 Misiones Tácticas")
-    with st.expander("Base de Datos Misiones", expanded=False):
-        nueva_tarea = st.text_input("Nueva Misión:", placeholder="Ej: Revisar nodos...")
-        if st.button("Registrar Tarea", use_container_width=True):
-            if nueva_tarea.strip():
-                agregar_mision(nueva_tarea.strip())
-                st.success("¡Misión registrada!")
-                st.rerun()
-        misiones_guardadas = obtener_misiones()
-        if misiones_guardadas:
-            for m_id, m_text, m_est in misiones_guardadas:
-                st.markdown(f"- `{m_text}`")
-            if st.button("Limpiar Misiones", use_container_width=True):
-                limpiar_misiones()
-                st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### 🎧 Frecuencias de Enfoque")
-    with st.expander("Deep Work & Música IA", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=6pUPGG7LLEc" target="_blank">'
-            '🎧 CEO Mode (Deep Work)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=jC-Xb4XNMlE" target="_blank">'
-            '🚀 Futuristic Garage Beats'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.youtube.com/watch?v=QBOZ1CaUPYE" target="_blank">'
-            '⚡ Hyperfocus Mode'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-    st.markdown("#### 📷 Videovigilancia y Cámaras")
-    with st.expander("Cámaras en Vivo / Satélite", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/chile.html" target="_blank">'
-            'Stgo / Chile (Skyline)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://liveworldwebcams.com/es/concepcion-webcam/" target="_blank">'
-            'Concepción Webcam'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.windy.com/es/-C%C3%A1maras-web/webcams?39.880,-5.449,7" target="_blank">'
-            'Windy Radars & Cams'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.earthcam.com/usa/texas/galveston/port/?cam=pg_terminal28" target="_blank">'
-            'Galveston Port, Texas'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.skylinewebcams.com/es/webcam/espana/comunidad-de-madrid/madrid/puerta-del-sol-tio-pepe.html" target="_blank">'
-            'Puerta del Sol, Madrid'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-    st.markdown("#### 🛰️ Telemetría Global & Satélites")
-    with st.expander("Sistemas Satelitales y Rastreo", expanded=False):
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">'
-            'OSIRIS (Ojo de Dios)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.planet.com/" target="_blank">'
-            'PlanetEar (Satélites)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://worldview.earthdata.nasa.gov/" target="_blank">'
-            'NASA Worldview'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.n2yo.com/" target="_blank">'
-            'N2YO (Órbita en Vivo)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://www.flightradar24.com/" target="_blank">'
-            'Flightradar24 (Aéreo)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<a class="tactical-link-btn" href="https://cybermap.kaspersky.com/" target="_blank">'
-            'Cybermap (Ciberataques)'
-            '</a>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-    st.markdown("#### 📈 Enlaces Financieros")
-    with st.expander("💵 Indicadores en Vivo (Dólar / Euro)", expanded=False):
-        datos_econ = obtener_indicadores_chile()
-        dolar_fmt = fmt_clp(datos_econ["dolar"])
-        euro_fmt = fmt_clp(datos_econ["euro"])
-        uf_fmt = fmt_clp(datos_econ["uf"])
-
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">💵 Dólar Obs.</span><span class="econ-val">{dolar_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">💶 Euro</span><span class="econ-val">{euro_fmt}</span></div>'
-            f'<div class="econ-card"><span class="econ-label">📈 Valor UF</span><span class="econ-val">{uf_fmt}</span></div>',
-            unsafe_allow_html=True,
-        )
-        if datos_econ.get("respaldo"):
-            st.caption("Modo respaldo local (sin conexión externa).")
-
-        if st.button("🔄 Actualizar Divisas", use_container_width=True, key="btn_upd_econ"):
-            obtener_indicadores_chile.clear()
-            st.rerun()
-
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.nasdaq.com/market-activity/stocks/ant" target="_blank">'
-        'Seguimiento ANT (Nasdaq)'
-        '</a>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://www.spacex.com/" target="_blank">'
-        'Monitoreo SpaceX'
-        '</a>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">'
-        'Finviz (Mercados)'
-        '</a>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<a class="tactical-link-btn" href="https://es.investing.com/" target="_blank">'
-        'Investing.com (Divisas)'
-        '</a>',
-        unsafe_allow_html=True,
-    )
-
-now_chile = obtener_hora_chile()
-dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-meses = [
-    "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-]
-fecha_str = f"{dias[now_chile.weekday()]}, {now_chile.day:02d} de {meses[now_chile.month]} de {now_chile.year}"
+ahora_chile = obtener_hora_chile()
+indicadores = obtener_indicadores_chile()
 clima_buin = obtener_clima_buin()
-clima_str = f" · {clima_buin['temp_c']}°C ({clima_buin['condicion']})" if clima_buin.get("temp_c") is not None else ""
-
-st.markdown(
-    f'<div class="arc-reactor-container">'
-    f'<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-    f'<h1 style="margin: 0; font-size: 2.2rem !important; text-align: center !important; '
-    f'color: #00f3ff !important; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);">J.A.R.V.I.S IA</h1>'
-    f'<p style="margin: 0; font-size: 0.75rem !important; opacity: 0.85;">'
-    f'[ NODO BUIN, CHILE // {fecha_str} – <span id="reloj-vivo">{now_chile.strftime("%H:%M:%S")}</span>{clima_str} ]'
-    f'</p>'
-    f'</div>',
-    unsafe_allow_html=True,
-)
-
-reloj_js = (
-    "<script>"
-    "(function() {"
-    "function actualizarReloj() {"
-    "const ahora = new Date();"
-    'const opciones = { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };'
-    'const horaChile = new Intl.DateTimeFormat("es-CL", opciones).format(ahora);'
-    'const relojEl = window.parent.document.getElementById("reloj-vivo");'
-    "if (relojEl) { relojEl.innerText = horaChile; }"
-    "}"
-    "actualizarReloj();"
-    "if (window.parent.__jarvisRelojTimer) clearInterval(window.parent.__jarvisRelojTimer);"
-    "window.parent.__jarvisRelojTimer = setInterval(actualizarReloj, 1000);"
-    "})();"
-    "</script>"
-)
-components.html(reloj_js, height=0)
 
 st.markdown(
     '<div class="holo-brain-box">'
-    f'<h4 style="margin: 0 0 5px 0; font-size: 1rem; text-shadow: 0 0 8px #00f3ff;">'
-    f'NÚCLEO NEURONAL CYBER-GRID [{st.session_state.nucleo_activo}]'
-    f'</h4>'
-    '<p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">'
-    'Motor Táctico Neuronal Activo // Protocolo de Conocimiento y Enlace Directo'
-    '</p>'
-    '</div>',
+    f'<h2>⚡ J.A.R.V.I.S. // {st.session_state.nucleo_activo}</h2>'
+    f'<p style="font-size: 0.85rem;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")}</p>'
+    "</div>",
     unsafe_allow_html=True,
 )
 
-st.markdown("---")
-
-col_ch1, col_ch2 = st.columns([5, 1])
-with col_ch1:
-    st.markdown("#### Chat 💬", unsafe_allow_html=True)
-with col_ch2:
-    if st.button("🧹 Purgar", use_container_width=True, key="btn_purgar_chat"):
-        purga_msg = obtener_saludo_nucleo(st.session_state.nucleo_activo)
-        st.session_state.mensajes = [{"role": "assistant", "content": purga_msg}]
-        programar_voz(purga_msg, idioma="es-CL")
-        st.rerun()
-
-renderizar_microfono_voz()
-
-for m in st.session_state.mensajes:
-    with st.chat_message(m["role"]):
-        st.markdown(f"<span>{m['content']}</span>", unsafe_allow_html=True)
-
-prompt_chat = st.chat_input("Escribe o dicta tu orden para JARVIS...")
-
-if prompt_chat:
-    st.session_state.mensajes.append({"role": "user", "content": prompt_chat})
-    with st.chat_message("user"):
-        st.markdown(f"<span>{prompt_chat}</span>", unsafe_allow_html=True)
-
-    nucleo = st.session_state.nucleo_activo
-    prefijo = f"[{nucleo}] "
-
-    with st.chat_message("assistant"):
-        with st.spinner(f"Procesando con núcleo neuronal {nucleo}..."):
-            respuesta_ia = ""
-            try:
-                if client_groq:
-                    recuerdos = jarvis_mem.get_recent_facts(4)
-                    mem_ctx = f" Recuerdos guardados: {'; '.join(recuerdos)}." if recuerdos else ""
-                    instruccion_sistema = (
-                        f"Eres {nucleo}, una inteligencia artificial táctico-estratégica inspirada en J.A.R.V.I.S. de Iron Man. "
-                        "Tratas a la usuaria de 'jefa'. Hablas de forma natural, cercana y fluida, sin sonar robótica, "
-                        "evitando listas largas o muletillas mecánicas cuando conversas. "
-                        f"{PROTOCOLO_CONOCIMIENTO_BASE}{mem_ctx}"
-                    )
-                    mensajes_api = [{"role": "system", "content": instruccion_sistema}] + [
-                        {"role": m["role"], "content": m["content"]}
-                        for m in st.session_state.mensajes[-10:]
-                    ]
-                    completion = client_groq.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=mensajes_api,
-                        temperature=0.8,
-                    )
-                    respuesta_ia = f"{prefijo}{completion.choices[0].message.content}"
-                else:
-                    respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-            except Exception:
-                respuesta_ia = generar_respuesta_coherente(nucleo, prompt_chat)
-
-            st.markdown(f"<span>{respuesta_ia}</span>", unsafe_allow_html=True)
-            st.session_state.mensajes.append({"role": "assistant", "content": respuesta_ia})
-            if st.session_state.get("pendiente_voz") is None:
-                programar_voz(respuesta_ia, idioma="es-CL")
-    st.rerun()
-
-reproducir_voz_pendiente()
+c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
+with c_ind1:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">DÓLAR</span><span class="econ-val">{fmt_clp(indicadores["dolar"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind2:
+    st.markdown(
+        f'<div class="econ
