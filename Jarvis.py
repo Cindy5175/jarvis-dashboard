@@ -150,4 +150,189 @@ def registrar_evento(detalle: str):
     tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
     stamp = datetime.datetime.now(tz_chile).strftime("%H:%M:%S")
     st.session_state.setdefault("bitacora_sesion", [])
-    st.session_state["bitacora_sesion"].append(f"[{stamp}]
+    st.session_state["bitacora_sesion"].append(f"[{stamp}] {detalle}")
+    st.session_state["bitacora_sesion"] = st.session_state["bitacora_sesion"][-25:]
+
+
+def init_db():
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS misiones ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "tarea TEXT NOT NULL, "
+            "estado TEXT DEFAULT 'Pendiente')"
+        )
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS memory ("
+            "key_id TEXT PRIMARY KEY, "
+            "fact_text TEXT, "
+            "category TEXT)"
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+init_db()
+
+
+class JarvisMemory:
+    def __init__(self, db_path=fn_db):
+        self.db_path = db_path
+
+    def remember_fact(self, key_id: str, fact_text: str):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
+                (key_id, fact_text, "general"),
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+    def get_recent_facts(self, limit: int = 5):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("SELECT fact_text FROM memory ORDER BY rowid DESC LIMIT ?", (limit,))
+            rows = [r[0] for r in cursor.fetchall() if r and r[0]]
+            conn.close()
+            return rows
+        except Exception:
+            return []
+
+    def clear_facts(self):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM memory")
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+
+jarvis_mem = JarvisMemory()
+
+
+def agregar_mision(tarea):
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+        conn.commit()
+        conn.close()
+        registrar_evento(f"Misión añadida: {tarea}")
+    except Exception:
+        pass
+
+
+def obtener_misiones():
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, tarea, estado FROM misiones ORDER BY id ASC")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
+
+def limpiar_misiones():
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM misiones")
+        conn.commit()
+        conn.close()
+        registrar_evento("Misiones purgadas")
+    except Exception:
+        pass
+
+
+@st.cache_data(ttl=300)
+def obtener_indicadores_chile():
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) JARVIS-Dashboard/1.0",
+        "Accept": "application/json",
+    }
+    for _ in range(2):
+        try:
+            resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=4)
+            if resp.status_code == 200:
+                data = resp.json()
+                dolar = data.get("dolar", {}).get("valor")
+                euro = data.get("euro", {}).get("valor")
+                uf = data.get("uf", {}).get("valor")
+                utm = data.get("utm", {}).get("valor")
+                if dolar and euro and uf:
+                    return {
+                        "dolar": float(dolar),
+                        "euro": float(euro),
+                        "uf": float(uf),
+                        "utm": float(utm) if utm else 0.0,
+                        "ok": True,
+                        "respaldo": False,
+                    }
+        except Exception:
+            pass
+
+    return {
+        "dolar": 950.00,
+        "euro": 1030.00,
+        "uf": 38000.00,
+        "utm": 67000.00,
+        "ok": True,
+        "respaldo": True,
+    }
+
+
+def describir_clima_codigo(code):
+    mapa = {
+        0: "despejado",
+        1: "mayormente despejado",
+        2: "parcialmente nublado",
+        3: "nublado",
+        45: "con neblina",
+        61: "con lluvia leve",
+        63: "con lluvia moderada",
+        80: "con chubascos",
+        95: "con tormenta electrica",
+    }
+    return mapa.get(code, "condiciones variables")
+
+
+@st.cache_data(ttl=600)
+def obtener_clima_buin():
+    url = (
+        f"https://api.open-meteo.com/v1/forecast"
+        f"?latitude={BUIN_LAT}&longitude={BUIN_LON}"
+        f"&current=temperature_2m,weather_code&timezone=America%2FSantiago"
+    )
+    try:
+        resp = requests.get(url, timeout=4)
+        if resp.status_code == 200:
+            current = resp.json().get("current") or {}
+            temp = current.get("temperature_2m")
+            code = int(current.get("weather_code", 0))
+            if temp is not None:
+                return {
+                    "temp_c": round(float(temp), 1),
+                    "condicion": describir_clima_codigo(code),
+                }
+    except Exception:
+        pass
+    return {"temp_c": None, "condicion": "sin lectura en vivo"}
+
+
+@st.cache_data(ttl=600)
+def obtener_noticias_rss(consulta="Chile tecnología finanzas", limite=5):
+    q_encoded = urllib.parse.quote(consulta.strip() or "Chile")
+    url = f"
