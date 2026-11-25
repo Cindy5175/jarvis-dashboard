@@ -32,10 +32,7 @@ PROTOCOLO_CONOCIMIENTO_BASE = (
     "(3) Geografia (geografia fisica, climas, cartografia, recursos, geopolitica y geografia de Chile y del mundo); "
     "(4) Historia (procesos historicos, cronologia, causas y consecuencias, historia universal, de America y de Chile); "
     "(5) Ciencia y Tecnologia (fisica, quimica, astronomia, computacion, algoritmos, redes, sistemas e ingenieria); "
-    "(6) Calculos en general (explicar formulas, variables, unidades y verificar resultados); "
-    "(7) Conocimiento Religioso y Secular (historia de las religiones, religiones comparadas, simbolos, "
-    "tradiciones y etica religiosa, junto con filosofia secular, etica laica, humanismo, pensamiento "
-    "critico y convivencia civica). Mantén siempre neutralidad respetuosa, claridad y rigor sin imponer dogmas. "
+    "(6) Calculos en general (explicar formulas, variables, unidades y verificar resultados). "
     "Explica pasos o formulas cuando ayude, respeta unidades y no inventes datos sin confirmar."
 )
 
@@ -43,8 +40,6 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
-st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
-st.session_state.setdefault("notas_rapidas", [])
 st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
 
 PIN_SECRETO = "2805"
@@ -347,7 +342,7 @@ def limpiar_texto_para_voz(texto):
     limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace ", limpio)
     limpio = re.sub(r"https?://\S+", " enlace ", limpio)
     limpio = re.sub(r"[*_`#>\[\]|]+", " ", limpio)
-    limpio = re.sub(r"([.!?])\s+", r"\1 ", limpio)
+    limpio = re.sub(r"([.!?])\s+", r"\1 ... ", limpio)
     limpio = re.sub(r"\s+", " ", limpio).strip()
     return limpio[:520]
 
@@ -365,27 +360,29 @@ def reproducir_voz_pendiente():
         return
     st.session_state["pendiente_voz"] = None
     txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
-    txt = txt.replace(" ... ", " ")
     lang = pendiente["idioma"]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
-        "if(window.__jarvisVozTimer){clearTimeout(window.__jarvisVozTimer);}"
-        "window.speechSynthesis.cancel();"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
         "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        "return es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];}"
-        "let yaHablo=false;"
-        "function hablarUnaVez(){"
-        "if(yaHablo)return;yaHablo=true;"
+        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
+        "return pref||null;}"
+        "function hablarAhora(){"
         "window.speechSynthesis.cancel();"
-        "const u=new SpeechSynthesisUtterance(" + f'"{txt}"' + ");"
-        f"u.lang='{lang}';u.rate=0.98;u.pitch=0.90;"
-        "const v=elegirVoz(window.speechSynthesis.getVoices());if(v)u.voice=v;"
-        "window.speechSynthesis.speak(u);}"
-        "if(window.speechSynthesis.getVoices().length){hablarUnaVez();}"
-        "else{window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;hablarUnaVez();};"
-        "window.__jarvisVozTimer=setTimeout(hablarUnaVez,250);}"
+        "const trozos=" + f'"{txt}"' + ".split(' ... ').filter(Boolean);"
+        "const lista=trozos.length?trozos:[" + f'"{txt}"' + "];"
+        "const vozElegida=elegirVoz(window.speechSynthesis.getVoices());"
+        "lista.forEach((parte)=>{"
+        "const u=new SpeechSynthesisUtterance(parte);"
+        f"u.lang='{lang}';"
+        "u.rate=0.98;"
+        "u.pitch=0.90;"
+        "if(vozElegida)u.voice=vozElegida;"
+        "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
+        "});}"
+        "if(window.speechSynthesis.getVoices().length){hablarAhora();}"
+        "else{window.speechSynthesis.onvoiceschanged=function(){hablarAhora();};setTimeout(hablarAhora,220);}"
         "}catch(e){}})();</script>"
     )
     try:
@@ -556,19 +553,6 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
         return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
 
-    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
-        if nucleo == "JARVIS":
-            return (
-                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-                "Puede revisar el pulso directo en **Finviz** o el seguimiento **Nasdaq** en **Enlaces Financieros**."
-            )
-        if nucleo == "VIERNES":
-            return (
-                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
-                "Abra **Finviz** o **Nasdaq** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
-            )
-        return f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
-
     if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
         if econ.get("ok"):
@@ -609,17 +593,12 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             sys_txt = f"Núcleo activo: {nucleo}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. {PROTOCOLO_CONOCIMIENTO_BASE}"
             if recuerdos:
                 sys_txt += " Memoria: " + " | ".join(recuerdos)
-            msgs_api = [{"role": "system", "content": sys_txt}]
-            for item in st.session_state.get("mensajes", [])[-6:]:
-                rol = item.get("role")
-                cont = item.get("content", "")
-                if rol in {"user", "assistant"} and cont:
-                    msgs_api.append({"role": rol, "content": re.sub(r"^\[[^\]]+\]\s*", "", cont)})
-            if not msgs_api or msgs_api[-1].get("role") != "user" or msgs_api[-1].get("content") != raw:
-                msgs_api.append({"role": "user", "content": raw})
             resp = client_groq.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=msgs_api,
+                messages=[
+                    {"role": "system", "content": sys_txt},
+                    {"role": "user", "content": raw},
+                ],
                 temperature=0.65,
                 max_tokens=600,
             )
@@ -629,54 +608,6 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
                 return f"{prefijo}{contenido}"
         except Exception:
             pass
-
-    if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
-        return (
-            f"{prefijo}**Fisiología del corazón ({raw})**: en un adulto sano suele pesar aproximadamente entre **250 y 350 gramos** "
-            "(cerca de **250–300 g** en mujeres y **300–350 g** en hombres, variando según contextura). "
-            "Es un órgano muscular hueco de cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre "
-            "por los circuitos pulmonar y sistémico mediante sístole y diástole."
-        )
-
-    if any(k in t for k in ["religion", "religión", "religiones", "biblia", "coran", "corán", "tora", "torá", "budismo", "islam", "cristianismo", "judaismo", "judaísmo", "hinduismo", "teologia", "teología", "dios", "fe", "espiritualidad", "ritual"]):
-        return (
-            f"{prefijo}**Conocimiento Religioso / Religiones Comparadas ({raw})**: se aborda desde su historia, "
-            "textos fundacionales, prácticas, símbolos y ética, con respeto hacia las distintas tradiciones "
-            "(como las tradiciones abrahámicas, dhármicas y otras cosmovisiones). Indica qué tradición o tema te gustaría explorar."
-        )
-
-    if any(k in t for k in ["secular", "laico", "laicismo", "humanismo", "etica laica", "ética laica", "filosofia", "filosofía", "racionalismo", "ateismo", "ateísmo", "agnostico", "agnóstico", "agnóstica", "estado laico"]):
-        return (
-            f"{prefijo}**Conocimiento Secular y Filosofía ({raw})**: se centra en el marco laico, el humanismo, "
-            "la ética cívica basada en la razón y los derechos humanos, el pensamiento crítico y la separación entre "
-            "instituciones públicas y creencias religiosas. ¿Qué aspecto filosófico, histórico o ético quieres revisar?"
-        )
-
-    if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
-        return (
-            f"{prefijo}**Biología ({raw})**: la célula es la unidad básica de la vida; "
-            "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
-            "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
-        )
-
-    if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
-        return (
-            f"{prefijo}**Geografía ({raw})**: estudia relieves, climas, hidrografía, "
-            "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
-            "la cordillera de la Costa y las planicies litorales."
-        )
-
-    if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
-        return (
-            f"{prefijo}**Historia ({raw})**: se analiza por causas estructurales y coyunturales, "
-            "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
-        )
-
-    if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
-        return (
-            f"{prefijo}**Ciencia y Tecnología ({raw})**: integra modelos, magnitudes y unidades "
-            "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
-        )
 
     respuestas_generales = {
         "JARVIS": [
@@ -740,3 +671,171 @@ estilos_css = """
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arc-ring {
+            width: 65px;
+            height: 65px;
+            border: 2.5px solid #00f3ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+            margin-bottom: 8px;
+        }
+        .arc-triangle-inverted {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #00f3ff;
+        }
+        .holo-brain-box {
+            border: 1.5px solid #00f3ff;
+            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            max-width: 800px;
+        }
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
+
+if not st.session_state.get("autorizado", False):
+    st.markdown(
+        '<div style="text-align: center; margin-top: 50px;">'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Sistema")
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+                st.session_state.mensajes = [{"role": "assistant", "content": ini}]
+                programar_voz(ini, idioma="es-CL")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    reproducir_voz_pendiente()
+    st.stop()
+
+with st.sidebar:
+    st.markdown(
+        '<div class="arc-reactor-container">'
+        '<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+        '<h3>⚡ NODO BUIN // IA</h3>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    st.markdown("---")
+
+    if st.button("🧹 Purgar Chat", use_container_width=True):
+        purgar_chat(st.session_state.nucleo_activo)
+        st.rerun()
+
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.session_state.voz_masculina_activa = st.checkbox(
+        "🔊 Voz activa",
+        value=st.session_state.voz_masculina_activa,
+    )
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
+        label_visibility="collapsed",
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        saludo_cam = obtener_saludo_nucleo(nuevo_nucleo)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
+        programar_voz(saludo_cam, idioma="es-CL")
+        st.rerun()
+
+    st.markdown("---")
+    with st.expander("🌙 Cámara Nocturna"):
+        modo_cam = st.selectbox(
+            "Modo visor:",
+            ["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"],
+            index=["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"].index(st.session_state.modo_camara),
+        )
+        if modo_cam != st.session_state.modo_camara:
+            st.session_state.modo_camara = modo_cam
+            st.rerun()
+        renderizar_camara_nocturna(st.session_state.modo_camara)
+
+indicadores = obtener_indicadores_chile()
+clima_buin = obtener_clima_buin()
+ahora_chile = obtener_hora_chile()
+
+st.markdown(
+    f'<div class="holo-brain-box">'
+    f'<h2>⚡ J.A.R.V.I.S. // {st.session_state.nucleo_activo}</h2>'
+    f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")}</div>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
+
+c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
+with c_ind1:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">DÓLAR</span><span class="econ-val">{fmt_clp(indicadores["dolar"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind2:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">EURO</span><span class="econ-val">{fmt_clp(indicadores["euro"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind3:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">UF</span><span class="econ-val">{fmt_clp(indicadores["uf"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind4:
+    temp_label = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">BUIN ({clima_buin["condicion"]})</span><span class="econ-val">{temp_label}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+renderizar_microfono_voz()
+
+for msg in st.session_state.mensajes:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt_usuario = st.chat_input("Escribe tu orden o conversa con el núcleo activo...")
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    respuesta = generar_respuesta_coherente(st.session_state.nucleo_activo, prompt_usuario)
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    programar_voz(respuesta, idioma="es-CL")
+    st.rerun()
+
+reproducir_voz_pendiente()
