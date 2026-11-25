@@ -382,7 +382,7 @@ def renderizar_camara_nocturna(modo_camara):
         'ctx.fillText(camActiva?"LIVE CAM [●] NIGHT-OPTIC":"SIM [●] IR-GAIN: +24dB",8,14);',
         'ctx.fillText("SECTOR BUIN SUR",8,c.height-8);ctx.restore();}',
         "if(window.__jarvisCamTimer)clearInterval(window.__jarvisCamTimer);",
-        "window.__jarvisCamTimer=setInterval(draw,80);draw();})();</script>",
+        "window.__jarvisCamTimer=setInterval(draw,80);draw();}})();</script>",
     ]
     components.html("".join(partes_cam), height=192)
 
@@ -452,57 +452,21 @@ def reproducir_voz_pendiente():
 
 
 def renderizar_microfono_voz():
-    js_mic = """
-    <div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">
-        <button id="btn-mic-jarvis" type="button" style="
-            background:#00f3ff;color:#060913;border:1.5px solid #00f3ff;
-            border-radius:6px;padding:6px 12px;font-family:monospace;
-            font-weight:bold;font-size:0.78rem;cursor:pointer;
-        ">🎤 Hablar por Voz</button>
-        <span id="estado-mic-jarvis" style="
-            color:#00f3ff;font-family:monospace;font-size:0.75rem;opacity:0.85;
-        ">Micrófono listo (es-CL)</span>
-    </div>
-    <script>
-    (function() {
-        const btn = document.getElementById("btn-mic-jarvis");
-        const stEl = document.getElementById("estado-mic-jarvis");
-        if (!btn || !stEl) return;
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) {
-            stEl.textContent = "Dictado por voz no soportado en este navegador";
-            return;
-        }
-        btn.onclick = function() {
-            try {
-                const rec = new SR();
-                rec.lang = "es-CL";
-                rec.interimResults = false;
-                rec.maxAlternatives = 1;
-                stEl.textContent = "Escuchando, jefa...";
-                rec.onresult = function(ev) {
-                    const dicho = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || "";
-                    stEl.textContent = dicho ? ('Escuchado: "' + dicho + '"') : "No se captó audio";
-                    if (!dicho) return;
-                    const doc = window.parent.document;
-                    const inputs = doc.querySelectorAll('textarea[data-testid="stChatInputTextArea"], input[data-testid="stChatInputTextArea"], textarea');
-                    let target = null;
-                    inputs.forEach(el => {
-                        if (el.offsetParent !== null) target = el;
-                    });
-                    if (target) {
-                        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value") ||
-                                       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
-                        if (setter && setter.set) setter.set.call(target, dicho);
-                        else target.value = dicho;
-                        target.dispatchEvent(new Event("input", { bubbles: true }));
-                        target.dispatchEvent(new Event("change", { bubbles: true }));
-                        setTimeout(() => {
-                            const sendBtn = doc.querySelector('button[data-testid="stChatInputSubmitButton"]');
-                            if (sendBtn) sendBtn.click();
-                        }, 180);
-                    }
-                };
-                rec.onerror = function() { stEl.textContent = "Error al acceder al micrófono"; };
-                rec.onend = function() {
-                    if
+    lineas_mic = [
+        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">',
+        '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;',
+        'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;',
+        'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>',
+        '<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;',
+        'font-size:0.75rem;opacity:0.85;">Micrófono listo (es-CL)</span></div>',
+        "<script>(function(){",
+        'const btn=document.getElementById("btn-mic-jarvis");',
+        'const stEl=document.getElementById("estado-mic-jarvis");',
+        "if(!btn||!stEl)return;",
+        "const SR=window.SpeechRecognition||window.webkitSpeechRecognition;",
+        'if(!SR){stEl.textContent="Dictado por voz no soportado en este navegador";return;}',
+        "btn.onclick=function(){try{const rec=new SR();rec.lang=\"es-CL\";",
+        "rec.interimResults=false;rec.maxAlternatives=1;",
+        'stEl.textContent="Escuchando, jefa...";',
+        "rec.onresult=function(ev){",
+        'const dicho=(ev.results[0]&&ev.results[0][0]&&ev.
