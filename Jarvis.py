@@ -1,9 +1,13 @@
 import datetime
+import io
+import json
 import math
 import os
 import random
 import re
 import sqlite3
+import urllib.parse
+import xml.etree.ElementTree as ET
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
@@ -14,6 +18,14 @@ try:
 except Exception:
     Groq = None
     GROQ_AVAILABLE = False
+
+try:
+    from PIL import Image, ImageDraw
+    PIL_AVAILABLE = True
+except Exception:
+    Image = None
+    ImageDraw = None
+    PIL_AVAILABLE = False
 
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
@@ -32,6 +44,42 @@ IDIOMAS_DISPONIBLES = {
     "Deutsch (de-DE)": {"code": "de-DE", "nombre": "Deutsch"},
 }
 OPCIONES_IDIOMA = list(IDIOMAS_DISPONIBLES.keys())
+
+TEMAS_VISUALES = {
+    "CIAN TÁCTICO": {
+        "primary": "#00f3ff",
+        "hover": "#0088cc",
+        "bg": "#060913",
+        "card_bg": "rgba(0, 243, 255, 0.06)",
+        "grad_start": "#0a1128",
+        "btn_text": "#060913",
+    },
+    "ALERTA ROJA": {
+        "primary": "#ff3b3b",
+        "hover": "#b30000",
+        "bg": "#120507",
+        "card_bg": "rgba(255, 59, 59, 0.08)",
+        "grad_start": "#26080c",
+        "btn_text": "#120507",
+    },
+    "SIGILO VERDE": {
+        "primary": "#39ff14",
+        "hover": "#1f9e08",
+        "bg": "#040d06",
+        "card_bg": "rgba(57, 255, 20, 0.06)",
+        "grad_start": "#081c0c",
+        "btn_text": "#040d06",
+    },
+    "ÁMBAR NOCTURNO": {
+        "primary": "#ffb000",
+        "hover": "#b87d00",
+        "bg": "#120b03",
+        "card_bg": "rgba(255, 176, 0, 0.07)",
+        "grad_start": "#241605",
+        "btn_text": "#120b03",
+    },
+}
+OPCIONES_TEMA = list(TEMAS_VISUALES.keys())
 
 PROTOCOLO_CONOCIMIENTO_BASE = (
     "PROTOCOLO DE CONOCIMIENTO SUPREMO COMPARTIDO (APLICABLE A TODOS LOS NUCLEOS): "
@@ -52,12 +100,18 @@ PROTOCOLO_CONOCIMIENTO_BASE = (
 st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("idioma_sistema", "Español (es-CL)")
+st.session_state.setdefault("tema_visual", "CIAN TÁCTICO")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
 st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
 st.session_state.setdefault("notas_rapidas", [])
 st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
 st.session_state.setdefault("bitacora_sesion", [])
+st.session_state.setdefault("alerta_dolar_max", 0.0)
+st.session_state.setdefault("alerta_uf_max", 0.0)
+st.session_state.setdefault("recordatorio_hora", "")
+st.session_state.setdefault("recordatorio_texto", "")
+st.session_state.setdefault("noticias_cache_lista", [])
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -76,6 +130,13 @@ if GROQ_AVAILABLE and API_KEY_GROQ:
         client_groq = Groq(api_key=API_KEY_GROQ)
     except Exception:
         client_groq = None
+
+
+def obtener_tema_actual():
+    nombre = st.session_state.get("tema_visual", "CIAN TÁCTICO")
+    if nombre not in TEMAS_VISUALES:
+        nombre = "CIAN TÁCTICO"
+    return nombre, TEMAS_VISUALES[nombre]
 
 
 def obtener_config_idioma(etiqueta_idioma=None):
@@ -271,6 +332,30 @@ def obtener_clima_buin():
     return {"temp_c": None, "condicion": "sin lectura en vivo"}
 
 
+@st.cache_data(ttl=600)
+def obtener_noticias_rss(consulta="Chile tecnología finanzas", limite=5):
+    q_encoded = urllib.parse.quote(consulta.strip() or "Chile")
+    url = f"https://news.google.com/rss/search?q={q_encoded}&hl=es-419&gl=CL&ceid=CL:es-419"
+    headers = {"User-Agent": "Mozilla/5.0 (JARVIS-Node-Buin/1.0)"}
+    resultados = []
+    try:
+        resp = requests.get(url, headers=headers, timeout=6)
+        if resp.status_code == 200 and resp.content:
+            root = ET.fromstring(resp.content)
+            for item in root.findall(".//item")[:limite]:
+                titulo_el = item.find("title")
+                link_el = item.find("link")
+                pub_el = item.find("pubDate")
+                titulo = (titulo_el.text or "").strip() if titulo_el is not None else ""
+                enlace = (link_el.text or "").strip() if link_el is not None else ""
+                fecha = (pub_el.text or "")[:16].strip() if pub_el is not None else ""
+                if titulo:
+                    resultados.append({"titulo": titulo, "link": enlace, "fecha": fecha})
+    except Exception:
+        pass
+    return resultados
+
+
 def fmt_clp(valor):
     return "$" + f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
@@ -290,9 +375,7 @@ def obtener_saludo_actual(ahora, lang_code="es-CL"):
             return "Good afternoon"
         return "Good evening"
     if base_lang == "fr":
-        if 0 <= hora < 18:
-            return "Bonjour"
-        return "Bonsoir"
+        return "Bonjour" if 0 <= hora < 18 else "Bonsoir"
     if base_lang == "pt":
         if 0 <= hora < 12:
             return "Bom dia"
@@ -334,16 +417,12 @@ def obtener_saludo_nucleo(nucleo_nombre, etiqueta_idioma=None):
             "ARTEX": f"{pref}{saludo}, Boss! ARTEX core online with knowledge protocol and tactical control active.",
         }
         return saludos_en.get(nucleo_nombre, f"{pref}{saludo}, Boss. Online and ready.")
-
     if base_lang == "fr":
         return f"{pref}{saludo}, patronne. Noyau {nucleo_nombre} actif au nœud de Buin et prêt."
-
     if base_lang == "pt":
         return f"{pref}{saludo}, chefe. Núcleo {nucleo_nombre} ativo no nó de Buin e pronto."
-
     if base_lang == "it":
         return f"{pref}{saludo}, capa. Nucleo {nucleo_nombre} attivo sul nodo di Buin e pronto."
-
     if base_lang == "de":
         return f"{pref}{saludo}, Chefin. Kern {nucleo_nombre} am Knoten Buin ist aktiv und bereit."
 
@@ -367,12 +446,178 @@ def purgar_chat(nucleo_nombre):
     registrar_evento(f"Chat purgado en núcleo {nucleo_nombre}")
 
 
-def renderizar_banner_vivo(nucleo_activo, capa_radar):
+def construir_reporte_texto(indicadores, clima_buin):
+    ahora = obtener_hora_chile()
+    misiones = obtener_misiones()
+    recuerdos = jarvis_mem.get_recent_facts(20)
+    notas = st.session_state.get("notas_rapidas", [])
+    bitacora = st.session_state.get("bitacora_sesion", [])
+
+    lineas = [
+        "====================================================",
+        f"REPORTE TACTICO // J.A.R.V.I.S. - NUCLEO {st.session_state.nucleo_activo}",
+        f"NODO: BUIN, CHILE ({BUIN_LAT}, {BUIN_LON})",
+        f"FECHA/HORA CHILE: {ahora.strftime('%d/%m/%Y %H:%M:%S')}",
+        f"IDIOMA: {st.session_state.idioma_sistema} | TEMA: {st.session_state.tema_visual}",
+        "====================================================",
+        "",
+        "[1] INDICADORES Y METEOROLOGIA",
+        f"- Dolar Observado: {fmt_clp(indicadores['dolar'])}",
+        f"- Euro: {fmt_clp(indicadores['euro'])}",
+        f"- UF: {fmt_clp(indicadores['uf'])}",
+        f"- Clima Buin: {clima_buin.get('temp_c', 'N/D')} C ({clima_buin.get('condicion', 'N/D')})",
+        "",
+        "[2] MISIONES ACTIVAS",
+    ]
+    if misiones:
+        for mid, tarea, estado in misiones:
+            lineas.append(f"- #{mid}: {tarea} [{estado}]")
+    else:
+        lineas.append("- Sin misiones activas.")
+
+    lineas.append("")
+    lineas.append("[3] NOTAS RAPIDAS")
+    if notas:
+        for idx, n in enumerate(notas, 1):
+            lineas.append(f"- {idx}. {n}")
+    else:
+        lineas.append("- Sin notas rapidas.")
+
+    lineas.append("")
+    lineas.append("[4] MEMORIA PERSISTENTE")
+    if recuerdos:
+        for r in recuerdos:
+            lineas.append(f"- {r}")
+    else:
+        lineas.append("- Sin recuerdos registrados.")
+
+    lineas.append("")
+    lineas.append("[5] BITACORA DE SESION")
+    if bitacora:
+        for ev in bitacora[-15:]:
+            lineas.append(f"- {ev}")
+    else:
+        lineas.append("- Sin eventos en bitacora.")
+
+    return "\n".join(lineas)
+
+
+def generar_pdf_simple(texto_contenido: str) -> bytes:
+    def esc_pdf(s: str) -> str:
+        s_ascii = s.encode("latin-1", "replace").decode("latin-1")
+        return s_ascii.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    lineas_raw = texto_contenido.splitlines() or ["REPORTE JARVIS NODO BUIN"]
+    lineas_envueltas = []
+    for ln in lineas_raw:
+        if len(ln) <= 84:
+            lineas_envueltas.append(ln)
+        else:
+            for i in range(0, len(ln), 84):
+                lineas_envueltas.append(ln[i:i + 84])
+    lineas_envueltas = lineas_envueltas[:48]
+
+    ops = ["BT", "/F1 10 Tf", "40 755 Td", "14 TL"]
+    for idx, ln in enumerate(lineas_envueltas):
+        if idx == 0:
+            ops.append(f"({esc_pdf(ln)}) Tj")
+        else:
+            ops.append(f"T* ({esc_pdf(ln)}) Tj")
+    ops.append("ET")
+    stream_bytes = "\n".join(ops).encode("latin-1")
+
+    objetos = [
+        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+        b"4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n",
+        f"5 0 obj\n<< /Length {len(stream_bytes)} >>\nstream\n".encode("latin-1") + stream_bytes + b"\nendstream\nendobj\n",
+    ]
+
+    pdf_buf = io.BytesIO()
+    pdf_buf.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objetos:
+        offsets.append(pdf_buf.tell())
+        pdf_buf.write(obj)
+
+    xref_pos = pdf_buf.tell()
+    pdf_buf.write(f"xref\n0 {len(objetos) + 1}\n".encode("latin-1"))
+    pdf_buf.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        pdf_buf.write(f"{off:010d} 00000 n \n".encode("latin-1"))
+    pdf_buf.write(
+        f"trailer\n<< /Size {len(objetos) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF".encode("latin-1")
+    )
+    return pdf_buf.getvalue()
+
+
+def generar_tarjeta_jpg(indicadores, clima_buin, color_hex="#00f3ff") -> bytes:
+    if not PIL_AVAILABLE:
+        return b""
+    ahora = obtener_hora_chile()
+    w, h = 900, 500
+    img = Image.new("RGB", (w, h), (6, 9, 19))
+    draw = ImageDraw.Draw(img)
+
+    draw.rectangle([16, 16, w - 16, h - 16], outline=color_hex, width=3)
+    draw.rectangle([28, 28, w - 28, 96], outline=color_hex, width=2)
+    draw.text((48, 46), f"J.A.R.V.I.S. // NUCLEO {st.session_state.nucleo_activo}", fill=color_hex)
+    draw.text((48, 70), f"NODO BUIN, CHILE  |  {ahora.strftime('%d/%m/%Y %H:%M:%S')}  |  {st.session_state.capa_radar}", fill=color_hex)
+
+    cx, cy = 690, 275
+    for rad in (120, 88, 54):
+        draw.ellipse([cx - rad, cy - rad, cx + rad, cy + rad], outline=color_hex, width=2)
+    draw.line([cx - 135, cy, cx + 135, cy], fill=color_hex, width=1)
+    draw.line([cx, cy - 135, cx, cy + 135], fill=color_hex, width=1)
+    draw.text((cx - 46, cy + 132), "BUIN -33.73 S", fill=color_hex)
+
+    y_pos = 130
+    datos_vis = [
+        f"DOLAR OBS : {fmt_clp(indicadores['dolar'])}",
+        f"EURO      : {fmt_clp(indicadores['euro'])}",
+        f"UF CHILE  : {fmt_clp(indicadores['uf'])}",
+        f"CLIMA BUIN: {clima_buin.get('temp_c', 'N/D')} C ({clima_buin.get('condicion', 'N/D')})",
+        f"MISIONES  : {len(obtener_misiones())} ACTIVAS",
+        f"IDIOMA    : {st.session_state.idioma_sistema}",
+    ]
+    for linea in datos_vis:
+        draw.rectangle([42, y_pos - 6, 510, y_pos + 24], outline=color_hex, width=1)
+        draw.text((56, y_pos + 2), linea, fill=color_hex)
+        y_pos += 44
+
+    draw.text((48, h - 46), "ARCHIVO TACTICO EXPORTADO DESDE CONSOLA SUPREMA", fill=color_hex)
+    out = io.BytesIO()
+    img.save(out, format="JPEG", quality=92)
+    return out.getvalue()
+
+
+def convertir_imagen_a_jpg(archivo_subido) -> bytes:
+    if not PIL_AVAILABLE or archivo_subido is None:
+        return b""
+    try:
+        im = Image.open(archivo_subido)
+        if im.mode in ("RGBA", "P", "LA"):
+            fondo = Image.new("RGB", im.size, (6, 9, 19))
+            if im.mode == "P":
+                im = im.convert("RGBA")
+            fondo.paste(im, mask=im.split()[-1] if im.mode == "RGBA" else None)
+            im = fondo
+        else:
+            im = im.convert("RGB")
+        out = io.BytesIO()
+        im.save(out, format="JPEG", quality=92)
+        return out.getvalue()
+    except Exception:
+        return b""
+
+
+def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
     html_banner = (
-        '<div style="border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);'
-        'padding:14px 16px;border-radius:8px;text-align:center;margin:0 auto 12px auto;max-width:820px;font-family:monospace;color:#00f3ff;">'
-        f'<h2 style="margin:0 0 6px 0;color:#00f3ff;font-size:1.55rem;">⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
-        '<div id="reloj-vivo-buin" style="font-size:0.88rem;opacity:0.92;color:#00f3ff;">'
+        f'<div style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
+        f'padding:14px 16px;border-radius:8px;text-align:center;margin:0 auto 12px auto;max-width:820px;font-family:monospace;color:{color_main};">'
+        f'<h2 style="margin:0 0 6px 0;color:{color_main};font-size:1.55rem;">⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
+        f'<div id="reloj-vivo-buin" style="font-size:0.88rem;opacity:0.92;color:{color_main};">'
         f'NODO BUIN, CHILE • CARGANDO RELOJ EN VIVO... • {capa_radar}</div>'
         "</div>"
         "<script>(function(){"
@@ -406,25 +651,26 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar):
         )
 
 
-def renderizar_globo_orbital(capa_actual):
+def renderizar_globo_orbital(capa_actual, color_main="#00f3ff"):
     html_globo = (
-        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        f'<div style="border:1px solid {color_main};background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:{color_main};text-align:center;">'
         '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
         f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
         "</div>"
         "<script>(function(){"
         'const c=document.getElementById("holo-globe-canvas");'
         "if(!c)return;const ctx=c.getContext('2d');"
+        f'const mainColor="{color_main}";'
         "let ang=0;"
         "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
         "const cx=c.width/2,cy=c.height/2,r=42;"
-        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.strokeStyle=mainColor+'66';ctx.lineWidth=1;"
         "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
         "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
         "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
         "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
         "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
-        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillStyle=mainColor;ctx.font='9px monospace';"
         "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
         "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
         "window.__jarvisGloboTimer=setInterval(step,70);step();"
@@ -436,9 +682,9 @@ def renderizar_globo_orbital(capa_actual):
         pass
 
 
-def renderizar_camara_nocturna(modo_camara):
+def renderizar_camara_nocturna(modo_camara, color_tema="#00f3ff"):
     es_ir = "INFRARROJO" in modo_camara
-    color_main = "#00f3ff" if es_ir else "#39ff14"
+    color_main = color_tema if es_ir else "#39ff14"
     filtro_css = (
         "grayscale(100%) contrast(155%) brightness(115%) sepia(100%) hue-rotate(155deg) saturate(320%)"
         if es_ir
@@ -555,15 +801,15 @@ def reproducir_voz_pendiente():
         pass
 
 
-def renderizar_microfono_voz():
+def renderizar_microfono_voz(color_main="#00f3ff", btn_text="#060913"):
     _, cfg = obtener_config_idioma()
     lang_mic = cfg["code"]
     js_mic = (
         '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">'
-        '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;'
-        'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;'
+        f'<button id="btn-mic-jarvis" type="button" style="background:{color_main};color:{btn_text};'
+        f'border:1.5px solid {color_main};border-radius:6px;padding:6px 12px;font-family:monospace;'
         'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>'
-        f'<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;'
+        f'<span id="estado-mic-jarvis" style="color:{color_main};font-family:monospace;'
         f'font-size:0.75rem;opacity:0.85;">Micrófono listo ({lang_mic})</span></div>'
         "<script>(function(){"
         'const btn=document.getElementById("btn-mic-jarvis");'
@@ -711,6 +957,16 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
             if lang_code.startswith("en"):
                 return f"{prefijo}Got it, Boss, saved to memory: **{dato}**."
             return f"{prefijo}Listo, jefa, queda guardado en memoria: **{dato}**."
+
+    if t.startswith("noticias") or t.startswith("busca noticias") or t.startswith("titulares"):
+        tema_busqueda = re.sub(r"^(busca\s+)?(noticias|titulares)\s*(de|sobre)?\s*", "", raw, flags=re.IGNORECASE).strip()
+        tema_busqueda = tema_busqueda or "Chile tecnología finanzas"
+        noticias = obtener_noticias_rss(tema_busqueda, limite=4)
+        if noticias:
+            registrar_evento(f"Búsqueda noticias: {tema_busqueda}")
+            items_md = "\n".join(f"- [{n['titulo']}]({n['link']})" for n in noticias)
+            return f"{prefijo}Titulares recientes sobre **{tema_busqueda}**, jefa:\n{items_md}"
+        return f"{prefijo}No pude recuperar titulares en vivo para **{tema_busqueda}** en este momento, jefa."
 
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
@@ -892,67 +1148,79 @@ st.session_state.setdefault(
     ],
 )
 
-estilos_css = """
+tema_nombre, tema_cfg = obtener_tema_actual()
+C_PRI = tema_cfg["primary"]
+C_HOV = tema_cfg["hover"]
+C_BG = tema_cfg["bg"]
+C_CARD = tema_cfg["card_bg"]
+C_GRAD = tema_cfg["grad_start"]
+C_BTXT = tema_cfg["btn_text"]
+
+estilos_css = f"""
     <style>
-        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
-        .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
-            color: #00f3ff !important; font-family: monospace;
-        }
-        .stButton>button {
-            background-color: #00f3ff !important;
-            border: 1.5px solid #00f3ff !important;
+        .stApp {{ background-color: {C_BG} !important; color: {C_PRI} !important; font-family: monospace; }}
+        .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {{
+            color: {C_PRI} !important; font-family: monospace;
+        }}
+        .stButton>button, .stDownloadButton>button {{
+            background-color: {C_PRI} !important;
+            border: 1.5px solid {C_PRI} !important;
             font-weight: bold;
             font-family: monospace;
             width: 100%;
             border-radius: 6px;
             padding: 5px 10px !important;
-        }
-        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
-        .stButton>button:hover { background-color: #0088cc !important; }
-        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
-        .econ-card {
-            border: 1px solid #00f3ff;
-            background: rgba(0, 243, 255, 0.06);
+        }}
+        .stButton>button p, .stButton>button span,
+        .stDownloadButton>button p, .stDownloadButton>button span {{
+            color: {C_BTXT} !important; font-size: 0.78rem !important;
+        }}
+        .stButton>button:hover, .stDownloadButton>button:hover {{ background-color: {C_HOV} !important; }}
+        .stButton>button:hover p, .stButton>button:hover span,
+        .stDownloadButton>button:hover p, .stDownloadButton>button:hover span {{ color: #ffffff !important; }}
+        .econ-card {{
+            border: 1px solid {C_PRI};
+            background: {C_CARD};
             border-radius: 6px;
             padding: 8px 10px;
             margin: 5px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .econ-label { font-size: 0.75rem !important; opacity: 0.85; color: #00f3ff !important; }
-        .econ-val { font-size: 0.85rem !important; font-weight: bold; color: #00f3ff !important; }
-        .arc-reactor-container {
+        }}
+        .econ-label {{ font-size: 0.75rem !important; opacity: 0.85; color: {C_PRI} !important; }}
+        .econ-val {{ font-size: 0.85rem !important; font-weight: bold; color: {C_PRI} !important; }}
+        .arc-reactor-container {{
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             margin-bottom: 10px;
-        }
-        .arc-ring {
+        }}
+        .arc-ring {{
             width: 65px;
             height: 65px;
-            border: 2.5px solid #00f3ff;
+            border: 2.5px solid {C_PRI};
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+            background: radial-gradient(circle, {C_CARD} 0%, {C_BG} 75%);
             margin-bottom: 8px;
-        }
-        .arc-triangle-inverted {
+        }}
+        .arc-triangle-inverted {{
             width: 0;
             height: 0;
             border-left: 12px solid transparent;
             border-right: 12px solid transparent;
-            border-top: 20px solid #00f3ff;
-        }
-        .tactical-link-btn {
+            border-top: 20px solid {C_PRI};
+        }}
+        .tactical-link-btn {{
             display: block;
             width: 100%;
-            background-color: #00f3ff;
-            color: #060913 !important;
+            background-color: {C_PRI};
+            color: {C_BTXT} !important;
             text-align: center;
             padding: 6px 10px;
             margin: 5px 0;
@@ -961,32 +1229,32 @@ estilos_css = """
             font-weight: bold;
             text-decoration: none;
             font-family: monospace;
-        }
-        .tactical-link-btn:hover {
-            background-color: #0088cc;
+        }}
+        .tactical-link-btn:hover {{
+            background-color: {C_HOV};
             color: #ffffff !important;
-        }
-        .holo-brain-box {
-            border: 1.5px solid #00f3ff;
-            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+        }}
+        .holo-brain-box {{
+            border: 1.5px solid {C_PRI};
+            background: linear-gradient(135deg, {C_GRAD} 0%, {C_BG} 100%);
             padding: 15px;
             border-radius: 8px;
             text-align: center;
             margin: 0 auto 20px auto;
             max-width: 800px;
-        }
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
+        }}
+        #MainMenu {{visibility: hidden;}}
+        footer {{visibility: hidden;}}
     </style>
 """
 st.markdown(estilos_css, unsafe_allow_html=True)
 
 if not st.session_state.get("autorizado", False):
     st.markdown(
-        '<div style="text-align: center; margin-top: 50px;">'
-        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
-        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
-        '</div>',
+        f'<div style="text-align: center; margin-top: 50px;">'
+        f'<h2 style="color: {C_PRI};">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        f'<p style="color: {C_PRI}; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        f'</div>',
         unsafe_allow_html=True,
     )
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
@@ -1011,6 +1279,7 @@ if not st.session_state.get("autorizado", False):
     st.stop()
 
 indicadores_base = obtener_indicadores_chile()
+clima_buin = obtener_clima_buin()
 
 with st.sidebar:
     st.markdown(
@@ -1041,6 +1310,24 @@ with st.sidebar:
         "🔊 Voz activa",
         value=st.session_state.voz_masculina_activa,
     )
+
+    st.markdown("---")
+    st.markdown("#### 🎨 Protocolo Visual (UI)")
+    idx_tema = (
+        OPCIONES_TEMA.index(st.session_state.tema_visual)
+        if st.session_state.tema_visual in OPCIONES_TEMA
+        else 0
+    )
+    nuevo_tema = st.selectbox(
+        "Paleta táctica:",
+        OPCIONES_TEMA,
+        index=idx_tema,
+        label_visibility="collapsed",
+    )
+    if nuevo_tema != st.session_state.tema_visual:
+        st.session_state.tema_visual = nuevo_tema
+        registrar_evento(f"Protocolo visual: {nuevo_tema}")
+        st.rerun()
 
     st.markdown("---")
     st.markdown("#### 🌐 Selector de Idioma")
@@ -1081,7 +1368,7 @@ with st.sidebar:
 
     st.markdown("---")
     with st.expander("🌐 Globo Orbital Buin"):
-        renderizar_globo_orbital(st.session_state.capa_radar)
+        renderizar_globo_orbital(st.session_state.capa_radar, color_main=C_PRI)
 
     with st.expander("🛰️ Radar y Capas"):
         capa_sel = st.selectbox(
@@ -1099,6 +1386,132 @@ with st.sidebar:
             '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live Radar</a>',
             unsafe_allow_html=True,
         )
+
+    with st.expander("📰 Noticias y Búsqueda Web"):
+        query_news = st.text_input("Tema o palabra clave:", value="Chile tecnología", key="input_news_sidebar")
+        if st.button("🔍 Buscar Titulares", use_container_width=True):
+            st.session_state.noticias_cache_lista = obtener_noticias_rss(query_news, limite=5)
+            registrar_evento(f"Noticias consultadas: {query_news}")
+        if not st.session_state.noticias_cache_lista:
+            st.session_state.noticias_cache_lista = obtener_noticias_rss("Chile tecnología", limite=4)
+        for n_item in st.session_state.noticias_cache_lista[:5]:
+            st.markdown(f"- [{n_item['titulo']}]({n_item['link']})")
+
+    with st.expander("⏰ Alertas y Recordatorios"):
+        st.session_state.alerta_dolar_max = st.number_input(
+            "Alerta Dólar mayor a (CLP):",
+            min_value=0.0,
+            value=float(st.session_state.alerta_dolar_max),
+            step=5.0,
+            format="%.2f",
+        )
+        st.session_state.alerta_uf_max = st.number_input(
+            "Alerta UF mayor a (CLP):",
+            min_value=0.0,
+            value=float(st.session_state.alerta_uf_max),
+            step=100.0,
+            format="%.2f",
+        )
+        rec_hora_in = st.text_input(
+            "Hora recordatorio (HH:MM):",
+            value=st.session_state.recordatorio_hora,
+            placeholder="Ej. 18:30",
+        )
+        rec_txt_in = st.text_input(
+            "Mensaje recordatorio:",
+            value=st.session_state.recordatorio_texto,
+            placeholder="Ej. Revisar cierre de mercado",
+        )
+        ca_r1, ca_r2 = st.columns(2)
+        if ca_r1.button("💾 Fijar Alerta", use_container_width=True):
+            st.session_state.recordatorio_hora = rec_hora_in.strip()
+            st.session_state.recordatorio_texto = rec_txt_in.strip()
+            registrar_evento(f"Recordatorio fijado: {st.session_state.recordatorio_hora}")
+            st.rerun()
+        if ca_r2.button("🧹 Quitar", use_container_width=True):
+            st.session_state.alerta_dolar_max = 0.0
+            st.session_state.alerta_uf_max = 0.0
+            st.session_state.recordatorio_hora = ""
+            st.session_state.recordatorio_texto = ""
+            st.rerun()
+
+    with st.expander("📥 Descarga de Archivos"):
+        formato_exp = st.selectbox(
+            "Formato a generar:",
+            [
+                "TXT (Reporte Táctico)",
+                "PDF (Documento Táctico)",
+                "JPG (Tarjeta Telemetría HD)",
+                "JPG (Convertir Imagen Subida)",
+                "JSON (Respaldo Completo)",
+            ],
+        )
+        stamp_file = obtener_hora_chile().strftime("%Y%m%d_%H%M%S")
+        if formato_exp == "TXT (Reporte Táctico)":
+            data_txt = construir_reporte_texto(indicadores_base, clima_buin).encode("utf-8")
+            st.download_button(
+                "⬇️ Descargar TXT",
+                data=data_txt,
+                file_name=f"jarvis_buin_{stamp_file}.txt",
+                mime="text/plain",
+                use_container_width=True,
+            )
+        elif formato_exp == "PDF (Documento Táctico)":
+            data_pdf = generar_pdf_simple(construir_reporte_texto(indicadores_base, clima_buin))
+            st.download_button(
+                "⬇️ Descargar PDF",
+                data=data_pdf,
+                file_name=f"jarvis_buin_{stamp_file}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        elif formato_exp == "JPG (Tarjeta Telemetría HD)":
+            data_jpg = generar_tarjeta_jpg(indicadores_base, clima_buin, color_hex=C_PRI)
+            if data_jpg:
+                st.download_button(
+                    "⬇️ Descargar JPG",
+                    data=data_jpg,
+                    file_name=f"jarvis_telemetria_{stamp_file}.jpg",
+                    mime="image/jpeg",
+                    use_container_width=True,
+                )
+            else:
+                st.caption("Instala Pillow para exportar JPG.")
+        elif formato_exp == "JPG (Convertir Imagen Subida)":
+            img_up = st.file_uploader("Sube PNG/WEBP/JPG:", type=["png", "jpg", "jpeg", "webp"], key="up_jpg_conv")
+            if img_up is not None:
+                jpg_conv = convertir_imagen_a_jpg(img_up)
+                if jpg_conv:
+                    st.download_button(
+                        "⬇️ Descargar como JPG",
+                        data=jpg_conv,
+                        file_name=f"jarvis_img_{stamp_file}.jpg",
+                        mime="image/jpeg",
+                        use_container_width=True,
+                    )
+        else:
+            payload_json = json.dumps(
+                {
+                    "nodo": "Buin, Chile",
+                    "nucleo": st.session_state.nucleo_activo,
+                    "idioma": st.session_state.idioma_sistema,
+                    "tema": st.session_state.tema_visual,
+                    "indicadores": indicadores_base,
+                    "clima": clima_buin,
+                    "misiones": obtener_misiones(),
+                    "notas": st.session_state.notas_rapidas,
+                    "memoria": jarvis_mem.get_recent_facts(50),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ).encode("utf-8")
+            st.download_button(
+                "⬇️ Descargar JSON",
+                data=payload_json,
+                file_name=f"jarvis_backup_{stamp_file}.json",
+                mime="application/json",
+                use_container_width=True,
+            )
 
     with st.expander("📡 Enlaces Financieros"):
         st.markdown(
@@ -1138,7 +1551,7 @@ with st.sidebar:
         if modo_cam != st.session_state.modo_camara:
             st.session_state.modo_camara = modo_cam
             st.rerun()
-        renderizar_camara_nocturna(st.session_state.modo_camara)
+        renderizar_camara_nocturna(st.session_state.modo_camara, color_tema=C_PRI)
 
     with st.expander("📝 Notas Rápidas"):
         nota_txt = st.text_input("Nueva nota:", placeholder="Escribe un apunte...")
@@ -1183,6 +1596,7 @@ with st.sidebar:
         st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
         st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
         st.markdown(f"- **Idioma:** {st.session_state.idioma_sistema}")
+        st.markdown(f"- **Tema:** {st.session_state.tema_visual}")
         st.markdown(f"- **Motor IA:** {estado_groq}")
         st.markdown(f"- **Misiones:** {len(obtener_misiones())}")
         st.markdown(f"- **Recuerdos SQLite:** {len(jarvis_mem.get_recent_facts(50))}")
@@ -1229,9 +1643,14 @@ with st.sidebar:
             st.rerun()
 
 indicadores = indicadores_base
-clima_buin = obtener_clima_buin()
 
-renderizar_banner_vivo(st.session_state.nucleo_activo, st.session_state.capa_radar)
+renderizar_banner_vivo(
+    st.session_state.nucleo_activo,
+    st.session_state.capa_radar,
+    color_main=C_PRI,
+    grad_start=C_GRAD,
+    bg_dark=C_BG,
+)
 
 c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
 with c_ind1:
@@ -1256,7 +1675,24 @@ with c_ind4:
         unsafe_allow_html=True,
     )
 
-renderizar_microfono_voz()
+alertas_activas = []
+if st.session_state.alerta_dolar_max > 0 and indicadores["dolar"] >= st.session_state.alerta_dolar_max:
+    alertas_activas.append(
+        f"ALERTA DÓLAR: {fmt_clp(indicadores['dolar'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_dolar_max)}"
+    )
+if st.session_state.alerta_uf_max > 0 and indicadores["uf"] >= st.session_state.alerta_uf_max:
+    alertas_activas.append(
+        f"ALERTA UF: {fmt_clp(indicadores['uf'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_uf_max)}"
+    )
+hora_actual_hm = obtener_hora_chile().strftime("%H:%M")
+if st.session_state.recordatorio_hora and st.session_state.recordatorio_hora == hora_actual_hm:
+    msg_rec = st.session_state.recordatorio_texto or "Recordatorio programado en Nodo Buin"
+    alertas_activas.append(f"RECORDATORIO ({hora_actual_hm}): {msg_rec}")
+
+for al_txt in alertas_activas:
+    st.warning(f"⚠️ {al_txt}")
+
+renderizar_microfono_voz(color_main=C_PRI, btn_text=C_BTXT)
 
 for msg in st.session_state.mensajes:
     with st.chat_message(msg["role"]):
