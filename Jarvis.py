@@ -514,4 +514,86 @@ def construir_reporte_texto(indicadores, clima_buin):
         "",
         "[1] INDICADORES Y METEOROLOGIA",
         f"- Dolar Observado: {fmt_clp(indicadores['dolar'])}",
-        f"- Euro: {fmt_clp
+        f"- Euro: {fmt_clp(indicadores['euro'])}",
+        f"- UF: {fmt_clp(indicadores['uf'])}",
+        f"- Clima Buin: {clima_buin.get('temp_c', 'N/D')} C ({clima_buin.get('condicion', 'N/D')})",
+        "",
+        "[2] MISIONES ACTIVAS",
+    ]
+    if misiones:
+        for mid, tarea, estado in misiones:
+            lineas.append(f"- #{mid}: {tarea} [{estado}]")
+    else:
+        lineas.append("- Sin misiones activas.")
+
+    lineas.append("")
+    lineas.append("[3] NOTAS RAPIDAS")
+    if notas:
+        for idx, n in enumerate(notas, 1):
+            lineas.append(f"- {idx}. {n}")
+    else:
+        lineas.append("- Sin notas rapidas.")
+
+    lineas.append("")
+    lineas.append("[4] MEMORIA PERSISTENTE")
+    if recuerdos:
+        for r in recuerdos:
+            lineas.append(f"- {r}")
+    else:
+        lineas.append("- Sin recuerdos registrados.")
+
+    lineas.append("")
+    lineas.append("[5] BITACORA DE SESION")
+    if bitacora:
+        for ev in bitacora[-15:]:
+            lineas.append(f"- {ev}")
+    else:
+        lineas.append("- Sin eventos en bitacora.")
+
+    return "\n".join(lineas)
+
+
+def generar_pdf_simple(texto_contenido: str) -> bytes:
+    def esc_pdf(s: str) -> str:
+        s_ascii = s.encode("latin-1", "replace").decode("latin-1")
+        return s_ascii.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    lineas_raw = texto_contenido.splitlines() or ["REPORTE JARVIS NODO BUIN"]
+    lineas_envueltas = []
+    for ln in lineas_raw:
+        if len(ln) <= 84:
+            lineas_envueltas.append(ln)
+        else:
+            for i in range(0, len(ln), 84):
+                lineas_envueltas.append(ln[i:i + 84])
+    lineas_envueltas = lineas_envueltas[:48]
+
+    ops = ["BT", "/F1 10 Tf", "40 755 Td", "14 TL"]
+    for idx, ln in enumerate(lineas_envueltas):
+        if idx == 0:
+            ops.append(f"({esc_pdf(ln)}) Tj")
+        else:
+            ops.append(f"T* ({esc_pdf(ln)}) Tj")
+    ops.append("ET")
+    stream_bytes = "\n".join(ops).encode("latin-1")
+
+    objetos = [
+        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+        b"4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n",
+        f"5 0 obj\n<< /Length {len(stream_bytes)} >>\nstream\n".encode("latin-1") + stream_bytes + b"\nendstream\nendobj\n",
+    ]
+
+    pdf_buf = io.BytesIO()
+    pdf_buf.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objetos:
+        offsets.append(pdf_buf.tell())
+        pdf_buf.write(obj)
+
+    xref_pos = pdf_buf.tell()
+    pdf_buf.write(f"xref\n0 {len(objetos) + 1}\n".encode("latin-1"))
+    pdf_buf.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        pdf_buf
