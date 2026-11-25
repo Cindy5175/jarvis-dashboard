@@ -308,8 +308,24 @@ def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
     ts_ms = int(ahora.timestamp() * 1000)
     fecha_str = ahora.strftime("%d/%m/%Y %H:%M:%S")
     encabezado_reloj = f"NODO BUIN, CHILE • {fecha_str} • {capa_radar}"
-    html_reloj = (
-        '<div style="border:1.5px solid #00f3ff;'
-        'background:linear-gradient(135deg, #0a1128 0%, #060913 100%);'
-        'padding:14px 18px;border-radius:8px;text-align:center;'
-        'box-shadow:0 0
+    lineas_html = [
+        '<div style="border:1.5px solid #00f3ff;',
+        'background:linear-gradient(135deg, #0a1128 0%, #060913 100%);',
+        'padding:14px 18px;border-radius:8px;text-align:center;',
+        'margin:0 auto 14px auto;max-width:920px;font-family:monospace;color:#00f3ff;">',
+        f'<div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>',
+        '<div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">',
+        f'{encabezado_reloj}</div></div>',
+        '<script>(function(){',
+        f'let baseMs={ts_ms};const offsetMs=-3*3600*1000;const capa="{capa_radar}";',
+        'const el=document.getElementById("jarvis-reloj-vivo");',
+        'function pad(n){return n<10?"0"+n:""+n;}',
+        'function tick(){baseMs+=1000;const d=new Date(baseMs+offsetMs);',
+        'const f=pad(d.getUTCDate())+"/"+pad(d.getUTCMonth()+1)+"/"+d.getUTCFullYear();',
+        'const h=pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())+":"+pad(d.getUTCSeconds());',
+        'if(el){el.textContent="NODO BUIN, CHILE • "+f+" "+h+" • "+capa;}}',
+        'if(window.__jarvisClockTimer)clearInterval(window.__jarvisClockTimer);',
+        'window.__jarvisClockTimer=setInterval(tick,1000);',
+        '})();</script>',
+    ]
+    components.html("".join(lineas_html), height=92)
