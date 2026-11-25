@@ -21,6 +21,22 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+st.markdown(
+    """
+    <style>
+    .stApp, [data-testid="stAppViewContainer"], .main {
+        background-color: #05070d !important;
+        color: #e6f7ff !important;
+        font-weight: 700 !important;
+    }
+    p, span, label, div, li, h1, h2, h3, h4, code, pre, input, textarea {
+        font-weight: 700 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
 
 PROTOCOLO_CONOCIMIENTO_BASE = (
@@ -419,113 +435,3 @@ def resolver_calculo_o_unidad(texto_raw):
     t = (texto_raw or "").strip().lower()
 
     mp = re.search(r"(\d+(?:[.,]\d+)?)\s*%\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)", t)
-    if mp:
-        pct = float(mp.group(1).replace(",", "."))
-        base = float(mp.group(2).replace(",", "."))
-        val = (pct / 100.0) * base
-        res = int(val) if val.is_integer() else round(val, 6)
-        return f"Cálculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
-
-    mu = re.search(
-        r"(-?\d+(?:[.,]\d+)?)\s*"
-        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)\s*"
-        r"(?:a|en|to|in)\s*"
-        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)",
-        t,
-    )
-    if mu:
-        val = float(mu.group(1).replace(",", "."))
-        u1 = mu.group(2).replace("°", "")
-        u2 = mu.group(3).replace("°", "")
-        if u1 == "millas":
-            u1 = "mi"
-        if u2 == "millas":
-            u2 = "mi"
-        if u1 == "libras":
-            u1 = "lb"
-        if u2 == "libras":
-            u2 = "lb"
-
-        long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
-        masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
-        vol_l = {"ml": 0.001, "l": 1.0}
-        vel_ms = {"m/s": 1.0, "km/h": 1.0 / 3.6}
-
-        if u1 in long_m and u2 in long_m:
-            return f"Conversión de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
-        if u1 in masa_kg and u2 in masa_kg:
-            return f"Conversión de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
-        if u1 in vol_l and u2 in vol_l:
-            return f"Conversión de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
-        if u1 in vel_ms and u2 in vel_ms:
-            return f"Conversión de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
-        if u1 in {"c", "f", "k"} and u2 in {"c", "f", "k"}:
-            c = val if u1 == "c" else ((val - 32) * 5 / 9 if u1 == "f" else val - 273.15)
-            out_t = c if u2 == "c" else (c * 9 / 5 + 32 if u2 == "f" else c + 273.15)
-            return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
-
-    expr = t
-    for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "aritmetica", "aritmética", "matematica", "matemática", "="]:
-        if expr.startswith(pref):
-            expr = expr[len(pref):].strip()
-    expr = expr.replace("×", "*").replace("÷", "/").replace("^", "**").replace(",", ".")
-    if (
-        re.search(r"\d", expr)
-        and not re.fullmatch(r"\d{1,2}:\d{2}(:\d{2})?", expr)
-        and re.fullmatch(r"[0-9+\-*/().%\s,a-z_]+", expr)
-    ):
-        env = {
-            "__builtins__": {},
-            "abs": abs,
-            "round": round,
-            "min": min,
-            "max": max,
-            "pow": pow,
-            "sqrt": math.sqrt,
-            "sin": math.sin,
-            "cos": math.cos,
-            "tan": math.tan,
-            "log": math.log10,
-            "ln": math.log,
-            "exp": math.exp,
-            "pi": math.pi,
-            "e": math.e,
-        }
-        try:
-            res = eval(expr, env, {})
-            if isinstance(res, (int, float)) and not isinstance(res, bool):
-                out = int(res) if (isinstance(res, float) and res.is_integer()) else (round(res, 6) if isinstance(res, float) else res)
-                return f"Resultado del cálculo `{expr}`: **{out}**."
-        except Exception:
-            return None
-    return None
-
-
-def generar_respuesta_coherente(nucleo, texto_usuario):
-    ahora = obtener_hora_chile()
-    prefijo = f"[{nucleo}] "
-    t = (texto_usuario or "").strip().lower()
-
-    frases_presentacion = [
-        "presentate", "preséntate", "presentate por favor", "preséntate por favor",
-        "quien eres", "quién eres", "quien eres tu", "quién eres tú",
-        "protocolo de presentacion", "protocolo de presentación",
-    ]
-    if any(k in t for k in frases_presentacion):
-        return obtener_presentacion_nucleo(nucleo)
-
-    frases_despierto = [
-        "estas despierto", "estás despierto", "estas despierta", "estás despierta",
-        "estas ahi", "estás ahí", "estas ahi?", "estás ahí?",
-        "estas despierto?", "estás despierto?", "estas despierta?", "estás despierta?",
-    ]
-    if any(k in t for k in frases_despierto):
-        if nucleo == "JARVIS":
-            return f"{prefijo}Para usted, señorita, siempre."
-        if nucleo == "VIERNES":
-            return f"{prefijo}¡Siempre despierta para usted, señorita!"
-        if nucleo == "NOVA":
-            return f"{prefijo}¡Siempre atenta al radar para usted, señorita!"
-        if nucleo == "ARTEX":
-            return f"{prefijo}En línea y con los sistemas tácticos listos, señorita."
-        return f"{prefijo}Siempre activo y a sus órdenes, señorita."
