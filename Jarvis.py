@@ -259,4 +259,61 @@ def obtener_clima_buin():
             if temp is not None:
                 return {
                     "temp_c": round(float(temp), 1),
-                    "condicion
+                    "condicion": describir_clima_codigo(code),
+                }
+    except Exception:
+        pass
+    return {"temp_c": None, "condicion": "sin lectura en vivo"}
+
+
+def fmt_clp(valor):
+    return "$" + f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def obtener_hora_chile():
+    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+    return datetime.datetime.now(tz_chile)
+
+
+def obtener_saludo_actual(ahora):
+    hora = ahora.hour
+    if 0 <= hora < 12:
+        return "Buenos días"
+    if 12 <= hora < 20:
+        return "Buenas tardes"
+    return "Buenas noches"
+
+
+def obtener_saludo_nucleo(nucleo_nombre):
+    ahora = obtener_hora_chile()
+    saludo_actual = obtener_saludo_actual(ahora)
+    pref = f"[{nucleo_nombre}] "
+    saludos = {
+        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "ARTEX": f"{pref}¡{saludo_actual}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
+    }
+    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+
+
+def purgar_chat(nucleo_nombre):
+    saludo_limpio = obtener_saludo_nucleo(nucleo_nombre)
+    st.session_state["mensajes"] = [{"role": "assistant", "content": saludo_limpio}]
+    st.session_state["pendiente_voz"] = None
+
+
+def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
+    ahora = obtener_hora_chile()
+    ts_ms = int(ahora.timestamp() * 1000)
+    fecha_str = ahora.strftime("%d/%m/%Y %H:%M:%S")
+    encabezado_reloj = f"NODO BUIN, CHILE • {fecha_str} • {capa_radar}"
+    lineas_html = [
+        '<div style="border:1.5px solid #00f3ff;',
+        'background:linear-gradient(135deg, #0a1128 0%, #060913 100%);',
+        'padding:14px 18px;border-radius:8px;text-align:center;',
+        'margin:0 auto 14px auto;max-width:920px;font-family:monospace;color:#00f3ff;">',
+        f'<div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>',
+        '<div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">',
+        f"{encabezado_reloj}</div></div>",
+        "<script>(
