@@ -89,8 +89,16 @@ class JarvisMemory:
     def __init__(self, db_path=fn_db):
         self.db_path = db_path
 
-    def remember_fact(self, key_id: str, fact_text: str):
-        try:
-            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
-            cursor = conn.cursor()
-            cursor.
+   def remember_fact(self, key_id: str, fact_text: str):
+      try:
+        conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT OR REPLACE INTO memory (key_id, fact_text, category)"
+            " VALUES (?, ?, ?)",
+            (key_id, fact_text, "general"),
+        )
+        conn.commit()
+        conn.close()
+      except Exception:
+        pass
