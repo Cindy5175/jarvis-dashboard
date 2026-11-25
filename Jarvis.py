@@ -574,5 +574,8 @@ def resolver_calculo_o_unidad(texto_raw):
         try:
             res = eval(expr, env, {})
             if isinstance(res, (int, float)) and not isinstance(res, bool):
-                out = int(res) if (isinstance(res, float) and res.is_integer()) else (round(res, 6) if isinstance(res, float) else res)
-                return f"Resultado del cálculo `{expr}`: **{out
+                es_ent = isinstance(res, float) and res.is_integer()
+                out = int(res) if es_ent else (round(res, 6) if isinstance(res, float) else res)
+                return "Resultado del cálculo `" + expr + "`: **" + str(out) + "**."
+        except Exception:
+            return None
