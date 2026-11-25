@@ -586,3 +586,54 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
         clima = obtener_clima_buin()
         if clima.get("temp_c") is not None:
+            return f"{prefijo}En Buin hay **{clima['temp_c']}°C** y el cielo está **{clima['condicion']}**, jefa."
+        return f"{prefijo}Sin lectura meteorológica en vivo en este momento, jefa."
+
+    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+        hora_str = ahora.strftime("%H:%M:%S")
+        return f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa."
+
+    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
+        return (
+            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
+            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
+        )
+
+    calc = resolver_calculo_o_unidad(raw)
+    if calc:
+        return f"{prefijo}{calc}"
+
+    if client_groq is not None:
+        try:
+            recuerdos = jarvis_mem.get_recent_facts(5)
+            sys_txt = f"Núcleo activo: {nucleo}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. {PROTOCOLO_CONOCIMIENTO_BASE}"
+            if recuerdos:
+                sys_txt += " Memoria: " + " | ".join(recuerdos)
+            msgs_api = [{"role": "system", "content": sys_txt}]
+            for item in st.session_state.get("mensajes", [])[-6:]:
+                rol = item.get("role")
+                cont = item.get("content", "")
+                if rol in {"user", "assistant"} and cont:
+                    msgs_api.append({"role": rol, "content": re.sub(r"^\[[^\]]+\]\s*", "", cont)})
+            if not msgs_api or msgs_api[-1].get("role") != "user" or msgs_api[-1].get("content") != raw:
+                msgs_api.append({"role": "user", "content": raw})
+            resp = client_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=msgs_api,
+                temperature=0.65,
+                max_tokens=600,
+            )
+            contenido = (resp.choices[0].message.content or "").strip()
+            if contenido:
+                contenido = re.sub(r"^\[[^\]]+\]\s*", "", contenido)
+                return f"{prefijo}{contenido}"
+        except Exception:
+            pass
+
+    if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
+        return (
+            f"{prefijo}**Fisiología del corazón ({raw})**: en un adulto sano suele pesar aproximadamente entre **250 y 350 gramos** "
+            "(cerca de **250–300 g** en mujeres y **300–350 g** en hombres, variando según contextura). "
+            "Es un órgano muscular hueco de cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre "
