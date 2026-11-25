@@ -23,6 +23,16 @@ st.set_page_config(
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
 
+IDIOMAS_DISPONIBLES = {
+    "Español (es-CL)": {"code": "es-CL", "nombre": "español (Chile)"},
+    "English (en-US)": {"code": "en-US", "nombre": "English"},
+    "Français (fr-FR)": {"code": "fr-FR", "nombre": "français"},
+    "Português (pt-BR)": {"code": "pt-BR", "nombre": "português"},
+    "Italiano (it-IT)": {"code": "it-IT", "nombre": "italiano"},
+    "Deutsch (de-DE)": {"code": "de-DE", "nombre": "Deutsch"},
+}
+OPCIONES_IDIOMA = list(IDIOMAS_DISPONIBLES.keys())
+
 PROTOCOLO_CONOCIMIENTO_BASE = (
     "PROTOCOLO DE CONOCIMIENTO SUPREMO COMPARTIDO (APLICABLE A TODOS LOS NUCLEOS): "
     "Responde con rigor tecnico, precision y claridad estructurada en: "
@@ -41,6 +51,7 @@ PROTOCOLO_CONOCIMIENTO_BASE = (
 
 st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
+st.session_state.setdefault("idioma_sistema", "Español (es-CL)")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
 st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
@@ -65,6 +76,13 @@ if GROQ_AVAILABLE and API_KEY_GROQ:
         client_groq = Groq(api_key=API_KEY_GROQ)
     except Exception:
         client_groq = None
+
+
+def obtener_config_idioma(etiqueta_idioma=None):
+    etiqueta = etiqueta_idioma or st.session_state.get("idioma_sistema", "Español (es-CL)")
+    if etiqueta not in IDIOMAS_DISPONIBLES:
+        etiqueta = "Español (es-CL)"
+    return etiqueta, IDIOMAS_DISPONIBLES[etiqueta]
 
 
 def registrar_evento(detalle: str):
@@ -262,8 +280,37 @@ def obtener_hora_chile():
     return datetime.datetime.now(tz_chile)
 
 
-def obtener_saludo_actual(ahora):
+def obtener_saludo_actual(ahora, lang_code="es-CL"):
     hora = ahora.hour
+    base_lang = (lang_code or "es-CL").split("-")[0].lower()
+    if base_lang == "en":
+        if 0 <= hora < 12:
+            return "Good morning"
+        if 12 <= hora < 20:
+            return "Good afternoon"
+        return "Good evening"
+    if base_lang == "fr":
+        if 0 <= hora < 18:
+            return "Bonjour"
+        return "Bonsoir"
+    if base_lang == "pt":
+        if 0 <= hora < 12:
+            return "Bom dia"
+        if 12 <= hora < 18:
+            return "Boa tarde"
+        return "Boa noite"
+    if base_lang == "it":
+        if 0 <= hora < 12:
+            return "Buongiorno"
+        if 12 <= hora < 18:
+            return "Buon pomeriggio"
+        return "Buonasera"
+    if base_lang == "de":
+        if 0 <= hora < 12:
+            return "Guten Morgen"
+        if 12 <= hora < 18:
+            return "Guten Tag"
+        return "Guten Abend"
     if 0 <= hora < 12:
         return "Buenos días"
     if 12 <= hora < 20:
@@ -271,22 +318,50 @@ def obtener_saludo_actual(ahora):
     return "Buenas noches"
 
 
-def obtener_saludo_nucleo(nucleo_nombre):
+def obtener_saludo_nucleo(nucleo_nombre, etiqueta_idioma=None):
     ahora = obtener_hora_chile()
-    saludo_actual = obtener_saludo_actual(ahora)
+    _, cfg = obtener_config_idioma(etiqueta_idioma)
+    lang_code = cfg["code"]
+    base_lang = lang_code.split("-")[0].lower()
+    saludo = obtener_saludo_actual(ahora, lang_code)
     pref = f"[{nucleo_nombre}] "
+
+    if base_lang == "en":
+        saludos_en = {
+            "JARVIS": f"{pref}{saludo}, Boss. Good to hear from you; the servers were starting to miss your orders.",
+            "VIERNES": f"{pref}{saludo}, Boss! Ready to get moving. What are we firing up today?",
+            "NOVA": f"{pref}{saludo}, Boss! Signal locked from Buin Node. What task or galaxy are we taking next?",
+            "ARTEX": f"{pref}{saludo}, Boss! ARTEX core online with knowledge protocol and tactical control active.",
+        }
+        return saludos_en.get(nucleo_nombre, f"{pref}{saludo}, Boss. Online and ready.")
+
+    if base_lang == "fr":
+        return f"{pref}{saludo}, patronne. Noyau {nucleo_nombre} actif au nœud de Buin et prêt."
+
+    if base_lang == "pt":
+        return f"{pref}{saludo}, chefe. Núcleo {nucleo_nombre} ativo no nó de Buin e pronto."
+
+    if base_lang == "it":
+        return f"{pref}{saludo}, capa. Nucleo {nucleo_nombre} attivo sul nodo di Buin e pronto."
+
+    if base_lang == "de":
+        return f"{pref}{saludo}, Chefin. Kern {nucleo_nombre} am Knoten Buin ist aktiv und bereit."
+
     saludos = {
-        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
-        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
-        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
-        "ARTEX": f"{pref}¡{saludo_actual}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
+        "JARVIS": f"{pref}{saludo}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "ARTEX": f"{pref}¡{saludo}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
     }
-    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+    return saludos.get(nucleo_nombre, f"{pref}{saludo}, jefa. En línea y a su servicio.")
 
 
 def purgar_chat(nucleo_nombre):
     st.session_state["mensajes"] = [
-        {"role": "assistant", "content": obtener_saludo_nucleo(nucleo_nombre)}
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(nucleo_nombre, st.session_state.get("idioma_sistema")),
+        }
     ]
     st.session_state["pendiente_voz"] = None
     registrar_evento(f"Chat purgado en núcleo {nucleo_nombre}")
@@ -433,11 +508,13 @@ def limpiar_texto_para_voz(texto):
     return limpio[:520]
 
 
-def programar_voz(texto, idioma="es-CL"):
+def programar_voz(texto, idioma=None):
     if st.session_state.get("voz_masculina_activa", True):
+        _, cfg = obtener_config_idioma()
+        lang_final = idioma or cfg["code"]
         limpio = limpiar_texto_para_voz(texto)
         if limpio:
-            st.session_state["pendiente_voz"] = {"texto": limpio, "idioma": idioma}
+            st.session_state["pendiente_voz"] = {"texto": limpio, "idioma": lang_final}
 
 
 def reproducir_voz_pendiente():
@@ -448,14 +525,17 @@ def reproducir_voz_pendiente():
     txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
     txt = txt.replace(" ... ", " ")
     lang = pendiente["idioma"]
+    lang_prefix = lang.split("-")[0]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
         "if(window.__jarvisVozTimer){clearTimeout(window.__jarvisVozTimer);}"
         "window.speechSynthesis.cancel();"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
-        "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        "return es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];}"
+        f"const exactas=voices.filter(v=>new RegExp('^{lang}','i').test(v.lang||''));"
+        f"const familia=voices.filter(v=>new RegExp('^{lang_prefix}(-|_|$)','i').test(v.lang||''));"
+        "const pool=exactas.length?exactas:(familia.length?familia:voices);"
+        "return pool.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|daniel|david|thomas|pierre|lucas|marco|male|hombre|man/i.test(v.name||''))||pool[0]||voices[0];}"
         "let yaHablo=false;"
         "function hablarUnaVez(){"
         "if(yaHablo)return;yaHablo=true;"
@@ -476,20 +556,22 @@ def reproducir_voz_pendiente():
 
 
 def renderizar_microfono_voz():
+    _, cfg = obtener_config_idioma()
+    lang_mic = cfg["code"]
     js_mic = (
         '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">'
         '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;'
         'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;'
         'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>'
-        '<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;'
-        'font-size:0.75rem;opacity:0.85;">Micrófono listo (es-CL)</span></div>'
+        f'<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;'
+        f'font-size:0.75rem;opacity:0.85;">Micrófono listo ({lang_mic})</span></div>'
         "<script>(function(){"
         'const btn=document.getElementById("btn-mic-jarvis");'
         'const stEl=document.getElementById("estado-mic-jarvis");'
         "if(!btn||!stEl)return;"
         "const SR=window.SpeechRecognition||window.webkitSpeechRecognition;"
         'if(!SR){stEl.textContent="Dictado por voz no soportado en este navegador";return;}'
-        'btn.onclick=function(){try{const rec=new SR();rec.lang="es-CL";'
+        f'btn.onclick=function(){{try{{const rec=new SR();rec.lang="{lang_mic}";'
         "rec.interimResults=false;rec.maxAlternatives=1;"
         'stEl.textContent="Escuchando, jefa...";'
         "rec.onresult=function(ev){"
@@ -509,8 +591,8 @@ def renderizar_microfono_voz():
         'const sendBtn=doc.querySelector(\'button[data-testid="stChatInputSubmitButton"]\');'
         "if(sendBtn)sendBtn.click();},180);}};"
         'rec.onerror=function(){stEl.textContent="Error al acceder al micrófono";};'
-        'rec.onend=function(){if(stEl.textContent==="Escuchando, jefa...")stEl.textContent="Micrófono listo (es-CL)";};'
-        'rec.start();}catch(e){stEl.textContent="No se pudo iniciar el micrófono";}};'
+        f'rec.onend=function(){{if(stEl.textContent==="Escuchando, jefa...")stEl.textContent="Micrófono listo ({lang_mic})";}};'
+        "rec.start();}catch(e){stEl.textContent=\"No se pudo iniciar el micrófono\";}};"
         "})();</script>"
     )
     try:
@@ -610,11 +692,15 @@ def resolver_calculo_o_unidad(texto_raw):
     return None
 
 
-def generar_respuesta_coherente(nucleo, texto_usuario):
+def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
     ahora = obtener_hora_chile()
     prefijo = f"[{nucleo}] "
     raw = (texto_usuario or "").strip()
     t = raw.lower()
+    idioma_lbl, cfg_idioma = obtener_config_idioma(etiqueta_idioma)
+    lang_code = cfg_idioma["code"]
+    lang_nombre = cfg_idioma["nombre"]
+    es_espanol = lang_code.startswith("es")
 
     if t.startswith("recuerda ") or t.startswith("recuérdame ") or t.startswith("recuerdame "):
         partes = raw.split(" ", 1)
@@ -622,14 +708,19 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if dato:
             jarvis_mem.remember_fact(f"fact_{int(ahora.timestamp())}", dato)
             registrar_evento(f"Memoria guardada: {dato}")
+            if lang_code.startswith("en"):
+                return f"{prefijo}Got it, Boss, saved to memory: **{dato}**."
             return f"{prefijo}Listo, jefa, queda guardado en memoria: **{dato}**."
 
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
         "buenas tardes", "buenas noches", "holi", "qué tal", "que tal",
+        "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+        "bonjour", "bonsoir", "salut", "oi", "olá", "ola", "bom dia", "boa tarde",
+        "ciao", "buongiorno", "buonasera", "hallo", "guten tag", "guten morgen",
     ]
     if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
-        return obtener_saludo_nucleo(nucleo)
+        return obtener_saludo_nucleo(nucleo, idioma_lbl)
 
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
         if nucleo == "JARVIS":
@@ -689,7 +780,11 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
     if client_groq is not None:
         try:
             recuerdos = jarvis_mem.get_recent_facts(5)
-            sys_txt = f"Núcleo activo: {nucleo}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. {PROTOCOLO_CONOCIMIENTO_BASE}"
+            sys_txt = (
+                f"Núcleo activo: {nucleo}. Idioma seleccionado por el usuario: {lang_nombre} ({lang_code}). "
+                f"Responde siempre en {lang_nombre}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. "
+                f"{PROTOCOLO_CONOCIMIENTO_BASE}"
+            )
             if recuerdos:
                 sys_txt += " Memoria: " + " | ".join(recuerdos)
             msgs_api = [{"role": "system", "content": sys_txt}]
@@ -712,6 +807,11 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
                 return f"{prefijo}{contenido}"
         except Exception:
             pass
+
+    if not es_espanol:
+        if lang_code.startswith("en"):
+            return f"{prefijo}Understood, Boss. Regarding *'{raw}'*, local fallback mode is active ({idioma_lbl}). How would you like to proceed?"
+        return f"{prefijo}Active mode: {idioma_lbl}. Received: *'{raw}'*."
 
     if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
         return (
@@ -784,7 +884,10 @@ st.session_state.setdefault(
     [
         {
             "role": "assistant",
-            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo),
+            "content": obtener_saludo_nucleo(
+                st.session_state.nucleo_activo,
+                st.session_state.idioma_sistema,
+            ),
         }
     ],
 )
@@ -894,10 +997,13 @@ if not st.session_state.get("autorizado", False):
         if btn_entrar:
             if pin_input.strip() == PIN_SECRETO:
                 st.session_state.autorizado = True
-                ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+                ini = obtener_saludo_nucleo(
+                    st.session_state.nucleo_activo,
+                    st.session_state.idioma_sistema,
+                )
                 st.session_state.mensajes = [{"role": "assistant", "content": ini}]
                 registrar_evento(f"Acceso autorizado en núcleo {st.session_state.nucleo_activo}")
-                programar_voz(ini, idioma="es-CL")
+                programar_voz(ini)
                 st.rerun()
             else:
                 st.error("PIN incorrecto. Acceso denegado.")
@@ -937,6 +1043,27 @@ with st.sidebar:
     )
 
     st.markdown("---")
+    st.markdown("#### 🌐 Selector de Idioma")
+    idx_idioma = (
+        OPCIONES_IDIOMA.index(st.session_state.idioma_sistema)
+        if st.session_state.idioma_sistema in OPCIONES_IDIOMA
+        else 0
+    )
+    nuevo_idioma = st.selectbox(
+        "Idioma de respuesta y voz:",
+        OPCIONES_IDIOMA,
+        index=idx_idioma,
+        label_visibility="collapsed",
+    )
+    if nuevo_idioma != st.session_state.idioma_sistema:
+        st.session_state.idioma_sistema = nuevo_idioma
+        registrar_evento(f"Idioma cambiado a {nuevo_idioma}")
+        saludo_idi = obtener_saludo_nucleo(st.session_state.nucleo_activo, nuevo_idioma)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_idi})
+        programar_voz(saludo_idi)
+        st.rerun()
+
+    st.markdown("---")
     st.markdown("#### 🧠 Selector de Núcleo (IA)")
     nuevo_nucleo = st.radio(
         "Seleccionar Asistente Activo:",
@@ -947,9 +1074,9 @@ with st.sidebar:
     if nuevo_nucleo != st.session_state.nucleo_activo:
         st.session_state.nucleo_activo = nuevo_nucleo
         registrar_evento(f"Cambio de núcleo a {nuevo_nucleo}")
-        saludo_cam = obtener_saludo_nucleo(nuevo_nucleo)
+        saludo_cam = obtener_saludo_nucleo(nuevo_nucleo, st.session_state.idioma_sistema)
         st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
-        programar_voz(saludo_cam, idioma="es-CL")
+        programar_voz(saludo_cam)
         st.rerun()
 
     st.markdown("---")
@@ -1055,6 +1182,7 @@ with st.sidebar:
         estado_groq = "ONLINE" if client_groq is not None else "RESPALDO LOCAL"
         st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
         st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
+        st.markdown(f"- **Idioma:** {st.session_state.idioma_sistema}")
         st.markdown(f"- **Motor IA:** {estado_groq}")
         st.markdown(f"- **Misiones:** {len(obtener_misiones())}")
         st.markdown(f"- **Recuerdos SQLite:** {len(jarvis_mem.get_recent_facts(50))}")
@@ -1137,9 +1265,13 @@ for msg in st.session_state.mensajes:
 prompt_usuario = st.chat_input("Escribe tu orden o conversa con el núcleo activo...")
 if prompt_usuario:
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
-    respuesta = generar_respuesta_coherente(st.session_state.nucleo_activo, prompt_usuario)
+    respuesta = generar_respuesta_coherente(
+        st.session_state.nucleo_activo,
+        prompt_usuario,
+        st.session_state.idioma_sistema,
+    )
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    programar_voz(respuesta, idioma="es-CL")
+    programar_voz(respuesta)
     st.rerun()
 
 reproducir_voz_pendiente()
