@@ -567,9 +567,7 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
                 f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
                 "Abra **Finviz** o **Nasdaq** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
             )
-        return (
-            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
-        )
+        return f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
 
     if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
@@ -637,3 +635,108 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             f"{prefijo}**Fisiología del corazón ({raw})**: en un adulto sano suele pesar aproximadamente entre **250 y 350 gramos** "
             "(cerca de **250–300 g** en mujeres y **300–350 g** en hombres, variando según contextura). "
             "Es un órgano muscular hueco de cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre "
+            "por los circuitos pulmonar y sistémico mediante sístole y diástole."
+        )
+
+    if any(k in t for k in ["religion", "religión", "religiones", "biblia", "coran", "corán", "tora", "torá", "budismo", "islam", "cristianismo", "judaismo", "judaísmo", "hinduismo", "teologia", "teología", "dios", "fe", "espiritualidad", "ritual"]):
+        return (
+            f"{prefijo}**Conocimiento Religioso / Religiones Comparadas ({raw})**: se aborda desde su historia, "
+            "textos fundacionales, prácticas, símbolos y ética, con respeto hacia las distintas tradiciones "
+            "(como las tradiciones abrahámicas, dhármicas y otras cosmovisiones). Indica qué tradición o tema te gustaría explorar."
+        )
+
+    if any(k in t for k in ["secular", "laico", "laicismo", "humanismo", "etica laica", "ética laica", "filosofia", "filosofía", "racionalismo", "ateismo", "ateísmo", "agnostico", "agnóstico", "agnóstica", "estado laico"]):
+        return (
+            f"{prefijo}**Conocimiento Secular y Filosofía ({raw})**: se centra en el marco laico, el humanismo, "
+            "la ética cívica basada en la razón y los derechos humanos, el pensamiento crítico y la separación entre "
+            "instituciones públicas y creencias religiosas. ¿Qué aspecto filosófico, histórico o ético quieres revisar?"
+        )
+
+    if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
+        return (
+            f"{prefijo}**Biología ({raw})**: la célula es la unidad básica de la vida; "
+            "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
+            "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
+        )
+
+    if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
+        return (
+            f"{prefijo}**Geografía ({raw})**: estudia relieves, climas, hidrografía, "
+            "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
+            "la cordillera de la Costa y las planicies litorales."
+        )
+
+    if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
+        return (
+            f"{prefijo}**Historia ({raw})**: se analiza por causas estructurales y coyunturales, "
+            "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
+        )
+
+    if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
+        return (
+            f"{prefijo}**Ciencia y Tecnología ({raw})**: integra modelos, magnitudes y unidades "
+            "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
+        )
+
+    respuestas_generales = {
+        "JARVIS": [
+            f"{prefijo}Entendido, jefa. Sobre *'{raw}'*, seguimos aquí mismo; ¿qué desea hacer?",
+            f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame cómo avanzamos."
+        ],
+        "VIERNES": [
+            f"{prefijo}Recibido, jefa: *'{raw}'*. ¿Qué movemos ahora?",
+        ],
+        "NOVA": [
+            f"{prefijo}Señal clara sobre *'{raw}'*, jefa. ¿En qué más le apoyo?",
+        ],
+        "ARTEX": [
+            f"{prefijo}Directiva registrada: *'{raw}'*, jefa. Protocolo activo.",
+        ],
+    }
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+
+
+st.session_state.setdefault(
+    "mensajes",
+    [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo),
+        }
+    ],
+)
+
+estilos_css = """
+    <style>
+        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
+        .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
+            color: #00f3ff !important; font-family: monospace;
+        }
+        .stButton>button {
+            background-color: #00f3ff !important;
+            border: 1.5px solid #00f3ff !important;
+            font-weight: bold;
+            font-family: monospace;
+            width: 100%;
+            border-radius: 6px;
+            padding: 5px 10px !important;
+        }
+        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+        .stButton>button:hover { background-color: #0088cc !important; }
+        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+        .econ-card {
+            border: 1px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .econ-label { font-size: 0.75rem !important; opacity: 0.85; color: #00f3ff !important; }
+        .econ-val { font-size: 0.85rem !important; font-weight: bold; color: #00f3ff !important; }
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
