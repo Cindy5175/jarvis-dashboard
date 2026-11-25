@@ -41,6 +41,8 @@ st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
 st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
+st.session_state.setdefault("notas_rapidas", [])
+st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -311,6 +313,86 @@ def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
     </script>
     """
     components.html(html_reloj, height=92)
+
+
+def renderizar_camara_nocturna(modo_camara):
+    es_ir = "INFRARROJO" in modo_camara
+    color_main = "#00f3ff" if es_ir else "#39ff14"
+    color_glow = "rgba(0, 243, 255, 0.35)" if es_ir else "rgba(57, 255, 20, 0.35)"
+    html_cam = f"""
+    <div style="
+        border:1px solid {color_main};
+        background:#030906;
+        border-radius:6px;
+        padding:6px;
+        font-family:monospace;
+        color:{color_main};
+    ">
+        <div style="display:flex;justify-content:space-between;font-size:0.70rem;font-weight:bold;margin-bottom:4px;">
+            <span>● CAM-01 // BUIN PERÍMETRO</span>
+            <span>{modo_camara}</span>
+        </div>
+        <canvas id="cam-nocturna-canvas" width="250" height="135" style="
+            width:100%;height:135px;border-radius:4px;
+            background:#020704;box-shadow:inset 0 0 14px {color_glow};
+        "></canvas>
+    </div>
+    <script>
+    (function() {{
+        const c = document.getElementById("cam-nocturna-canvas");
+        if (!c) return;
+        const ctx = c.getContext("2d");
+        const mainColor = "{color_main}";
+        let scanY = 0;
+        let t = 0;
+        function draw() {{
+            t += 0.05;
+            ctx.fillStyle = "#030a06";
+            ctx.fillRect(0, 0, c.width, c.height);
+
+            ctx.strokeStyle = mainColor + "22";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < c.width; x += 25) {{
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke();
+            }}
+            for (let y = 0; y < c.height; y += 22) {{
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke();
+            }}
+
+            ctx.fillStyle = mainColor + "33";
+            ctx.fillRect(20, 78, 52, 34);
+            ctx.fillRect(165, 68, 64, 44);
+            ctx.beginPath();
+            ctx.arc(125 + Math.sin(t) * 14, 62 + Math.cos(t * 1.3) * 6, 7, 0, Math.PI * 2);
+            ctx.strokeStyle = mainColor;
+            ctx.stroke();
+
+            for (let i = 0; i < 65; i++) {{
+                const nx = (i * 37 + Math.floor(t * 90)) % c.width;
+                const ny = (i * 53 + Math.floor(t * 45)) % c.height;
+                ctx.fillStyle = mainColor + "44";
+                ctx.fillRect(nx, ny, 2, 2);
+            }}
+
+            scanY = (scanY + 2.2) % c.height;
+            ctx.strokeStyle = mainColor + "aa";
+            ctx.beginPath();
+            ctx.moveTo(0, scanY);
+            ctx.lineTo(c.width, scanY);
+            ctx.stroke();
+
+            ctx.fillStyle = mainColor;
+            ctx.font = "bold 10px monospace";
+            ctx.fillText("REC [●] IR-GAIN: +24dB", 8, 14);
+            ctx.fillText("SECTOR BUIN SUR", 8, c.height - 8);
+        }}
+        if (window.__jarvisCamTimer) clearInterval(window.__jarvisCamTimer);
+        window.__jarvisCamTimer = setInterval(draw, 80);
+        draw();
+    }})();
+    </script>
+    """
+    components.html(html_cam, height=175)
 
 
 def limpiar_texto_para_voz(texto):
@@ -899,15 +981,73 @@ with st.sidebar:
         if capa_sel != st.session_state.capa_radar:
             st.session_state.capa_radar = capa_sel
             st.rerun()
-        st.caption(f"Coords Buin: {BUIN_LAT}, {BUIN_LON}")
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live Radar</a>',
+            unsafe_allow_html=True,
+        )
 
     with st.expander("📡 Enlaces Financieros"):
         st.markdown(
+            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live</a>'
             '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
             '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>'
             '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">🇨🇱 Mindicador CL</a>',
             unsafe_allow_html=True,
         )
+
+    with st.expander("🌙 Cámara Nocturna"):
+        modo_cam = st.selectbox(
+            "Modo visor:",
+            ["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"],
+            index=["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"].index(st.session_state.modo_camara),
+        )
+        if modo_cam != st.session_state.modo_camara:
+            st.session_state.modo_camara = modo_cam
+            st.rerun()
+        renderizar_camara_nocturna(st.session_state.modo_camara)
+
+    with st.expander("📝 Notas Rápidas"):
+        nota_txt = st.text_input("Nueva nota:", placeholder="Escribe un apunte...")
+        cn1, cn2 = st.columns(2)
+        if cn1.button("💾 Guardar Nota", use_container_width=True):
+            if nota_txt.strip():
+                st.session_state.notas_rapidas.append(nota_txt.strip())
+                st.rerun()
+        if cn2.button("🧹 Borrar Notas", use_container_width=True):
+            st.session_state.notas_rapidas = []
+            st.rerun()
+        if st.session_state.notas_rapidas:
+            for idx, n_item in enumerate(st.session_state.notas_rapidas[-6:], 1):
+                st.markdown(f"- **{idx}.** {n_item}")
+        else:
+            st.caption("Sin notas rápidas.")
+
+    with st.expander("🧮 Calculadora Táctil"):
+        ca1, ca2 = st.columns(2)
+        num_a = ca1.number_input("Valor A", value=0.0, step=1.0, format="%.2f")
+        num_b = ca2.number_input("Valor B", value=0.0, step=1.0, format="%.2f")
+        op_calc = st.selectbox("Operación", ["+", "-", "×", "÷", "^"])
+        if st.button("⚡ Calcular", use_container_width=True):
+            res_calc = None
+            if op_calc == "+":
+                res_calc = num_a + num_b
+            elif op_calc == "-":
+                res_calc = num_a - num_b
+            elif op_calc == "×":
+                res_calc = num_a * num_b
+            elif op_calc == "÷":
+                res_calc = "Error: div/0" if num_b == 0 else num_a / num_b
+            elif op_calc == "^":
+                res_calc = num_a ** num_b
+            st.markdown(f"**Resultado:** `{res_calc}`")
+
+    with st.expander("📊 Telemetría del Sistema"):
+        estado_groq = "ONLINE" if client_groq is not None else "RESPALDO LOCAL"
+        st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
+        st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
+        st.markdown(f"- **Motor IA:** {estado_groq}")
+        st.markdown(f"- **Misiones:** {len(obtener_misiones())}")
+        st.markdown(f"- **Recuerdos SQLite:** {len(jarvis_mem.get_recent_facts(50))}")
 
     with st.expander("🎯 Misiones Activas"):
         mision_txt = st.text_input("Nueva misión:", placeholder="Ej. Revisar indicadores...")
