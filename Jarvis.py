@@ -558,4 +558,143 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         return f"{prefijo}{calculo}"
 
     if "hora" in t:
-        return f"{prefijo}Son las **{ahora.strftime('%H:%M:%S')}** en
+        return f"{prefijo}Son las **{ahora.strftime('%H:%M:%S')}** en Chile (Nodo Buin)."
+
+    if "clima" in t or "buin" in t or "temperatura" in t:
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"{prefijo}En Buin hay **{clima['temp_c']}°C**, {clima['condicion']}."
+        return f"{prefijo}Clima en Buin: {clima['condicion']}."
+
+    if "dolar" in t or "dólar" in t or "uf" in t or "euro" in t or "indicadores" in t:
+        ind = obtener_indicadores_chile()
+        return (
+            f"{prefijo}Indicadores Chile — Dólar: **{fmt_clp(ind['dolar'])}**, "
+            f"Euro: **{fmt_clp(ind['euro'])}**, UF: **{fmt_clp(ind['uf'])}**."
+        )
+
+    if t.startswith("recuerda ") or t.startswith("recuerdas "):
+        dato = texto_usuario.split(" ", 1)[1].strip()
+        if dato:
+            jarvis_mem.remember_fact(f"fact_{int(ahora.timestamp())}", dato)
+            return f"{prefijo}Anotado en memoria, jefa: **{dato}**."
+
+    if client_groq is not None:
+        try:
+            recuerdos = jarvis_mem.get_recent_facts(5)
+            sys_msg = (
+                f"Eres {nucleo} operando en el Nodo Buin, Chile. Habla en español con calidez, "
+                f"claridad y un toque sutil de ingenio. {PROTOCOLO_CONOCIMIENTO_BASE}"
+            )
+            if recuerdos:
+                sys_msg += " Recuerdos recientes: " + " | ".join(recuerdos)
+            resp = client_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": sys_msg},
+                    {"role": "user", "content": texto_usuario},
+                ],
+                temperature=0.5,
+                max_tokens=500,
+            )
+            contenido = (resp.choices[0].message.content or "").strip()
+            if contenido:
+                return f"{prefijo}{contenido}"
+        except Exception:
+            pass
+
+    return f"{prefijo}Recibido, jefa. Mensaje registrado en el Nodo Buin: «{texto_usuario}»."
+
+
+ahora_chile = obtener_hora_chile()
+indicadores = obtener_indicadores_chile()
+clima_buin = obtener_clima_buin()
+
+st.title("⚡ J.A.R.V.I.S. // NODO BUIN")
+st.caption(f"Hora Chile: {ahora_chile.strftime('%d/%m/%Y %H:%M:%S')} | Núcleo activo: {st.session_state['nucleo_activo']}")
+
+if not st.session_state["autorizado"]:
+    st.markdown('<div class="jarvis-card">', unsafe_allow_html=True)
+    st.subheader("🔐 Autorización de Acceso")
+    pin_ingresado = st.text_input("Ingresa el PIN de acceso", type="password", max_chars=8)
+    if st.button("Desbloquear Sistema"):
+        if pin_ingresado == PIN_SECRETO:
+            st.session_state["autorizado"] = True
+            saludo = obtener_saludo_nucleo(st.session_state["nucleo_activo"])
+            st.session_state["historial_chat"].append({"rol": "assistant", "texto": saludo})
+            programar_voz(saludo)
+            st.rerun()
+        else:
+            st.error("PIN incorrecto, jefa.")
+    st.markdown("</div>", unsafe_allow_html=True)
+else:
+    col_n, col_v, col_b = st.columns([2, 1, 1])
+    with col_n:
+        nuevo_nucleo = st.selectbox(
+            "Núcleo",
+            NUCLEOS_DISPONIBLES,
+            index=NUCLEOS_DISPONIBLES.index(st.session_state["nucleo_activo"]),
+        )
+        if nuevo_nucleo != st.session_state["nucleo_activo"]:
+            st.session_state["nucleo_activo"] = nuevo_nucleo
+            pres = obtener_presentacion_nucleo(nuevo_nucleo)
+            st.session_state["historial_chat"].append({"rol": "assistant", "texto": pres})
+            programar_voz(pres)
+            st.rerun()
+    with col_v:
+        st.session_state["voz_masculina_activa"] = st.toggle(
+            "Voz activa", value=st.session_state["voz_masculina_activa"]
+        )
+    with col_b:
+        if st.button("Bloquear"):
+            st.session_state["autorizado"] = False
+            st.rerun()
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Dólar", fmt_clp(indicadores["dolar"]))
+    m2.metric("Euro", fmt_clp(indicadores["euro"]))
+    m3.metric("UF", fmt_clp(indicadores["uf"]))
+    temp_str = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
+    m4.metric("Buin", temp_str, help=clima_buin.get("condicion", ""))
+
+    col_chat, col_panel = st.columns([2, 1])
+
+    with col_chat:
+        st.subheader("💬 Consola de Comando")
+        renderizar_microfono_voz()
+
+        for msg in st.session_state["historial_chat"]:
+            with st.chat_message(msg["rol"]):
+                st.markdown(msg["texto"])
+
+        prompt = st.chat_input("Escribe una orden o pregunta, jefa...")
+        if prompt:
+            st.session_state["historial_chat"].append({"rol": "user", "texto": prompt})
+            respuesta = generar_respuesta_coherente(st.session_state["nucleo_activo"], prompt)
+            st.session_state["historial_chat"].append({"rol": "assistant", "texto": respuesta})
+            programar_voz(respuesta)
+            st.rerun()
+
+    with col_panel:
+        st.subheader("🎯 Misiones")
+        nueva_mision = st.text_input("Nueva misión")
+        c_add, c_clr = st.columns(2)
+        if c_add.button("Agregar") and nueva_mision.strip():
+            agregar_mision(nueva_mision.strip())
+            st.rerun()
+        if c_clr.button("Limpiar"):
+            limpiar_misiones()
+            st.rerun()
+
+        for mid, tarea, estado in obtener_misiones():
+            st.markdown(f"- **#{mid}** {tarea} *({estado})*")
+
+        st.subheader("🧠 Memoria Reciente")
+        recuerdos_activos = jarvis_mem.get_recent_facts(5)
+        if recuerdos_activos:
+            for item in recuerdos_activos:
+                st.markdown(f"- {item}")
+        else:
+            st.caption("Sin datos guardados aún.")
+
+reproducir_voz_pendiente()
