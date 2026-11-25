@@ -40,6 +40,8 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
+st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
+st.session_state.setdefault("notas_rapidas", [])
 st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
 
 PIN_SECRETO = "2805"
@@ -555,12 +557,12 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if nucleo == "JARVIS":
             return (
                 f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)**."
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **Nasdaq** en **Enlaces Financieros**."
             )
         if nucleo == "VIERNES":
             return (
                 f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
-                "Abra **Finviz** o **ANT (Nasdaq)** para ver cómo se mueven las bolsas ahora mismo."
+                "Abra **Finviz** o **Nasdaq** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
             )
         return (
             f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
@@ -706,6 +708,24 @@ estilos_css = """
             border-right: 12px solid transparent;
             border-top: 20px solid #00f3ff;
         }
+        .tactical-link-btn {
+            display: block;
+            width: 100%;
+            background-color: #00f3ff;
+            color: #060913 !important;
+            text-align: center;
+            padding: 6px 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.76rem !important;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: monospace;
+        }
+        .tactical-link-btn:hover {
+            background-color: #0088cc;
+            color: #ffffff !important;
+        }
         .holo-brain-box {
             border: 1.5px solid #00f3ff;
             background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
@@ -791,6 +811,31 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+    with st.expander("🛰️ Radar y Capas"):
+        capa_sel = st.selectbox(
+            "Capa activa:",
+            ["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"],
+            index=["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"].index(
+                st.session_state.capa_radar
+            ),
+        )
+        if capa_sel != st.session_state.capa_radar:
+            st.session_state.capa_radar = capa_sel
+            st.rerun()
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live Radar</a>',
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("📡 Enlaces Financieros"):
+        st.markdown(
+            '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live</a>'
+            '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
+            '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>'
+            '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">🇨🇱 Mindicador CL</a>',
+            unsafe_allow_html=True,
+        )
+
     with st.expander("🌙 Cámara Nocturna"):
         modo_cam = st.selectbox(
             "Modo visor:",
@@ -802,6 +847,78 @@ with st.sidebar:
             st.rerun()
         renderizar_camara_nocturna(st.session_state.modo_camara)
 
+    with st.expander("📝 Notas Rápidas"):
+        nota_txt = st.text_input("Nueva nota:", placeholder="Escribe un apunte...")
+        cn1, cn2 = st.columns(2)
+        if cn1.button("💾 Guardar Nota", use_container_width=True):
+            if nota_txt.strip():
+                st.session_state.notas_rapidas.append(nota_txt.strip())
+                st.rerun()
+        if cn2.button("🧹 Borrar Notas", use_container_width=True):
+            st.session_state.notas_rapidas = []
+            st.rerun()
+        if st.session_state.notas_rapidas:
+            for idx, n_item in enumerate(st.session_state.notas_rapidas[-6:], 1):
+                st.markdown(f"- **{idx}.** {n_item}")
+        else:
+            st.caption("Sin notas rápidas.")
+
+    with st.expander("🧮 Calculadora Táctil"):
+        ca1, ca2 = st.columns(2)
+        num_a = ca1.number_input("Valor A", value=0.0, step=1.0, format="%.2f")
+        num_b = ca2.number_input("Valor B", value=0.0, step=1.0, format="%.2f")
+        op_calc = st.selectbox("Operación", ["+", "-", "×", "÷", "^"])
+        if st.button("⚡ Calcular", use_container_width=True):
+            res_calc = None
+            if op_calc == "+":
+                res_calc = num_a + num_b
+            elif op_calc == "-":
+                res_calc = num_a - num_b
+            elif op_calc == "×":
+                res_calc = num_a * num_b
+            elif op_calc == "÷":
+                res_calc = "Error: div/0" if num_b == 0 else num_a / num_b
+            elif op_calc == "^":
+                res_calc = num_a ** num_b
+            st.markdown(f"**Resultado:** `{res_calc}`")
+
+    with st.expander("📊 Telemetría del Sistema"):
+        estado_groq = "ONLINE" if client_groq is not None else "RESPALDO LOCAL"
+        st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
+        st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
+        st.markdown(f"- **Motor IA:** {estado_groq}")
+        st.markdown(f"- **Misiones:** {len(obtener_misiones())}")
+        st.markdown(f"- **Recuerdos SQLite:** {len(jarvis_mem.get_recent_facts(50))}")
+
+    with st.expander("🎯 Misiones Activas"):
+        mision_txt = st.text_input("Nueva misión:", placeholder="Ej. Revisar indicadores...")
+        c1, c2 = st.columns(2)
+        if c1.button("➕ Añadir", use_container_width=True):
+            if mision_txt.strip():
+                agregar_mision(mision_txt.strip())
+                st.rerun()
+        if c2.button("🗑️ Borrar", use_container_width=True):
+            limpiar_misiones()
+            st.rerun()
+
+        misiones_actuales = obtener_misiones()
+        if misiones_actuales:
+            for mid, tarea, estado in misiones_actuales:
+                st.markdown(f"- **#{mid}** {tarea} *({estado})*")
+        else:
+            st.caption("Sin misiones activas.")
+
+    with st.expander("🧠 Memoria del Núcleo"):
+        recuerdos = jarvis_mem.get_recent_facts(5)
+        if recuerdos:
+            for r_item in recuerdos:
+                st.markdown(f"- {r_item}")
+        else:
+            st.caption("Sin recuerdos guardados aún.")
+        if st.button("🧹 Limpiar Memoria", use_container_width=True):
+            jarvis_mem.clear_facts()
+            st.rerun()
+
 indicadores = obtener_indicadores_chile()
 clima_buin = obtener_clima_buin()
 ahora_chile = obtener_hora_chile()
@@ -809,7 +926,7 @@ ahora_chile = obtener_hora_chile()
 st.markdown(
     f'<div class="holo-brain-box">'
     f'<h2>⚡ J.A.R.V.I.S. // {st.session_state.nucleo_activo}</h2>'
-    f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")}</div>'
+    f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {st.session_state.capa_radar}</div>'
     f'</div>',
     unsafe_allow_html=True,
 )
