@@ -23,33 +23,6 @@ st.set_page_config(
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
 
-PERFILES_VOZ_NUCLEO = {
-    "JARVIS": {
-        "rate": 0.94,
-        "pitch": 0.84,
-        "genero": "male",
-        "filtros_nombre": r"jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre",
-    },
-    "VIERNES": {
-        "rate": 1.08,
-        "pitch": 1.14,
-        "genero": "female",
-        "filtros_nombre": r"paulina|camila|sofia|sofía|lucia|lucía|helena|mia|mía|elena|female|mujer",
-    },
-    "NOVA": {
-        "rate": 1.03,
-        "pitch": 1.06,
-        "genero": "female",
-        "filtros_nombre": r"sofia|sofía|camila|valeria|isabella|claire|female|mujer",
-    },
-    "ARTEX": {
-        "rate": 0.96,
-        "pitch": 0.88,
-        "genero": "male",
-        "filtros_nombre": r"carlos|raul|enrique|jorge|diego|male|hombre",
-    },
-}
-
 PROTOCOLO_CONOCIMIENTO_BASE = (
     "PROTOCOLO DE CONOCIMIENTO SUPREMO COMPARTIDO (APLICABLE A TODOS LOS NUCLEOS): "
     "Responde con rigor tecnico, precision y claridad estructurada en: "
@@ -67,8 +40,6 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
-st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
-st.session_state.setdefault("notas_rapidas", [])
 st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
 
 PIN_SECRETO = "2805"
@@ -132,7 +103,7 @@ class JarvisMemory:
         except Exception:
             pass
 
-    def get_recent_facts(self, limit: int = 6):
+    def get_recent_facts(self, limit: int = 5):
         try:
             conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
             cursor = conn.cursor()
@@ -298,37 +269,10 @@ def obtener_saludo_nucleo(nucleo_nombre):
 
 
 def purgar_chat(nucleo_nombre):
-    saludo_limpio = obtener_saludo_nucleo(nucleo_nombre)
-    st.session_state["mensajes"] = [{"role": "assistant", "content": saludo_limpio}]
-    st.session_state["pendiente_voz"] = None
-
-
-def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
-    ahora = obtener_hora_chile()
-    ts_ms = int(ahora.timestamp() * 1000)
-    fecha_str = ahora.strftime("%d/%m/%Y %H:%M:%S")
-    encabezado_reloj = f"NODO BUIN, CHILE • {fecha_str} • {capa_radar}"
-    lineas_html = [
-        '<div style="border:1.5px solid #00f3ff;',
-        'background:linear-gradient(135deg, #0a1128 0%, #060913 100%);',
-        'padding:14px 18px;border-radius:8px;text-align:center;',
-        'margin:0 auto 14px auto;max-width:920px;font-family:monospace;color:#00f3ff;">',
-        f'<div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>',
-        '<div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">',
-        f"{encabezado_reloj}</div></div>",
-        "<script>(function(){",
-        f'let baseMs={ts_ms};const offsetMs=-3*3600*1000;const capa="{capa_radar}";',
-        'const el=document.getElementById("jarvis-reloj-vivo");',
-        'function pad(n){return n<10?"0"+n:""+n;}',
-        "function tick(){baseMs+=1000;const d=new Date(baseMs+offsetMs);",
-        'const f=pad(d.getUTCDate())+"/"+pad(d.getUTCMonth()+1)+"/"+d.getUTCFullYear();',
-        'const h=pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())+":"+pad(d.getUTCSeconds());',
-        'if(el){el.textContent="NODO BUIN, CHILE • "+f+" "+h+" • "+capa;}}',
-        "if(window.__jarvisClockTimer)clearInterval(window.__jarvisClockTimer);",
-        "window.__jarvisClockTimer=setInterval(tick,1000);",
-        "})();</script>",
+    st.session_state["mensajes"] = [
+        {"role": "assistant", "content": obtener_saludo_nucleo(nucleo_nombre)}
     ]
-    components.html("".join(lineas_html), height=92)
+    st.session_state["pendiente_voz"] = None
 
 
 def renderizar_camara_nocturna(modo_camara):
@@ -339,52 +283,58 @@ def renderizar_camara_nocturna(modo_camara):
         if es_ir
         else "grayscale(100%) contrast(150%) brightness(120%) sepia(100%) hue-rotate(68deg) saturate(350%)"
     )
-    partes_cam = [
-        f'<div style="border:1px solid {color_main};background:#030906;border-radius:6px;',
-        f'padding:6px;font-family:monospace;color:{color_main};">',
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;',
-        'font-size:0.70rem;font-weight:bold;margin-bottom:4px;">',
-        "<span>● CAM-01 // BUIN</span>",
-        f'<button id="btn-cam-real" type="button" style="background:{color_main};color:#040a07;',
-        "border:none;border-radius:4px;padding:2px 6px;font-family:monospace;font-size:0.65rem;",
-        'font-weight:bold;cursor:pointer;">Activar Cámara</button></div>',
-        '<video id="cam-real-video" autoplay playsinline muted style="display:none;"></video>',
-        '<canvas id="cam-nocturna-canvas" width="250" height="135" style="width:100%;height:135px;',
-        'border-radius:4px;background:#020704;"></canvas>',
-        '<div id="estado-cam-jarvis" style="font-size:0.66rem;opacity:0.85;margin-top:3px;">',
-        'Modo simulado listo • Pulsa "Activar Cámara" para señal real</div></div>',
-        '<script>(function(){const c=document.getElementById("cam-nocturna-canvas");',
-        'const v=document.getElementById("cam-real-video");const btn=document.getElementById("btn-cam-real");',
-        'const stEl=document.getElementById("estado-cam-jarvis");if(!c)return;',
-        f'const ctx=c.getContext("2d");const mainColor="{color_main}";const filtro="{filtro_css}";',
-        "let scanY=0,t=0,camActiva=false;",
-        "async function iniciarCamaraReal(){try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){",
-        'if(stEl)stEl.textContent="Cámara no soportada aquí • Manteniendo simulador";return;}',
-        "if(window.__jarvisCamStream){window.__jarvisCamStream.getTracks().forEach(tr=>tr.stop());}",
-        'const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});',
-        "window.__jarvisCamStream=stream;if(v){v.srcObject=stream;await v.play();}",
-        'camActiva=true;if(stEl)stEl.textContent="Cámara real activa con filtro nocturno";}',
-        'catch(e){camActiva=false;if(stEl)stEl.textContent="Permiso denegado o sin HTTPS • Modo simulado";}}',
-        "if(btn)btn.onclick=iniciarCamaraReal;",
-        'function draw(){t+=0.05;ctx.save();if(camActiva&&v&&v.readyState>=2){ctx.filter=filtro;',
-        'ctx.drawImage(v,0,0,c.width,c.height);ctx.filter="none";}else{ctx.fillStyle="#030a06";',
-        'ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle=mainColor+"22";ctx.lineWidth=1;',
-        "for(let x=0;x<c.width;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}",
-        "for(let y=0;y<c.height;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}",
-        'ctx.fillStyle=mainColor+"33";ctx.fillRect(20,78,52,34);ctx.fillRect(165,68,64,44);',
-        "ctx.beginPath();ctx.arc(125+Math.sin(t)*14,62+Math.cos(t*1.3)*6,7,0,Math.PI*2);",
-        "ctx.strokeStyle=mainColor;ctx.stroke();for(let i=0;i<65;i++){",
-        "const nx=(i*37+Math.floor(t*90))%c.width;const ny=(i*53+Math.floor(t*45))%c.height;",
-        'ctx.fillStyle=mainColor+"44";ctx.fillRect(nx,ny,2,2);}}',
-        'scanY=(scanY+2.2)%c.height;ctx.strokeStyle=mainColor+"aa";ctx.beginPath();',
-        "ctx.moveTo(0,scanY);ctx.lineTo(c.width,scanY);ctx.stroke();ctx.fillStyle=mainColor;",
-        'ctx.font="bold 10px monospace";',
-        'ctx.fillText(camActiva?"LIVE CAM [●] NIGHT-OPTIC":"SIM [●] IR-GAIN: +24dB",8,14);',
-        'ctx.fillText("SECTOR BUIN SUR",8,c.height-8);ctx.restore();}',
-        "if(window.__jarvisCamTimer)clearInterval(window.__jarvisCamTimer);",
-        "window.__jarvisCamTimer=setInterval(draw,80);draw();}})();</script>",
-    ]
-    components.html("".join(partes_cam), height=192)
+    html_cam = (
+        f'<div style="border:1px solid {color_main};background:#030906;border-radius:6px;padding:6px;font-family:monospace;color:{color_main};">'
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:0.70rem;font-weight:bold;margin-bottom:4px;">'
+        "<span>● CAM-01 // BUIN</span>"
+        f'<button id="btn-cam-real" type="button" style="background:{color_main};color:#040a07;border:none;border-radius:4px;padding:2px 6px;font-family:monospace;font-size:0.65rem;font-weight:bold;cursor:pointer;">Activar Cámara</button>'
+        "</div>"
+        '<video id="cam-real-video" autoplay playsinline muted style="display:none;"></video>'
+        '<canvas id="cam-nocturna-canvas" width="250" height="135" style="width:100%;height:135px;border-radius:4px;background:#020704;"></canvas>'
+        '<div id="estado-cam-jarvis" style="font-size:0.66rem;opacity:0.85;margin-top:3px;">Modo simulado listo • Pulsa "Activar Cámara"</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("cam-nocturna-canvas");'
+        'const v=document.getElementById("cam-real-video");'
+        'const btn=document.getElementById("btn-cam-real");'
+        'const stEl=document.getElementById("estado-cam-jarvis");'
+        "if(!c)return;"
+        'const ctx=c.getContext("2d");'
+        f'const mainColor="{color_main}";const filtro="{filtro_css}";'
+        "let scanY=0,t=0,camActiva=false;"
+        "async function iniciarCamaraReal(){try{"
+        "if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){"
+        'if(stEl)stEl.textContent="Cámara no soportada • Modo simulado";return;}'
+        "if(window.__jarvisCamStream){window.__jarvisCamStream.getTracks().forEach(tr=>tr.stop());}"
+        'const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});'
+        "window.__jarvisCamStream=stream;if(v){v.srcObject=stream;await v.play();}"
+        'camActiva=true;if(stEl)stEl.textContent="Cámara real activa con filtro nocturno";}'
+        'catch(e){camActiva=false;if(stEl)stEl.textContent="Permiso denegado o sin HTTPS • Simulado";}}'
+        "if(btn)btn.onclick=iniciarCamaraReal;"
+        "function draw(){t+=0.05;ctx.save();"
+        'if(camActiva&&v&&v.readyState>=2){ctx.filter=filtro;ctx.drawImage(v,0,0,c.width,c.height);ctx.filter="none";}'
+        'else{ctx.fillStyle="#030a06";ctx.fillRect(0,0,c.width,c.height);'
+        'ctx.strokeStyle=mainColor+"22";ctx.lineWidth=1;'
+        "for(let x=0;x<c.width;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}"
+        "for(let y=0;y<c.height;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}"
+        'ctx.fillStyle=mainColor+"33";ctx.fillRect(20,78,52,34);ctx.fillRect(165,68,64,44);'
+        "ctx.beginPath();ctx.arc(125+Math.sin(t)*14,62+Math.cos(t*1.3)*6,7,0,Math.PI*2);"
+        "ctx.strokeStyle=mainColor;ctx.stroke();"
+        "for(let i=0;i<60;i++){const nx=(i*37+Math.floor(t*90))%c.width;const ny=(i*53+Math.floor(t*45))%c.height;"
+        'ctx.fillStyle=mainColor+"44";ctx.fillRect(nx,ny,2,2);}}'
+        'scanY=(scanY+2.2)%c.height;ctx.strokeStyle=mainColor+"aa";ctx.beginPath();'
+        "ctx.moveTo(0,scanY);ctx.lineTo(c.width,scanY);ctx.stroke();"
+        'ctx.fillStyle=mainColor;ctx.font="bold 10px monospace";'
+        'ctx.fillText(camActiva?"LIVE CAM [●] NIGHT-OPTIC":"SIM [●] IR-GAIN: +24dB",8,14);'
+        'ctx.fillText("SECTOR BUIN SUR",8,c.height-8);ctx.restore();}'
+        "if(window.__jarvisCamTimer)clearInterval(window.__jarvisCamTimer);"
+        "window.__jarvisCamTimer=setInterval(draw,80);draw();"
+        "})();</script>"
+    )
+    try:
+        components.html(html_cam, height=192)
+    except Exception:
+        pass
 
 
 def limpiar_texto_para_voz(texto):
@@ -397,15 +347,11 @@ def limpiar_texto_para_voz(texto):
     return limpio[:520]
 
 
-def programar_voz(texto, idioma="es-CL", nucleo=None):
+def programar_voz(texto, idioma="es-CL"):
     if st.session_state.get("voz_masculina_activa", True):
         limpio = limpiar_texto_para_voz(texto)
         if limpio:
-            st.session_state["pendiente_voz"] = {
-                "texto": limpio,
-                "idioma": idioma,
-                "nucleo": nucleo or st.session_state.get("nucleo_activo", "JARVIS"),
-            }
+            st.session_state["pendiente_voz"] = {"texto": limpio, "idioma": idioma}
 
 
 def reproducir_voz_pendiente():
@@ -415,18 +361,12 @@ def reproducir_voz_pendiente():
     st.session_state["pendiente_voz"] = None
     txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
     lang = pendiente["idioma"]
-    nucleo = pendiente.get("nucleo", st.session_state.get("nucleo_activo", "JARVIS"))
-    cfg = PERFILES_VOZ_NUCLEO.get(nucleo, PERFILES_VOZ_NUCLEO["JARVIS"])
-    rate = cfg["rate"]
-    pitch = cfg["pitch"]
-    filtros = cfg["filtros_nombre"]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
         "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        f"const rx=/{filtros}/i;"
-        "const pref=es.find(v=>rx.test(v.name||''))||es[0]||voices[0];"
+        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
         "return pref||null;}"
         "function hablarAhora(){"
         "window.speechSynthesis.cancel();"
@@ -436,8 +376,8 @@ def reproducir_voz_pendiente():
         "lista.forEach((parte)=>{"
         "const u=new SpeechSynthesisUtterance(parte);"
         f"u.lang='{lang}';"
-        f"u.rate={rate};"
-        f"u.pitch={pitch};"
+        "u.rate=0.98;"
+        "u.pitch=0.90;"
         "if(vozElegida)u.voice=vozElegida;"
         "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
         "});}"
@@ -452,45 +392,45 @@ def reproducir_voz_pendiente():
 
 
 def renderizar_microfono_voz():
-    lineas_mic = [
-        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">',
-        '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;',
-        'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;',
-        'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>',
-        '<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;',
-        'font-size:0.75rem;opacity:0.85;">Micrófono listo (es-CL)</span></div>',
-        "<script>(function(){",
-        'const btn=document.getElementById("btn-mic-jarvis");',
-        'const stEl=document.getElementById("estado-mic-jarvis");',
-        "if(!btn||!stEl)return;",
-        "const SR=window.SpeechRecognition||window.webkitSpeechRecognition;",
-        'if(!SR){stEl.textContent="Dictado por voz no soportado en este navegador";return;}',
-        'btn.onclick=function(){try{const rec=new SR();rec.lang="es-CL";',
-        "rec.interimResults=false;rec.maxAlternatives=1;",
-        'stEl.textContent="Escuchando, jefa...";',
-        "rec.onresult=function(ev){",
-        "const r0=ev.results&&ev.results[0]&&ev.results[0][0];",
-        'const dicho=(r0&&r0.transcript)||"";',
-        'stEl.textContent=dicho?("Escuchado: "+dicho):"No se captó audio";',
-        "if(!dicho)return;const doc=window.parent.document;",
-        'const sel=\'textarea[data-testid="stChatInputTextArea"],input[data-testid="stChatInputTextArea"],textarea\';',
-        "let target=null;doc.querySelectorAll(sel).forEach(el=>{if(el.offsetParent!==null)target=el;});",
-        "if(target){",
-        'const pA=window.HTMLTextAreaElement.prototype,pB=window.HTMLInputElement.prototype;',
-        'const setter=Object.getOwnPropertyDescriptor(pA,"value")||Object.getOwnPropertyDescriptor(pB,"value");',
-        "if(setter&&setter.set)setter.set.call(target,dicho);else target.value=dicho;",
-        'target.dispatchEvent(new Event("input",{bubbles:true}));',
-        'target.dispatchEvent(new Event("change",{bubbles:true}));',
-        "setTimeout(()=>{",
-        'const sendBtn=doc.querySelector(\'button[data-testid="stChatInputSubmitButton"]\');',
-        "if(sendBtn)sendBtn.click();},180);}};",
-        'rec.onerror=function(){stEl.textContent="Error al acceder al micrófono";};',
-        'rec.onend=function(){if(stEl.textContent==="Escuchando, jefa...")stEl.textContent="Micrófono listo (es-CL)";};',
-        'rec.start();}catch(e){stEl.textContent="No se pudo iniciar el micrófono";}};',
-        "})();</script>",
-    ]
+    js_mic = (
+        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">'
+        '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;'
+        'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;'
+        'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>'
+        '<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;'
+        'font-size:0.75rem;opacity:0.85;">Micrófono listo (es-CL)</span></div>'
+        "<script>(function(){"
+        'const btn=document.getElementById("btn-mic-jarvis");'
+        'const stEl=document.getElementById("estado-mic-jarvis");'
+        "if(!btn||!stEl)return;"
+        "const SR=window.SpeechRecognition||window.webkitSpeechRecognition;"
+        'if(!SR){stEl.textContent="Dictado por voz no soportado en este navegador";return;}'
+        'btn.onclick=function(){try{const rec=new SR();rec.lang="es-CL";'
+        "rec.interimResults=false;rec.maxAlternatives=1;"
+        'stEl.textContent="Escuchando, jefa...";'
+        "rec.onresult=function(ev){"
+        "const r0=ev.results&&ev.results[0]&&ev.results[0][0];"
+        'const dicho=(r0&&r0.transcript)||"";'
+        'stEl.textContent=dicho?("Escuchado: "+dicho):"No se captó audio";'
+        "if(!dicho)return;const doc=window.parent.document;"
+        'const sel=\'textarea[data-testid="stChatInputTextArea"],input[data-testid="stChatInputTextArea"],textarea\';'
+        "let target=null;doc.querySelectorAll(sel).forEach(el=>{if(el.offsetParent!==null)target=el;});"
+        "if(target){"
+        'const pA=window.HTMLTextAreaElement.prototype,pB=window.HTMLInputElement.prototype;'
+        'const setter=Object.getOwnPropertyDescriptor(pA,"value")||Object.getOwnPropertyDescriptor(pB,"value");'
+        "if(setter&&setter.set)setter.set.call(target,dicho);else target.value=dicho;"
+        'target.dispatchEvent(new Event("input",{bubbles:true}));'
+        'target.dispatchEvent(new Event("change",{bubbles:true}));'
+        "setTimeout(()=>{"
+        'const sendBtn=doc.querySelector(\'button[data-testid="stChatInputSubmitButton"]\');'
+        "if(sendBtn)sendBtn.click();},180);}};"
+        'rec.onerror=function(){stEl.textContent="Error al acceder al micrófono";};'
+        'rec.onend=function(){if(stEl.textContent==="Escuchando, jefa...")stEl.textContent="Micrófono listo (es-CL)";};'
+        'rec.start();}catch(e){stEl.textContent="No se pudo iniciar el micrófono";}};'
+        "})();</script>"
+    )
     try:
-        components.html("".join(lineas_mic), height=46)
+        components.html(js_mic, height=46)
     except Exception:
         pass
 
@@ -504,7 +444,7 @@ def resolver_calculo_o_unidad(texto_raw):
         base = float(mp.group(2).replace(",", "."))
         val = (pct / 100.0) * base
         res = int(val) if val.is_integer() else round(val, 6)
-        return f"Cálculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
+        return "Cálculo porcentual: **" + str(pct) + "%** de **" + str(base) + "** = **" + str(res) + "**."
 
     mu = re.search(
         r"(-?\d+(?:[.,]\d+)?)\s*"
@@ -532,17 +472,21 @@ def resolver_calculo_o_unidad(texto_raw):
         vel_ms = {"m/s": 1.0, "km/h": 1.0 / 3.6}
 
         if u1 in long_m and u2 in long_m:
-            return f"Conversión de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
+            r_val = round((val * long_m[u1]) / long_m[u2], 4)
+            return "Conversión de longitud: **" + str(val) + " " + u1 + "** = **" + str(r_val) + " " + u2 + "**."
         if u1 in masa_kg and u2 in masa_kg:
-            return f"Conversión de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
+            r_val = round((val * masa_kg[u1]) / masa_kg[u2], 4)
+            return "Conversión de masa: **" + str(val) + " " + u1 + "** = **" + str(r_val) + " " + u2 + "**."
         if u1 in vol_l and u2 in vol_l:
-            return f"Conversión de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
+            r_val = round((val * vol_l[u1]) / vol_l[u2], 4)
+            return "Conversión de volumen: **" + str(val) + " " + u1 + "** = **" + str(r_val) + " " + u2 + "**."
         if u1 in vel_ms and u2 in vel_ms:
-            return f"Conversión de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
+            r_val = round((val * vel_ms[u1]) / vel_ms[u2], 4)
+            return "Conversión de velocidad: **" + str(val) + " " + u1 + "** = **" + str(r_val) + " " + u2 + "**."
         if u1 in {"c", "f", "k"} and u2 in {"c", "f", "k"}:
             c = val if u1 == "c" else ((val - 32) * 5 / 9 if u1 == "f" else val - 273.15)
             out_t = c if u2 == "c" else (c * 9 / 5 + 32 if u2 == "f" else c + 273.15)
-            return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
+            return "Conversión térmica: **" + str(val) + " " + u1.upper() + "** = **" + str(round(out_t, 2)) + " " + u2.upper() + "**."
 
     expr = t
     for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "aritmetica", "aritmética", "matematica", "matemática", "="]:
@@ -579,3 +523,319 @@ def resolver_calculo_o_unidad(texto_raw):
                 return "Resultado del cálculo `" + expr + "`: **" + str(out) + "**."
         except Exception:
             return None
+    return None
+
+
+def generar_respuesta_coherente(nucleo, texto_usuario):
+    ahora = obtener_hora_chile()
+    prefijo = f"[{nucleo}] "
+    raw = (texto_usuario or "").strip()
+    t = raw.lower()
+
+    if t.startswith("recuerda ") or t.startswith("recuérdame ") or t.startswith("recuerdame "):
+        partes = raw.split(" ", 1)
+        dato = partes[1].strip() if len(partes) > 1 else ""
+        if dato:
+            jarvis_mem.remember_fact(f"fact_{int(ahora.timestamp())}", dato)
+            return f"{prefijo}Listo, jefa, queda guardado en memoria: **{dato}**."
+
+    palabras_saludo = [
+        "hola", "buenas", "buenos días", "buenos dias",
+        "buenas tardes", "buenas noches", "holi", "qué tal", "que tal",
+    ]
+    if any(t == s or t.startswith(s + " ") or t.startswith(s + ",") for s in palabras_saludo):
+        return obtener_saludo_nucleo(nucleo)
+
+    if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
+        if nucleo == "JARVIS":
+            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
+        if nucleo == "VIERNES":
+            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
+        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+
+    if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
+        econ = obtener_indicadores_chile()
+        if econ.get("ok"):
+            dolar_fmt = fmt_clp(econ["dolar"])
+            euro_fmt = fmt_clp(econ["euro"])
+            uf_fmt = fmt_clp(econ["uf"])
+            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
+            return (
+                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
+                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
+            )
+
+    if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
+        clima = obtener_clima_buin()
+        if clima.get("temp_c") is not None:
+            return f"{prefijo}En Buin hay **{clima['temp_c']}°C** y el cielo está **{clima['condicion']}**, jefa."
+        return f"{prefijo}Sin lectura meteorológica en vivo en este momento, jefa."
+
+    if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
+        hora_str = ahora.strftime("%H:%M:%S")
+        return f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa."
+
+    if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
+        misiones = obtener_misiones()
+        cant = len(misiones)
+        return (
+            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
+            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
+        )
+
+    calc = resolver_calculo_o_unidad(raw)
+    if calc:
+        return f"{prefijo}{calc}"
+
+    if client_groq is not None:
+        try:
+            recuerdos = jarvis_mem.get_recent_facts(5)
+            sys_txt = f"Núcleo activo: {nucleo}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. {PROTOCOLO_CONOCIMIENTO_BASE}"
+            if recuerdos:
+                sys_txt += " Memoria: " + " | ".join(recuerdos)
+            resp = client_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": sys_txt},
+                    {"role": "user", "content": raw},
+                ],
+                temperature=0.65,
+                max_tokens=600,
+            )
+            contenido = (resp.choices[0].message.content or "").strip()
+            if contenido:
+                contenido = re.sub(r"^\[[^\]]+\]\s*", "", contenido)
+                return f"{prefijo}{contenido}"
+        except Exception:
+            pass
+
+    respuestas_generales = {
+        "JARVIS": [
+            f"{prefijo}Entendido, jefa. Sobre *'{raw}'*, seguimos aquí mismo; ¿qué desea hacer?",
+            f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame cómo avanzamos."
+        ],
+        "VIERNES": [
+            f"{prefijo}Recibido, jefa: *'{raw}'*. ¿Qué movemos ahora?",
+        ],
+        "NOVA": [
+            f"{prefijo}Señal clara sobre *'{raw}'*, jefa. ¿En qué más le apoyo?",
+        ],
+        "ARTEX": [
+            f"{prefijo}Directiva registrada: *'{raw}'*, jefa. Protocolo activo.",
+        ],
+    }
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+
+
+st.session_state.setdefault(
+    "mensajes",
+    [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(st.session_state.nucleo_activo),
+        }
+    ],
+)
+
+estilos_css = """
+    <style>
+        .stApp { background-color: #060913 !important; color: #00f3ff !important; font-family: monospace; }
+        .stApp p, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
+            color: #00f3ff !important; font-family: monospace;
+        }
+        .stButton>button {
+            background-color: #00f3ff !important;
+            border: 1.5px solid #00f3ff !important;
+            font-weight: bold;
+            font-family: monospace;
+            width: 100%;
+            border-radius: 6px;
+            padding: 5px 10px !important;
+        }
+        .stButton>button p, .stButton>button span { color: #060913 !important; font-size: 0.78rem !important; }
+        .stButton>button:hover { background-color: #0088cc !important; }
+        .stButton>button:hover p, .stButton>button:hover span { color: #ffffff !important; }
+        .econ-card {
+            border: 1px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .econ-label { font-size: 0.75rem !important; opacity: 0.85; color: #00f3ff !important; }
+        .econ-val { font-size: 0.85rem !important; font-weight: bold; color: #00f3ff !important; }
+        .arc-reactor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arc-ring {
+            width: 65px;
+            height: 65px;
+            border: 2.5px solid #00f3ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0,243,255,0.4) 0%, #060913 75%);
+            margin-bottom: 8px;
+        }
+        .arc-triangle-inverted {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #00f3ff;
+        }
+        .holo-brain-box {
+            border: 1.5px solid #00f3ff;
+            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            max-width: 800px;
+        }
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(estilos_css, unsafe_allow_html=True)
+
+if not st.session_state.get("autorizado", False):
+    st.markdown(
+        '<div style="text-align: center; margin-top: 50px;">'
+        '<h2 style="color: #00f3ff;">ACCESO RESTRINGIDO - NODO BUIN</h2>'
+        '<p style="color: #00f3ff; opacity: 0.8; font-size: 0.85rem;">INGRESE PIN DE SEGURIDAD PARA ACTIVAR LA ARMADURA</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            pin_input = st.text_input("PIN Secreto:", type="password", placeholder="Ingresa tu PIN...")
+            btn_entrar = st.form_submit_button("Desbloquear Sistema")
+        if btn_entrar:
+            if pin_input.strip() == PIN_SECRETO:
+                st.session_state.autorizado = True
+                ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
+                st.session_state.mensajes = [{"role": "assistant", "content": ini}]
+                programar_voz(ini, idioma="es-CL")
+                st.rerun()
+            else:
+                st.error("PIN incorrecto. Acceso denegado.")
+    reproducir_voz_pendiente()
+    st.stop()
+
+with st.sidebar:
+    st.markdown(
+        '<div class="arc-reactor-container">'
+        '<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
+        '<h3>⚡ NODO BUIN // IA</h3>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 🛡️ Arsenal de Módulos")
+    st.markdown("---")
+
+    if st.button("🧹 Purgar Chat", use_container_width=True):
+        purgar_chat(st.session_state.nucleo_activo)
+        st.rerun()
+
+    if st.button("🔒 Bloquear Sistema", use_container_width=True):
+        st.session_state.autorizado = False
+        st.rerun()
+
+    if st.button("🔄 Reinicio Total", use_container_width=True):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    st.session_state.voz_masculina_activa = st.checkbox(
+        "🔊 Voz activa",
+        value=st.session_state.voz_masculina_activa,
+    )
+
+    st.markdown("---")
+    st.markdown("#### 🧠 Selector de Núcleo (IA)")
+    nuevo_nucleo = st.radio(
+        "Seleccionar Asistente Activo:",
+        NUCLEOS_DISPONIBLES,
+        index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
+        label_visibility="collapsed",
+    )
+    if nuevo_nucleo != st.session_state.nucleo_activo:
+        st.session_state.nucleo_activo = nuevo_nucleo
+        saludo_cam = obtener_saludo_nucleo(nuevo_nucleo)
+        st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
+        programar_voz(saludo_cam, idioma="es-CL")
+        st.rerun()
+
+    st.markdown("---")
+    with st.expander("🌙 Cámara Nocturna"):
+        modo_cam = st.selectbox(
+            "Modo visor:",
+            ["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"],
+            index=["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"].index(st.session_state.modo_camara),
+        )
+        if modo_cam != st.session_state.modo_camara:
+            st.session_state.modo_camara = modo_cam
+            st.rerun()
+        renderizar_camara_nocturna(st.session_state.modo_camara)
+
+indicadores = obtener_indicadores_chile()
+clima_buin = obtener_clima_buin()
+ahora_chile = obtener_hora_chile()
+
+st.markdown(
+    f'<div class="holo-brain-box">'
+    f'<h2>⚡ J.A.R.V.I.S. // {st.session_state.nucleo_activo}</h2>'
+    f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")}</div>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
+
+c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
+with c_ind1:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">DÓLAR</span><span class="econ-val">{fmt_clp(indicadores["dolar"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind2:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">EURO</span><span class="econ-val">{fmt_clp(indicadores["euro"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind3:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">UF</span><span class="econ-val">{fmt_clp(indicadores["uf"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind4:
+    temp_label = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">BUIN ({clima_buin["condicion"]})</span><span class="econ-val">{temp_label}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+renderizar_microfono_voz()
+
+for msg in st.session_state.mensajes:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt_usuario = st.chat_input("Escribe tu orden o conversa con el núcleo activo...")
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    respuesta = generar_respuesta_coherente(st.session_state.nucleo_activo, prompt_usuario)
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    programar_voz(respuesta, idioma="es-CL")
+    st.rerun()
+
+reproducir_voz_pendiente()
