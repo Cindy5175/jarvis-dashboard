@@ -446,4 +446,10 @@ def resolver_calculo_o_unidad(texto_raw):
         if u2 == "libras":
             u2 = "lb"
 
-        long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000
+       long_m = {
+            "mm": 0.001,
+            "cm": 0.01,
+            "m": 1.0,
+            "km": 1000.0,
+            "mi": 1609.344,
+        } 
