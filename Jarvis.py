@@ -18,7 +18,7 @@ except Exception:
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
@@ -40,6 +40,7 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
+st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -102,7 +103,7 @@ class JarvisMemory:
         except Exception:
             pass
 
-    def get_recent_facts(self, limit: int = 5):
+    def get_recent_facts(self, limit: int = 6):
         try:
             conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
             cursor = conn.cursor()
@@ -265,6 +266,51 @@ def obtener_saludo_nucleo(nucleo_nombre):
         "ARTEX": f"{pref}¡{saludo_actual}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
     }
     return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+
+
+def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
+    ahora = obtener_hora_chile()
+    ts_ms = int(ahora.timestamp() * 1000)
+    html_reloj = f"""
+    <div style="
+        border:1.5px solid #00f3ff;
+        background:linear-gradient(135deg, #0a1128 0%, #060913 100%);
+        padding:14px 18px;
+        border-radius:8px;
+        text-align:center;
+        box-shadow:0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
+        margin:0 auto 14px auto;
+        max-width:920px;
+        font-family:monospace;
+        color:#00f3ff;
+    ">
+        <div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>
+        <div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">
+            NODO BUIN, CHILE • {ahora.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}
+        </div>
+    </div>
+    <script>
+    (function() {{
+        let baseMs = {ts_ms};
+        const offsetMs = -3 * 3600 * 1000;
+        const capa = "{capa_radar}";
+        const el = document.getElementById("jarvis-reloj-vivo");
+        function pad(n) {{ return n < 10 ? "0" + n : "" + n; }}
+        function tick() {{
+            baseMs += 1000;
+            const d = new Date(baseMs + offsetMs);
+            const fecha = pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + "/" + d.getUTCFullYear();
+            const hora = pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds());
+            if (el) {{
+                el.textContent = "NODO BUIN, CHILE • " + fecha + " " + hora + " • " + capa;
+            }}
+        }}
+        if (window.__jarvisClockTimer) clearInterval(window.__jarvisClockTimer);
+        window.__jarvisClockTimer = setInterval(tick, 1000);
+    }})();
+    </script>
+    """
+    components.html(html_reloj, height=92)
 
 
 def limpiar_texto_para_voz(texto):
@@ -542,12 +588,12 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if nucleo == "JARVIS":
             return (
                 f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)** desde el panel lateral de **Enlaces Financieros**."
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **Nasdaq** desde el panel lateral de **Enlaces Financieros**."
             )
         if nucleo == "VIERNES":
             return (
                 f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
-                "Abra **Finviz** o **ANT (Nasdaq)** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
+                "Abra **Finviz** o **Nasdaq** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
             )
         return (
             f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa. "
@@ -576,7 +622,7 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         hora_str = ahora.strftime("%H:%M:%S")
         return (
             f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa. "
-            "El reloj superior sigue sincronizado."
+            "El segundero superior está corriendo en vivo."
         )
 
     if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
@@ -770,16 +816,6 @@ estilos_css = """
             box-shadow: 0 0 12px rgba(0, 243, 255, 0.9);
         }
 
-        .holo-brain-box {
-            border: 1.5px solid #00f3ff;
-            background: linear-gradient(135deg, #0a1128 0%, #060913 100%);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
-            margin: 0 auto 20px auto;
-            max-width: 800px;
-        }
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
     </style>
@@ -852,10 +888,24 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+    with st.expander("🛰️ Radar y Capas"):
+        capa_sel = st.selectbox(
+            "Capa activa:",
+            ["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"],
+            index=["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"].index(
+                st.session_state.capa_radar
+            ),
+        )
+        if capa_sel != st.session_state.capa_radar:
+            st.session_state.capa_radar = capa_sel
+            st.rerun()
+        st.caption(f"Coords Buin: {BUIN_LAT}, {BUIN_LON}")
+
     with st.expander("📡 Enlaces Financieros"):
         st.markdown(
             '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
-            '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>',
+            '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>'
+            '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">🇨🇱 Mindicador CL</a>',
             unsafe_allow_html=True,
         )
 
@@ -888,17 +938,10 @@ with st.sidebar:
             jarvis_mem.clear_facts()
             st.rerun()
 
-ahora_chile = obtener_hora_chile()
 indicadores = obtener_indicadores_chile()
 clima_buin = obtener_clima_buin()
 
-st.markdown(
-    '<div class="holo-brain-box">'
-    f'<h2>⚡ J.A.R.V.I.S. // {st.session_state.nucleo_activo}</h2>'
-    f'<p style="font-size: 0.85rem;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")}</p>'
-    "</div>",
-    unsafe_allow_html=True,
-)
+renderizar_banner_reloj_vivo(st.session_state.nucleo_activo, st.session_state.capa_radar)
 
 c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
 with c_ind1:
