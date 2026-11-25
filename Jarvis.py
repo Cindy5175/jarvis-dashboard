@@ -908,4 +908,33 @@ with c_ind1:
     )
 with c_ind2:
     st.markdown(
-        f'<div class="econ
+        f'<div class="econ-card"><span class="econ-label">EURO</span><span class="econ-val">{fmt_clp(indicadores["euro"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind3:
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">UF</span><span class="econ-val">{fmt_clp(indicadores["uf"])}</span></div>',
+        unsafe_allow_html=True,
+    )
+with c_ind4:
+    temp_label = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
+    st.markdown(
+        f'<div class="econ-card"><span class="econ-label">BUIN ({clima_buin["condicion"]})</span><span class="econ-val">{temp_label}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+renderizar_microfono_voz()
+
+for msg in st.session_state.mensajes:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt_usuario = st.chat_input("Escribe tu orden o conversa con el núcleo activo...")
+if prompt_usuario:
+    st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
+    respuesta = generar_respuesta_coherente(st.session_state.nucleo_activo, prompt_usuario)
+    st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
+    programar_voz(respuesta, idioma="es-CL")
+    st.rerun()
+
+reproducir_voz_pendiente()
