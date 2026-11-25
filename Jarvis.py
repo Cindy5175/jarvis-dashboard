@@ -23,6 +23,33 @@ st.set_page_config(
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
 
+PERFILES_VOZ_NUCLEO = {
+    "JARVIS": {
+        "rate": 0.94,
+        "pitch": 0.84,
+        "genero": "male",
+        "filtros_nombre": r"jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre",
+    },
+    "VIERNES": {
+        "rate": 1.08,
+        "pitch": 1.14,
+        "genero": "female",
+        "filtros_nombre": r"paulina|camila|sofia|sofía|lucia|lucía|helena|mia|mía|elena|female|mujer",
+    },
+    "NOVA": {
+        "rate": 1.03,
+        "pitch": 1.06,
+        "genero": "female",
+        "filtros_nombre": r"sofia|sofía|camila|valeria|isabella|claire|female|mujer",
+    },
+    "ARTEX": {
+        "rate": 0.96,
+        "pitch": 0.88,
+        "genero": "male",
+        "filtros_nombre": r"carlos|raul|enrique|jorge|diego|male|hombre",
+    },
+}
+
 PROTOCOLO_CONOCIMIENTO_BASE = (
     "PROTOCOLO DE CONOCIMIENTO SUPREMO COMPARTIDO (APLICABLE A TODOS LOS NUCLEOS): "
     "Responde con rigor tecnico, precision y claridad estructurada en: "
@@ -382,11 +409,15 @@ def limpiar_texto_para_voz(texto):
     return limpio[:520]
 
 
-def programar_voz(texto, idioma="es-CL"):
+def programar_voz(texto, idioma="es-CL", nucleo=None):
     if st.session_state.get("voz_masculina_activa", True):
         limpio = limpiar_texto_para_voz(texto)
         if limpio:
-            st.session_state["pendiente_voz"] = {"texto": limpio, "idioma": idioma}
+            st.session_state["pendiente_voz"] = {
+                "texto": limpio,
+                "idioma": idioma,
+                "nucleo": nucleo or st.session_state.get("nucleo_activo", "JARVIS"),
+            }
 
 
 def reproducir_voz_pendiente():
@@ -396,12 +427,18 @@ def reproducir_voz_pendiente():
     st.session_state["pendiente_voz"] = None
     txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
     lang = pendiente["idioma"]
+    nucleo = pendiente.get("nucleo", st.session_state.get("nucleo_activo", "JARVIS"))
+    cfg = PERFILES_VOZ_NUCLEO.get(nucleo, PERFILES_VOZ_NUCLEO["JARVIS"])
+    rate = cfg["rate"]
+    pitch = cfg["pitch"]
+    filtros = cfg["filtros_nombre"]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
         "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
+        f"const rx=/{filtros}/i;"
+        "const pref=es.find(v=>rx.test(v.name||''))||es[0]||voices[0];"
         "return pref||null;}"
         "function hablarAhora(){"
         "window.speechSynthesis.cancel();"
@@ -411,8 +448,8 @@ def reproducir_voz_pendiente():
         "lista.forEach((parte)=>{"
         "const u=new SpeechSynthesisUtterance(parte);"
         f"u.lang='{lang}';"
-        "u.rate=0.98;"
-        "u.pitch=0.90;"
+        f"u.rate={rate};"
+        f"u.pitch={pitch};"
         "if(vozElegida)u.voice=vozElegida;"
         "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
         "});}"
@@ -899,7 +936,7 @@ if not st.session_state.get("autorizado", False):
                 st.session_state.autorizado = True
                 ini = obtener_saludo_nucleo(st.session_state.nucleo_activo)
                 st.session_state.mensajes = [{"role": "assistant", "content": ini}]
-                programar_voz(ini, idioma="es-CL")
+                programar_voz(ini, idioma="es-CL", nucleo=st.session_state.nucleo_activo)
                 st.rerun()
             else:
                 st.error("PIN incorrecto. Acceso denegado.")
@@ -943,7 +980,7 @@ with st.sidebar:
         st.session_state.nucleo_activo = nuevo_nucleo
         saludo_cam = obtener_saludo_nucleo(nuevo_nucleo)
         st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
-        programar_voz(saludo_cam, idioma="es-CL")
+        programar_voz(saludo_cam, idioma="es-CL", nucleo=nuevo_nucleo)
         st.rerun()
 
     st.markdown("---")
@@ -1094,7 +1131,7 @@ if prompt_usuario:
     st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
     respuesta = generar_respuesta_coherente(st.session_state.nucleo_activo, prompt_usuario)
     st.session_state.mensajes.append({"role": "assistant", "content": respuesta})
-    programar_voz(respuesta, idioma="es-CL")
+    programar_voz(respuesta, idioma="es-CL", nucleo=st.session_state.nucleo_activo)
     st.rerun()
 
 reproducir_voz_pendiente()
