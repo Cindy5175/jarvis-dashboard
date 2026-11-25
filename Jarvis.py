@@ -514,4 +514,208 @@ def construir_reporte_texto(indicadores, clima_buin):
         "",
         "[1] INDICADORES Y METEOROLOGIA",
         f"- Dolar Observado: {fmt_clp(indicadores['dolar'])}",
-        f"- Euro: {fmt_clp(indicadores['
+        f"- Euro: {fmt_clp(indicadores['euro'])}",
+        f"- UF: {fmt_clp(indicadores['uf'])}",
+        f"- Clima Buin: {clima_buin.get('temp_c', 'N/D')} C ({clima_buin.get('condicion', 'N/D')})",
+        "",
+        "[2] MISIONES ACTIVAS",
+    ]
+    if misiones:
+        for mid, tarea, estado in misiones:
+            lineas.append(f"- #{mid}: {tarea} [{estado}]")
+    else:
+        lineas.append("- Sin misiones activas.")
+
+    lineas.append("")
+    lineas.append("[3] NOTAS RAPIDAS")
+    if notas:
+        for idx, n in enumerate(notas, 1):
+            lineas.append(f"- {idx}. {n}")
+    else:
+        lineas.append("- Sin notas rapidas.")
+
+    lineas.append("")
+    lineas.append("[4] MEMORIA PERSISTENTE")
+    if recuerdos:
+        for r in recuerdos:
+            lineas.append(f"- {r}")
+    else:
+        lineas.append("- Sin recuerdos registrados.")
+
+    lineas.append("")
+    lineas.append("[5] BITACORA DE SESION")
+    if bitacora:
+        for ev in bitacora[-15:]:
+            lineas.append(f"- {ev}")
+    else:
+        lineas.append("- Sin eventos en bitacora.")
+
+    return "\n".join(lineas)
+
+
+def generar_pdf_simple(texto_contenido: str) -> bytes:
+    def esc_pdf(s: str) -> str:
+        s_ascii = s.encode("latin-1", "replace").decode("latin-1")
+        return s_ascii.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    lineas_raw = texto_contenido.splitlines() or ["REPORTE JARVIS NODO BUIN"]
+    lineas_envueltas = []
+    for ln in lineas_raw:
+        if len(ln) <= 84:
+            lineas_envueltas.append(ln)
+        else:
+            for i in range(0, len(ln), 84):
+                lineas_envueltas.append(ln[i:i + 84])
+    lineas_envueltas = lineas_envueltas[:48]
+
+    ops = ["BT", "/F1 10 Tf", "40 755 Td", "14 TL"]
+    for idx, ln in enumerate(lineas_envueltas):
+        if idx == 0:
+            ops.append(f"({esc_pdf(ln)}) Tj")
+        else:
+            ops.append(f"T* ({esc_pdf(ln)}) Tj")
+    ops.append("ET")
+    stream_bytes = "\n".join(ops).encode("latin-1")
+
+    objetos = [
+        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+        b"4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n",
+        f"5 0 obj\n<< /Length {len(stream_bytes)} >>\nstream\n".encode("latin-1") + stream_bytes + b"\nendstream\nendobj\n",
+    ]
+
+    pdf_buf = io.BytesIO()
+    pdf_buf.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objetos:
+        offsets.append(pdf_buf.tell())
+        pdf_buf.write(obj)
+
+    xref_pos = pdf_buf.tell()
+    pdf_buf.write(f"xref\n0 {len(objetos) + 1}\n".encode("latin-1"))
+    pdf_buf.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        pdf_buf.write(f"{off:010d} 00000 n \n".encode("latin-1"))
+    pdf_buf.write(
+        f"trailer\n<< /Size {len(objetos) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF".encode("latin-1")
+    )
+    return pdf_buf.getvalue()
+
+
+def generar_tarjeta_jpg(indicadores, clima_buin, color_hex="#00f3ff") -> bytes:
+    if not PIL_AVAILABLE:
+        return b""
+    ahora = obtener_hora_chile()
+    w, h = 900, 500
+    img = Image.new("RGB", (w, h), (6, 9, 19))
+    draw = ImageDraw.Draw(img)
+
+    draw.rectangle([16, 16, w - 16, h - 16], outline=color_hex, width=3)
+    draw.rectangle([28, 28, w - 28, 96], outline=color_hex, width=2)
+    draw.text((48, 46), f"J.A.R.V.I.S. // NUCLEO {st.session_state.nucleo_activo}", fill=color_hex)
+    draw.text((48, 70), f"NODO BUIN, CHILE  |  {ahora.strftime('%d/%m/%Y %H:%M:%S')}  |  {st.session_state.capa_radar}", fill=color_hex)
+
+    cx, cy = 690, 275
+    for rad in (120, 88, 54):
+        draw.ellipse([cx - rad, cy - rad, cx + rad, cy + rad], outline=color_hex, width=2)
+    draw.line([cx - 135, cy, cx + 135, cy], fill=color_hex, width=1)
+    draw.line([cx, cy - 135, cx, cy + 135], fill=color_hex, width=1)
+    draw.text((cx - 46, cy + 132), "BUIN -33.73 S", fill=color_hex)
+
+    y_pos = 130
+    datos_vis = [
+        f"DOLAR OBS : {fmt_clp(indicadores['dolar'])}",
+        f"EURO      : {fmt_clp(indicadores['euro'])}",
+        f"UF CHILE  : {fmt_clp(indicadores['uf'])}",
+        f"CLIMA BUIN: {clima_buin.get('temp_c', 'N/D')} C ({clima_buin.get('condicion', 'N/D')})",
+        f"MISIONES  : {len(obtener_misiones())} ACTIVAS",
+        f"IDIOMA    : {st.session_state.idioma_sistema}",
+    ]
+    for linea in datos_vis:
+        draw.rectangle([42, y_pos - 6, 510, y_pos + 24], outline=color_hex, width=1)
+        draw.text((56, y_pos + 2), linea, fill=color_hex)
+        y_pos += 44
+
+    draw.text((48, h - 46), "ARCHIVO TACTICO EXPORTADO DESDE CONSOLA SUPREMA", fill=color_hex)
+    out = io.BytesIO()
+    img.save(out, format="JPEG", quality=92)
+    return out.getvalue()
+
+
+def convertir_imagen_a_jpg(archivo_subido) -> bytes:
+    if not PIL_AVAILABLE or archivo_subido is None:
+        return b""
+    try:
+        im = Image.open(archivo_subido)
+        if im.mode in ("RGBA", "P", "LA"):
+            fondo = Image.new("RGB", im.size, (6, 9, 19))
+            if im.mode == "P":
+                im = im.convert("RGBA")
+            fondo.paste(im, mask=im.split()[-1] if im.mode == "RGBA" else None)
+            im = fondo
+        else:
+            im = im.convert("RGB")
+        out = io.BytesIO()
+        im.save(out, format="JPEG", quality=92)
+        return out.getvalue()
+    except Exception:
+        return b""
+
+
+def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
+    html_banner = (
+        f'<div style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
+        f'padding:14px 16px;border-radius:8px;text-align:center;margin:0 auto 12px auto;max-width:820px;font-family:monospace;color:{color_main};">'
+        f'<h2 style="margin:0 0 6px 0;color:{color_main};font-size:1.55rem;">⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
+        f'<div id="reloj-vivo-buin" style="font-size:0.88rem;opacity:0.92;color:{color_main};">'
+        f'NODO BUIN, CHILE • CARGANDO RELOJ EN VIVO... • {capa_radar}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const el=document.getElementById("reloj-vivo-buin");'
+        f'const capa={repr(capa_radar)};'
+        "function pad(n){return String(n).padStart(2,'0');}"
+        "function actualizarReloj(){"
+        "if(!el)return;"
+        "const now=new Date();"
+        "const utcMs=now.getTime()+(now.getTimezoneOffset()*60000);"
+        "const cl=new Date(utcMs-(3*3600000));"
+        "const fecha=pad(cl.getDate())+'/'+pad(cl.getMonth()+1)+'/'+cl.getFullYear();"
+        "const hora=pad(cl.getHours())+':'+pad(cl.getMinutes())+':'+pad(cl.getSeconds());"
+        "el.textContent='NODO BUIN, CHILE • '+fecha+' '+hora+' • '+capa;"
+        "}"
+        "if(window.__jarvisRelojTimer)clearInterval(window.__jarvisRelojTimer);"
+        "actualizarReloj();"
+        "window.__jarvisRelojTimer=setInterval(actualizarReloj,1000);"
+        "})();</script>"
+    )
+    try:
+        components.html(html_banner, height=104)
+    except Exception:
+        ahora_chile = obtener_hora_chile()
+        st.markdown(
+            f'<div class="holo-brain-box">'
+            f'<h2>⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
+            f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+
+def renderizar_globo_orbital(capa_actual, color_main="#00f3ff"):
+    html_globo = (
+        f'<div style="border:1px solid {color_main};background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:{color_main};text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        f'const mainColor="{color_main}";'
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle=mainColor+'66';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.2
