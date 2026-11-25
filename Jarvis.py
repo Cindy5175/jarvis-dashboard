@@ -608,12 +608,17 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
             sys_txt = f"Núcleo activo: {nucleo}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. {PROTOCOLO_CONOCIMIENTO_BASE}"
             if recuerdos:
                 sys_txt += " Memoria: " + " | ".join(recuerdos)
+            msgs_api = [{"role": "system", "content": sys_txt}]
+            for item in st.session_state.get("mensajes", [])[-6:]:
+                rol = item.get("role")
+                cont = item.get("content", "")
+                if rol in {"user", "assistant"} and cont:
+                    msgs_api.append({"role": rol, "content": re.sub(r"^\[[^\]]+\]\s*", "", cont)})
+            if not msgs_api or msgs_api[-1].get("role") != "user" or msgs_api[-1].get("content") != raw:
+                msgs_api.append({"role": "user", "content": raw})
             resp = client_groq.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": sys_txt},
-                    {"role": "user", "content": raw},
-                ],
+                messages=msgs_api,
                 temperature=0.65,
                 max_tokens=600,
             )
@@ -623,6 +628,40 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
                 return f"{prefijo}{contenido}"
         except Exception:
             pass
+
+    if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
+        return (
+            f"{prefijo}**Fisiología del corazón ({raw})**: en un adulto sano suele pesar aproximadamente entre **250 y 350 gramos** "
+            "(cerca de **250–300 g** en mujeres y **300–350 g** en hombres, variando según contextura). "
+            "Es un órgano muscular hueco de cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre "
+            "por los circuitos pulmonar y sistémico mediante sístole y diástole."
+        )
+
+    if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
+        return (
+            f"{prefijo}**Biología ({raw})**: la célula es la unidad básica de la vida; "
+            "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
+            "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
+        )
+
+    if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
+        return (
+            f"{prefijo}**Geografía ({raw})**: estudia relieves, climas, hidrografía, "
+            "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
+            "la cordillera de la Costa y las planicies litorales."
+        )
+
+    if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
+        return (
+            f"{prefijo}**Historia ({raw})**: se analiza por causas estructurales y coyunturales, "
+            "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
+        )
+
+    if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
+        return (
+            f"{prefijo}**Ciencia y Tecnología ({raw})**: integra modelos, magnitudes y unidades "
+            "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
+        )
 
     respuestas_generales = {
         "JARVIS": [
