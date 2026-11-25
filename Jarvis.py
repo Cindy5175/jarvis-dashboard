@@ -335,4 +335,227 @@ def reproducir_voz_pendiente():
     if not pendiente or not st.session_state.get("voz_masculina_activa", True):
         return
     st.session_state["pendiente_voz"] = None
-    txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"
+    txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
+    lang = pendiente["idioma"]
+    js_voz = (
+        "<script>(function(){try{if(!('speechSynthesis' in window))return;"
+        "function elegirVoz(voices){"
+        "if(!voices||!voices.length)return null;"
+        "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
+        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
+        "return pref||null;}"
+        "function hablarAhora(){"
+        "window.speechSynthesis.cancel();"
+        "const trozos=" + f'"{txt}"' + ".split(' ... ').filter(Boolean);"
+        "const lista=trozos.length?trozos:[" + f'"{txt}"' + "];"
+        "const vozElegida=elegirVoz(window.speechSynthesis.getVoices());"
+        "lista.forEach((parte)=>{"
+        "const u=new SpeechSynthesisUtterance(parte);"
+        f"u.lang='{lang}';"
+        "u.rate=0.98;"
+        "u.pitch=0.90;"
+        "if(vozElegida)u.voice=vozElegida;"
+        "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
+        "});}"
+        "if(window.speechSynthesis.getVoices().length){hablarAhora();}"
+        "else{window.speechSynthesis.onvoiceschanged=function(){hablarAhora();};setTimeout(hablarAhora,220);}"
+        "}catch(e){}})();</script>"
+    )
+    try:
+        components.html(js_voz, height=1)
+    except Exception:
+        pass
+
+
+def renderizar_microfono_voz():
+    js_mic = """
+    <div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">
+        <button id="btn-mic-jarvis" type="button" style="
+            background:#00f3ff;color:#060913;border:1.5px solid #00f3ff;
+            border-radius:6px;padding:6px 12px;font-family:monospace;
+            font-weight:bold;font-size:0.78rem;cursor:pointer;
+            box-shadow:0 0 10px rgba(0,243,255,0.5);
+        ">🎤 Hablar por Voz</button>
+        <span id="estado-mic-jarvis" style="
+            color:#00f3ff;font-family:monospace;font-size:0.75rem;opacity:0.85;
+        ">Micrófono listo (es-CL)</span>
+    </div>
+    <script>
+    (function() {
+        const btn = document.getElementById("btn-mic-jarvis");
+        const stEl = document.getElementById("estado-mic-jarvis");
+        if (!btn || !stEl) return;
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+            stEl.textContent = "Dictado por voz no soportado en este navegador";
+            return;
+        }
+        btn.onclick = function() {
+            try {
+                const rec = new SR();
+                rec.lang = "es-CL";
+                rec.interimResults = false;
+                rec.maxAlternatives = 1;
+                stEl.textContent = "Escuchando, jefa...";
+                rec.onresult = function(ev) {
+                    const dicho = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || "";
+                    stEl.textContent = dicho ? ('Escuchado: "' + dicho + '"') : "No se captó audio";
+                    if (!dicho) return;
+                    const doc = window.parent.document;
+                    const inputs = doc.querySelectorAll('textarea[data-testid="stChatInputTextArea"], input[data-testid="stChatInputTextArea"], textarea');
+                    let target = null;
+                    inputs.forEach(el => {
+                        if (el.offsetParent !== null) target = el;
+                    });
+                    if (target) {
+                        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value") ||
+                                       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
+                        if (setter && setter.set) setter.set.call(target, dicho);
+                        else target.value = dicho;
+                        target.dispatchEvent(new Event("input", { bubbles: true }));
+                        target.dispatchEvent(new Event("change", { bubbles: true }));
+                        setTimeout(() => {
+                            const sendBtn = doc.querySelector('button[data-testid="stChatInputSubmitButton"]');
+                            if (sendBtn) sendBtn.click();
+                        }, 180);
+                    }
+                };
+                rec.onerror = function() { stEl.textContent = "Error al acceder al micrófono"; };
+                rec.onend = function() {
+                    if (stEl.textContent === "Escuchando, jefa...") stEl.textContent = "Micrófono listo (es-CL)";
+                };
+                rec.start();
+            } catch (e) {
+                stEl.textContent = "No se pudo iniciar el micrófono";
+            }
+        };
+    })();
+    </script>
+    """
+    try:
+        components.html(js_mic, height=46)
+    except Exception:
+        pass
+
+
+def resolver_calculo_o_unidad(texto_raw):
+    t = (texto_raw or "").strip().lower()
+
+    mp = re.search(r"(\d+(?:[.,]\d+)?)\s*%\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)", t)
+    if mp:
+        pct = float(mp.group(1).replace(",", "."))
+        base = float(mp.group(2).replace(",", "."))
+        val = (pct / 100.0) * base
+        res = int(val) if val.is_integer() else round(val, 6)
+        return f"Cálculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
+
+    mu = re.search(
+        r"(-?\d+(?:[.,]\d+)?)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)\s*"
+        r"(?:a|en|to|in)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)",
+        t,
+    )
+    if mu:
+        val = float(mu.group(1).replace(",", "."))
+        u1 = mu.group(2).replace("°", "")
+        u2 = mu.group(3).replace("°", "")
+        if u1 == "millas":
+            u1 = "mi"
+        if u2 == "millas":
+            u2 = "mi"
+        if u1 == "libras":
+            u1 = "lb"
+        if u2 == "libras":
+            u2 = "lb"
+
+        long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
+        masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
+        vol_l = {"ml": 0.001, "l": 1.0}
+        vel_ms = {"m/s": 1.0, "km/h": 1.0 / 3.6}
+
+        if u1 in long_m and u2 in long_m:
+            return f"Conversión de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
+        if u1 in masa_kg and u2 in masa_kg:
+            return f"Conversión de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
+        if u1 in vol_l and u2 in vol_l:
+            return f"Conversión de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
+        if u1 in vel_ms and u2 in vel_ms:
+            return f"Conversión de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
+        if u1 in {"c", "f", "k"} and u2 in {"c", "f", "k"}:
+            c = val if u1 == "c" else ((val - 32) * 5 / 9 if u1 == "f" else val - 273.15)
+            out_t = c if u2 == "c" else (c * 9 / 5 + 32 if u2 == "f" else c + 273.15)
+            return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
+
+    expr = t
+    for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "aritmetica", "aritmética", "matematica", "matemática", "="]:
+        if expr.startswith(pref):
+            expr = expr[len(pref):].strip()
+    expr = expr.replace("×", "*").replace("÷", "/").replace("^", "**").replace(",", ".")
+    if (
+        re.search(r"\d", expr)
+        and not re.fullmatch(r"\d{1,2}:\d{2}(:\d{2})?", expr)
+        and re.fullmatch(r"[0-9+\-*/().%\s,a-z_]+", expr)
+    ):
+        env = {
+            "__builtins__": {},
+            "abs": abs,
+            "round": round,
+            "min": min,
+            "max": max,
+            "pow": pow,
+            "sqrt": math.sqrt,
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "log": math.log10,
+            "ln": math.log,
+            "exp": math.exp,
+            "pi": math.pi,
+            "e": math.e,
+        }
+        try:
+            res = eval(expr, env, {})
+            if isinstance(res, (int, float)) and not isinstance(res, bool):
+                out = int(res) if (isinstance(res, float) and res.is_integer()) else (round(res, 6) if isinstance(res, float) else res)
+                return f"Resultado del cálculo `{expr}`: **{out}**."
+        except Exception:
+            return None
+    return None
+
+
+def generar_respuesta_coherente(nucleo, texto_usuario):
+    ahora = obtener_hora_chile()
+    prefijo = f"[{nucleo}] "
+    t = (texto_usuario or "").strip().lower()
+
+    frases_presentacion = [
+        "presentate", "preséntate", "presentate por favor", "preséntate por favor",
+        "quien eres", "quién eres", "quien eres tu", "quién eres tú",
+        "protocolo de presentacion", "protocolo de presentación",
+    ]
+    if any(k in t for k in frases_presentacion):
+        return obtener_presentacion_nucleo(nucleo)
+
+    frases_despierto = [
+        "estas despierto", "estás despierto", "estas despierta", "estás despierta",
+        "estas ahi", "estás ahí", "estas ahi?", "estás ahí?",
+        "estas despierto?", "estás despierto?", "estas despierta?", "estás despierta?",
+    ]
+    if any(k in t for k in frases_despierto):
+        if nucleo == "JARVIS":
+            return f"{prefijo}Para usted, señorita, siempre."
+        if nucleo == "VIERNES":
+            return f"{prefijo}¡Siempre despierta para usted, señorita!"
+        if nucleo == "NOVA":
+            return f"{prefijo}¡Siempre atenta al radar para usted, señorita!"
+        if nucleo == "ARTEX":
+            return f"{prefijo}En línea y con los sistemas tácticos listos, señorita."
+        return f"{prefijo}Siempre activo y a sus órdenes, señorita."
+
+    calculo = resolver_calculo_o_unidad(texto_usuario)
+    if calculo:
+        return f"{prefijo}{calculo}"
+
+    if "hora" in t:
+        return f"{prefijo}Son las **{ahora.strftime('%H:%M:%S')}** en
