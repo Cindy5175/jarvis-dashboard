@@ -280,3 +280,113 @@ def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
         padding:14px 18px;
         border-radius:8px;
         text-align:center;
+        box-shadow:0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
+        margin:0 auto 14px auto;
+        max-width:920px;
+        font-family:monospace;
+        color:#00f3ff;
+    ">
+        <div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>
+        <div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">
+            NODO BUIN, CHILE • {ahora.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}
+        </div>
+    </div>
+    <script>
+    (function() {{
+        let baseMs = {ts_ms};
+        const offsetMs = -3 * 3600 * 1000;
+        const capa = "{capa_radar}";
+        const el = document.getElementById("jarvis-reloj-vivo");
+        function pad(n) {{ return n < 10 ? "0" + n : "" + n; }}
+        function tick() {{
+            baseMs += 1000;
+            const d = new Date(baseMs + offsetMs);
+            const fecha = pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1) + "/" + d.getUTCFullYear();
+            const hora = pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds());
+            if (el) {{
+                el.textContent = "NODO BUIN, CHILE • " + fecha + " " + hora + " • " + capa;
+            }}
+        }}
+        if (window.__jarvisClockTimer) clearInterval(window.__jarvisClockTimer);
+        window.__jarvisClockTimer = setInterval(tick, 1000);
+    }})();
+    </script>
+    """
+    components.html(html_reloj, height=92)
+
+
+def renderizar_camara_nocturna(modo_camara):
+    es_ir = "INFRARROJO" in modo_camara
+    color_main = "#00f3ff" if es_ir else "#39ff14"
+    color_glow = "rgba(0, 243, 255, 0.35)" if es_ir else "rgba(57, 255, 20, 0.35)"
+    filtro_css = (
+        "grayscale(100%) contrast(155%) brightness(115%) sepia(100%) hue-rotate(155deg) saturate(320%)"
+        if es_ir
+        else "grayscale(100%) contrast(150%) brightness(120%) sepia(100%) hue-rotate(68deg) saturate(350%)"
+    )
+    html_cam = f"""
+    <div style="
+        border:1px solid {color_main};
+        background:#030906;
+        border-radius:6px;
+        padding:6px;
+        font-family:monospace;
+        color:{color_main};
+    ">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:0.70rem;font-weight:bold;margin-bottom:4px;">
+            <span>● CAM-01 // BUIN</span>
+            <button id="btn-cam-real" type="button" style="
+                background:{color_main};color:#040a07;border:none;border-radius:4px;
+                padding:2px 6px;font-family:monospace;font-size:0.65rem;font-weight:bold;cursor:pointer;
+            ">Activar Cámara</button>
+        </div>
+        <video id="cam-real-video" autoplay playsinline muted style="display:none;"></video>
+        <canvas id="cam-nocturna-canvas" width="250" height="135" style="
+            width:100%;height:135px;border-radius:4px;
+            background:#020704;box-shadow:inset 0 0 14px {color_glow};
+        "></canvas>
+        <div id="estado-cam-jarvis" style="font-size:0.66rem;opacity:0.85;margin-top:3px;">
+            Modo simulado listo • Pulsa "Activar Cámara" para señal real
+        </div>
+    </div>
+    <script>
+    (function() {{
+        const c = document.getElementById("cam-nocturna-canvas");
+        const v = document.getElementById("cam-real-video");
+        const btn = document.getElementById("btn-cam-real");
+        const stEl = document.getElementById("estado-cam-jarvis");
+        if (!c) return;
+        const ctx = c.getContext("2d");
+        const mainColor = "{color_main}";
+        const filtro = "{filtro_css}";
+        let scanY = 0;
+        let t = 0;
+        let camActiva = false;
+
+        async function iniciarCamaraReal() {{
+            try {{
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {{
+                    if (stEl) stEl.textContent = "Cámara no soportada aquí • Manteniendo simulador";
+                    return;
+                }}
+                if (window.__jarvisCamStream) {{
+                    window.__jarvisCamStream.getTracks().forEach(tr => tr.stop());
+                }}
+                const stream = await navigator.mediaDevices.getUserMedia({{
+                    video: {{ facingMode: "environment" }},
+                    audio: false
+                }});
+                window.__jarvisCamStream = stream;
+                if (v) {{
+                    v.srcObject = stream;
+                    await v.play();
+                }}
+                camActiva = true;
+                if (stEl) stEl.textContent = "Cámara real activa con filtro nocturno";
+            }} catch (e) {{
+                camActiva = false;
+                if (stEl) stEl.textContent = "Permiso denegado o sin HTTPS • Modo simulado";
+            }}
+        }}
+
+        if (btn) btn
