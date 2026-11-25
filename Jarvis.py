@@ -316,4 +316,263 @@ def renderizar_banner_reloj_vivo(nucleo_activo, capa_radar):
         f'<div style="font-size:1.55rem;font-weight:bold;letter-spacing:1px;">⚡ J.A.R.V.I.S. // {nucleo_activo}</div>',
         '<div id="jarvis-reloj-vivo" style="font-size:0.92rem;font-weight:bold;margin-top:4px;opacity:0.95;">',
         f"{encabezado_reloj}</div></div>",
-        "<script>(
+        "<script>(function(){",
+        f'let baseMs={ts_ms};const offsetMs=-3*3600*1000;const capa="{capa_radar}";',
+        'const el=document.getElementById("jarvis-reloj-vivo");',
+        'function pad(n){return n<10?"0"+n:""+n;}',
+        "function tick(){baseMs+=1000;const d=new Date(baseMs+offsetMs);",
+        'const f=pad(d.getUTCDate())+"/"+pad(d.getUTCMonth()+1)+"/"+d.getUTCFullYear();',
+        'const h=pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())+":"+pad(d.getUTCSeconds());',
+        'if(el){el.textContent="NODO BUIN, CHILE • "+f+" "+h+" • "+capa;}}',
+        "if(window.__jarvisClockTimer)clearInterval(window.__jarvisClockTimer);",
+        "window.__jarvisClockTimer=setInterval(tick,1000);",
+        "})();</script>",
+    ]
+    components.html("".join(lineas_html), height=92)
+
+
+def renderizar_camara_nocturna(modo_camara):
+    es_ir = "INFRARROJO" in modo_camara
+    color_main = "#00f3ff" if es_ir else "#39ff14"
+    filtro_css = (
+        "grayscale(100%) contrast(155%) brightness(115%) sepia(100%) hue-rotate(155deg) saturate(320%)"
+        if es_ir
+        else "grayscale(100%) contrast(150%) brightness(120%) sepia(100%) hue-rotate(68deg) saturate(350%)"
+    )
+    partes_cam = [
+        f'<div style="border:1px solid {color_main};background:#030906;border-radius:6px;',
+        f'padding:6px;font-family:monospace;color:{color_main};">',
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;',
+        'font-size:0.70rem;font-weight:bold;margin-bottom:4px;">',
+        "<span>● CAM-01 // BUIN</span>",
+        f'<button id="btn-cam-real" type="button" style="background:{color_main};color:#040a07;',
+        "border:none;border-radius:4px;padding:2px 6px;font-family:monospace;font-size:0.65rem;",
+        'font-weight:bold;cursor:pointer;">Activar Cámara</button></div>',
+        '<video id="cam-real-video" autoplay playsinline muted style="display:none;"></video>',
+        '<canvas id="cam-nocturna-canvas" width="250" height="135" style="width:100%;height:135px;',
+        'border-radius:4px;background:#020704;"></canvas>',
+        '<div id="estado-cam-jarvis" style="font-size:0.66rem;opacity:0.85;margin-top:3px;">',
+        'Modo simulado listo • Pulsa "Activar Cámara" para señal real</div></div>',
+        '<script>(function(){const c=document.getElementById("cam-nocturna-canvas");',
+        'const v=document.getElementById("cam-real-video");const btn=document.getElementById("btn-cam-real");',
+        'const stEl=document.getElementById("estado-cam-jarvis");if(!c)return;',
+        f'const ctx=c.getContext("2d");const mainColor="{color_main}";const filtro="{filtro_css}";',
+        "let scanY=0,t=0,camActiva=false;",
+        "async function iniciarCamaraReal(){try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){",
+        'if(stEl)stEl.textContent="Cámara no soportada aquí • Manteniendo simulador";return;}',
+        "if(window.__jarvisCamStream){window.__jarvisCamStream.getTracks().forEach(tr=>tr.stop());}",
+        'const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});',
+        "window.__jarvisCamStream=stream;if(v){v.srcObject=stream;await v.play();}",
+        'camActiva=true;if(stEl)stEl.textContent="Cámara real activa con filtro nocturno";}',
+        'catch(e){camActiva=false;if(stEl)stEl.textContent="Permiso denegado o sin HTTPS • Modo simulado";}}',
+        "if(btn)btn.onclick=iniciarCamaraReal;",
+        'function draw(){t+=0.05;ctx.save();if(camActiva&&v&&v.readyState>=2){ctx.filter=filtro;',
+        'ctx.drawImage(v,0,0,c.width,c.height);ctx.filter="none";}else{ctx.fillStyle="#030a06";',
+        'ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle=mainColor+"22";ctx.lineWidth=1;',
+        "for(let x=0;x<c.width;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}",
+        "for(let y=0;y<c.height;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}",
+        'ctx.fillStyle=mainColor+"33";ctx.fillRect(20,78,52,34);ctx.fillRect(165,68,64,44);',
+        "ctx.beginPath();ctx.arc(125+Math.sin(t)*14,62+Math.cos(t*1.3)*6,7,0,Math.PI*2);",
+        "ctx.strokeStyle=mainColor;ctx.stroke();for(let i=0;i<65;i++){",
+        "const nx=(i*37+Math.floor(t*90))%c.width;const ny=(i*53+Math.floor(t*45))%c.height;",
+        'ctx.fillStyle=mainColor+"44";ctx.fillRect(nx,ny,2,2);}}',
+        'scanY=(scanY+2.2)%c.height;ctx.strokeStyle=mainColor+"aa";ctx.beginPath();',
+        "ctx.moveTo(0,scanY);ctx.lineTo(c.width,scanY);ctx.stroke();ctx.fillStyle=mainColor;",
+        'ctx.font="bold 10px monospace";',
+        'ctx.fillText(camActiva?"LIVE CAM [●] NIGHT-OPTIC":"SIM [●] IR-GAIN: +24dB",8,14);',
+        'ctx.fillText("SECTOR BUIN SUR",8,c.height-8);ctx.restore();}',
+        "if(window.__jarvisCamTimer)clearInterval(window.__jarvisCamTimer);",
+        "window.__jarvisCamTimer=setInterval(draw,80);draw();}})();</script>",
+    ]
+    components.html("".join(partes_cam), height=192)
+
+
+def limpiar_texto_para_voz(texto):
+    limpio = re.sub(r"^\[[^\]]+\]\s*", "", texto or "")
+    limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace ", limpio)
+    limpio = re.sub(r"https?://\S+", " enlace ", limpio)
+    limpio = re.sub(r"[*_`#>\[\]|]+", " ", limpio)
+    limpio = re.sub(r"([.!?])\s+", r"\1 ... ", limpio)
+    limpio = re.sub(r"\s+", " ", limpio).strip()
+    return limpio[:520]
+
+
+def programar_voz(texto, idioma="es-CL", nucleo=None):
+    if st.session_state.get("voz_masculina_activa", True):
+        limpio = limpiar_texto_para_voz(texto)
+        if limpio:
+            st.session_state["pendiente_voz"] = {
+                "texto": limpio,
+                "idioma": idioma,
+                "nucleo": nucleo or st.session_state.get("nucleo_activo", "JARVIS"),
+            }
+
+
+def reproducir_voz_pendiente():
+    pendiente = st.session_state.get("pendiente_voz")
+    if not pendiente or not st.session_state.get("voz_masculina_activa", True):
+        return
+    st.session_state["pendiente_voz"] = None
+    txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
+    lang = pendiente["idioma"]
+    nucleo = pendiente.get("nucleo", st.session_state.get("nucleo_activo", "JARVIS"))
+    cfg = PERFILES_VOZ_NUCLEO.get(nucleo, PERFILES_VOZ_NUCLEO["JARVIS"])
+    rate = cfg["rate"]
+    pitch = cfg["pitch"]
+    filtros = cfg["filtros_nombre"]
+    js_voz = (
+        "<script>(function(){try{if(!('speechSynthesis' in window))return;"
+        "function elegirVoz(voices){"
+        "if(!voices||!voices.length)return null;"
+        "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
+        f"const rx=/{filtros}/i;"
+        "const pref=es.find(v=>rx.test(v.name||''))||es[0]||voices[0];"
+        "return pref||null;}"
+        "function hablarAhora(){"
+        "window.speechSynthesis.cancel();"
+        "const trozos=" + f'"{txt}"' + ".split(' ... ').filter(Boolean);"
+        "const lista=trozos.length?trozos:[" + f'"{txt}"' + "];"
+        "const vozElegida=elegirVoz(window.speechSynthesis.getVoices());"
+        "lista.forEach((parte)=>{"
+        "const u=new SpeechSynthesisUtterance(parte);"
+        f"u.lang='{lang}';"
+        f"u.rate={rate};"
+        f"u.pitch={pitch};"
+        "if(vozElegida)u.voice=vozElegida;"
+        "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
+        "});}"
+        "if(window.speechSynthesis.getVoices().length){hablarAhora();}"
+        "else{window.speechSynthesis.onvoiceschanged=function(){hablarAhora();};setTimeout(hablarAhora,220);}"
+        "}catch(e){}})();</script>"
+    )
+    try:
+        components.html(js_voz, height=1)
+    except Exception:
+        pass
+
+
+def renderizar_microfono_voz():
+    lineas_mic = [
+        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">',
+        '<button id="btn-mic-jarvis" type="button" style="background:#00f3ff;color:#060913;',
+        'border:1.5px solid #00f3ff;border-radius:6px;padding:6px 12px;font-family:monospace;',
+        'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>',
+        '<span id="estado-mic-jarvis" style="color:#00f3ff;font-family:monospace;',
+        'font-size:0.75rem;opacity:0.85;">Micrófono listo (es-CL)</span></div>',
+        "<script>(function(){",
+        'const btn=document.getElementById("btn-mic-jarvis");',
+        'const stEl=document.getElementById("estado-mic-jarvis");',
+        "if(!btn||!stEl)return;",
+        "const SR=window.SpeechRecognition||window.webkitSpeechRecognition;",
+        'if(!SR){stEl.textContent="Dictado por voz no soportado en este navegador";return;}',
+        'btn.onclick=function(){try{const rec=new SR();rec.lang="es-CL";',
+        "rec.interimResults=false;rec.maxAlternatives=1;",
+        'stEl.textContent="Escuchando, jefa...";',
+        "rec.onresult=function(ev){",
+        "const r0=ev.results&&ev.results[0]&&ev.results[0][0];",
+        'const dicho=(r0&&r0.transcript)||"";',
+        'stEl.textContent=dicho?("Escuchado: "+dicho):"No se captó audio";',
+        "if(!dicho)return;const doc=window.parent.document;",
+        'const sel=\'textarea[data-testid="stChatInputTextArea"],input[data-testid="stChatInputTextArea"],textarea\';',
+        "let target=null;doc.querySelectorAll(sel).forEach(el=>{if(el.offsetParent!==null)target=el;});",
+        "if(target){",
+        'const pA=window.HTMLTextAreaElement.prototype,pB=window.HTMLInputElement.prototype;',
+        'const setter=Object.getOwnPropertyDescriptor(pA,"value")||Object.getOwnPropertyDescriptor(pB,"value");',
+        "if(setter&&setter.set)setter.set.call(target,dicho);else target.value=dicho;",
+        'target.dispatchEvent(new Event("input",{bubbles:true}));',
+        'target.dispatchEvent(new Event("change",{bubbles:true}));',
+        "setTimeout(()=>{",
+        'const sendBtn=doc.querySelector(\'button[data-testid="stChatInputSubmitButton"]\');',
+        "if(sendBtn)sendBtn.click();},180);}};",
+        'rec.onerror=function(){stEl.textContent="Error al acceder al micrófono";};',
+        'rec.onend=function(){if(stEl.textContent==="Escuchando, jefa...")stEl.textContent="Micrófono listo (es-CL)";};',
+        'rec.start();}catch(e){stEl.textContent="No se pudo iniciar el micrófono";}};',
+        "})();</script>",
+    ]
+    try:
+        components.html("".join(lineas_mic), height=46)
+    except Exception:
+        pass
+
+
+def resolver_calculo_o_unidad(texto_raw):
+    t = (texto_raw or "").strip().lower()
+
+    mp = re.search(r"(\d+(?:[.,]\d+)?)\s*%\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)", t)
+    if mp:
+        pct = float(mp.group(1).replace(",", "."))
+        base = float(mp.group(2).replace(",", "."))
+        val = (pct / 100.0) * base
+        res = int(val) if val.is_integer() else round(val, 6)
+        return f"Cálculo porcentual: **{pct:g}%** de **{base:g}** = **{res}**."
+
+    mu = re.search(
+        r"(-?\d+(?:[.,]\d+)?)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)\s*"
+        r"(?:a|en|to|in)\s*"
+        r"(km|m|cm|mm|mi|millas|kg|g|lb|libras|l|ml|km/h|m/s|c|°c|f|°f|k)",
+        t,
+    )
+    if mu:
+        val = float(mu.group(1).replace(",", "."))
+        u1 = mu.group(2).replace("°", "")
+        u2 = mu.group(3).replace("°", "")
+        if u1 == "millas":
+            u1 = "mi"
+        if u2 == "millas":
+            u2 = "mi"
+        if u1 == "libras":
+            u1 = "lb"
+        if u2 == "libras":
+            u2 = "lb"
+
+        long_m = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mi": 1609.344}
+        masa_kg = {"g": 0.001, "kg": 1.0, "lb": 0.45359237}
+        vol_l = {"ml": 0.001, "l": 1.0}
+        vel_ms = {"m/s": 1.0, "km/h": 1.0 / 3.6}
+
+        if u1 in long_m and u2 in long_m:
+            return f"Conversión de longitud: **{val:g} {u1}** = **{round((val * long_m[u1]) / long_m[u2], 4):g} {u2}**."
+        if u1 in masa_kg and u2 in masa_kg:
+            return f"Conversión de masa: **{val:g} {u1}** = **{round((val * masa_kg[u1]) / masa_kg[u2], 4):g} {u2}**."
+        if u1 in vol_l and u2 in vol_l:
+            return f"Conversión de volumen: **{val:g} {u1}** = **{round((val * vol_l[u1]) / vol_l[u2], 4):g} {u2}**."
+        if u1 in vel_ms and u2 in vel_ms:
+            return f"Conversión de velocidad: **{val:g} {u1}** = **{round((val * vel_ms[u1]) / vel_ms[u2], 4):g} {u2}**."
+        if u1 in {"c", "f", "k"} and u2 in {"c", "f", "k"}:
+            c = val if u1 == "c" else ((val - 32) * 5 / 9 if u1 == "f" else val - 273.15)
+            out_t = c if u2 == "c" else (c * 9 / 5 + 32 if u2 == "f" else c + 273.15)
+            return f"Conversión térmica: **{val:g} {u1.upper()}** = **{round(out_t, 2):g} {u2.upper()}**."
+
+    expr = t
+    for pref in ["calcula", "calcular", "cuanto es", "cuánto es", "resuelve", "aritmetica", "aritmética", "matematica", "matemática", "="]:
+        if expr.startswith(pref):
+            expr = expr[len(pref):].strip()
+    expr = expr.replace("×", "*").replace("÷", "/").replace("^", "**").replace(",", ".")
+    if (
+        re.search(r"\d", expr)
+        and not re.fullmatch(r"\d{1,2}:\d{2}(:\d{2})?", expr)
+        and re.fullmatch(r"[0-9+\-*/().%\s,a-z_]+", expr)
+    ):
+        env = {
+            "__builtins__": {},
+            "abs": abs,
+            "round": round,
+            "min": min,
+            "max": max,
+            "pow": pow,
+            "sqrt": math.sqrt,
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "log": math.log10,
+            "ln": math.log,
+            "exp": math.exp,
+            "pi": math.pi,
+            "e": math.e,
+        }
+        try:
+            res = eval(expr, env, {})
+            if isinstance(res, (int, float)) and not isinstance(res, bool):
+                out = int(res) if (isinstance(res, float) and res.is_integer()) else (round(res, 6) if isinstance(res, float) else res)
+                return f"Resultado del cálculo `{expr}`: **{out
