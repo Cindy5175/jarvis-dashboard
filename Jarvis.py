@@ -330,7 +330,6 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar):
             unsafe_allow_html=True,
         )
 
-
 def renderizar_globo_orbital(capa_actual):
     html_globo = (
         '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
@@ -343,4 +342,115 @@ def renderizar_globo_orbital(capa_actual):
         "let ang=0;"
         "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
         "const cx=c.width/2,cy=c.height/2,r=42;"
-        "ctx.strokeStyle='#00f3ff5
+        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
+        "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
+        "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
+        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
+        "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
+        "window.__jarvisGloboTimer=setInterval(step,70);step();"
+        "})();</script>"
+    )
+    def renderizar_globo_orbital(capa_actual):
+    html_globo = (
+        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
+        "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
+        "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
+        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
+        "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
+        "window.__jarvisGloboTimer=setInterval(step,70);step();"
+        "})();</script>"
+    )
+   def renderizar_globo_orbital(capa_actual):
+    html_globo = (
+        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
+        "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
+        "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
+        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
+        "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
+        "window.__jarvisGloboTimer=setInterval(step,70);step();"
+        "})();</script>"
+    )
+   def renderizar_globo_orbital(capa_actual):
+    html_globo = (
+        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
+        "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
+        "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
+        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
+        "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
+        "window.__jarvisGloboTimer=setInterval(step,70);step();"
+        "})();</script>"
+    )
+   def renderizar_globo_orbital(capa_actual):
+    html_globo = (
+        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle='#00f3ff55';ctx.lineWidth=1;"
+        "ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r*Math.cos(ang*0.4)||6,r,0,0,Math.PI*2);ctx.stroke();"
+        "ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.35,0.25,0,Math.PI*2);ctx.stroke();"
+        "const ox=cx+Math.cos(ang)*(r+14);const oy=cy+Math.sin(ang)*14;"
+        "ctx.fillStyle='#39ff14';ctx.beginPath();ctx.arc(ox,oy,3.2,0,Math.PI*2);ctx.fill();"
+        "ctx.fillStyle='#00f3ff';ctx.font='9px monospace';"
+        "ctx.fillText('BUIN -33.73°S',8,12);ctx.fillText('SAT-07 [LOCK]',c.width-76,c.height-8);}"
+        "if(window.__jarvisGloboTimer)clearInterval(window.__jarvisGloboTimer);"
+        "window.__jarvisGloboTimer=setInterval(step,70);step();"
+        "})();</script>"
+    )
+    try:
+        components.html(html_globo, height=156)
+    except Exception:
+        pass
