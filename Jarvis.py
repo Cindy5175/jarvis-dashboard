@@ -1,7 +1,6 @@
 import datetime
 import math
 import os
-import random
 import re
 import sqlite3
 import requests
@@ -32,6 +31,13 @@ st.markdown(
     p, span, label, div, li, h1, h2, h3, h4, code, pre, input, textarea {
         font-weight: 700 !important;
     }
+    .jarvis-card {
+        background: #0b1120;
+        border: 1px solid #00f3ff55;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -56,6 +62,7 @@ st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("voz_masculina_activa", True)
 st.session_state.setdefault("pendiente_voz", None)
+st.session_state.setdefault("historial_chat", [])
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -328,110 +335,4 @@ def reproducir_voz_pendiente():
     if not pendiente or not st.session_state.get("voz_masculina_activa", True):
         return
     st.session_state["pendiente_voz"] = None
-    txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
-    lang = pendiente["idioma"]
-    js_voz = (
-        "<script>(function(){try{if(!('speechSynthesis' in window))return;"
-        "function elegirVoz(voices){"
-        "if(!voices||!voices.length)return null;"
-        "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
-        "return pref||null;}"
-        "function hablarAhora(){"
-        "window.speechSynthesis.cancel();"
-        "const trozos=" + f'"{txt}"' + ".split(' ... ').filter(Boolean);"
-        "const lista=trozos.length?trozos:[" + f'"{txt}"' + "];"
-        "const vozElegida=elegirVoz(window.speechSynthesis.getVoices());"
-        "lista.forEach((parte)=>{"
-        "const u=new SpeechSynthesisUtterance(parte);"
-        f"u.lang='{lang}';"
-        "u.rate=0.98;"
-        "u.pitch=0.90;"
-        "if(vozElegida)u.voice=vozElegida;"
-        "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
-        "});}"
-        "if(window.speechSynthesis.getVoices().length){hablarAhora();}"
-        "else{window.speechSynthesis.onvoiceschanged=function(){hablarAhora();};setTimeout(hablarAhora,220);}"
-        "}catch(e){}})();</script>"
-    )
-    try:
-        components.html(js_voz, height=1)
-    except Exception:
-        pass
-
-
-def renderizar_microfono_voz():
-    js_mic = """
-    <div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">
-        <button id="btn-mic-jarvis" type="button" style="
-            background:#00f3ff;color:#060913;border:1.5px solid #00f3ff;
-            border-radius:6px;padding:6px 12px;font-family:monospace;
-            font-weight:bold;font-size:0.78rem;cursor:pointer;
-            box-shadow:0 0 10px rgba(0,243,255,0.5);
-        ">🎤 Hablar por Voz</button>
-        <span id="estado-mic-jarvis" style="
-            color:#00f3ff;font-family:monospace;font-size:0.75rem;opacity:0.85;
-        ">Micrófono listo (es-CL)</span>
-    </div>
-    <script>
-    (function() {
-        const btn = document.getElementById("btn-mic-jarvis");
-        const stEl = document.getElementById("estado-mic-jarvis");
-        if (!btn || !stEl) return;
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) {
-            stEl.textContent = "Dictado por voz no soportado en este navegador";
-            return;
-        }
-        btn.onclick = function() {
-            try {
-                const rec = new SR();
-                rec.lang = "es-CL";
-                rec.interimResults = false;
-                rec.maxAlternatives = 1;
-                stEl.textContent = "Escuchando, jefa...";
-                rec.onresult = function(ev) {
-                    const dicho = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || "";
-                    stEl.textContent = dicho ? ('Escuchado: "' + dicho + '"') : "No se captó audio";
-                    if (!dicho) return;
-                    const doc = window.parent.document;
-                    const inputs = doc.querySelectorAll('textarea[data-testid="stChatInputTextArea"], input[data-testid="stChatInputTextArea"], textarea');
-                    let target = null;
-                    inputs.forEach(el => {
-                        if (el.offsetParent !== null) target = el;
-                    });
-                    if (target) {
-                        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value") ||
-                                       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
-                        if (setter && setter.set) setter.set.call(target, dicho);
-                        else target.value = dicho;
-                        target.dispatchEvent(new Event("input", { bubbles: true }));
-                        target.dispatchEvent(new Event("change", { bubbles: true }));
-                        setTimeout(() => {
-                            const sendBtn = doc.querySelector('button[data-testid="stChatInputSubmitButton"]');
-                            if (sendBtn) sendBtn.click();
-                        }, 180);
-                    }
-                };
-                rec.onerror = function() { stEl.textContent = "Error al acceder al micrófono"; };
-                rec.onend = function() {
-                    if (stEl.textContent === "Escuchando, jefa...") stEl.textContent = "Micrófono listo (es-CL)";
-                };
-                rec.start();
-            } catch (e) {
-                stEl.textContent = "No se pudo iniciar el micrófono";
-            }
-        };
-    })();
-    </script>
-    """
-    try:
-        components.html(js_mic, height=46)
-    except Exception:
-        pass
-
-
-def resolver_calculo_o_unidad(texto_raw):
-    t = (texto_raw or "").strip().lower()
-
-    mp = re.search(r"(\d+(?:[.,]\d+)?)\s*%\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)", t)
+    txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"
