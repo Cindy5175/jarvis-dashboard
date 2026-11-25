@@ -246,4 +246,101 @@ def obtener_clima_buin():
             if temp is not None:
                 return {
                     "temp_c": round(float(temp), 1),
-                    "condicion
+                    "condicion": describir_clima_codigo(code),
+                }
+    except Exception:
+        pass
+    return {"temp_c": None, "condicion": "sin lectura en vivo"}
+
+
+def fmt_clp(valor):
+    return "$" + f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def obtener_hora_chile():
+    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+    return datetime.datetime.now(tz_chile)
+
+
+def obtener_saludo_actual(ahora):
+    hora = ahora.hour
+    if 0 <= hora < 12:
+        return "Buenos días"
+    if 12 <= hora < 20:
+        return "Buenas tardes"
+    return "Buenas noches"
+
+
+def obtener_saludo_nucleo(nucleo_nombre):
+    ahora = obtener_hora_chile()
+    saludo_actual = obtener_saludo_actual(ahora)
+    pref = f"[{nucleo_nombre}] "
+    saludos = {
+        "JARVIS": f"{pref}{saludo_actual}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
+        "VIERNES": f"{pref}¡{saludo_actual}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
+        "NOVA": f"{pref}¡{saludo_actual}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
+        "ARTEX": f"{pref}¡{saludo_actual}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
+    }
+    return saludos.get(nucleo_nombre, f"{pref}{saludo_actual}, jefa. En línea y a su servicio.")
+
+
+def purgar_chat(nucleo_nombre):
+    st.session_state["mensajes"] = [
+        {"role": "assistant", "content": obtener_saludo_nucleo(nucleo_nombre)}
+    ]
+    st.session_state["pendiente_voz"] = None
+    registrar_evento(f"Chat purgado en núcleo {nucleo_nombre}")
+
+
+def renderizar_banner_vivo(nucleo_activo, capa_radar):
+    html_banner = (
+        '<div style="border:1.5px solid #00f3ff;background:linear-gradient(135deg,#0a1128 0%,#060913 100%);'
+        'padding:14px 16px;border-radius:8px;text-align:center;margin:0 auto 12px auto;max-width:820px;font-family:monospace;color:#00f3ff;">'
+        f'<h2 style="margin:0 0 6px 0;color:#00f3ff;font-size:1.55rem;">⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
+        '<div id="reloj-vivo-buin" style="font-size:0.88rem;opacity:0.92;color:#00f3ff;">'
+        f'NODO BUIN, CHILE • CARGANDO RELOJ EN VIVO... • {capa_radar}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const el=document.getElementById("reloj-vivo-buin");'
+        f'const capa={repr(capa_radar)};'
+        "function pad(n){return String(n).padStart(2,'0');}"
+        "function actualizarReloj(){"
+        "if(!el)return;"
+        "const now=new Date();"
+        "const utcMs=now.getTime()+(now.getTimezoneOffset()*60000);"
+        "const cl=new Date(utcMs-(3*3600000));"
+        "const fecha=pad(cl.getDate())+'/'+pad(cl.getMonth()+1)+'/'+cl.getFullYear();"
+        "const hora=pad(cl.getHours())+':'+pad(cl.getMinutes())+':'+pad(cl.getSeconds());"
+        "el.textContent='NODO BUIN, CHILE • '+fecha+' '+hora+' • '+capa;"
+        "}"
+        "if(window.__jarvisRelojTimer)clearInterval(window.__jarvisRelojTimer);"
+        "actualizarReloj();"
+        "window.__jarvisRelojTimer=setInterval(actualizarReloj,1000);"
+        "})();</script>"
+    )
+    try:
+        components.html(html_banner, height=104)
+    except Exception:
+        ahora_chile = obtener_hora_chile()
+        st.markdown(
+            f'<div class="holo-brain-box">'
+            f'<h2>⚡ J.A.R.V.I.S. // {nucleo_activo}</h2>'
+            f'<div style="font-size:0.88rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+
+def renderizar_globo_orbital(capa_actual):
+    html_globo = (
+        '<div style="border:1px solid #00f3ff;background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:#00f3ff;text-align:center;">'
+        '<canvas id="holo-globe-canvas" width="250" height="130" style="width:100%;height:130px;border-radius:4px;"></canvas>'
+        f'<div style="font-size:0.65rem;opacity:0.85;margin-top:2px;">ORBITAL LINK • {capa_actual}</div>'
+        "</div>"
+        "<script>(function(){"
+        'const c=document.getElementById("holo-globe-canvas");'
+        "if(!c)return;const ctx=c.getContext('2d');"
+        "let ang=0;"
+        "function step(){ang+=0.04;ctx.clearRect(0,0,c.width,c.height);"
+        "const cx=c.width/2,cy=c.height/2,r=42;"
+        "ctx.strokeStyle='#00f3ff5
