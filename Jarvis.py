@@ -342,7 +342,7 @@ def limpiar_texto_para_voz(texto):
     limpio = re.sub(r"\[[^\]]+\]\([^)]+\)", " enlace ", limpio)
     limpio = re.sub(r"https?://\S+", " enlace ", limpio)
     limpio = re.sub(r"[*_`#>\[\]|]+", " ", limpio)
-    limpio = re.sub(r"([.!?])\s+", r"\1 ... ", limpio)
+    limpio = re.sub(r"([.!?])\s+", r"\1 ", limpio)
     limpio = re.sub(r"\s+", " ", limpio).strip()
     return limpio[:520]
 
@@ -360,29 +360,27 @@ def reproducir_voz_pendiente():
         return
     st.session_state["pendiente_voz"] = None
     txt = pendiente["texto"].replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
+    txt = txt.replace(" ... ", " ")
     lang = pendiente["idioma"]
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
+        "if(window.__jarvisVozTimer){clearTimeout(window.__jarvisVozTimer);}"
+        "window.speechSynthesis.cancel();"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
         "const es=voices.filter(v=>/^(es|es-CL|es-ES|es-MX|es-US)/i.test(v.lang||''));"
-        "const pref=es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];"
-        "return pref||null;}"
-        "function hablarAhora(){"
+        "return es.find(v=>/jorge|diego|carlos|enrique|pablo|mateo|alonso|raul|male|hombre/i.test(v.name||''))||es[0]||voices[0];}"
+        "let yaHablo=false;"
+        "function hablarUnaVez(){"
+        "if(yaHablo)return;yaHablo=true;"
         "window.speechSynthesis.cancel();"
-        "const trozos=" + f'"{txt}"' + ".split(' ... ').filter(Boolean);"
-        "const lista=trozos.length?trozos:[" + f'"{txt}"' + "];"
-        "const vozElegida=elegirVoz(window.speechSynthesis.getVoices());"
-        "lista.forEach((parte)=>{"
-        "const u=new SpeechSynthesisUtterance(parte);"
-        f"u.lang='{lang}';"
-        "u.rate=0.98;"
-        "u.pitch=0.90;"
-        "if(vozElegida)u.voice=vozElegida;"
-        "setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},100);"
-        "});}"
-        "if(window.speechSynthesis.getVoices().length){hablarAhora();}"
-        "else{window.speechSynthesis.onvoiceschanged=function(){hablarAhora();};setTimeout(hablarAhora,220);}"
+        "const u=new SpeechSynthesisUtterance(" + f'"{txt}"' + ");"
+        f"u.lang='{lang}';u.rate=0.98;u.pitch=0.90;"
+        "const v=elegirVoz(window.speechSynthesis.getVoices());if(v)u.voice=v;"
+        "window.speechSynthesis.speak(u);}"
+        "if(window.speechSynthesis.getVoices().length){hablarUnaVez();}"
+        "else{window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;hablarUnaVez();};"
+        "window.__jarvisVozTimer=setTimeout(hablarUnaVez,250);}"
         "}catch(e){}})();</script>"
     )
     try:
@@ -552,6 +550,21 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if nucleo == "VIERNES":
             return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
         return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+
+    if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
+        if nucleo == "JARVIS":
+            return (
+                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
+                "Puede revisar el pulso directo en **Finviz** o el seguimiento **ANT (Nasdaq)**."
+            )
+        if nucleo == "VIERNES":
+            return (
+                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
+                "Abra **Finviz** o **ANT (Nasdaq)** para ver cómo se mueven las bolsas ahora mismo."
+            )
+        return (
+            f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
+        )
 
     if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
