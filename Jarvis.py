@@ -525,3 +525,7 @@ def generar_respuesta_coherente(nucleo, texto_usuario):
         if nucleo == "VIERNES":
             return f"{prefijo}¡Siempre despierta para usted, señorita!"
         if nucleo == "NOVA":
+            if nucleo == "NOVA":
+          return f"{prefijo}¡Siempre atenta al radar para usted, señorita!"
+        if nucleo == "ARTEX":
+          return f"{prefijo}En línea y con los sistemas tácticos listos, señorita."
