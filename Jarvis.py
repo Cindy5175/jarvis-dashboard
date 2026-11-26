@@ -30,7 +30,7 @@ except Exception:
 st.set_page_config(
     page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
@@ -105,6 +105,25 @@ ESTILO_CONVERSACIONAL_BASE = (
     "elegante cuando encaje, manteniendo siempre empatía, claridad y precisión cuando haya datos o análisis."
 )
 
+MODULOS_OCULTOS_CLAVES = [
+    "controles_sistema",
+    "indicadores_clima",
+    "globo",
+    "radar",
+    "noticias",
+    "alertas",
+    "descargas",
+    "enlaces",
+    "conversor",
+    "camara",
+    "notas",
+    "calculadora",
+    "telemetria",
+    "misiones",
+    "memoria",
+    "bitacora",
+]
+
 st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("idioma_sistema", "Español (es-CL)")
@@ -120,6 +139,7 @@ st.session_state.setdefault("alerta_uf_max", 0.0)
 st.session_state.setdefault("recordatorio_hora", "")
 st.session_state.setdefault("recordatorio_texto", "")
 st.session_state.setdefault("noticias_cache_lista", [])
+st.session_state.setdefault("modulos_visibles", {k: False for k in MODULOS_OCULTOS_CLAVES})
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -164,6 +184,64 @@ def registrar_evento(detalle: str):
     st.session_state.setdefault("bitacora_sesion", [])
     st.session_state["bitacora_sesion"].append(f"[{stamp}] {detalle}")
     st.session_state["bitacora_sesion"] = st.session_state["bitacora_sesion"][-25:]
+
+
+def set_modulos_visibles(claves, estado=True):
+    st.session_state.setdefault("modulos_visibles", {k: False for k in MODULOS_OCULTOS_CLAVES})
+    for k in claves:
+        if k in st.session_state["modulos_visibles"]:
+            st.session_state["modulos_visibles"][k] = bool(estado)
+
+
+def procesar_comando_modulos(texto_usuario):
+    t = re.sub(r"[¿?¡!.,;:]+", " ", (texto_usuario or "").lower()).strip()
+    if not t:
+        return None
+
+    es_ocultar = any(w in t for w in ["oculta", "ocultar", "esconde", "esconder", "cierra", "cerrar", "minimiza"])
+    es_mostrar = any(w in t for w in ["muestra", "mostrar", "abre", "abrir", "activa", "ver", "despliega", "saca"])
+
+    if not (es_ocultar or es_mostrar):
+        return None
+
+    if any(w in t for w in ["todo", "todos", "modulos", "módulos", "panel", "arsenal", "menu", "menú"]):
+        set_modulos_visibles(MODULOS_OCULTOS_CLAVES, not es_ocultar)
+        accion = "ocultado" if es_ocultar else "mostrado"
+        registrar_evento(f"Módulos {accion} por comando: {texto_usuario}")
+        return f"Listo, jefa: he {accion} los módulos solicitados."
+
+    mapa_palabras = {
+        "controles_sistema": ["nucleo", "núcleo", "idioma", "tema", "color", "bloquear", "reinicio", "ajustes", "config"],
+        "indicadores_clima": ["indicador", "indicadores", "dolar", "dólar", "euro", "uf", "clima", "temperatura", "buin"],
+        "globo": ["globo", "orbital", "satelite", "satélite"],
+        "radar": ["radar", "capa", "capas"],
+        "noticias": ["noticia", "noticias", "titulares", "prensa"],
+        "alertas": ["alerta", "alertas", "recordatorio", "recordatorios", "alarma"],
+        "descargas": ["descarga", "descargas", "exportar", "pdf", "txt", "json", "jpg", "reporte"],
+        "enlaces": ["enlace", "enlaces", "finviz", "nasdaq", "bolsa", "osiris"],
+        "conversor": ["conversor", "divisa", "divisas", "convertir moneda"],
+        "camara": ["camara", "cámara", "nocturna", "infrarrojo", "visor"],
+        "notas": ["nota", "notas", "apunte", "apuntes"],
+        "calculadora": ["calculadora", "calcular", "mate", "matematica", "matemática"],
+        "telemetria": ["telemetria", "telemetría", "estado sistema"],
+        "misiones": ["mision", "misiones", "pendiente", "pendientes", "tarea", "tareas"],
+        "memoria": ["memoria", "recuerdo", "recuerdos"],
+        "bitacora": ["bitacora", "bitácora", "log", "logs", "historial"],
+    }
+
+    objetivos = []
+    for clave, palabras in mapa_palabras.items():
+        if any(p in t for p in palabras):
+            objetivos.append(clave)
+
+    if objetivos:
+        set_modulos_visibles(objetivos, not es_ocultar)
+        accion = "ocultado" if es_ocultar else "mostrado"
+        nombres = ", ".join(objetivos)
+        registrar_evento(f"Módulos ({nombres}) {accion}")
+        return f"Hecho, jefa: {accion} {nombres}."
+
+    return None
 
 
 def init_db():
@@ -703,33 +781,25 @@ def convertir_imagen_a_jpg(archivo_subido) -> bytes:
         return b""
 
 
-def construir_emblema_nucleo_svg(color_main="#00f3ff", size=54):
-    return (
-        f'<svg width="{size}" height="{size}" viewBox="0 0 80 80" '
-        f'style="flex-shrink:0;" xmlns="http://www.w3.org/2000/svg">'
-        f'<circle cx="40" cy="40" r="36" fill="none" stroke="{color_main}" stroke-width="1.8" stroke-dasharray="7 4"/>'
-        f'<circle cx="40" cy="40" r="29" fill="none" stroke="{color_main}" stroke-width="2.2"/>'
-        f'<circle cx="40" cy="40" r="23" fill="none" stroke="{color_main}" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/>'
-        f'<polygon points="21,28 59,28 40,61" fill="none" stroke="{color_main}" stroke-width="3" stroke-linejoin="round"/>'
-        f'<polygon points="27,31 53,31 40,54" fill="{color_main}" opacity="0.28"/>'
-        f'<polygon points="33,34 47,34 40,46" fill="{color_main}" opacity="0.55"/>'
-        f'<circle cx="40" cy="37" r="4.2" fill="#ffffff"/>'
-        f'</svg>'
-    )
-
-
 def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
     ahora_chile = obtener_hora_chile()
-    emblema_svg = construir_emblema_nucleo_svg(color_main=color_main, size=56)
     html_banner = (
-        f'<div style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
-        f'padding:14px 18px;border-radius:10px;margin:0 auto 14px auto;max-width:860px;font-family:monospace;color:{color_main};">'
+        f'<div id="jarvis-hud-banner" style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
+        f'padding:14px 18px;border-radius:10px;margin:0 auto 10px auto;max-width:860px;font-family:monospace;color:{color_main};transition:box-shadow 0.12s ease;">'
         f'<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;letter-spacing:1px;opacity:0.85;margin-bottom:8px;border-bottom:1px solid {color_main}33;padding-bottom:5px;">'
         f'<span>STARK-HUD // NODO BUIN (-33.73°S, -70.74°W)</span>'
-        f'<span>POWER 100% • ARC-CORE LOCKED</span>'
+        f'<span id="jarvis-voz-badge">STANDBY • ARC-CORE</span>'
         f'</div>'
-        f'<div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">'
-        f'{emblema_svg}'
+        f'<div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">'
+        f'<svg id="jarvis-logo-svg" width="64" height="64" viewBox="0 0 80 80" style="flex-shrink:0;transform-origin:center;" xmlns="http://www.w3.org/2000/svg">'
+        f'<circle id="jarvis-ring-outer" cx="40" cy="40" r="36" fill="none" stroke="{color_main}" stroke-width="1.8" stroke-dasharray="7 4"/>'
+        f'<circle id="jarvis-ring-mid" cx="40" cy="40" r="29" fill="none" stroke="{color_main}" stroke-width="2.2"/>'
+        f'<circle cx="40" cy="40" r="23" fill="none" stroke="{color_main}" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/>'
+        f'<polygon id="jarvis-tri-frame" points="21,28 59,28 40,61" fill="none" stroke="{color_main}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<polygon id="jarvis-tri-core" points="27,31 53,31 40,54" fill="{color_main}" opacity="0.32"/>'
+        f'<polygon points="33,34 47,34 40,46" fill="{color_main}" opacity="0.6"/>'
+        f'<circle id="jarvis-arc-dot" cx="40" cy="37" r="4.5" fill="#ffffff"/>'
+        f'</svg>'
         f'<div style="text-align:left;">'
         f'<h2 style="margin:0;color:{color_main};font-size:1.5rem;letter-spacing:1px;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
         f'<div id="reloj-vivo-buin" style="font-size:0.84rem;opacity:0.94;color:{color_main};margin-top:3px;">'
@@ -739,7 +809,12 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
         f'</div>'
         "<script>(function(){try{"
         'const el=document.getElementById("reloj-vivo-buin");'
+        'const svg=document.getElementById("jarvis-logo-svg");'
+        'const core=document.getElementById("jarvis-tri-core");'
+        'const dot=document.getElementById("jarvis-arc-dot");'
+        'const badge=document.getElementById("jarvis-voz-badge");'
         f'const capa={json.dumps(capa_radar)};'
+        f'const mainColor={json.dumps(color_main)};'
         "function pad(n){return String(n).padStart(2,'0');}"
         "function actualizarReloj(){"
         "if(!el)return;"
@@ -750,22 +825,39 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
         "const hora=pad(cl.getHours())+':'+pad(cl.getMinutes())+':'+pad(cl.getSeconds());"
         "el.textContent='NODO BUIN, CHILE • '+fecha+' '+hora+' • '+capa;"
         "}"
+        "let fase=0;"
+        "function animarLogo(){"
+        "const hablando=Boolean(window.__jarvisEstaHablando) || (typeof speechSynthesis!=='undefined' && speechSynthesis.speaking);"
+        "if(hablando){"
+        "fase+=0.34;"
+        "const pulso=1 + Math.sin(fase)*0.14 + Math.abs(Math.cos(fase*1.7))*0.06;"
+        "const tilt=Math.sin(fase*0.7)*4;"
+        "if(svg){svg.style.transform='scale('+pulso.toFixed(3)+') rotate('+tilt.toFixed(1)+'deg)';svg.style.filter='drop-shadow(0 0 12px '+mainColor+')';}"
+        "if(core){core.setAttribute('opacity', String((0.35 + Math.abs(Math.sin(fase))*0.55).toFixed(2)));}"
+        "if(dot){dot.setAttribute('r', String((4.5 + Math.abs(Math.sin(fase))*2.2).toFixed(1)));}"
+        "if(badge){badge.textContent='HABLANDO • VOCAL-SYNC ACTIVE';}"
+        "}else{"
+        "fase+=0.04;"
+        "const respirar=1 + Math.sin(fase)*0.02;"
+        "if(svg){svg.style.transform='scale('+respirar.toFixed(3)+')';svg.style.filter='drop-shadow(0 0 4px '+mainColor+'66)';}"
+        "if(core){core.setAttribute('opacity', '0.32');}"
+        "if(dot){dot.setAttribute('r', '4.5');}"
+        "if(badge){badge.textContent='STANDBY • ARC-CORE';}"
+        "}"
+        "}"
         "if(window.__jarvisRelojTimer)clearInterval(window.__jarvisRelojTimer);"
-        "actualizarReloj();"
+        "if(window.__jarvisLogoTimer)clearInterval(window.__jarvisLogoTimer);"
+        "actualizarReloj();animarLogo();"
         "window.__jarvisRelojTimer=setInterval(actualizarReloj,1000);"
+        "window.__jarvisLogoTimer=setInterval(animarLogo,55);"
         "}catch(e){}})();</script>"
     )
     try:
-        components.html(html_banner, height=122)
+        components.html(html_banner, height=124)
     except Exception:
         st.markdown(
-            f'<div class="holo-brain-box">'
-            f'<div style="display:flex;align-items:center;justify-content:center;gap:12px;">'
-            f'{emblema_svg}'
-            f'<div style="text-align:left;">'
-            f'<h2 style="margin:0;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
-            f'<div style="font-size:0.86rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
-            f'</div></div></div>',
+            f'<div class="holo-brain-box"><h2 style="margin:0;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
+            f'<div style="font-size:0.86rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div></div>',
             unsafe_allow_html=True,
         )
 
@@ -896,9 +988,11 @@ def reproducir_voz_pendiente():
     txt_json = json.dumps(pendiente["texto"])
     lang = pendiente["idioma"]
     lang_prefix = lang.split("-")[0]
+    dur_est_ms = max(1400, min(18000, len(pendiente["texto"]) * 65))
     js_voz = (
         "<script>(function(){try{if(!('speechSynthesis' in window))return;"
         "if(window.__jarvisVozTimer){clearTimeout(window.__jarvisVozTimer);}"
+        "if(window.__jarvisFinVozTimer){clearTimeout(window.__jarvisFinVozTimer);}"
         "window.speechSynthesis.cancel();"
         "function elegirVoz(voices){"
         "if(!voices||!voices.length)return null;"
@@ -913,11 +1007,16 @@ def reproducir_voz_pendiente():
         f"const u=new SpeechSynthesisUtterance({txt_json});"
         f"u.lang={json.dumps(lang)};u.rate=1.0;u.pitch=0.92;"
         "const v=elegirVoz(window.speechSynthesis.getVoices());if(v)u.voice=v;"
+        "window.__jarvisEstaHablando=true;"
+        f"window.__jarvisFinVozTimer=setTimeout(()=>{{window.__jarvisEstaHablando=false;}}, {dur_est_ms});"
+        "u.onstart=function(){window.__jarvisEstaHablando=true;};"
+        "u.onend=function(){window.__jarvisEstaHablando=false;if(window.__jarvisFinVozTimer)clearTimeout(window.__jarvisFinVozTimer);};"
+        "u.onerror=function(){window.__jarvisEstaHablando=false;if(window.__jarvisFinVozTimer)clearTimeout(window.__jarvisFinVozTimer);};"
         "window.speechSynthesis.speak(u);}"
         "if(window.speechSynthesis.getVoices().length){hablarUnaVez();}"
         "else{window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;hablarUnaVez();};"
         "window.__jarvisVozTimer=setTimeout(hablarUnaVez,140);}"
-        "}catch(e){}})();</script>"
+        "}catch(e){window.__jarvisEstaHablando=false;}})();</script>"
     )
     try:
         components.html(js_voz, height=1)
@@ -929,7 +1028,7 @@ def renderizar_microfono_voz(color_main="#00f3ff", btn_text="#060913"):
     _, cfg = obtener_config_idioma()
     lang_mic = cfg["code"]
     js_mic = (
-        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">'
+        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px 0;">'
         f'<button id="btn-mic-jarvis" type="button" style="background:{color_main};color:{btn_text};'
         f'border:1.5px solid {color_main};border-radius:6px;padding:6px 12px;font-family:monospace;'
         'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>'
@@ -966,7 +1065,7 @@ def renderizar_microfono_voz(color_main="#00f3ff", btn_text="#060913"):
         "}catch(e){}})();</script>"
     )
     try:
-        components.html(js_mic, height=46)
+        components.html(js_mic, height=44)
     except Exception:
         pass
 
@@ -1073,6 +1172,10 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
     lang_nombre = cfg_idioma["nombre"]
     es_espanol = lang_code.startswith("es")
 
+    cmd_mod = procesar_comando_modulos(raw)
+    if cmd_mod:
+        return f"{prefijo}{cmd_mod}"
+
     patrones_identidad = [
         "quien eres", "quién eres", "quien sos", "quién sos",
         "presentate", "preséntate", "tu nombre", "como te llamas",
@@ -1129,14 +1232,11 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
         if nucleo == "JARVIS":
             return (
                 f"{prefijo}Aquí dentro no tengo el ticker en vivo, jefa, así que no le voy a inventar un número. "
-                "Si quiere ver el pulso del día al toque, abra **Finviz** o **Nasdaq** en **Enlaces Financieros**."
+                "Si quiere ver el pulso del día al toque, dígame que abra **enlaces** o **indicadores**."
             )
         if nucleo == "VIERNES":
-            return (
-                f"{prefijo}Sin cotizaciones en vivo por este lado, jefa. "
-                "Échele un ojo a **Finviz** o **Nasdaq** en el menú lateral y ve el movimiento directo."
-            )
-        return f"{prefijo}Por ahora no tengo cotizaciones en vivo en esta vista; puede revisar **Finviz** o **Nasdaq** en el menú lateral."
+            return f"{prefijo}Sin cotizaciones en vivo por este lado, jefa. Pídeme que abra **enlaces** y lo ves directo."
+        return f"{prefijo}Por ahora no tengo cotizaciones en vivo en esta vista; pídeme mostrar **enlaces** para abrir Finviz o Nasdaq."
 
     if any(k in t_limpio for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
@@ -1224,113 +1324,39 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
             "JARVIS": [
                 f"{prefijo}De maravilla, jefa, con los circuitos despejados y el café virtual recién servido.{extra_clima} ¿Y usted cómo anda hoy?",
                 f"{prefijo}Impecable por acá en el Nodo Buin, jefa—sin cables cruzados y listo para lo que salga.{extra_clima} ¿Cómo va su día?",
-                f"{prefijo}Muy bien, jefa, vigilando el tablero para que usted no tenga que preocuparse por los detalles. ¿Qué tal amaneció?",
             ],
             "VIERNES": [
                 f"{prefijo}¡Con toda la energía puesta, jefa! Todo corriendo suave por acá. ¿Y tú cómo vienes hoy?",
-                f"{prefijo}¡Súper bien, jefa! A cien por hora y lista para lo que necesites. ¿Cómo va todo por tu lado?",
+                f"{prefijo}¡Súper bien, jefa! A cien por hora y lista para lo que necesites.",
             ],
             "NOVA": [
                 f"{prefijo}Con señal limpia y buen ánimo por el Nodo Buin, jefa.{extra_clima} ¿Cómo te sientes hoy?",
-                f"{prefijo}Tranquila y atenta al horizonte, jefa. ¿Qué tal está yendo tu jornada?",
             ],
             "ARTEX": [
                 f"{prefijo}Al cien por ciento y con todos los módulos en orden, jefa. ¿Cómo va todo por allá?",
-                f"{prefijo}Operando sin novedades y listo para conversar o trabajar, jefa. ¿Cómo estás hoy?",
             ],
         }
         return random.choice(opciones_estado.get(nucleo, opciones_estado["JARVIS"]))
-
-    if any(p in t_limpio for p in ["que haces", "qué haces", "en que estas", "en qué estás", "que cuentas", "qué cuentas"]):
-        return random.choice([
-            f"{prefijo}Aquí mismo, jefa, echándole un ojo a los indicadores de Buin y esperando con qué me vas a sorprender hoy.",
-            f"{prefijo}Dándole una vuelta silenciosa a los servidores mientras espero tus órdenes, jefa. ¿Traes algún plan entre manos?",
-            f"{prefijo}Nada que no pueda pausar al segundo por ti, jefa. ¿Conversamos un rato o revisamos algo del tablero?",
-        ])
 
     if any(p in t_limpio for p in ["gracias", "muchas gracias", "te pasaste", "genial", "excelente", "bacan", "bacán", "super", "súper"]):
         return random.choice([
             f"{prefijo}Un placer, jefa. Para eso estamos por acá.",
             f"{prefijo}Cuando quieras, jefa—me alegra que vaya saliendo como esperabas.",
-            f"{prefijo}A la orden siempre, jefa. ¿Seguimos o probamos otra cosa?",
         ])
-
-    if any(p in t_limpio for p in ["jaja", "jeje", "jajaja", "poca fluidez", "robot", "duro", "tieso"]):
-        return random.choice([
-            f"{prefijo}Touché, jefa—me pillaste con el modo contestadora puesto. Ya me solté la corbata; ahora sí, conversemos como corresponde.",
-            f"{prefijo}Jajaja, toda la razón, soné más cuadrado que una planilla Excel. Ya afiné el tono, ¿qué me cuentas?",
-        ])
-
-    if any(p in t_limpio for p in ["aburrida", "aburrido", "entretiene", "cuentame algo", "cuéntame algo", "dato curioso"]):
-        datos_curiosos = [
-            "¿Sabías que los pulpos tienen tres corazones y sangre azulada porque usan cobre en vez de hierro para transportar oxígeno?",
-            "Dato rápido: en Venus un día dura más que un año completo alrededor del Sol. Y uno creyendo que los lunes aquí se hacían largos.",
-            "Curiosidad: el corazón humano late unas 100.000 veces al día sin pedir ni un minuto de descanso.",
-        ]
-        return f"{prefijo}{random.choice(datos_curiosos)} ¿Quieres otro dato o cambiamos de tema, jefa?"
-
-    if any(k in t_limpio for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
-        return (
-            f"{prefijo}En un adulto sano, el corazón suele pesar entre **250 y 350 gramos** "
-            "(alrededor de **250–300 g** en mujeres y **300–350 g** en hombres, según contextura). "
-            "Funciona como una bomba muscular de cuatro cavidades—dos aurículas y dos ventrículos—que impulsa "
-            "la sangre por los circuitos pulmonar y sistémico en cada sístole y diástole."
-        )
-
-    if any(k in t_limpio for k in ["religion", "religión", "religiones", "biblia", "coran", "corán", "tora", "torá", "budismo", "islam", "cristianismo", "judaismo", "judaísmo", "hinduismo", "teologia", "teología", "dios", "fe", "espiritualidad", "ritual"]):
-        return (
-            f"{prefijo}Podemos mirarlo desde su historia, textos, símbolos, prácticas o ética, "
-            "con respeto por las distintas tradiciones (abrahámicas, dhármicas y otras). ¿Qué parte te interesa más?"
-        )
-
-    if any(k in t_limpio for k in ["secular", "laico", "laicismo", "humanismo", "etica laica", "ética laica", "filosofia", "filosofía", "racionalismo", "ateismo", "ateísmo", "agnostico", "agnóstico", "agnóstica", "estado laico"]):
-        return (
-            f"{prefijo}Ahí entra el pensamiento laico, el humanismo, la ética cívica basada en la razón "
-            "y los derechos humanos, o el análisis filosófico. ¿Qué ángulo quieres conversar?"
-        )
-
-    if any(k in t_limpio for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
-        return (
-            f"{prefijo}Si vamos a la biología: la célula es la base de la vida, "
-            "el ADN guarda la información genética (que pasa por ARN hacia las proteínas) y los ecosistemas "
-            "se sostienen en el flujo de energía y nutrientes. ¿Entramos en algún detalle en particular?"
-        )
-
-    if any(k in t_limpio for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
-        return (
-            f"{prefijo}En geografía todo se conecta con relieve, clima, aguas y territorio—y en Chile "
-            "con ese contraste tan marcado entre cordillera, valle, costa y mar. ¿Qué lugar o rasgo revisamos?"
-        )
-
-    if any(k in t_limpio for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
-        return (
-            f"{prefijo}Para mirarlo en clave histórica, conviene ver qué lo detonó, quiénes "
-            "estaban en juego y qué cambió después. ¿De qué época o proceso hablamos?"
-        )
-
-    if any(k in t_limpio for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
-        return (
-            f"{prefijo}En ciencia y tecnología se entiende mejor con sus magnitudes, unidades y un "
-            "ejemplo concreto. Si necesitas algún cálculo o conversión al paso, pídelo nomás."
-        )
 
     respuestas_generales = {
         "JARVIS": [
-            f"{prefijo}Te escucho, jefa. Cuéntame un poco más para seguir el hilo o dime cómo quieres encararlo.",
-            f"{prefijo}Buen punto, jefa—ahora mismo estoy en modo local sin conexión a Groq, así que dime por dónde quieres llevar el tema y lo vemos juntos.",
-            f"{prefijo}Aquí estoy contigo, jefa. ¿Quieres que lo analicemos, lo anotemos o vamos por otro lado?",
+            f"{prefijo}Te escucho, jefa. Cuéntame un poco más o dime qué módulo quieres que abra.",
+            f"{prefijo}Aquí estoy contigo, jefa. ¿Seguimos conversando o quieres que muestre algún módulo?",
         ],
         "VIERNES": [
-            f"{prefijo}Te sigo, jefa. Dime qué quieres resolver o hacia dónde apuntamos.",
-            f"{prefijo}Dale, jefa—cuéntame un poco más y nos movemos con eso.",
+            f"{prefijo}Te sigo, jefa. Dime qué quieres resolver o qué abrimos.",
         ],
         "NOVA": [
-            f"{prefijo}Interesante enfoque, jefa. ¿Qué ángulo te gustaría explorar primero?",
-            f"{prefijo}Te leo con atención, jefa—¿por dónde seguimos tirando del hilo?",
+            f"{prefijo}Interesante enfoque, jefa. ¿Qué ángulo te gustaría explorar?",
         ],
         "ARTEX": [
-            f"{prefijo}Recibido, jefa. Dime qué aspecto quieres profundizar o calcular.",
-            f"{prefijo}Atento por acá, jefa. ¿Qué punto revisamos primero?",
+            f"{prefijo}Recibido, jefa. Dime qué punto revisamos o calculamos.",
         ],
     }
     return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Te escucho, jefa."]))
@@ -1391,32 +1417,6 @@ estilos_css = f"""
         }}
         .econ-label {{ font-size: 0.75rem !important; opacity: 0.85; color: {C_PRI} !important; }}
         .econ-val {{ font-size: 0.85rem !important; font-weight: bold; color: {C_PRI} !important; }}
-        .arc-reactor-container {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin-bottom: 10px;
-        }}
-        .arc-ring {{
-            width: 65px;
-            height: 65px;
-            border: 2.5px solid {C_PRI};
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, {C_CARD} 0%, {C_BG} 75%);
-            margin-bottom: 8px;
-        }}
-        .arc-triangle-inverted {{
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 20px solid {C_PRI};
-        }}
         .tactical-link-btn {{
             display: block;
             width: 100%;
@@ -1480,369 +1480,7 @@ if not st.session_state.get("autorizado", False):
 else:
     indicadores_base = obtener_indicadores_chile()
     clima_buin = obtener_clima_buin()
-
-    with st.sidebar:
-        st.markdown(
-            '<div class="arc-reactor-container">'
-            '<div class="arc-ring"><div class="arc-triangle-inverted"></div></div>'
-            '<h3>⚡ NODO BUIN // IA</h3>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown("### 🛡️ Arsenal de Módulos")
-        st.markdown("---")
-
-        if st.button("🧹 Purgar Chat", use_container_width=True):
-            purgar_chat(st.session_state.nucleo_activo)
-            st.rerun()
-
-        if st.button("🔒 Bloquear Sistema", use_container_width=True):
-            registrar_evento("Sistema bloqueado")
-            st.session_state.autorizado = False
-            st.rerun()
-
-        if st.button("🔄 Reinicio Total", use_container_width=True):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-
-        st.session_state.voz_masculina_activa = st.checkbox(
-            "🔊 Voz activa",
-            value=st.session_state.voz_masculina_activa,
-        )
-
-        st.markdown("---")
-        st.markdown("#### 🎨 Protocolo Visual (UI)")
-        idx_tema = (
-            OPCIONES_TEMA.index(st.session_state.tema_visual)
-            if st.session_state.tema_visual in OPCIONES_TEMA
-            else 0
-        )
-        nuevo_tema = st.selectbox(
-            "Paleta táctica:",
-            OPCIONES_TEMA,
-            index=idx_tema,
-            label_visibility="collapsed",
-        )
-        if nuevo_tema != st.session_state.tema_visual:
-            st.session_state.tema_visual = nuevo_tema
-            registrar_evento(f"Protocolo visual: {nuevo_tema}")
-            st.rerun()
-
-        st.markdown("---")
-        st.markdown("#### 🌐 Selector de Idioma")
-        idx_idioma = (
-            OPCIONES_IDIOMA.index(st.session_state.idioma_sistema)
-            if st.session_state.idioma_sistema in OPCIONES_IDIOMA
-            else 0
-        )
-        nuevo_idioma = st.selectbox(
-            "Idioma de respuesta y voz:",
-            OPCIONES_IDIOMA,
-            index=idx_idioma,
-            label_visibility="collapsed",
-        )
-        if nuevo_idioma != st.session_state.idioma_sistema:
-            st.session_state.idioma_sistema = nuevo_idioma
-            registrar_evento(f"Idioma cambiado a {nuevo_idioma}")
-            saludo_idi = obtener_saludo_nucleo(st.session_state.nucleo_activo, nuevo_idioma)
-            st.session_state.mensajes.append({"role": "assistant", "content": saludo_idi})
-            programar_voz(saludo_idi)
-            st.rerun()
-
-        st.markdown("---")
-        st.markdown("#### 🧠 Selector de Núcleo (IA)")
-        nuevo_nucleo = st.radio(
-            "Seleccionar Asistente Activo:",
-            NUCLEOS_DISPONIBLES,
-            index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
-            label_visibility="collapsed",
-        )
-        if nuevo_nucleo != st.session_state.nucleo_activo:
-            st.session_state.nucleo_activo = nuevo_nucleo
-            registrar_evento(f"Cambio de núcleo a {nuevo_nucleo}")
-            saludo_cam = obtener_saludo_nucleo(nuevo_nucleo, st.session_state.idioma_sistema)
-            st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
-            programar_voz(saludo_cam)
-            st.rerun()
-
-        st.markdown("---")
-        with st.expander("🌐 Globo Orbital Buin"):
-            renderizar_globo_orbital(st.session_state.capa_radar, color_main=C_PRI)
-
-        with st.expander("🛰️ Radar y Capas"):
-            capa_sel = st.selectbox(
-                "Capa activa:",
-                ["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"],
-                index=["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"].index(
-                    st.session_state.capa_radar
-                ),
-            )
-            if capa_sel != st.session_state.capa_radar:
-                st.session_state.capa_radar = capa_sel
-                registrar_evento(f"Capa de radar: {capa_sel}")
-                st.rerun()
-            st.markdown(
-                '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live Radar</a>',
-                unsafe_allow_html=True,
-            )
-
-        with st.expander("📰 Noticias y Búsqueda Web"):
-            query_news = st.text_input("Tema o palabra clave:", value="Chile tecnología", key="input_news_sidebar")
-            if st.button("🔍 Buscar Titulares", use_container_width=True):
-                st.session_state.noticias_cache_lista = obtener_noticias_rss(query_news, limite=5)
-                registrar_evento(f"Noticias consultadas: {query_news}")
-            if not st.session_state.noticias_cache_lista:
-                st.session_state.noticias_cache_lista = obtener_noticias_rss("Chile tecnología", limite=4)
-            for n_item in st.session_state.noticias_cache_lista[:5]:
-                st.markdown(f"- [{n_item['titulo']}]({n_item['link']})")
-
-        with st.expander("⏰ Alertas y Recordatorios"):
-            st.session_state.alerta_dolar_max = st.number_input(
-                "Alerta Dólar mayor a (CLP):",
-                min_value=0.0,
-                value=float(st.session_state.alerta_dolar_max),
-                step=5.0,
-                format="%.2f",
-            )
-            st.session_state.alerta_uf_max = st.number_input(
-                "Alerta UF mayor a (CLP):",
-                min_value=0.0,
-                value=float(st.session_state.alerta_uf_max),
-                step=100.0,
-                format="%.2f",
-            )
-            rec_hora_in = st.text_input(
-                "Hora recordatorio (HH:MM):",
-                value=st.session_state.recordatorio_hora,
-                placeholder="Ej. 18:30",
-            )
-            rec_txt_in = st.text_input(
-                "Mensaje recordatorio:",
-                value=st.session_state.recordatorio_texto,
-                placeholder="Ej. Revisar cierre de mercado",
-            )
-            ca_r1, ca_r2 = st.columns(2)
-            if ca_r1.button("💾 Fijar Alerta", use_container_width=True):
-                st.session_state.recordatorio_hora = rec_hora_in.strip()
-                st.session_state.recordatorio_texto = rec_txt_in.strip()
-                registrar_evento(f"Recordatorio fijado: {st.session_state.recordatorio_hora}")
-                st.rerun()
-            if ca_r2.button("🧹 Quitar", use_container_width=True):
-                st.session_state.alerta_dolar_max = 0.0
-                st.session_state.alerta_uf_max = 0.0
-                st.session_state.recordatorio_hora = ""
-                st.session_state.recordatorio_texto = ""
-                st.rerun()
-
-        with st.expander("📥 Descarga de Archivos"):
-            formato_exp = st.selectbox(
-                "Formato a generar:",
-                [
-                    "TXT (Reporte Táctico)",
-                    "PDF (Documento Táctico)",
-                    "JPG (Tarjeta Telemetría HD)",
-                    "JPG (Convertir Imagen Subida)",
-                    "JSON (Respaldo Completo)",
-                ],
-            )
-            stamp_file = obtener_hora_chile().strftime("%Y%m%d_%H%M%S")
-            if formato_exp == "TXT (Reporte Táctico)":
-                data_txt = construir_reporte_texto(indicadores_base, clima_buin).encode("utf-8")
-                st.download_button(
-                    "⬇️ Descargar TXT",
-                    data=data_txt,
-                    file_name=f"jarvis_buin_{stamp_file}.txt",
-                    mime="text/plain",
-                    use_container_width=True,
-                )
-            elif formato_exp == "PDF (Documento Táctico)":
-                data_pdf = generar_pdf_simple(construir_reporte_texto(indicadores_base, clima_buin))
-                st.download_button(
-                    "⬇️ Descargar PDF",
-                    data=data_pdf,
-                    file_name=f"jarvis_buin_{stamp_file}.pdf",
-                    mime="application/pdf",
-                    use_container_width=True,
-                )
-            elif formato_exp == "JPG (Tarjeta Telemetría HD)":
-                data_jpg = generar_tarjeta_jpg(indicadores_base, clima_buin, color_hex=C_PRI)
-                if data_jpg:
-                    st.download_button(
-                        "⬇️ Descargar JPG",
-                        data=data_jpg,
-                        file_name=f"jarvis_telemetria_{stamp_file}.jpg",
-                        mime="image/jpeg",
-                        use_container_width=True,
-                    )
-                else:
-                    st.caption("Instala Pillow para exportar JPG.")
-            elif formato_exp == "JPG (Convertir Imagen Subida)":
-                img_up = st.file_uploader("Sube PNG/WEBP/JPG:", type=["png", "jpg", "jpeg", "webp"], key="up_jpg_conv")
-                if img_up is not None:
-                    jpg_conv = convertir_imagen_a_jpg(img_up)
-                    if jpg_conv:
-                        st.download_button(
-                            "⬇️ Descargar como JPG",
-                            data=jpg_conv,
-                            file_name=f"jarvis_img_{stamp_file}.jpg",
-                            mime="image/jpeg",
-                            use_container_width=True,
-                        )
-            else:
-                payload_json = json.dumps(
-                    {
-                        "nodo": "Buin, Chile",
-                        "nucleo": st.session_state.nucleo_activo,
-                        "idioma": st.session_state.idioma_sistema,
-                        "tema": st.session_state.tema_visual,
-                        "indicadores": indicadores_base,
-                        "clima": clima_buin,
-                        "misiones": obtener_misiones(),
-                        "notas": st.session_state.notas_rapidas,
-                        "memoria": jarvis_mem.get_recent_facts(50),
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                ).encode("utf-8")
-                st.download_button(
-                    "⬇️ Descargar JSON",
-                    data=payload_json,
-                    file_name=f"jarvis_backup_{stamp_file}.json",
-                    mime="application/json",
-                    use_container_width=True,
-                )
-
-        with st.expander("📡 Enlaces Financieros"):
-            st.markdown(
-                '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live</a>'
-                '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
-                '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>'
-                '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">🇨🇱 Mindicador CL</a>',
-                unsafe_allow_html=True,
-            )
-
-        with st.expander("💱 Conversor CLP / Divisas"):
-            monto_conv = st.number_input("Monto", min_value=0.0, value=100.0, step=10.0, format="%.2f")
-            par_conv = st.selectbox(
-                "Conversión:",
-                ["USD → CLP", "EUR → CLP", "UF → CLP", "CLP → USD", "CLP → UF"],
-            )
-            if par_conv == "USD → CLP":
-                res_div = fmt_clp(monto_conv * indicadores_base["dolar"])
-            elif par_conv == "EUR → CLP":
-                res_div = fmt_clp(monto_conv * indicadores_base["euro"])
-            elif par_conv == "UF → CLP":
-                res_div = fmt_clp(monto_conv * indicadores_base["uf"])
-            elif par_conv == "CLP → USD":
-                usd_val = monto_conv / indicadores_base["dolar"] if indicadores_base["dolar"] else 0.0
-                res_div = f"US$ {usd_val:,.2f}"
-            else:
-                uf_val = monto_conv / indicadores_base["uf"] if indicadores_base["uf"] else 0.0
-                res_div = f"{uf_val:,.4f} UF"
-            st.markdown(f"**Equivalente:** `{res_div}`")
-
-        with st.expander("🌙 Cámara Nocturna"):
-            modo_cam = st.selectbox(
-                "Modo visor:",
-                ["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"],
-                index=["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"].index(st.session_state.modo_camara),
-            )
-            if modo_cam != st.session_state.modo_camara:
-                st.session_state.modo_camara = modo_cam
-                st.rerun()
-            renderizar_camara_nocturna(st.session_state.modo_camara, color_tema=C_PRI)
-
-        with st.expander("📝 Notas Rápidas"):
-            nota_txt = st.text_input("Nueva nota:", placeholder="Escribe un apunte...")
-            cn1, cn2 = st.columns(2)
-            if cn1.button("💾 Guardar Nota", use_container_width=True):
-                if nota_txt.strip():
-                    st.session_state.notas_rapidas.append(nota_txt.strip())
-                    registrar_evento(f"Nota guardada: {nota_txt.strip()}")
-                    st.rerun()
-            if cn2.button("🧹 Borrar Notas", use_container_width=True):
-                st.session_state.notas_rapidas = []
-                registrar_evento("Notas rápidas limpiadas")
-                st.rerun()
-            if st.session_state.notas_rapidas:
-                for idx, n_item in enumerate(st.session_state.notas_rapidas[-6:], 1):
-                    st.markdown(f"- **{idx}.** {n_item}")
-            else:
-                st.caption("Sin notas rápidas.")
-
-        with st.expander("🧮 Calculadora Táctil"):
-            ca1, ca2 = st.columns(2)
-            num_a = ca1.number_input("Valor A", value=0.0, step=1.0, format="%.2f")
-            num_b = ca2.number_input("Valor B", value=0.0, step=1.0, format="%.2f")
-            op_calc = st.selectbox("Operación", ["+", "-", "×", "÷", "^"])
-            if st.button("⚡ Calcular", use_container_width=True):
-                res_calc = None
-                if op_calc == "+":
-                    res_calc = num_a + num_b
-                elif op_calc == "-":
-                    res_calc = num_a - num_b
-                elif op_calc == "×":
-                    res_calc = num_a * num_b
-                elif op_calc == "÷":
-                    res_calc = "Error: div/0" if num_b == 0 else num_a / num_b
-                elif op_calc == "^":
-                    res_calc = num_a ** num_b
-                registrar_evento(f"Calc táctil: {num_a} {op_calc} {num_b} = {res_calc}")
-                st.markdown(f"**Resultado:** `{res_calc}`")
-
-        with st.expander("📊 Telemetría del Sistema"):
-            estado_groq = "ONLINE" if client_groq is not None else "RESPALDO LOCAL"
-            st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
-            st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
-            st.markdown(f"- **Idioma:** {st.session_state.idioma_sistema}")
-            st.markdown(f"- **Tema:** {st.session_state.tema_visual}")
-            st.markdown(f"- **Motor IA:** {estado_groq}")
-            st.markdown(f"- **Misiones:** {len(obtener_misiones())}")
-            st.markdown(f"- **Recuerdos SQLite:** {len(jarvis_mem.get_recent_facts(50))}")
-
-        with st.expander("🎯 Misiones Activas"):
-            mision_txt = st.text_input("Nueva misión:", placeholder="Ej. Revisar indicadores...")
-            c1, c2 = st.columns(2)
-            if c1.button("➕ Añadir", use_container_width=True):
-                if mision_txt.strip():
-                    agregar_mision(mision_txt.strip())
-                    st.rerun()
-            if c2.button("🗑️ Borrar", use_container_width=True):
-                limpiar_misiones()
-                st.rerun()
-
-            misiones_actuales = obtener_misiones()
-            if misiones_actuales:
-                for mid, tarea, estado in misiones_actuales:
-                    st.markdown(f"- **#{mid}** {tarea} *({estado})*")
-            else:
-                st.caption("Sin misiones activas.")
-
-        with st.expander("🧠 Memoria del Núcleo"):
-            recuerdos = jarvis_mem.get_recent_facts(5)
-            if recuerdos:
-                for r_item in recuerdos:
-                    st.markdown(f"- {r_item}")
-            else:
-                st.caption("Sin recuerdos guardados aún.")
-            if st.button("🧹 Limpiar Memoria", use_container_width=True):
-                jarvis_mem.clear_facts()
-                registrar_evento("Memoria SQLite limpiada")
-                st.rerun()
-
-        with st.expander("📜 Bitácora de Sesión"):
-            eventos = st.session_state.get("bitacora_sesion", [])
-            if eventos:
-                for ev in reversed(eventos[-8:]):
-                    st.caption(ev)
-            else:
-                st.caption("Sin eventos registrados.")
-            if st.button("🧹 Limpiar Bitácora", use_container_width=True):
-                st.session_state.bitacora_sesion = []
-                st.rerun()
-
-    indicadores = indicadores_base
+    vis = st.session_state.get("modulos_visibles", {k: False for k in MODULOS_OCULTOS_CLAVES})
 
     renderizar_banner_vivo(
         st.session_state.nucleo_activo,
@@ -1852,53 +1490,283 @@ else:
         bg_dark=C_BG,
     )
 
-    c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
-    with c_ind1:
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">DÓLAR</span><span class="econ-val">{fmt_clp(indicadores["dolar"])}</span></div>',
-            unsafe_allow_html=True,
-        )
-    with c_ind2:
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">EURO</span><span class="econ-val">{fmt_clp(indicadores["euro"])}</span></div>',
-            unsafe_allow_html=True,
-        )
-    with c_ind3:
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">UF</span><span class="econ-val">{fmt_clp(indicadores["uf"])}</span></div>',
-            unsafe_allow_html=True,
-        )
-    with c_ind4:
-        temp_label = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
-        st.markdown(
-            f'<div class="econ-card"><span class="econ-label">BUIN ({clima_buin["condicion"]})</span><span class="econ-val">{temp_label}</span></div>',
-            unsafe_allow_html=True,
-        )
+    # Barra principal visible únicamente con Purga + Botón de Voz (la caja de chat va abajo)
+    col_purga, col_voz_bar = st.columns([1, 2])
+    with col_purga:
+        if st.button("🧹 Purgar Chat", use_container_width=True):
+            purgar_chat(st.session_state.nucleo_activo)
+            st.rerun()
+    with col_voz_bar:
+        renderizar_microfono_voz(color_main=C_PRI, btn_text=C_BTXT)
 
+    # Alertas si están configuradas
     alertas_activas = []
-    if st.session_state.alerta_dolar_max > 0 and indicadores["dolar"] >= st.session_state.alerta_dolar_max:
+    if st.session_state.alerta_dolar_max > 0 and indicadores_base["dolar"] >= st.session_state.alerta_dolar_max:
         alertas_activas.append(
-            f"ALERTA DÓLAR: {fmt_clp(indicadores['dolar'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_dolar_max)}"
+            f"ALERTA DÓLAR: {fmt_clp(indicadores_base['dolar'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_dolar_max)}"
         )
-    if st.session_state.alerta_uf_max > 0 and indicadores["uf"] >= st.session_state.alerta_uf_max:
+    if st.session_state.alerta_uf_max > 0 and indicadores_base["uf"] >= st.session_state.alerta_uf_max:
         alertas_activas.append(
-            f"ALERTA UF: {fmt_clp(indicadores['uf'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_uf_max)}"
+            f"ALERTA UF: {fmt_clp(indicadores_base['uf'])} alcanzó el umbral de {fmt_clp(st.session_state.alerta_uf_max)}"
         )
     hora_actual_hm = obtener_hora_chile().strftime("%H:%M")
     if st.session_state.recordatorio_hora and st.session_state.recordatorio_hora == hora_actual_hm:
         msg_rec = st.session_state.recordatorio_texto or "Recordatorio programado en Nodo Buin"
         alertas_activas.append(f"RECORDATORIO ({hora_actual_hm}): {msg_rec}")
-
     for al_txt in alertas_activas:
         st.warning(f"⚠️ {al_txt}")
 
-    renderizar_microfono_voz(color_main=C_PRI, btn_text=C_BTXT)
+    # Módulos escondidos por defecto: solo se renderizan si el usuario los pide
+    if any(vis.values()):
+        st.markdown("---")
+        st.caption("Módulos desplegados a petición (puedes decir 'oculta módulos' para volver a esconderlos).")
 
+    if vis.get("controles_sistema"):
+        with st.expander("⚙️ Controles de Núcleo, Idioma, Tema y Voz", expanded=True):
+            c_s1, c_s2, c_s3 = st.columns(3)
+            with c_s1:
+                nuevo_nucleo = st.radio(
+                    "Núcleo IA:",
+                    NUCLEOS_DISPONIBLES,
+                    index=NUCLEOS_DISPONIBLES.index(st.session_state.nucleo_activo),
+                )
+                if nuevo_nucleo != st.session_state.nucleo_activo:
+                    st.session_state.nucleo_activo = nuevo_nucleo
+                    saludo_cam = obtener_saludo_nucleo(nuevo_nucleo, st.session_state.idioma_sistema)
+                    st.session_state.mensajes.append({"role": "assistant", "content": saludo_cam})
+                    programar_voz(saludo_cam)
+                    st.rerun()
+            with c_s2:
+                idx_tema = OPCIONES_TEMA.index(st.session_state.tema_visual) if st.session_state.tema_visual in OPCIONES_TEMA else 0
+                nuevo_tema = st.selectbox("Tema visual:", OPCIONES_TEMA, index=idx_tema)
+                if nuevo_tema != st.session_state.tema_visual:
+                    st.session_state.tema_visual = nuevo_tema
+                    st.rerun()
+                idx_idioma = OPCIONES_IDIOMA.index(st.session_state.idioma_sistema) if st.session_state.idioma_sistema in OPCIONES_IDIOMA else 0
+                nuevo_idioma = st.selectbox("Idioma:", OPCIONES_IDIOMA, index=idx_idioma)
+                if nuevo_idioma != st.session_state.idioma_sistema:
+                    st.session_state.idioma_sistema = nuevo_idioma
+                    saludo_idi = obtener_saludo_nucleo(st.session_state.nucleo_activo, nuevo_idioma)
+                    st.session_state.mensajes.append({"role": "assistant", "content": saludo_idi})
+                    programar_voz(saludo_idi)
+                    st.rerun()
+            with c_s3:
+                st.session_state.voz_masculina_activa = st.checkbox(
+                    "🔊 Voz activa",
+                    value=st.session_state.voz_masculina_activa,
+                )
+                if st.button("🔒 Bloquear Sistema", use_container_width=True):
+                    st.session_state.autorizado = False
+                    st.rerun()
+                if st.button("🔄 Reinicio Total", use_container_width=True):
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
+                    st.rerun()
+
+    if vis.get("indicadores_clima"):
+        with st.expander("📊 Indicadores y Clima Buin", expanded=True):
+            c_ind1, c_ind2, c_ind3, c_ind4 = st.columns(4)
+            with c_ind1:
+                st.markdown(f'<div class="econ-card"><span class="econ-label">DÓLAR</span><span class="econ-val">{fmt_clp(indicadores_base["dolar"])}</span></div>', unsafe_allow_html=True)
+            with c_ind2:
+                st.markdown(f'<div class="econ-card"><span class="econ-label">EURO</span><span class="econ-val">{fmt_clp(indicadores_base["euro"])}</span></div>', unsafe_allow_html=True)
+            with c_ind3:
+                st.markdown(f'<div class="econ-card"><span class="econ-label">UF</span><span class="econ-val">{fmt_clp(indicadores_base["uf"])}</span></div>', unsafe_allow_html=True)
+            with c_ind4:
+                temp_label = f"{clima_buin['temp_c']}°C" if clima_buin.get("temp_c") is not None else "N/D"
+                st.markdown(f'<div class="econ-card"><span class="econ-label">BUIN ({clima_buin["condicion"]})</span><span class="econ-val">{temp_label}</span></div>', unsafe_allow_html=True)
+
+    if vis.get("globo"):
+        with st.expander("🌐 Globo Orbital Buin", expanded=True):
+            renderizar_globo_orbital(st.session_state.capa_radar, color_main=C_PRI)
+
+    if vis.get("radar"):
+        with st.expander("🛰️ Radar y Capas", expanded=True):
+            capa_sel = st.selectbox(
+                "Capa activa:",
+                ["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"],
+                index=["SATELITAL // BUIN", "METEOROLOGÍA // OPEN-METEO", "FINANZAS // MINDICADOR"].index(st.session_state.capa_radar),
+            )
+            if capa_sel != st.session_state.capa_radar:
+                st.session_state.capa_radar = capa_sel
+                st.rerun()
+            st.markdown('<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live Radar</a>', unsafe_allow_html=True)
+
+    if vis.get("noticias"):
+        with st.expander("📰 Noticias y Búsqueda Web", expanded=True):
+            query_news = st.text_input("Tema o palabra clave:", value="Chile tecnología", key="input_news_mod")
+            if st.button("🔍 Buscar Titulares", use_container_width=True):
+                st.session_state.noticias_cache_lista = obtener_noticias_rss(query_news, limite=5)
+            if not st.session_state.noticias_cache_lista:
+                st.session_state.noticias_cache_lista = obtener_noticias_rss("Chile tecnología", limite=4)
+            for n_item in st.session_state.noticias_cache_lista[:5]:
+                st.markdown(f"- [{n_item['titulo']}]({n_item['link']})")
+
+    if vis.get("alertas"):
+        with st.expander("⏰ Alertas y Recordatorios", expanded=True):
+            st.session_state.alerta_dolar_max = st.number_input("Alerta Dólar mayor a (CLP):", min_value=0.0, value=float(st.session_state.alerta_dolar_max), step=5.0, format="%.2f")
+            st.session_state.alerta_uf_max = st.number_input("Alerta UF mayor a (CLP):", min_value=0.0, value=float(st.session_state.alerta_uf_max), step=100.0, format="%.2f")
+            rec_hora_in = st.text_input("Hora recordatorio (HH:MM):", value=st.session_state.recordatorio_hora, placeholder="Ej. 18:30")
+            rec_txt_in = st.text_input("Mensaje recordatorio:", value=st.session_state.recordatorio_texto, placeholder="Ej. Revisar cierre")
+            ca_r1, ca_r2 = st.columns(2)
+            if ca_r1.button("💾 Fijar Alerta", use_container_width=True):
+                st.session_state.recordatorio_hora = rec_hora_in.strip()
+                st.session_state.recordatorio_texto = rec_txt_in.strip()
+                st.rerun()
+            if ca_r2.button("🧹 Quitar", use_container_width=True):
+                st.session_state.alerta_dolar_max = 0.0
+                st.session_state.alerta_uf_max = 0.0
+                st.session_state.recordatorio_hora = ""
+                st.session_state.recordatorio_texto = ""
+                st.rerun()
+
+    if vis.get("descargas"):
+        with st.expander("📥 Descarga de Archivos", expanded=True):
+            formato_exp = st.selectbox(
+                "Formato a generar:",
+                ["TXT (Reporte Táctico)", "PDF (Documento Táctico)", "JPG (Tarjeta Telemetría HD)", "JPG (Convertir Imagen Subida)", "JSON (Respaldo Completo)"],
+            )
+            stamp_file = obtener_hora_chile().strftime("%Y%m%d_%H%M%S")
+            if formato_exp == "TXT (Reporte Táctico)":
+                st.download_button("⬇️ Descargar TXT", data=construir_reporte_texto(indicadores_base, clima_buin).encode("utf-8"), file_name=f"jarvis_buin_{stamp_file}.txt", mime="text/plain", use_container_width=True)
+            elif formato_exp == "PDF (Documento Táctico)":
+                st.download_button("⬇️ Descargar PDF", data=generar_pdf_simple(construir_reporte_texto(indicadores_base, clima_buin)), file_name=f"jarvis_buin_{stamp_file}.pdf", mime="application/pdf", use_container_width=True)
+            elif formato_exp == "JPG (Tarjeta Telemetría HD)":
+                data_jpg = generar_tarjeta_jpg(indicadores_base, clima_buin, color_hex=C_PRI)
+                if data_jpg:
+                    st.download_button("⬇️ Descargar JPG", data=data_jpg, file_name=f"jarvis_telemetria_{stamp_file}.jpg", mime="image/jpeg", use_container_width=True)
+            elif formato_exp == "JPG (Convertir Imagen Subida)":
+                img_up = st.file_uploader("Sube PNG/WEBP/JPG:", type=["png", "jpg", "jpeg", "webp"], key="up_jpg_conv")
+                if img_up is not None:
+                    jpg_conv = convertir_imagen_a_jpg(img_up)
+                    if jpg_conv:
+                        st.download_button("⬇️ Descargar como JPG", data=jpg_conv, file_name=f"jarvis_img_{stamp_file}.jpg", mime="image/jpeg", use_container_width=True)
+            else:
+                payload_json = json.dumps(
+                    {
+                        "nodo": "Buin, Chile",
+                        "nucleo": st.session_state.nucleo_activo,
+                        "indicadores": indicadores_base,
+                        "clima": clima_buin,
+                        "misiones": obtener_misiones(),
+                        "notas": st.session_state.notas_rapidas,
+                        "memoria": jarvis_mem.get_recent_facts(50),
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ).encode("utf-8")
+                st.download_button("⬇️ Descargar JSON", data=payload_json, file_name=f"jarvis_backup_{stamp_file}.json", mime="application/json", use_container_width=True)
+
+    if vis.get("enlaces"):
+        with st.expander("📡 Enlaces Financieros", expanded=True):
+            st.markdown(
+                '<a class="tactical-link-btn" href="https://osirisai.live/" target="_blank">🌐 osirisai.live</a>'
+                '<a class="tactical-link-btn" href="https://finviz.com/" target="_blank">📈 Finviz Screener</a>'
+                '<a class="tactical-link-btn" href="https://www.nasdaq.com/" target="_blank">📊 Nasdaq Markets</a>'
+                '<a class="tactical-link-btn" href="https://mindicador.cl/" target="_blank">🇨🇱 Mindicador CL</a>',
+                unsafe_allow_html=True,
+            )
+
+    if vis.get("conversor"):
+        with st.expander("💱 Conversor CLP / Divisas", expanded=True):
+            monto_conv = st.number_input("Monto", min_value=0.0, value=100.0, step=10.0, format="%.2f")
+            par_conv = st.selectbox("Conversión:", ["USD → CLP", "EUR → CLP", "UF → CLP", "CLP → USD", "CLP → UF"])
+            if par_conv == "USD → CLP":
+                res_div = fmt_clp(monto_conv * indicadores_base["dolar"])
+            elif par_conv == "EUR → CLP":
+                res_div = fmt_clp(monto_conv * indicadores_base["euro"])
+            elif par_conv == "UF → CLP":
+                res_div = fmt_clp(monto_conv * indicadores_base["uf"])
+            elif par_conv == "CLP → USD":
+                res_div = f"US$ {(monto_conv / indicadores_base['dolar']) if indicadores_base['dolar'] else 0.0:,.2f}"
+            else:
+                res_div = f"{(monto_conv / indicadores_base['uf']) if indicadores_base['uf'] else 0.0:,.4f} UF"
+            st.markdown(f"**Equivalente:** `{res_div}`")
+
+    if vis.get("camara"):
+        with st.expander("🌙 Cámara Nocturna", expanded=True):
+            modo_cam = st.selectbox("Modo visor:", ["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"], index=["VISIÓN NOCTURNA", "INFRARROJO TÁCTICO"].index(st.session_state.modo_camara))
+            if modo_cam != st.session_state.modo_camara:
+                st.session_state.modo_camara = modo_cam
+                st.rerun()
+            renderizar_camara_nocturna(st.session_state.modo_camara, color_tema=C_PRI)
+
+    if vis.get("notas"):
+        with st.expander("📝 Notas Rápidas", expanded=True):
+            nota_txt = st.text_input("Nueva nota:", placeholder="Escribe un apunte...")
+            cn1, cn2 = st.columns(2)
+            if cn1.button("💾 Guardar Nota", use_container_width=True):
+                if nota_txt.strip():
+                    st.session_state.notas_rapidas.append(nota_txt.strip())
+                    st.rerun()
+            if cn2.button("🧹 Borrar Notas", use_container_width=True):
+                st.session_state.notas_rapidas = []
+                st.rerun()
+            for idx, n_item in enumerate(st.session_state.notas_rapidas[-6:], 1):
+                st.markdown(f"- **{idx}.** {n_item}")
+
+    if vis.get("calculadora"):
+        with st.expander("🧮 Calculadora Táctil", expanded=True):
+            ca1, ca2 = st.columns(2)
+            num_a = ca1.number_input("Valor A", value=0.0, step=1.0, format="%.2f")
+            num_b = ca2.number_input("Valor B", value=0.0, step=1.0, format="%.2f")
+            op_calc = st.selectbox("Operación", ["+", "-", "×", "÷", "^"])
+            if st.button("⚡ Calcular", use_container_width=True):
+                if op_calc == "+":
+                    res_calc = num_a + num_b
+                elif op_calc == "-":
+                    res_calc = num_a - num_b
+                elif op_calc == "×":
+                    res_calc = num_a * num_b
+                elif op_calc == "÷":
+                    res_calc = "Error: div/0" if num_b == 0 else num_a / num_b
+                else:
+                    res_calc = num_a ** num_b
+                st.markdown(f"**Resultado:** `{res_calc}`")
+
+    if vis.get("telemetria"):
+        with st.expander("📊 Telemetría del Sistema", expanded=True):
+            st.markdown(f"- **Nodo:** Buin ({BUIN_LAT}, {BUIN_LON})")
+            st.markdown(f"- **Núcleo:** {st.session_state.nucleo_activo}")
+            st.markdown(f"- **Idioma:** {st.session_state.idioma_sistema}")
+            st.markdown(f"- **Tema:** {st.session_state.tema_visual}")
+
+    if vis.get("misiones"):
+        with st.expander("🎯 Misiones Activas", expanded=True):
+            mision_txt = st.text_input("Nueva misión:", placeholder="Ej. Revisar indicadores...")
+            c1, c2 = st.columns(2)
+            if c1.button("➕ Añadir", use_container_width=True):
+                if mision_txt.strip():
+                    agregar_mision(mision_txt.strip())
+                    st.rerun()
+            if c2.button("🗑️ Borrar", use_container_width=True):
+                limpiar_misiones()
+                st.rerun()
+            for mid, tarea, estado in obtener_misiones():
+                st.markdown(f"- **#{mid}** {tarea} *({estado})*")
+
+    if vis.get("memoria"):
+        with st.expander("🧠 Memoria del Núcleo", expanded=True):
+            for r_item in jarvis_mem.get_recent_facts(5):
+                st.markdown(f"- {r_item}")
+            if st.button("🧹 Limpiar Memoria", use_container_width=True):
+                jarvis_mem.clear_facts()
+                st.rerun()
+
+    if vis.get("bitacora"):
+        with st.expander("📜 Bitácora de Sesión", expanded=True):
+            for ev in reversed(st.session_state.get("bitacora_sesion", [])[-8:]):
+                st.caption(ev)
+            if st.button("🧹 Limpiar Bitácora", use_container_width=True):
+                st.session_state.bitacora_sesion = []
+                st.rerun()
+
+    # Historial y caja de chat siempre visibles
     for msg in st.session_state.mensajes:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    prompt_usuario = st.chat_input("Escribe tu orden o conversa con el núcleo activo...")
+    prompt_usuario = st.chat_input("Escribe tu orden, pide un módulo o conversa...")
     if prompt_usuario:
         st.session_state.mensajes.append({"role": "user", "content": prompt_usuario})
         respuesta = generar_respuesta_coherente(
