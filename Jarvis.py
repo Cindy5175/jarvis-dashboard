@@ -752,10 +752,9 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
         "window.__jarvisRelojTimer=setInterval(actualizarReloj,1000);"
         "})();</script>"
     )
-    try:
+  try:
         components.html(html_banner, height=122)
     except Exception:
-     except Exception:
         st.markdown(
             f'<div class="holo-brain-box">'
             f'<div style="display:flex;align-items:center;justify-content:center;gap:12px;">'
