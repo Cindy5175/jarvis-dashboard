@@ -697,4 +697,7 @@ def convertir_imagen_a_jpg(archivo_subido) -> bytes:
         else:
             im = im.convert("RGB")
         out = io.BytesIO()
-        im.save(out, format="
+        im.save(out, format="JPEG", quality=92)
+        return out.getvalue()
+    except Exception:
+        return b""
