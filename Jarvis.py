@@ -757,4 +757,53 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
     except Exception:
         st.markdown(
             f'<div class="holo-brain-box">'
-            f'<div style="display:flex;align-items:center;justify-content:center;gap:
+           def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
+    ahora_chile = obtener_hora_chile()
+    emblema_svg = construir_emblema_nucleo_svg(color_main=color_main, size=56)
+    html_banner = (
+        f'<div style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
+        f'padding:14px 18px;border-radius:10px;margin:0 auto 14px auto;max-width:860px;font-family:monospace;color:{color_main};">'
+        f'<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;letter-spacing:1px;opacity:0.85;margin-bottom:8px;border-bottom:1px solid {color_main}33;padding-bottom:5px;">'
+        f'<span>STARK-HUD // NODO BUIN (-33.73°S, -70.74°W)</span>'
+        f'<span>POWER 100% • ARC-CORE LOCKED</span>'
+        f'</div>'
+        f'<div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">'
+        f'{emblema_svg}'
+        f'<div style="text-align:left;">'
+        f'<h2 style="margin:0;color:{color_main};font-size:1.5rem;letter-spacing:1px;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
+        f'<div id="reloj-vivo-buin" style="font-size:0.84rem;opacity:0.94;color:{color_main};margin-top:3px;">'
+        f'NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+        "<script>(function(){"
+        'const el=document.getElementById("reloj-vivo-buin");'
+        f'const capa={json.dumps(capa_radar)};'
+        "function pad(n){return String(n).padStart(2,'0');}"
+        "function actualizarReloj(){"
+        "if(!el)return;"
+        "const now=new Date();"
+        "const utcMs=now.getTime()+(now.getTimezoneOffset()*60000);"
+        "const cl=new Date(utcMs-(3*3600000));"
+        "const fecha=pad(cl.getDate())+'/'+pad(cl.getMonth()+1)+'/'+cl.getFullYear();"
+        "const hora=pad(cl.getHours())+':'+pad(cl.getMinutes())+':'+pad(cl.getSeconds());"
+        "el.textContent='NODO BUIN, CHILE • '+fecha+' '+hora+' • '+capa;"
+        "}"
+        "if(window.__jarvisRelojTimer)clearInterval(window.__jarvisRelojTimer);"
+        "actualizarReloj();"
+        "window.__jarvisRelojTimer=setInterval(actualizarReloj,1000);"
+        "})();</script>"
+    )
+    try:
+        components.html(html_banner, height=122)
+    except Exception:
+        st.markdown(
+            f'<div class="holo-brain-box">'
+            f'<div style="display:flex;align-items:center;justify-content:center;gap:12px;">'
+            f'{emblema_svg}'
+            f'<div style="text-align:left;">'
+            f'<h2 style="margin:0;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
+            f'<div style="font-size:0.86rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+            f'</div></div></div>',
+            unsafe_allow_html=True,
+        ) 
