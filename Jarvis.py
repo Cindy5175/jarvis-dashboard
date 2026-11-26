@@ -701,3 +701,44 @@ def convertir_imagen_a_jpg(archivo_subido) -> bytes:
         return out.getvalue()
     except Exception:
         return b""
+
+
+def construir_emblema_nucleo_svg(color_main="#00f3ff", size=54):
+    return (
+        f'<svg width="{size}" height="{size}" viewBox="0 0 80 80" '
+        f'style="flex-shrink:0;" xmlns="http://www.w3.org/2000/svg">'
+        f'<circle cx="40" cy="40" r="36" fill="none" stroke="{color_main}" stroke-width="1.8" stroke-dasharray="7 4"/>'
+        f'<circle cx="40" cy="40" r="29" fill="none" stroke="{color_main}" stroke-width="2.2"/>'
+        f'<circle cx="40" cy="40" r="23" fill="none" stroke="{color_main}" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/>'
+        f'<polygon points="21,28 59,28 40,61" fill="none" stroke="{color_main}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<polygon points="27,31 53,31 40,54" fill="{color_main}" opacity="0.28"/>'
+        f'<polygon points="33,34 47,34 40,46" fill="{color_main}" opacity="0.55"/>'
+        f'<circle cx="40" cy="37" r="4.2" fill="#ffffff"/>'
+        f'</svg>'
+    )
+
+
+def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
+    ahora_chile = obtener_hora_chile()
+    emblema_svg = construir_emblema_nucleo_svg(color_main=color_main, size=56)
+    html_banner = (
+        f'<div style="border:1.5px solid {color_main};background:linear-gradient(135deg,{grad_start} 0%,{bg_dark} 100%);'
+        f'padding:14px 18px;border-radius:10px;margin:0 auto 14px auto;max-width:860px;font-family:monospace;color:{color_main};">'
+        f'<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;letter-spacing:1px;opacity:0.85;margin-bottom:8px;border-bottom:1px solid {color_main}33;padding-bottom:5px;">'
+        f'<span>STARK-HUD // NODO BUIN (-33.73°S, -70.74°W)</span>'
+        f'<span>POWER 100% • ARC-CORE LOCKED</span>'
+        f'</div>'
+        f'<div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">'
+        f'{emblema_svg}'
+        f'<div style="text-align:left;">'
+        f'<h2 style="margin:0;color:{color_main};font-size:1.5rem;letter-spacing:1px;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
+        f'<div id="reloj-vivo-buin" style="font-size:0.84rem;opacity:0.94;color:{color_main};margin-top:3px;">'
+        f'NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+        "<script>(function(){try{"
+        'const el=document.getElementById("reloj-vivo-buin");'
+        f'const capa={json.dumps(capa_radar)};'
+        "function pad(n){return String(n).padStart(2,'0');}"
+        "
