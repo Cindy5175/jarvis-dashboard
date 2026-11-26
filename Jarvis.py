@@ -120,6 +120,8 @@ st.session_state.setdefault("alerta_uf_max", 0.0)
 st.session_state.setdefault("recordatorio_hora", "")
 st.session_state.setdefault("recordatorio_texto", "")
 st.session_state.setdefault("noticias_cache_lista", [])
+st.session_state.setdefault("panel_nota_voz_abierto", False)
+st.session_state.setdefault("borrador_nota_voz", "")
 
 PIN_SECRETO = "2805"
 fn_db = "jarvis_misiones.db"
@@ -925,11 +927,47 @@ def reproducir_voz_pendiente():
         pass
 
 
+def transcribir_audio_con_groq(archivo_audio, etiquetar_hablantes=False):
+    if client_groq is None or archivo_audio is None:
+        return ""
+    try:
+        raw_bytes = archivo_audio.getvalue()
+        nombre = getattr(archivo_audio, "name", "nota_voz.wav")
+        tr = client_groq.audio.transcriptions.create(
+            file=(nombre, raw_bytes),
+            model="whisper-large-v3",
+            response_format="text",
+        )
+        texto = (tr if isinstance(tr, str) else getattr(tr, "text", "") or "").strip()
+        if not texto:
+            return ""
+        if etiquetar_hablantes:
+            sys_fmt = (
+                "Formatea esta transcripción como nota clara. Si hay distintos turnos o hablantes, "
+                "etiquétalos como [Hablante 1] / [Hablante 2] o [Jefa] cuando sea evidente, "
+                "sin inventar nombres ni alterar el sentido."
+            )
+            resp = client_groq.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": sys_fmt},
+                    {"role": "user", "content": texto},
+                ],
+                temperature=0.3,
+                max_tokens=500,
+            )
+            formateado = (resp.choices[0].message.content or "").strip()
+            return formateado or texto
+        return texto
+    except Exception:
+        return ""
+
+
 def renderizar_microfono_voz(color_main="#00f3ff", btn_text="#060913"):
     _, cfg = obtener_config_idioma()
     lang_mic = cfg["code"]
     js_mic = (
-        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px 0;">'
+        '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 6px 0;flex-wrap:wrap;">'
         f'<button id="btn-mic-jarvis" type="button" style="background:{color_main};color:{btn_text};'
         f'border:1.5px solid {color_main};border-radius:6px;padding:6px 12px;font-family:monospace;'
         'font-weight:bold;font-size:0.78rem;cursor:pointer;">🎤 Hablar por Voz</button>'
@@ -965,10 +1003,61 @@ def renderizar_microfono_voz(color_main="#00f3ff", btn_text="#060913"):
         'rec.start();}catch(e){stEl.textContent="No se pudo iniciar el micrófono";}};'
         "}catch(e){}})();</script>"
     )
-    try:
-        components.html(js_mic, height=46)
-    except Exception:
-        pass
+    col_b1, col_b2 = st.columns([2, 1])
+    with col_b1:
+        try:
+            components.html(js_mic, height=44)
+        except Exception:
+            pass
+    with col_b2:
+        if st.button("📝 Nota de Voz / Transcribir", key="btn_nota_voz_wispr", use_container_width=True):
+            st.session_state["panel_nota_voz_abierto"] = not st.session_state.get("panel_nota_voz_abierto", False)
+            st.rerun()
+
+    if st.session_state.get("panel_nota_voz_abierto", False):
+        with st.container(border=True):
+            st.markdown("**📝 Nota de Voz / Transcripción Rápida**")
+            etiquetar_hab = st.checkbox(
+                "Etiquetar turnos/hablantes al transcribir audio",
+                value=True,
+                key="chk_etiquetar_hablantes",
+            )
+            audio_nota = st.file_uploader(
+                "Sube un audio (opcional si usas Groq Whisper):",
+                type=["wav", "mp3", "m4a", "ogg", "webm"],
+                key="up_audio_nota_voz",
+            )
+            if audio_nota is not None:
+                if st.button("🎙️ Transcribir Audio", key="btn_transcribir_audio_nota"):
+                    if client_groq is None:
+                        st.warning("Configura GROQ_API_KEY para transcribir archivos de audio desde aquí, o dicta/escribe directo abajo.")
+                    else:
+                        txt_tr = transcribir_audio_con_groq(audio_nota, etiquetar_hablantes=etiquetar_hab)
+                        if txt_tr:
+                            st.session_state["borrador_nota_voz"] = txt_tr
+                            st.rerun()
+                        else:
+                            st.warning("No se pudo transcribir el audio.")
+
+            texto_nota_voz = st.text_area(
+                "Texto de la nota / transcripción:",
+                value=st.session_state.get("borrador_nota_voz", ""),
+                height=85,
+                placeholder="Dicta, pega o escribe aquí tu nota para guardarla en Notas Rápidas...",
+                key="txt_area_nota_voz",
+            )
+            cnv1, cnv2 = st.columns(2)
+            if cnv1.button("💾 Guardar en Notas Rápidas", key="btn_guardar_nota_voz", use_container_width=True):
+                limpio_nv = (texto_nota_voz or "").strip()
+                if limpio_nv:
+                    st.session_state["notas_rapidas"].append(f"[Voz/Nota] {limpio_nv}")
+                    st.session_state["borrador_nota_voz"] = ""
+                    st.session_state["panel_nota_voz_abierto"] = False
+                    registrar_evento(f"Nota de voz guardada: {limpio_nv[:50]}")
+                    st.rerun()
+            if cnv2.button("✖️ Cerrar", key="btn_cerrar_nota_voz", use_container_width=True):
+                st.session_state["panel_nota_voz_abierto"] = False
+                st.rerun()
 
 
 def resolver_calculo_o_unidad(texto_raw):
