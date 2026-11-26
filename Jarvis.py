@@ -97,6 +97,14 @@ PROTOCOLO_CONOCIMIENTO_BASE = (
     "Explica pasos o formulas cuando ayude, respeta unidades y no inventes datos sin confirmar."
 )
 
+ESTILO_CONVERSACIONAL_BASE = (
+    "ESTILO DE DIALOGO: Habla de forma natural, cercana, espontánea y fluida, como un asistente personal "
+    "de confianza que conoce bien a la usuaria (llámala 'jefa' con calidez y naturalidad, sin repetirlo en "
+    "cada frase si suena forzado). Evita sonar rígido, burocrático o como manual técnico cuando la charla "
+    "es casual o de seguimiento; conserva un toque sutil de chispa e ironía elegante cuando encaje, "
+    "manteniendo siempre empatía, claridad y precisión cuando haya datos o análisis."
+)
+
 st.session_state.setdefault("autorizado", False)
 st.session_state.setdefault("nucleo_activo", "JARVIS")
 st.session_state.setdefault("idioma_sistema", "Español (es-CL)")
@@ -411,28 +419,54 @@ def obtener_saludo_nucleo(nucleo_nombre, etiqueta_idioma=None):
 
     if base_lang == "en":
         saludos_en = {
-            "JARVIS": f"{pref}{saludo}, Boss. Good to hear from you; the servers were starting to miss your orders.",
-            "VIERNES": f"{pref}{saludo}, Boss! Ready to get moving. What are we firing up today?",
-            "NOVA": f"{pref}{saludo}, Boss! Signal locked from Buin Node. What task or galaxy are we taking next?",
-            "ARTEX": f"{pref}{saludo}, Boss! ARTEX core online with knowledge protocol and tactical control active.",
+            "JARVIS": [
+                f"{pref}{saludo}, Boss. Good to have you around; the servers were starting to wonder if you'd forgotten the password.",
+                f"{pref}{saludo}, Boss. Ready when you are—what are we tackling first?",
+            ],
+            "VIERNES": [
+                f"{pref}{saludo}, Boss! Let's get things moving. What's on your mind?",
+                f"{pref}{saludo}, Boss! All systems warm and ready—what do you need?",
+            ],
+            "NOVA": [
+                f"{pref}{saludo}, Boss! Buin Node is locked in. Where are we pointing our radar today?",
+                f"{pref}{saludo}, Boss! Signal's clear from Buin—what shall we explore next?",
+            ],
+            "ARTEX": [
+                f"{pref}{saludo}, Boss! ARTEX is online and sharp. What are we analyzing or building?",
+                f"{pref}{saludo}, Boss! Ready for calculations, strategy, or straight talk.",
+            ],
         }
-        return saludos_en.get(nucleo_nombre, f"{pref}{saludo}, Boss. Online and ready.")
+        return random.choice(saludos_en.get(nucleo_nombre, [f"{pref}{saludo}, Boss. Right here with you."]))
+
     if base_lang == "fr":
-        return f"{pref}{saludo}, patronne. Noyau {nucleo_nombre} actif au nœud de Buin et prêt."
+        return f"{pref}{saludo}, patronne. Noyau {nucleo_nombre} actif à Buin—qu'est-ce qu'on fait ?"
     if base_lang == "pt":
-        return f"{pref}{saludo}, chefe. Núcleo {nucleo_nombre} ativo no nó de Buin e pronto."
+        return f"{pref}{saludo}, chefe. Núcleo {nucleo_nombre} pronto em Buin—por onde começamos?"
     if base_lang == "it":
-        return f"{pref}{saludo}, capa. Nucleo {nucleo_nombre} attivo sul nodo di Buin e pronto."
+        return f"{pref}{saludo}, capa. Nucleo {nucleo_nombre} attivo da Buin—da dove partiamo?"
     if base_lang == "de":
-        return f"{pref}{saludo}, Chefin. Kern {nucleo_nombre} am Knoten Buin ist aktiv und bereit."
+        return f"{pref}{saludo}, Chefin. Kern {nucleo_nombre} in Buin ist bereit—woran gehen wir?"
 
     saludos = {
-        "JARVIS": f"{pref}{saludo}, jefa. Qué milagro que pase a saludar; los servidores ya empezaban a extrañar sus órdenes.",
-        "VIERNES": f"{pref}¡{saludo}, jefa! Lista para mover ficha. ¿Qué encendemos hoy?",
-        "NOVA": f"{pref}¡{saludo}, jefa! Señal recibida desde el Nodo Buin. ¿Qué galaxia o tarea conquistamos ahora?",
-        "ARTEX": f"{pref}¡{saludo}, jefa! Núcleo ARTEX en línea con protocolo de conocimiento y control táctico activo.",
+        "JARVIS": [
+            f"{pref}{saludo}, jefa. Qué bueno verla por aquí; los servidores ya pensaban que se habían ido de vacaciones sin avisar.",
+            f"{pref}{saludo}, jefa. Aquí estamos, listos para conversar o mover lo que haga falta. ¿Qué traemos hoy?",
+            f"{pref}{saludo}, jefa. Un gusto saludarla—¿en qué andamos o qué le damos vuelta ahora?",
+        ],
+        "VIERNES": [
+            f"{pref}¡{saludo}, jefa! Todo andando. ¿Qué encendemos o resolvemos primero?",
+            f"{pref}¡{saludo}, jefa! Por acá con toda la pila puesta. ¿Qué tienes en mente?",
+        ],
+        "NOVA": [
+            f"{pref}¡{saludo}, jefa! Enlace firme desde Buin. ¿Qué tema o proyecto exploramos ahora?",
+            f"{pref}¡{saludo}, jefa! Radar despejado por acá—¿hacia dónde vamos hoy?",
+        ],
+        "ARTEX": [
+            f"{pref}¡{saludo}, jefa! En línea y afinado. ¿Calculamos, revisamos o conversamos directo?",
+            f"{pref}¡{saludo}, jefa! Listo para entrar en materia cuando usted diga.",
+        ],
     }
-    return saludos.get(nucleo_nombre, f"{pref}{saludo}, jefa. En línea y a su servicio.")
+    return random.choice(saludos.get(nucleo_nombre, [f"{pref}{saludo}, jefa. Aquí estoy."]))
 
 
 def obtener_presentacion_nucleo(nucleo_nombre, etiqueta_idioma=None):
@@ -443,46 +477,48 @@ def obtener_presentacion_nucleo(nucleo_nombre, etiqueta_idioma=None):
     if base_lang == "en":
         presentaciones_en = {
             "JARVIS": (
-                f"{pref}I am **J.A.R.V.I.S.**, your tactical AI assistant operating from **Buin Node, Chile**. "
-                "I handle live telemetry, economic indicators, missions, memory, calculations, and multi-domain analysis for you, Boss."
+                f"{pref}I'm **J.A.R.V.I.S.**, your assistant here at **Buin Node, Chile**, Boss—part tactical helper, "
+                "part sounding board, always ready for live figures, notes, missions, or a good conversation."
             ),
             "VIERNES": (
-                f"{pref}I am **VIERNES**, your fast-action core at **Buin Node, Chile**, ready to run tasks, checks, and alerts, Boss."
+                f"{pref}I'm **VIERNES**, your fast-paced core at **Buin Node, Chile**, Boss—built for quick answers, "
+                "zero fluff, and getting things done without dragging our feet."
             ),
             "NOVA": (
-                f"{pref}I am **NOVA**, your orbital and exploration core at **Buin Node, Chile**, monitoring signals, data, and missions, Boss."
+                f"{pref}I'm **NOVA**, your exploration core at **Buin Node, Chile**, Boss—great for following leads, "
+                "tracking ideas, and keeping tabs on what's moving."
             ),
             "ARTEX": (
-                f"{pref}I am **ARTEX**, your tactical and knowledge core at **Buin Node, Chile**, structured for precision, calculations, and system control, Boss."
+                f"{pref}I'm **ARTEX**, your analytical core at **Buin Node, Chile**, Boss—sharp with numbers, "
+                "science, history, and straight-to-the-point reasoning."
             ),
         }
         return presentaciones_en.get(
             nucleo_nombre,
-            f"{pref}I am **{nucleo_nombre}**, active at **Buin Node, Chile**, at your service, Boss.",
+            f"{pref}I'm **{nucleo_nombre}**, active at **Buin Node, Chile**, Boss.",
         )
 
     presentaciones_es = {
         "JARVIS": (
-            f"{pref}Soy **J.A.R.V.I.S.**, su asistente de inteligencia artificial en el **Nodo Buin, Chile**, jefa. "
-            "Administro telemetría, indicadores económicos, misiones, memoria persistente, cálculos, noticias y "
-            "análisis técnico bajo su mando."
+            f"{pref}Soy **J.A.R.V.I.S.**, su mano derecha aquí en el **Nodo Buin**, jefa—entre datos, misiones, "
+            "cálculos, noticias y conversación franca, siempre con un ojo en el tablero y otro en que usted esté cómoda."
         ),
         "VIERNES": (
-            f"{pref}Soy **VIERNES**, su núcleo ágil en el **Nodo Buin, Chile**, jefa. "
-            "Estoy lista para ejecutar consultas, alertas, cálculos y tareas rápidas sin perder ritmo."
+            f"{pref}Soy **VIERNES**, su núcleo más ágil en **Buin**, jefa—ideal para ir al grano, resolver rápido "
+            "y no darle mil vueltas a lo que se puede mover al tiro."
         ),
         "NOVA": (
-            f"{pref}Soy **NOVA**, su núcleo de exploración y enlace orbital en el **Nodo Buin, Chile**, jefa. "
-            "Coordino monitoreo, datos, memoria y objetivos de misión con precisión."
+            f"{pref}Soy **NOVA**, su núcleo de exploración desde **Buin**, jefa—pensada para seguir pistas, "
+            "ordenar ideas y mantener el radar abierto."
         ),
         "ARTEX": (
-            f"{pref}Soy **ARTEX**, su núcleo táctico y de conocimiento en el **Nodo Buin, Chile**, jefa. "
-            "Opero con protocolo estructurado para ciencia, matemáticas, historia, geografía, cálculos y control del sistema."
+            f"{pref}Soy **ARTEX**, su núcleo de análisis y cálculo en **Buin**, jefa—fuerte en números, "
+            "ciencia, historia, geografía y respuestas claras sin rodeos."
         ),
     }
     return presentaciones_es.get(
         nucleo_nombre,
-        f"{pref}Soy **{nucleo_nombre}**, núcleo activo en el **Nodo Buin, Chile**, a su servicio, jefa.",
+        f"{pref}Soy **{nucleo_nombre}**, activo en **Buin**, jefa.",
     )
 
 
@@ -833,7 +869,11 @@ def limpiar_texto_para_voz(texto):
     limpio = re.sub(r"[*_`#>\[\]|]+", " ", limpio)
     limpio = re.sub(r"([.!?])\s+", r"\1 ", limpio)
     limpio = re.sub(r"\s+", " ", limpio).strip()
-    return limpio[:520]
+    if len(limpio) <= 900:
+        return limpio
+    corte = limpio[:900]
+    ultimo_fin = max(corte.rfind(". "), corte.rfind("! "), corte.rfind("? "))
+    return corte[: ultimo_fin + 1] if ultimo_fin > 300 else corte
 
 
 def programar_voz(texto, idioma=None):
@@ -868,12 +908,12 @@ def reproducir_voz_pendiente():
         "if(yaHablo)return;yaHablo=true;"
         "window.speechSynthesis.cancel();"
         f"const u=new SpeechSynthesisUtterance({txt_json});"
-        f"u.lang={json.dumps(lang)};u.rate=0.98;u.pitch=0.90;"
+        f"u.lang={json.dumps(lang)};u.rate=1.0;u.pitch=0.92;"
         "const v=elegirVoz(window.speechSynthesis.getVoices());if(v)u.voice=v;"
         "window.speechSynthesis.speak(u);}"
         "if(window.speechSynthesis.getVoices().length){hablarUnaVez();}"
         "else{window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.onvoiceschanged=null;hablarUnaVez();};"
-        "window.__jarvisVozTimer=setTimeout(hablarUnaVez,250);}"
+        "window.__jarvisVozTimer=setTimeout(hablarUnaVez,140);}"
         "}catch(e){}})();</script>"
     )
     try:
@@ -1045,8 +1085,14 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
             jarvis_mem.remember_fact(f"fact_{int(ahora.timestamp())}", dato)
             registrar_evento(f"Memoria guardada: {dato}")
             if lang_code.startswith("en"):
-                return f"{prefijo}Got it, Boss, saved to memory: **{dato}**."
-            return f"{prefijo}Listo, jefa, queda guardado en memoria: **{dato}**."
+                return random.choice([
+                    f"{prefijo}Filed away, Boss: **{dato}**.",
+                    f"{prefijo}Got it—I'll keep **{dato}** in mind.",
+                ])
+            return random.choice([
+                f"{prefijo}Anotado, jefa: me quedo con **{dato}**.",
+                f"{prefijo}Listo, ya quedó guardado: **{dato}**.",
+            ])
 
     if t.startswith("noticias") or t.startswith("busca noticias") or t.startswith("titulares"):
         tema_busqueda = re.sub(r"^(busca\s+)?(noticias|titulares)\s*(de|sobre)?\s*", "", raw, flags=re.IGNORECASE).strip()
@@ -1055,8 +1101,8 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
         if noticias:
             registrar_evento(f"Búsqueda noticias: {tema_busqueda}")
             items_md = "\n".join(f"- [{n['titulo']}]({n['link']})" for n in noticias)
-            return f"{prefijo}Titulares recientes sobre **{tema_busqueda}**, jefa:\n{items_md}"
-        return f"{prefijo}No pude recuperar titulares en vivo para **{tema_busqueda}** en este momento, jefa."
+            return f"{prefijo}Esto es lo que está sonando sobre **{tema_busqueda}**:\n{items_md}"
+        return f"{prefijo}No logré sacar titulares en vivo para **{tema_busqueda}** ahora mismo."
 
     palabras_saludo = [
         "hola", "buenas", "buenos días", "buenos dias",
@@ -1070,23 +1116,23 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
 
     if "mosca" in t and ("patas" in t or "cuantas" in t or "cuántas" in t):
         if nucleo == "JARVIS":
-            return f"{prefijo}Tiene **6 patas**, jefa. Como todo insecto que se precie... y por lo general las usa para aterrizar justo en el peor momento."
+            return f"{prefijo}**6 patas**, jefa. Bien repartidas... y con un talento especial para aterrizar justo donde uno no las invitó."
         if nucleo == "VIERNES":
-            return f"{prefijo}**6 patas**, jefa. Tres de cada lado, livianita y bastante molesta."
-        return f"{prefijo}Una mosca tiene **6 patas**, jefa. Anatomía básica de insecto confirmada."
+            return f"{prefijo}**6 patas**, jefa. Livianita, rápida y cero discreta."
+        return f"{prefijo}Una mosca tiene **6 patas**."
 
     if any(k in t for k in ["bolsa", "bolsas", "acciones", "nasdaq", "mercado", "mercados", "wall street", "finviz"]):
         if nucleo == "JARVIS":
             return (
-                f"{prefijo}En modo respaldo local no tengo cotizaciones bursátiles en vivo dentro del chat, jefa. "
-                "Puede revisar el pulso directo en **Finviz** o el seguimiento **Nasdaq** en **Enlaces Financieros**."
+                f"{prefijo}Aquí dentro no tengo el ticker en vivo, jefa, así que no le voy a inventar un número. "
+                "Si quiere ver el pulso del día al toque, abra **Finviz** o **Nasdaq** en **Enlaces Financieros**."
             )
         if nucleo == "VIERNES":
             return (
-                f"{prefijo}Sin conexión directa a cotizaciones en vivo aquí adentro, jefa. "
-                "Abra **Finviz** o **Nasdaq** en el menú lateral para ver cómo se mueven las bolsas ahora mismo."
+                f"{prefijo}Sin cotizaciones en vivo por este lado, jefa. "
+                "Échele un ojo a **Finviz** o **Nasdaq** en el menú lateral y ve el movimiento directo."
             )
-        return f"{prefijo}Radar bursátil sin feed en vivo en esta consola local, jefa."
+        return f"{prefijo}Por ahora no tengo cotizaciones en vivo en esta vista; puede revisar **Finviz** o **Nasdaq** en el menú lateral."
 
     if any(k in t for k in ["dólar", "dolar", "euro", "uf", "utm", "divisa", "divisas", "moneda", "cambio"]):
         econ = obtener_indicadores_chile()
@@ -1094,29 +1140,35 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
             dolar_fmt = fmt_clp(econ["dolar"])
             euro_fmt = fmt_clp(econ["euro"])
             uf_fmt = fmt_clp(econ["uf"])
-            nota_resp = " (valor de respaldo local)" if econ.get("respaldo") else ""
-            return (
-                f"{prefijo}Indicadores registrados en el Nodo Buin{nota_resp}, jefa: "
-                f"Dólar Obs. **{dolar_fmt}**, Euro **{euro_fmt}** y UF **{uf_fmt}**."
-            )
+            nota_resp = " (con referencia de respaldo)" if econ.get("respaldo") else ""
+            return random.choice([
+                f"{prefijo}Por acá tenemos el dólar en **{dolar_fmt}**, el euro en **{euro_fmt}** y la UF en **{uf_fmt}**{nota_resp}.",
+                f"{prefijo}Según los registros del nodo{nota_resp}, el dólar está a **{dolar_fmt}**, el euro a **{euro_fmt}** y la UF a **{uf_fmt}**.",
+            ])
 
     if any(k in t for k in ["clima", "temperatura", "lluvia", "tiempo en buin"]):
         clima = obtener_clima_buin()
         if clima.get("temp_c") is not None:
-            return f"{prefijo}En Buin hay **{clima['temp_c']}°C** y el cielo está **{clima['condicion']}**, jefa."
-        return f"{prefijo}Sin lectura meteorológica en vivo en este momento, jefa."
+            return random.choice([
+                f"{prefijo}En Buin marcan **{clima['temp_c']}°C**, con cielo **{clima['condicion']}**.",
+                f"{prefijo}Por Buin andamos en **{clima['temp_c']}°C** y está **{clima['condicion']}**.",
+            ])
+        return f"{prefijo}No me llegó lectura del tiempo en vivo en este momento."
 
     if any(k in t for k in ["hora", "qué hora", "que hora", "fecha", "día de hoy", "dia de hoy"]):
-        hora_str = ahora.strftime("%H:%M:%S")
-        return f"{prefijo}En el Nodo Buin son las **{hora_str}** (hora de Chile), jefa."
+        hora_str = ahora.strftime("%H:%M")
+        fecha_str = ahora.strftime("%d/%m/%Y")
+        return random.choice([
+            f"{prefijo}Son las **{hora_str}** del **{fecha_str}** por aquí en Buin.",
+            f"{prefijo}Marcamos las **{hora_str}** (hora de Chile), hoy **{fecha_str}**.",
+        ])
 
     if any(k in t for k in ["estado", "sistema", "misión", "misiones", "pendiente", "pendientes"]):
         misiones = obtener_misiones()
         cant = len(misiones)
-        return (
-            f"{prefijo}Núcleo **{nucleo}** operativo y estable en el Nodo Buin, jefa. "
-            f"Actualmente hay **{cant}** misión(es) registrada(s) en la base de datos."
-        )
+        if cant == 0:
+            return f"{prefijo}Todo en orden por el nodo, sin misiones pendientes anotadas ahora mismo."
+        return f"{prefijo}Todo estable por acá; tienes **{cant}** misión(es) activa(s) en la lista."
 
     calc = resolver_calculo_o_unidad(raw)
     if calc:
@@ -1131,12 +1183,12 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
                 f"en el Nodo Buin, Chile, a las órdenes de 'jefa'. "
                 f"Núcleo activo: {nucleo}. Idioma seleccionado por el usuario: {lang_nombre} ({lang_code}). "
                 f"Responde siempre en {lang_nombre}. Hora Chile: {ahora.strftime('%d/%m/%Y %H:%M:%S')}. "
-                f"{PROTOCOLO_CONOCIMIENTO_BASE}"
+                f"{ESTILO_CONVERSACIONAL_BASE} {PROTOCOLO_CONOCIMIENTO_BASE}"
             )
             if recuerdos:
                 sys_txt += " Memoria: " + " | ".join(recuerdos)
             msgs_api = [{"role": "system", "content": sys_txt}]
-            for item in st.session_state.get("mensajes", [])[-6:]:
+            for item in st.session_state.get("mensajes", [])[-10:]:
                 rol = item.get("role")
                 cont = item.get("content", "")
                 if rol in {"user", "assistant"} and cont:
@@ -1146,8 +1198,8 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
             resp = client_groq.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=msgs_api,
-                temperature=0.65,
-                max_tokens=600,
+                temperature=0.82,
+                max_tokens=650,
             )
             contenido = (resp.choices[0].message.content or "").strip()
             if contenido:
@@ -1158,73 +1210,73 @@ def generar_respuesta_coherente(nucleo, texto_usuario, etiqueta_idioma=None):
 
     if not es_espanol:
         if lang_code.startswith("en"):
-            return f"{prefijo}Understood, Boss. Regarding *'{raw}'*, local fallback mode is active ({idioma_lbl}). How would you like to proceed?"
-        return f"{prefijo}Active mode: {idioma_lbl}. Received: *'{raw}'*."
+            return f"{prefijo}I'm with you on *'{raw}'* ({idioma_lbl}), though I'm running on local fallback right now. Where do you want to take it?"
+        return f"{prefijo}Mode: {idioma_lbl}. Got *'{raw}'*."
 
     if any(k in t for k in ["corazon", "corazón", "cardiaco", "cardíaco", "cardiaca", "cardíaca", "pulso", "latido", "sangre", "arteria", "vena"]):
         return (
-            f"{prefijo}**Fisiología del corazón ({raw})**: en un adulto sano suele pesar aproximadamente entre **250 y 350 gramos** "
-            "(cerca de **250–300 g** en mujeres y **300–350 g** en hombres, variando según contextura). "
-            "Es un órgano muscular hueco de cuatro cavidades (dos aurículas y dos ventrículos) que bombea sangre "
-            "por los circuitos pulmonar y sistémico mediante sístole y diástole."
+            f"{prefijo}En un adulto sano, el corazón suele pesar entre **250 y 350 gramos** "
+            "(alrededor de **250–300 g** en mujeres y **300–350 g** en hombres, según contextura). "
+            "Funciona como una bomba muscular de cuatro cavidades—dos aurículas y dos ventrículos—que impulsa "
+            "la sangre por los circuitos pulmonar y sistémico en cada sístole y diástole."
         )
 
     if any(k in t for k in ["religion", "religión", "religiones", "biblia", "coran", "corán", "tora", "torá", "budismo", "islam", "cristianismo", "judaismo", "judaísmo", "hinduismo", "teologia", "teología", "dios", "fe", "espiritualidad", "ritual"]):
         return (
-            f"{prefijo}**Conocimiento Religioso / Religiones Comparadas ({raw})**: se aborda desde su historia, "
-            "textos fundacionales, prácticas, símbolos y ética, con respeto hacia las distintas tradiciones "
-            "(como las tradiciones abrahámicas, dhármicas y otras cosmovisiones). Indica qué tradición o tema te gustaría explorar."
+            f"{prefijo}Sobre **{raw}**, podemos mirarlo desde su historia, textos, símbolos, prácticas o ética, "
+            "con respeto por las distintas tradiciones (abrahámicas, dhármicas y otras). ¿Qué parte te interesa más?"
         )
 
     if any(k in t for k in ["secular", "laico", "laicismo", "humanismo", "etica laica", "ética laica", "filosofia", "filosofía", "racionalismo", "ateismo", "ateísmo", "agnostico", "agnóstico", "agnóstica", "estado laico"]):
         return (
-            f"{prefijo}**Conocimiento Secular y Filosofía ({raw})**: se centra en el marco laico, el humanismo, "
-            "la ética cívica basada en la razón y los derechos humanos, el pensamiento crítico y la separación entre "
-            "instituciones públicas y creencias religiosas. ¿Qué aspecto filosófico, histórico o ético quieres revisar?"
+            f"{prefijo}En el terreno de **{raw}**, entra el pensamiento laico, el humanismo, la ética cívica "
+            "basada en la razón y los derechos humanos, o el análisis filosófico. ¿Qué ángulo quieres conversar?"
         )
 
     if any(k in t for k in ["biologia", "biología", "celula", "célula", "adn", "genetica", "genética", "ecosistema", "fotosintesis", "fotosíntesis", "evolucion", "evolución"]):
         return (
-            f"{prefijo}**Biología ({raw})**: la célula es la unidad básica de la vida; "
-            "el ADN codifica la información genética (transcripción a ARN y traducción a proteínas), y la energía "
-            "fluye por los ecosistemas desde productores hasta consumidores y descomponedores."
+            f"{prefijo}Si vamos a la biología de **{raw}**: la célula es la base de la vida, "
+            "el ADN guarda la información genética (que pasa por ARN hacia las proteínas) y los ecosistemas "
+            "se sostienen en el flujo de energía y nutrientes. ¿Entramos en algún detalle en particular?"
         )
 
     if any(k in t for k in ["geografia", "geografía", "capital", "cordillera", "rio", "río", "continente", "hemisferio", "latitud", "longitud"]):
         return (
-            f"{prefijo}**Geografía ({raw})**: estudia relieves, climas, hidrografía, "
-            "población y territorio. En Chile destacan la cordillera de los Andes, la depresión intermedia, "
-            "la cordillera de la Costa y las planicies litorales."
+            f"{prefijo}En geografía, **{raw}** se conecta con relieve, clima, aguas y territorio—y en Chile "
+            "siempre con ese contraste tan marcado entre cordillera, valle, costa y mar. ¿Qué lugar o rasgo revisamos?"
         )
 
     if any(k in t for k in ["historia", "siglo", "guerra", "revolucion", "revolución", "imperio", "independencia", "epoca", "época"]):
         return (
-            f"{prefijo}**Historia ({raw})**: se analiza por causas estructurales y coyunturales, "
-            "actores, cronología y consecuencias. Indica período, lugar o evento exacto para detallarlo."
+            f"{prefijo}Para revisar **{raw}** en clave histórica, conviene mirar qué lo detonó, quiénes "
+            "estaban en juego y qué cambió después. ¿De qué época o proceso hablamos?"
         )
 
     if any(k in t for k in ["fisica", "física", "quimica", "química", "atomo", "átomo", "energia", "energía", "velocidad", "fuerza", "tecnologia", "tecnología", "algoritmo", "python", "astronomia", "astronomía"]):
         return (
-            f"{prefijo}**Ciencia y Tecnología ({raw})**: integra modelos, magnitudes y unidades "
-            "del SI con aplicación práctica. También puedes pedir cálculos directos o conversiones."
+            f"{prefijo}En ciencia y tecnología, **{raw}** se entiende mejor con sus magnitudes, unidades y un "
+            "ejemplo concreto. Si necesitas algún cálculo o conversión al paso, pídelo nomás."
         )
 
     respuestas_generales = {
         "JARVIS": [
-            f"{prefijo}Entendido, jefa. Sobre *'{raw}'*, seguimos aquí mismo; ¿qué desea hacer?",
-            f"{prefijo}Tomo nota de *'{raw}'*, jefa. Dígame cómo avanzamos.",
+            f"{prefijo}Te sigo, jefa: sobre *'{raw}'*, ¿qué quieres hacer o cómo lo miramos?",
+            f"{prefijo}Recibido. Con *'{raw}'* sobre la mesa, ¿vamos directo al grano o le damos una vuelta?",
         ],
         "VIERNES": [
-            f"{prefijo}Recibido, jefa: *'{raw}'*. ¿Qué movemos ahora?",
+            f"{prefijo}Dale, jefa: con *'{raw}'*, ¿qué paso damos ahora?",
+            f"{prefijo}Anotado: *'{raw}'*. ¿Qué necesitas resolver?",
         ],
         "NOVA": [
-            f"{prefijo}Señal clara sobre *'{raw}'*, jefa. ¿En qué más le apoyo?",
+            f"{prefijo}Interesante lo de *'{raw}'*. ¿Hacia dónde lo llevamos?",
+            f"{prefijo}Te leo sobre *'{raw}'*—¿qué exploramos ahora?",
         ],
         "ARTEX": [
-            f"{prefijo}Directiva registrada: *'{raw}'*, jefa. Protocolo activo.",
+            f"{prefijo}Tomado: *'{raw}'*. ¿Qué punto quieres precisar?",
+            f"{prefijo}Enfocados en *'{raw}'*. ¿Qué revisamos primero?",
         ],
     }
-    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Recibido, jefa."]))
+    return random.choice(respuestas_generales.get(nucleo, [f"{prefijo}Te sigo: *'{raw}'*."]))
 
 
 st.session_state.setdefault(
