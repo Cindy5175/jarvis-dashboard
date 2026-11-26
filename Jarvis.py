@@ -755,7 +755,17 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
     try:
         components.html(html_banner, height=122)
     except Exception:
+     except Exception:
         st.markdown(
+            f'<div class="holo-brain-box">'
+            f'<div style="display:flex;align-items:center;justify-content:center;gap:12px;">'
+            f'{emblema_svg}'
+            f'<div style="text-align:left;">'
+            f'<h2 style="margin:0;">J.A.R.V.I.S. // {nucleo_activo}</h2>'
+            f'<div style="font-size:0.86rem;opacity:0.9;">NODO BUIN, CHILE • {ahora_chile.strftime("%d/%m/%Y %H:%M:%S")} • {capa_radar}</div>'
+            f'</div></div></div>',
+            unsafe_allow_html=True,
+        )
             f'<div class="holo-brain-box">'
            def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
     ahora_chile = obtener_hora_chile()
