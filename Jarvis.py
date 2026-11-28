@@ -144,7 +144,6 @@ def _llamar_modelo_gemini_unico(
         "generationConfig": {"temperature": temperatura},
     }
 
-    # Si empieza con AQ, probamos primero con ?key= y luego con header x-goog-api-key
     modos_envio = [True, False] if clave.startswith("AQ") else [False, True]
     ultimo_error = ""
 
@@ -162,7 +161,6 @@ def _llamar_modelo_gemini_unico(
                 time.sleep(1.5)
                 continue
             break
-        # Si no es error de autenticación/clave (400/401/403), no hace falta cambiar de modo de envío
         if not any(cod in ultimo_error for cod in ("HTTP 400", "HTTP 401", "HTTP 403")):
             break
 
@@ -328,24 +326,4 @@ def responder_jarvis(
         return {
             "respuesta": (
                 "No pude conectarme a la API de Gemini, jefa:\n"
-                f"- {msg_err}"
-            ),
-            "motor_usado": "Error API",
-        }
-
-
-st.session_state.setdefault("jarvis_chat", [])
-st.session_state.setdefault("contexto_doc", "")
-st.session_state.setdefault("gemini_key_sesion", obtener_clave_secreta_gemini())
-
-with st.sidebar:
-    st.markdown("### Núcleo de Cerebro")
-    motor = st.selectbox(
-        "Motor de lenguaje",
-        ["Híbrido (API con respaldo Ollama)", "API Nube (Gemini)", "Local (Ollama)"],
-    )
-    modo = st.selectbox("Perfil operativo", list(MODOS_CEREBRO.keys()))
-    temperatura = st.slider("Creatividad / Precisión", 0.1, 1.0, 0.65, 0.05)
-    entrada_key = st.text_input(
-        "Gemini API Key",
-        value=st.session_state.gemini
+                f"- {msg_err
