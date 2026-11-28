@@ -1,10 +1,8 @@
 import datetime
 import io
 import json
-import math
 import os
 import random
-import re
 import sqlite3
 import time
 import urllib.parse
@@ -462,4 +460,177 @@ def obtener_noticias_rss(consulta="Chile tecnología finanzas", limite=5):
                 pub_el = item.find("pubDate")
                 titulo = (titulo_el.text or "").strip() if titulo_el is not None else ""
                 enlace = (link_el.text or "").strip() if link_el is not None else ""
-                fecha = (pub_el.text or "")[:16].strip() if pub_el is not
+                fecha = (pub_el.text or "")[:16].strip() if pub_el is not None else ""
+                if titulo:
+                    resultados.append({"titulo": titulo, "link": enlace, "fecha": fecha})
+    except Exception:
+        pass
+    return resultados
+
+
+def fmt_clp(valor):
+    return "$" + f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def obtener_hora_chile():
+    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+    return datetime.datetime.now(tz_chile)
+
+
+def obtener_saludo_actual(ahora, lang_code="es-CL"):
+    hora = ahora.hour
+    base_lang = (lang_code or "es-CL").split("-")[0].lower()
+    if base_lang == "en":
+        if 0 <= hora < 12:
+            return "Good morning"
+        if 12 <= hora < 20:
+            return "Good afternoon"
+        return "Good evening"
+    if base_lang == "fr":
+        return "Bonjour" if 0 <= hora < 18 else "Bonsoir"
+    if base_lang == "pt":
+        if 0 <= hora < 12:
+            return "Bom dia"
+        if 12 <= hora < 18:
+            return "Boa tarde"
+        return "Boa noite"
+    if base_lang == "it":
+        if 0 <= hora < 12:
+            return "Buongiorno"
+        if 12 <= hora < 18:
+            return "Buon pomeriggio"
+        return "Buonasera"
+    if base_lang == "de":
+        if 0 <= hora < 12:
+            return "Guten Morgen"
+        if 12 <= hora < 18:
+            return "Guten Tag"
+        return "Guten Abend"
+    if 0 <= hora < 12:
+        return "Buenos días"
+    if 12 <= hora < 20:
+        return "Buenas tardes"
+    return "Buenas noches"
+
+
+def obtener_saludo_nucleo(nucleo_nombre, etiqueta_idioma=None):
+    ahora = obtener_hora_chile()
+    _, cfg = obtener_config_idioma(etiqueta_idioma)
+    lang_code = cfg["code"]
+    base_lang = lang_code.split("-")[0].lower()
+    saludo = obtener_saludo_actual(ahora, lang_code)
+    pref = f"[{nucleo_nombre}] "
+
+    if base_lang == "en":
+        saludos_en = {
+            "JARVIS": [
+                f"{pref}{saludo}, Boss. Good to have you around; the servers were starting to wonder if you'd forgotten the password.",
+                f"{pref}{saludo}, Boss. Ready when you are—what are we tackling first?",
+            ],
+            "VIERNES": [
+                f"{pref}{saludo}, Boss! Let's get things moving. What's on your mind?",
+                f"{pref}{saludo}, Boss! All systems warm and ready—what do you need?",
+            ],
+            "NOVA": [
+                f"{pref}{saludo}, Boss! Buin Node is locked in. Where are we pointing our radar today?",
+                f"{pref}{saludo}, Boss! Signal's clear from Buin—what shall we explore next?",
+            ],
+            "ARTEX": [
+                f"{pref}{saludo}, Boss! ARTEX is online and sharp. What are we analyzing or building?",
+                f"{pref}{saludo}, Boss! Ready for calculations, strategy, or straight talk.",
+            ],
+        }
+        return random.choice(saludos_en.get(nucleo_nombre, [f"{pref}{saludo}, Boss. Right here with you."]))
+
+    if base_lang == "fr":
+        return f"{pref}{saludo}, patronne. Noyau {nucleo_nombre} actif à Buin—qu'est-ce qu'on fait ?"
+    if base_lang == "pt":
+        return f"{pref}{saludo}, chefe. Núcleo {nucleo_nombre} pronto em Buin—por onde começamos?"
+    if base_lang == "it":
+        return f"{pref}{saludo}, capa. Nucleo {nucleo_nombre} attivo da Buin—da dove partiamo?"
+    if base_lang == "de":
+        return f"{pref}{saludo}, Chefin. Kern {nucleo_nombre} in Buin ist bereit—woran gehen wir?"
+
+    saludos = {
+        "JARVIS": [
+            f"{pref}{saludo}, jefa. Qué bueno verla por aquí; los servidores ya pensaban que se habían ido de vacaciones sin avisar.",
+            f"{pref}{saludo}, jefa. Aquí estamos, listos para conversar o mover lo que haga falta. ¿Qué traemos hoy?",
+            f"{pref}{saludo}, jefa. Un gusto saludarla—¿en qué andamos o qué le damos vuelta ahora?",
+        ],
+        "VIERNES": [
+            f"{pref}¡{saludo}, jefa! Todo andando. ¿Qué encendemos o resolvemos primero?",
+            f"{pref}¡{saludo}, jefa! Por acá con toda la pila puesta. ¿Qué tienes en mente?",
+        ],
+        "NOVA": [
+            f"{pref}¡{saludo}, jefa! Enlace firme desde Buin. ¿Qué tema o proyecto exploramos ahora?",
+            f"{pref}¡{saludo}, jefa! Radar despejado por acá—¿hacia dónde vamos hoy?",
+        ],
+        "ARTEX": [
+            f"{pref}¡{saludo}, jefa! En línea y afinado. ¿Calculamos, revisamos o conversamos directo?",
+            f"{pref}¡{saludo}, jefa! Listo para entrar en materia cuando usted diga.",
+        ],
+    }
+    return random.choice(saludos.get(nucleo_nombre, [f"{pref}{saludo}, jefa. Aquí estoy."]))
+
+
+def obtener_presentacion_nucleo(nucleo_nombre, etiqueta_idioma=None):
+    _, cfg = obtener_config_idioma(etiqueta_idioma)
+    base_lang = cfg["code"].split("-")[0].lower()
+    pref = f"[{nucleo_nombre}] "
+
+    if base_lang == "en":
+        presentaciones_en = {
+            "JARVIS": (
+                f"{pref}I'm **J.A.R.V.I.S.**, your assistant here at **Buin Node, Chile**, Boss—part tactical helper, "
+                "part sounding board, always ready for live figures, notes, missions, or a good conversation."
+            ),
+            "VIERNES": (
+                f"{pref}I'm **VIERNES**, your fast-paced core at **Buin Node, Chile**, Boss—built for quick answers, "
+                "zero fluff, and getting things done without dragging our feet."
+            ),
+            "NOVA": (
+                f"{pref}I'm **NOVA**, your exploration core at **Buin Node, Chile**, Boss—great for following leads, "
+                "tracking ideas, and keeping tabs on what's moving."
+            ),
+            "ARTEX": (
+                f"{pref}I'm **ARTEX**, your analytical core at **Buin Node, Chile**, Boss—sharp with numbers, "
+                "science, history, and straight-to-the-point reasoning."
+            ),
+        }
+        return presentaciones_en.get(
+            nucleo_nombre,
+            f"{pref}I'm **{nucleo_nombre}**, active at **Buin Node, Chile**, Boss.",
+        )
+
+    presentaciones_es = {
+        "JARVIS": (
+            f"{pref}Soy **J.A.R.V.I.S.**, su mano derecha aquí en el **Nodo Buin**, jefa—entre datos, misiones, "
+            "cálculos, noticias y conversación franca, siempre con un ojo en el tablero y otro en que usted esté cómoda."
+        ),
+        "VIERNES": (
+            f"{pref}Soy **VIERNES**, su núcleo más ágil en **Buin**, jefa—ideal para ir al grano, resolver rápido "
+            "y no darle mil vueltas a lo que se puede mover al tiro."
+        ),
+        "NOVA": (
+            f"{pref}Soy **NOVA**, su núcleo de exploración desde **Buin**, jefa—pensada para seguir pistas, "
+            "ordenar ideas y mantener el radar abierto."
+        ),
+        "ARTEX": (
+            f"{pref}Soy **ARTEX**, su núcleo de análisis y cálculo en **Buin**, jefa—fuerte en números, "
+            "ciencia, historia, geografía y respuestas claras sin rodeos."
+        ),
+    }
+    return presentaciones_es.get(
+        nucleo_nombre,
+        f"{pref}Soy **{nucleo_nombre}**, activo en **Buin**, jefa.",
+    )
+
+
+def purgar_chat(nucleo_nombre):
+    st.session_state["mensajes"] = [
+        {
+            "role": "assistant",
+            "content": obtener_saludo_nucleo(nucleo_nombre, st.session_state.get("idioma_sistema")),
+        }
+    ]
+    st.session_state["pendiente_voz"] =
