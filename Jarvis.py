@@ -37,10 +37,22 @@ def construir_prompt_sistema(modo: str = "Copiloto General", contexto_extra: str
     return "\n\n".join(partes)
 
 
+def _formatear_error_http(resp: requests.Response) -> str:
+    detalle = ""
+    try:
+        data = resp.json()
+        err = data.get("error", {})
+        detalle = err.get("message") or str(data)
+    except Exception:
+        detalle = (resp.text or "").strip()[:300]
+    return f"HTTP {resp.status_code}" + (f": {detalle}" if detalle else "")
+
+
 def consultar_gemini_api(mensajes, api_key: str, modelo: str = "gemini-2.5-flash", modo: str = "Copiloto General", contexto_extra: str = "", temperatura: float = 0.65) -> str:
     if not api_key:
         raise ValueError("Falta la API Key de Gemini (GEMINI_API_KEY o campo en interfaz).")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
+    modelo_limpio = (modelo or "gemini-2.5-flash").strip()
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_limpio}:generateContent"
     headers = {"x-goog-api-key": api_key.strip(), "Content-Type": "application/json"}
     contents = [
         {"role": ("model" if m.get("role") == "assistant" else "user"), "parts": [{"text": (m.get("content") or "").strip()}]}
@@ -53,7 +65,8 @@ def consultar_gemini_api(mensajes, api_key: str, modelo: str = "gemini-2.5-flash
         "generationConfig": {"temperature": temperatura},
     }
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(_formatear_error_http(resp))
     candidatos = resp.json().get("candidates", [])
     if not candidatos:
         return "No recibí respuesta del modelo en la nube, jefa."
@@ -80,18 +93,25 @@ def consultar_ollama_local(mensajes, modelo: str = "llama3.1:8b", base_url: str 
             chat_messages.append({"role": rol, "content": texto})
     payload = {"model": modelo.strip(), "messages": chat_messages, "stream": False, "options": {"temperature": temperatura}}
     resp = requests.post(url, json=payload, timeout=120)
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(_formatear_error_http(resp))
     return (resp.json().get("message", {}).get("content") or "").strip() or "Ollama devolvió una respuesta vacía."
 
 
 def responder_jarvis(mensajes, motor: str = "Híbrido (API con respaldo Ollama)", gemini_api_key=None, gemini_modelo: str = "gemini-2.5-flash", ollama_modelo: str = "llama3.1:8b", ollama_url: str = "http://localhost:11434", modo: str = "Copiloto General", contexto_extra: str = "", temperatura: float = 0.65):
     clave_efectiva = (gemini_api_key or os.getenv("GEMINI_API_KEY", "")).strip()
     if motor == "API Nube (Gemini)":
-        texto = consultar_gemini_api(mensajes, clave_efectiva, gemini_modelo, modo, contexto_extra, temperatura)
-        return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
+        try:
+            texto = consultar_gemini_api(mensajes, clave_efectiva, gemini_modelo, modo, contexto_extra, temperatura)
+            return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
+        except Exception as err_api:
+            return {"respuesta": f"La API de Gemini devolvió un aviso, jefa:\n- {err_api}", "motor_usado": "Error Gemini API"}
     if motor == "Local (Ollama)":
-        texto = consultar_ollama_local(mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura)
-        return {"respuesta": texto, "motor_usado": f"Ollama Local ({ollama_modelo})"}
+        try:
+            texto = consultar_ollama_local(mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura)
+            return {"respuesta": texto, "motor_usado": f"Ollama Local ({ollama_modelo})"}
+        except Exception as err_local:
+            return {"respuesta": f"No pude conectarme a Ollama local, jefa:\n- {err_local}", "motor_usado": "Error Ollama"}
     try:
         texto = consultar_gemini_api(mensajes, clave_efectiva, gemini_modelo, modo, contexto_extra, temperatura)
         return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
@@ -115,39 +135,4 @@ with st.sidebar:
     gemini_modelo = st.selectbox("Modelo Gemini", ["gemini-2.5-flash", "gemini-2.5-pro"])
     ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
     modelos_locales = listar_modelos_ollama(ollama_url)
-    ollama_modelo = st.selectbox("Modelo Ollama local", modelos_locales if modelos_locales else ["llama3.1:8b", "qwen2.5:7b", "mistral"])
-    if PYPDF_DISPONIBLE:
-        archivo_pdf = st.file_uploader("Cargar PDF de consulta (opcional)", type=["pdf"])
-        if archivo_pdf is not None:
-            lector = PdfReader(archivo_pdf)
-            st.session_state.contexto_doc = "\n".join(pagina.extract_text() or "" for pagina in lector.pages)
-            st.caption(f"Documento cargado: {len(lector.pages)} páginas listas como contexto.")
-    else:
-        st.caption("Agrega 'pypdf' en requirements.txt para habilitar carga de PDF.")
-
-for msg in st.session_state.jarvis_chat:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-        if msg.get("motor"):
-            st.caption(f"Vía: {msg['motor']}")
-
-prompt = st.chat_input("Háblale a Jarvis...")
-if prompt:
-    st.session_state.jarvis_chat.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    resultado = responder_jarvis(
-        mensajes=st.session_state.jarvis_chat,
-        motor=motor,
-        gemini_api_key=gemini_key,
-        gemini_modelo=gemini_modelo,
-        ollama_modelo=ollama_modelo,
-        ollama_url=ollama_url,
-        modo=modo,
-        contexto_extra=st.session_state.contexto_doc,
-        temperatura=temperatura,
-    )
-    st.session_state.jarvis_chat.append({"role": "assistant", "content": resultado["respuesta"], "motor": resultado["motor_usado"]})
-    with st.chat_message("assistant"):
-        st.markdown(resultado["respuesta"])
-        st.caption(f"Vía: {resultado['motor_usado']}")
+    ollama_modelo = st.selectbox("Modelo Ollama local", modelos_locales if modelos_locales else ["llama3.1:8b", "qwen
