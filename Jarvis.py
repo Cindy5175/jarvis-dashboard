@@ -35,12 +35,23 @@ MODELOS_RESPALDO_GEMINI = [
 ]
 
 
+def _limpiar_clave(valor) -> str:
+    if not valor:
+        return ""
+    limpia = "".join(str(valor).split()).strip()
+    if (limpia.startswith('"') and limpia.endswith('"')) or (
+        limpia.startswith("'") and limpia.endswith("'")
+    ):
+        limpia = limpia[1:-1].strip()
+    return limpia
+
+
 def _buscar_en_mapping(mapping, nombres):
     if not mapping:
         return ""
     for nombre in nombres:
         if nombre in mapping and mapping[nombre]:
-            val = str(mapping[nombre]).strip()
+            val = _limpiar_clave(mapping[nombre])
             if val:
                 return val
     return ""
@@ -87,6 +98,21 @@ def _formatear_error_http(resp: requests.Response) -> str:
     return f"HTTP {resp.status_code}" + (f": {detalle}" if detalle else "")
 
 
+def _peticion_gemini_con_clave(
+    url_base: str,
+    clave: str,
+    payload: dict,
+    usar_query_key: bool = False,
+) -> requests.Response:
+    headers = {"Content-Type": "application/json"}
+    params = None
+    if usar_query_key:
+        params = {"key": clave}
+    else:
+        headers["x-goog-api-key"] = clave
+    return requests.post(url_base, headers=headers, params=params, json=payload, timeout=60)
+
+
 def _llamar_modelo_gemini_unico(
     mensajes,
     api_key: str,
@@ -95,11 +121,15 @@ def _llamar_modelo_gemini_unico(
     contexto_extra: str,
     temperatura: float,
 ) -> str:
+    clave = _limpiar_clave(api_key)
+    if not clave:
+        raise ValueError("Falta la API Key de Gemini (st.secrets, GEMINI_API_KEY o campo en interfaz).")
+
     modelo_limpio = (modelo or "gemini-3.8-flash").strip()
     if modelo_limpio.startswith("models/"):
         modelo_limpio = modelo_limpio.split("models/", 1)[1]
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_limpio}:generateContent"
-    headers = {"x-goog-api-key": api_key.strip(), "Content-Type": "application/json"}
+
     contents = [
         {
             "role": ("model" if m.get("role") == "assistant" else "user"),
@@ -114,20 +144,27 @@ def _llamar_modelo_gemini_unico(
         "generationConfig": {"temperature": temperatura},
     }
 
+    # Si empieza con AQ, probamos primero con ?key= y luego con header x-goog-api-key
+    modos_envio = [True, False] if clave.startswith("AQ") else [False, True]
     ultimo_error = ""
-    for intento in range(2):
-        resp = requests.post(url, headers=headers, json=payload, timeout=60)
-        if resp.ok:
-            candidatos = resp.json().get("candidates", [])
-            if not candidatos:
-                return "No recibí respuesta del modelo en la nube, jefa."
-            partes = candidatos[0].get("content", {}).get("parts", [])
-            return "".join(p.get("text", "") for p in partes if "text" in p).strip() or "Respuesta vacía del modelo."
-        ultimo_error = _formatear_error_http(resp)
-        if resp.status_code in (429, 500, 502, 503, 504) and intento == 0:
-            time.sleep(1.5)
-            continue
-        break
+
+    for usar_q in modos_envio:
+        for intento in range(2):
+            resp = _peticion_gemini_con_clave(url, clave, payload, usar_query_key=usar_q)
+            if resp.ok:
+                candidatos = resp.json().get("candidates", [])
+                if not candidatos:
+                    return "No recibí respuesta del modelo en la nube, jefa."
+                partes = candidatos[0].get("content", {}).get("parts", [])
+                return "".join(p.get("text", "") for p in partes if "text" in p).strip() or "Respuesta vacía del modelo."
+            ultimo_error = _formatear_error_http(resp)
+            if resp.status_code in (429, 500, 502, 503, 504) and intento == 0:
+                time.sleep(1.5)
+                continue
+            break
+        # Si no es error de autenticación/clave (400/401/403), no hace falta cambiar de modo de envío
+        if not any(cod in ultimo_error for cod in ("HTTP 400", "HTTP 401", "HTTP 403")):
+            break
 
     raise RuntimeError(ultimo_error)
 
@@ -140,7 +177,8 @@ def consultar_gemini_api(
     contexto_extra: str = "",
     temperatura: float = 0.65,
 ):
-    if not api_key:
+    clave = _limpiar_clave(api_key)
+    if not clave:
         raise ValueError("Falta la API Key de Gemini (st.secrets, GEMINI_API_KEY o campo en interfaz).")
 
     principal = (modelo or "gemini-3.8-flash").strip()
@@ -150,13 +188,12 @@ def consultar_gemini_api(
     for mod in candidatos_modelos:
         try:
             texto = _llamar_modelo_gemini_unico(
-                mensajes, api_key, mod, modo, contexto_extra, temperatura
+                mensajes, clave, mod, modo, contexto_extra, temperatura
             )
             return texto, mod
         except Exception as err:
             msg_err = str(err)
             errores.append(f"{mod} -> {msg_err}")
-            # Si la clave es inválida (400/401/403), no seguimos probando otros modelos
             if any(cod in msg_err for cod in ("HTTP 400", "HTTP 401", "HTTP 403")):
                 raise RuntimeError(msg_err)
 
@@ -215,7 +252,18 @@ def responder_jarvis(
     contexto_extra: str = "",
     temperatura: float = 0.65,
 ):
-    clave_efectiva = (gemini_api_key or obtener_clave_secreta_gemini()).strip()
+    clave_efectiva = _limpiar_clave(gemini_api_key) or obtener_clave_secreta_gemini()
+
+    if not clave_efectiva and motor in ("Híbrido (API con respaldo Ollama)", "API Nube (Gemini)"):
+        return {
+            "respuesta": (
+                "No detecto una clave de Gemini activa en esta sesión, jefa.\n"
+                "Pégala en el campo **Gemini API Key** de la barra lateral y presiona **Enter**, "
+                "o guárdala en `Secrets` como `GEMINI_API_KEY`."
+            ),
+            "motor_usado": "Sin clave API",
+        }
+
     if motor == "API Nube (Gemini)":
         try:
             texto, modelo_usado = consultar_gemini_api(
@@ -267,13 +315,22 @@ def responder_jarvis(
                     ),
                     "motor_usado": "Sin conexión",
                 }
+        msg_err = str(err_api)
+        if "503" in msg_err or "high demand" in msg_err.lower() or "unavailable" in msg_err.lower():
+            return {
+                "respuesta": (
+                    "Los modelos de Gemini están con alta demanda temporal en este segundo, jefa:\n"
+                    f"- {msg_err}\n"
+                    "Intenta reenviar el mensaje en unos segundos."
+                ),
+                "motor_usado": "Demanda alta temporal",
+            }
         return {
             "respuesta": (
-                "Los modelos de Gemini están con alta demanda temporal en este segundo, jefa:\n"
-                f"- {err_api}\n"
-                "Intenta reenviar el mensaje en unos segundos."
+                "No pude conectarme a la API de Gemini, jefa:\n"
+                f"- {msg_err}"
             ),
-            "motor_usado": "Demanda alta temporal",
+            "motor_usado": "Error API",
         }
 
 
@@ -291,63 +348,4 @@ with st.sidebar:
     temperatura = st.slider("Creatividad / Precisión", 0.1, 1.0, 0.65, 0.05)
     entrada_key = st.text_input(
         "Gemini API Key",
-        value=st.session_state.gemini_key_sesion,
-        type="password",
-        key="input_gemini_key",
-    )
-    if entrada_key.strip():
-        st.session_state.gemini_key_sesion = entrada_key.strip()
-    elif not obtener_clave_secreta_gemini():
-        st.session_state.gemini_key_sesion = ""
-
-    if st.session_state.gemini_key_sesion:
-        st.caption("Estado API Key: lista y detectada.")
-    else:
-        st.caption("Estado API Key: sin clave detectada (ingrésala y presiona Enter).")
-
-    gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash")
-    ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
-    modelos_locales = listar_modelos_ollama(ollama_url) if _es_entorno_local(ollama_url) else []
-    ollama_modelo = st.selectbox(
-        "Modelo Ollama local",
-        modelos_locales if modelos_locales else ["llama3.1:8b", "qwen2.5:7b", "mistral"],
-    )
-    if PYPDF_DISPONIBLE:
-        archivo_pdf = st.file_uploader("Cargar PDF de consulta (opcional)", type=["pdf"])
-        if archivo_pdf is not None:
-            lector = PdfReader(archivo_pdf)
-            st.session_state.contexto_doc = "\n".join(
-                pagina.extract_text() or "" for pagina in lector.pages
-            )
-            st.caption(f"Documento cargado: {len(lector.pages)} páginas listas como contexto.")
-    else:
-        st.caption("Agrega 'pypdf' en requirements.txt para habilitar carga de PDF.")
-
-for msg in st.session_state.jarvis_chat:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-        if msg.get("motor"):
-            st.caption(f"Vía: {msg['motor']}")
-
-prompt = st.chat_input("Háblale a Jarvis...")
-if prompt:
-    st.session_state.jarvis_chat.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    resultado = responder_jarvis(
-        mensajes=st.session_state.jarvis_chat,
-        motor=motor,
-        gemini_api_key=st.session_state.gemini_key_sesion,
-        gemini_modelo=gemini_modelo,
-        ollama_modelo=ollama_modelo,
-        ollama_url=ollama_url,
-        modo=modo,
-        contexto_extra=st.session_state.contexto_doc,
-        temperatura=temperatura,
-    )
-    st.session_state.jarvis_chat.append(
-        {"role": "assistant", "content": resultado["respuesta"], "motor": resultado["motor_usado"]}
-    )
-    with st.chat_message("assistant"):
-        st.markdown(resultado["respuesta"])
-        st.caption(f"Vía: {resultado['motor_usado']}")
+        value=st.session_state.gemini
