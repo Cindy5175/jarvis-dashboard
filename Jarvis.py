@@ -51,14 +51,16 @@ def _formatear_error_http(resp: requests.Response) -> str:
 def consultar_gemini_api(
     mensajes,
     api_key: str,
-    modelo: str = "gemini-2.5-flash",
+    modelo: str = "gemini-3.8-flash",
     modo: str = "Copiloto General",
     contexto_extra: str = "",
     temperatura: float = 0.65,
 ) -> str:
     if not api_key:
         raise ValueError("Falta la API Key de Gemini (GEMINI_API_KEY o campo en interfaz).")
-    modelo_limpio = (modelo or "gemini-2.5-flash").strip()
+    modelo_limpio = (modelo or "gemini-3.8-flash").strip()
+    if modelo_limpio.startswith("models/"):
+        modelo_limpio = modelo_limpio.split("models/", 1)[1]
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_limpio}:generateContent"
     headers = {"x-goog-api-key": api_key.strip(), "Content-Type": "application/json"}
     contents = [
@@ -124,7 +126,7 @@ def responder_jarvis(
     mensajes,
     motor: str = "Híbrido (API con respaldo Ollama)",
     gemini_api_key=None,
-    gemini_modelo: str = "gemini-2.5-flash",
+    gemini_modelo: str = "gemini-3.8-flash",
     ollama_modelo: str = "llama3.1:8b",
     ollama_url: str = "http://localhost:11434",
     modo: str = "Copiloto General",
@@ -193,7 +195,7 @@ with st.sidebar:
     gemini_key = st.text_input(
         "Gemini API Key", value=os.getenv("GEMINI_API_KEY", ""), type="password"
     )
-    gemini_modelo = st.selectbox("Modelo Gemini", ["gemini-2.5-flash", "gemini-2.5-pro"])
+    gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash")
     ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
     modelos_locales = listar_modelos_ollama(ollama_url)
     ollama_modelo = st.selectbox(
