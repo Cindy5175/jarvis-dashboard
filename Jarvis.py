@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import streamlit as st
 
@@ -24,6 +25,14 @@ MODOS_CEREBRO = {
     "Estratega (Sabor Casero / Montessori)": "Enfócate en conversión simple, tiempos reales, experiencia de usuario y pasos accionables sin enredos.",
     "Radar de Notas y Síntesis": "Resume, extrae pendientes, detecta prioridades y convierte ideas sueltas en próximos pasos concretos.",
 }
+
+
+MODELOS_RESPALDO_GEMINI = [
+    "gemini-3.8-flash",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+]
 
 
 def _buscar_en_mapping(mapping, nombres):
@@ -78,16 +87,14 @@ def _formatear_error_http(resp: requests.Response) -> str:
     return f"HTTP {resp.status_code}" + (f": {detalle}" if detalle else "")
 
 
-def consultar_gemini_api(
+def _llamar_modelo_gemini_unico(
     mensajes,
     api_key: str,
-    modelo: str = "gemini-3.8-flash",
-    modo: str = "Copiloto General",
-    contexto_extra: str = "",
-    temperatura: float = 0.65,
+    modelo: str,
+    modo: str,
+    contexto_extra: str,
+    temperatura: float,
 ) -> str:
-    if not api_key:
-        raise ValueError("Falta la API Key de Gemini (st.secrets, GEMINI_API_KEY o campo en interfaz).")
     modelo_limpio = (modelo or "gemini-3.8-flash").strip()
     if modelo_limpio.startswith("models/"):
         modelo_limpio = modelo_limpio.split("models/", 1)[1]
@@ -106,14 +113,54 @@ def consultar_gemini_api(
         "contents": contents,
         "generationConfig": {"temperature": temperatura},
     }
-    resp = requests.post(url, headers=headers, json=payload, timeout=60)
-    if not resp.ok:
-        raise RuntimeError(_formatear_error_http(resp))
-    candidatos = resp.json().get("candidates", [])
-    if not candidatos:
-        return "No recibí respuesta del modelo en la nube, jefa."
-    partes = candidatos[0].get("content", {}).get("parts", [])
-    return "".join(p.get("text", "") for p in partes if "text" in p).strip() or "Respuesta vacía del modelo."
+
+    ultimo_error = ""
+    for intento in range(2):
+        resp = requests.post(url, headers=headers, json=payload, timeout=60)
+        if resp.ok:
+            candidatos = resp.json().get("candidates", [])
+            if not candidatos:
+                return "No recibí respuesta del modelo en la nube, jefa."
+            partes = candidatos[0].get("content", {}).get("parts", [])
+            return "".join(p.get("text", "") for p in partes if "text" in p).strip() or "Respuesta vacía del modelo."
+        ultimo_error = _formatear_error_http(resp)
+        if resp.status_code in (429, 500, 502, 503, 504) and intento == 0:
+            time.sleep(1.5)
+            continue
+        break
+
+    raise RuntimeError(ultimo_error)
+
+
+def consultar_gemini_api(
+    mensajes,
+    api_key: str,
+    modelo: str = "gemini-3.8-flash",
+    modo: str = "Copiloto General",
+    contexto_extra: str = "",
+    temperatura: float = 0.65,
+):
+    if not api_key:
+        raise ValueError("Falta la API Key de Gemini (st.secrets, GEMINI_API_KEY o campo en interfaz).")
+
+    principal = (modelo or "gemini-3.8-flash").strip()
+    candidatos_modelos = [principal] + [m for m in MODELOS_RESPALDO_GEMINI if m != principal]
+    errores = []
+
+    for mod in candidatos_modelos:
+        try:
+            texto = _llamar_modelo_gemini_unico(
+                mensajes, api_key, mod, modo, contexto_extra, temperatura
+            )
+            return texto, mod
+        except Exception as err:
+            msg_err = str(err)
+            errores.append(f"{mod} -> {msg_err}")
+            # Si la clave es inválida (400/401/403), no seguimos probando otros modelos
+            if any(cod in msg_err for cod in ("HTTP 400", "HTTP 401", "HTTP 403")):
+                raise RuntimeError(msg_err)
+
+    raise RuntimeError(" | ".join(errores))
 
 
 def listar_modelos_ollama(base_url: str = "http://localhost:11434"):
@@ -171,10 +218,10 @@ def responder_jarvis(
     clave_efectiva = (gemini_api_key or obtener_clave_secreta_gemini()).strip()
     if motor == "API Nube (Gemini)":
         try:
-            texto = consultar_gemini_api(
+            texto, modelo_usado = consultar_gemini_api(
                 mensajes, clave_efectiva, gemini_modelo, modo, contexto_extra, temperatura
             )
-            return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
+            return {"respuesta": texto, "motor_usado": f"Gemini API ({modelo_usado})"}
         except Exception as err_api:
             return {
                 "respuesta": f"La API de Gemini devolvió un aviso, jefa:\n- {err_api}",
@@ -197,10 +244,10 @@ def responder_jarvis(
                 "motor_usado": "Error Ollama",
             }
     try:
-        texto = consultar_gemini_api(
+        texto, modelo_usado = consultar_gemini_api(
             mensajes, clave_efectiva, gemini_modelo, modo, contexto_extra, temperatura
         )
-        return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
+        return {"respuesta": texto, "motor_usado": f"Gemini API ({modelo_usado})"}
     except Exception as err_api:
         if _es_entorno_local(ollama_url):
             try:
@@ -222,11 +269,11 @@ def responder_jarvis(
                 }
         return {
             "respuesta": (
-                "No pude conectarme a la API de Gemini, jefa:\n"
+                "Los modelos de Gemini están con alta demanda temporal en este segundo, jefa:\n"
                 f"- {err_api}\n"
-                "*(En Streamlit Cloud no se intenta localhost de Ollama; revisa GEMINI_API_KEY en Secrets o en el campo de la barra lateral).* "
+                "Intenta reenviar el mensaje en unos segundos."
             ),
-            "motor_usado": "Sin conexión API",
+            "motor_usado": "Demanda alta temporal",
         }
 
 
