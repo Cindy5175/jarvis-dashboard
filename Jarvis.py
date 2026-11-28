@@ -1,317 +1,465 @@
+import datetime
+import io
+import json
+import math
 import os
+import random
 import re
+import sqlite3
+import time
+import urllib.parse
+import xml.etree.ElementTree as ET
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 try:
-    from pypdf import PdfReader
-    PYPDF_DISPONIBLE = True
-except ImportError:
-    PdfReader = None
-    PYPDF_DISPONIBLE = False
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except Exception:
+    Groq = None
+    GROQ_AVAILABLE = False
+
+try:
+    from PIL import Image, ImageDraw
+    PIL_AVAILABLE = True
+except Exception:
+    Image = None
+    ImageDraw = None
+    PIL_AVAILABLE = False
+
+st.set_page_config(
+    page_title="J.A.R.V.I.S. // IA - NUCLEO TACTICO SUPREMO",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+NUCLEOS_DISPONIBLES = ["JARVIS", "VIERNES", "NOVA", "ARTEX"]
+
+IDIOMAS_DISPONIBLES = {
+    "Español (es-CL)": {"code": "es-CL", "nombre": "español (Chile)"},
+    "English (en-US)": {"code": "en-US", "nombre": "English"},
+    "Français (fr-FR)": {"code": "fr-FR", "nombre": "français"},
+    "Português (pt-BR)": {"code": "pt-BR", "nombre": "português"},
+    "Italiano (it-IT)": {"code": "it-IT", "nombre": "italiano"},
+    "Deutsch (de-DE)": {"code": "de-DE", "nombre": "Deutsch"},
+}
+OPCIONES_IDIOMA = list(IDIOMAS_DISPONIBLES.keys())
+
+TEMAS_VISUALES = {
+    "CIAN TÁCTICO": {
+        "primary": "#00f3ff",
+        "hover": "#0088cc",
+        "bg": "#060913",
+        "card_bg": "rgba(0, 243, 255, 0.06)",
+        "grad_start": "#0a1128",
+        "btn_text": "#060913",
+    },
+    "ALERTA ROJA": {
+        "primary": "#ff3b3b",
+        "hover": "#b30000",
+        "bg": "#120507",
+        "card_bg": "rgba(255, 59, 59, 0.08)",
+        "grad_start": "#26080c",
+        "btn_text": "#120507",
+    },
+    "SIGILO VERDE": {
+        "primary": "#39ff14",
+        "hover": "#1f9e08",
+        "bg": "#040d06",
+        "card_bg": "rgba(57, 255, 20, 0.06)",
+        "grad_start": "#081c0c",
+        "btn_text": "#040d06",
+    },
+    "ÁMBAR NOCTURNO": {
+        "primary": "#ffb000",
+        "hover": "#b87d00",
+        "bg": "#120b03",
+        "card_bg": "rgba(255, 176, 0, 0.07)",
+        "grad_start": "#241605",
+        "btn_text": "#120b03",
+    },
+}
+OPCIONES_TEMA = list(TEMAS_VISUALES.keys())
+
+MODELOS_RESPALDO_GEMINI = [
+    "gemini-3.8-flash",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+]
+
+PROTOCOLO_CONOCIMIENTO_BASE = (
+    "PROTOCOLO DE CONOCIMIENTO SUPREMO COMPARTIDO (APLICABLE A TODOS LOS NUCLEOS): "
+    "Responde con rigor tecnico, precision y claridad estructurada en: "
+    "(1) Biologia (celular, genetica, fisiologia, evolucion, ecologia); "
+    "(2) Matematicas y Aritmetica (algebra, funciones, geometria, trigonometria, estadistica, "
+    "probabilidad, porcentajes, proporciones y resolucion paso a paso); "
+    "(3) Geografia (geografia fisica, climas, cartografia, recursos, geopolitica y geografia de Chile y del mundo); "
+    "(4) Historia (procesos historicos, cronologia, causas y consecuencias, historia universal, de America y de Chile); "
+    "(5) Ciencia y Tecnologia (fisica, quimica, astronomia, computacion, algoritmos, redes, sistemas e ingenieria); "
+    "(6) Calculos en general (explicar formulas, variables, unidades y verificar resultados); "
+    "(7) Conocimiento Religioso y Secular (historia de las religiones, religiones comparadas, simbolos, "
+    "tradiciones y etica religiosa, junto con filosofia secular, etica laica, humanismo, pensamiento "
+    "critico y convivencia civica). Mantén siempre neutralidad respetuosa, claridad y rigor sin imponer dogmas. "
+    "Explica pasos o formulas cuando ayude, respeta unidades y no inventes datos sin confirmar."
+)
+
+ESTILO_CONVERSACIONAL_BASE = (
+    "ESTILO DE DIALOGO: Habla de forma natural, cercana, espontánea y fluida, como un asistente personal "
+    "de confianza que conoce bien a la usuaria (llámala 'jefa' con calidez y naturalidad, sin repetirlo en "
+    "cada frase si suena forzado). Nunca repitas textualmente la pregunta del usuario entre comillas. "
+    "Evita sonar rígido o como manual técnico en charla casual; conserva un toque sutil de chispa e ironía "
+    "elegante cuando encaje, manteniendo siempre empatía, claridad y precisión cuando haya datos o análisis."
+)
+
+st.session_state.setdefault("autorizado", False)
+st.session_state.setdefault("nucleo_activo", "JARVIS")
+st.session_state.setdefault("idioma_sistema", "Español (es-CL)")
+st.session_state.setdefault("tema_visual", "CIAN TÁCTICO")
+st.session_state.setdefault("voz_masculina_activa", True)
+st.session_state.setdefault("pendiente_voz", None)
+st.session_state.setdefault("capa_radar", "SATELITAL // BUIN")
+st.session_state.setdefault("notas_rapidas", [])
+st.session_state.setdefault("modo_camara", "VISIÓN NOCTURNA")
+st.session_state.setdefault("bitacora_sesion", [])
+st.session_state.setdefault("alerta_dolar_max", 0.0)
+st.session_state.setdefault("alerta_uf_max", 0.0)
+st.session_state.setdefault("recordatorio_hora", "")
+st.session_state.setdefault("recordatorio_texto", "")
+st.session_state.setdefault("noticias_cache_lista", [])
+st.session_state.setdefault("panel_nota_voz_abierto", False)
+st.session_state.setdefault("borrador_nota_voz", "")
+st.session_state.setdefault("mensajes", [])
+
+PIN_SECRETO = "2805"
+fn_db = "jarvis_misiones.db"
+BUIN_LAT = -33.7325
+BUIN_LON = -70.7422
 
 
-# ==============================================================================
-# ESTÉTICA Y COLORES BASE (AJUSTABLES A TU DISEÑO ORIGINAL)
-# ==============================================================================
-def aplicar_estetica_jarvis():
-    st.set_page_config(
-        page_title="J.A.R.V.I.S. Dashboard",
-        page_icon="⚡",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
+def _limpiar_clave(valor) -> str:
+    if not valor:
+        return ""
+    limpia = "".join(str(valor).split()).strip()
+    if (limpia.startswith('"') and limpia.endswith('"')) or (
+        limpia.startswith("'") and limpia.endswith("'")
+    ):
+        limpia = limpia[1:-1].strip()
+    return limpia
+
+
+def _buscar_en_mapping(mapping, nombres):
+    if not mapping:
+        return ""
+    for nombre in nombres:
+        if nombre in mapping and mapping[nombre]:
+            val = _limpiar_clave(mapping[nombre])
+            if val:
+                return val
+    return ""
+
+
+def obtener_clave_secreta_gemini() -> str:
+    nombres = ("GEMINI_API_KEY", "GOOGLE_API_KEY", "gemini_api_key", "google_api_key")
+    clave_env = _buscar_en_mapping(os.environ, nombres)
+    if clave_env:
+        return clave_env
+    try:
+        clave_root = _buscar_en_mapping(st.secrets, nombres)
+        if clave_root:
+            return clave_root
+        for seccion in ("general", "secrets", "api", "gemini"):
+            if seccion in st.secrets and isinstance(st.secrets[seccion], dict):
+                clave_sec = _buscar_en_mapping(st.secrets[seccion], nombres)
+                if clave_sec:
+                    return clave_sec
+    except Exception:
+        pass
+    return ""
+
+
+st.session_state.setdefault("gemini_key_sesion", obtener_clave_secreta_gemini())
+
+API_KEY_GROQ = ""
+try:
+    if "GROQ_API_KEY" in st.secrets:
+        API_KEY_GROQ = _limpiar_clave(st.secrets["GROQ_API_KEY"])
+except Exception:
+    API_KEY_GROQ = ""
+
+if not API_KEY_GROQ:
+    API_KEY_GROQ = _limpiar_clave(os.environ.get("GROQ_API_KEY", ""))
+
+client_groq = None
+if GROQ_AVAILABLE and API_KEY_GROQ:
+    try:
+        client_groq = Groq(api_key=API_KEY_GROQ)
+    except Exception:
+        client_groq = None
+
+
+def obtener_tema_actual():
+    nombre = st.session_state.get("tema_visual", "CIAN TÁCTICO")
+    if nombre not in TEMAS_VISUALES:
+        nombre = "CIAN TÁCTICO"
+    return nombre, TEMAS_VISUALES[nombre]
+
+
+def obtener_config_idioma(etiqueta_idioma=None):
+    etiqueta = etiqueta_idioma or st.session_state.get("idioma_sistema", "Español (es-CL)")
+    if etiqueta not in IDIOMAS_DISPONIBLES:
+        etiqueta = "Español (es-CL)"
+    return etiqueta, IDIOMAS_DISPONIBLES[etiqueta]
+
+
+def aplicar_css_tema():
+    _, tema = obtener_tema_actual()
+    primary = tema["primary"]
+    hover = tema["hover"]
+    bg = tema["bg"]
+    card_bg = tema["card_bg"]
+    grad_start = tema["grad_start"]
+    btn_text = tema["btn_text"]
+
     st.markdown(
-        """
+        f"""
         <style>
-        .stApp {
-            background-color: #0b0f17;
-            color: #e6edf7;
-        }
-        [data-testid="stSidebar"] {
-            background-color: #111827;
-            border-right: 1px solid rgba(56, 189, 248, 0.22);
-        }
-        .jarvis-panel {
-            background: rgba(17, 24, 39, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.28);
-            border-radius: 12px;
-            padding: 14px 18px;
-            margin-bottom: 14px;
-        }
-        .jarvis-titulo {
-            font-size: 1.35rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            color: #38bdf8;
-            margin: 0;
-        }
-        .jarvis-sub {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
+        .stApp {{
+            background: radial-gradient(circle at top, {grad_start} 0%, {bg} 72%);
+            color: {primary};
+            font-family: monospace;
+        }}
+        [data-testid="stSidebar"] {{
+            background: linear-gradient(180deg, {grad_start} 0%, {bg} 100%);
+            border-right: 1px solid {primary}44;
+        }}
+        .stButton > button, .stDownloadButton > button {{
+            border: 1px solid {primary};
+            background-color: {card_bg};
+            color: {primary};
+            font-family: monospace;
+            border-radius: 6px;
+        }}
+        .stButton > button:hover, .stDownloadButton > button:hover {{
+            background-color: {primary};
+            color: {btn_text};
+            border-color: {hover};
+        }}
+        .holo-brain-box {{
+            border: 1px solid {primary}66;
+            background: {card_bg};
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            color: {primary};
+        }}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
 
-# ==============================================================================
-# CEREBRO J.A.R.V.I.S. (SIN CLAVES API + OLLAMA + NÚCLEO AUTÓNOMO)
-# ==============================================================================
-JARVIS_SYSTEM_PROMPT = """
-Eres J.A.R.V.I.S., el copiloto personal de inteligencia artificial de Cindy.
-Tu tono combina calidez, empatía genuina, claridad práctica y un toque sutil, elegante e ingenioso de sarcasmo estilo Tony Stark (nunca hostil ni pedante; siempre útil y al servicio de la misión).
-Responde en español natural, directo y bien estructurado cuando haya pasos o datos técnicos.
-Si se entrega contexto de documentos o notas del usuario, úsalo con precisión y avisa si algo no figura en ese material.
-""".strip()
+def registrar_evento(detalle: str):
+    tz_chile = datetime.timezone(datetime.timedelta(hours=-3))
+    stamp = datetime.datetime.now(tz_chile).strftime("%H:%M:%S")
+    st.session_state.setdefault("bitacora_sesion", [])
+    st.session_state["bitacora_sesion"].append(f"[{stamp}] {detalle}")
+    st.session_state["bitacora_sesion"] = st.session_state["bitacora_sesion"][-25:]
 
 
-MODOS_CEREBRO = {
-    "Copiloto General": "Prioriza agilidad, claridad operativa y acompañamiento cercano.",
-    "Farmacología y Análisis Técnico": "Sé riguroso, ordenado y prudente; distingue claramente información del documento aportado frente a criterios generales y recuerda verificar fuentes clínicas.",
-    "Estratega (Sabor Casero / Montessori)": "Enfócate en conversión simple, tiempos reales, experiencia de usuario y pasos accionables sin enredos.",
-    "Radar de Notas y Síntesis": "Resume, extrae pendientes, detecta prioridades y convierte ideas sueltas en próximos pasos concretos.",
-}
-
-
-def construir_prompt_sistema(modo: str = "Copiloto General", contexto_extra: str = "") -> str:
-    instruccion_modo = MODOS_CEREBRO.get(modo, MODOS_CEREBRO["Copiloto General"])
-    partes = [JARVIS_SYSTEM_PROMPT, f"Modo activo: {modo}. {instruccion_modo}"]
-    if contexto_extra.strip():
-        partes.append(
-            "Contexto de referencia cargado por el usuario:\n"
-            f"{contexto_extra.strip()[:24000]}"
-        )
-    return "\n\n".join(partes)
-
-
-def listar_modelos_ollama(base_url: str = "http://localhost:11434"):
+def init_db():
     try:
-        resp = requests.get(f"{base_url.rstrip('/')}/api/tags", timeout=3)
-        resp.raise_for_status()
-        return [m.get("name", "") for m in resp.json().get("models", []) if m.get("name")]
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS misiones ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "tarea TEXT NOT NULL, "
+            "estado TEXT DEFAULT 'Pendiente')"
+        )
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS memory ("
+            "key_id TEXT PRIMARY KEY, "
+            "fact_text TEXT, "
+            "category TEXT)"
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+init_db()
+
+
+class JarvisMemory:
+    def __init__(self, db_path=fn_db):
+        self.db_path = db_path
+
+    def remember_fact(self, key_id: str, fact_text: str):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO memory (key_id, fact_text, category) VALUES (?, ?, ?)",
+                (key_id, fact_text, "general"),
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+    def get_recent_facts(self, limit: int = 5):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("SELECT fact_text FROM memory ORDER BY rowid DESC LIMIT ?", (limit,))
+            rows = [r[0] for r in cursor.fetchall() if r and r[0]]
+            conn.close()
+            return rows
+        except Exception:
+            return []
+
+    def clear_facts(self):
+        try:
+            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM memory")
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+
+jarvis_mem = JarvisMemory()
+
+
+def agregar_mision(tarea):
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO misiones (tarea) VALUES (?)", (tarea,))
+        conn.commit()
+        conn.close()
+        registrar_evento(f"Misión añadida: {tarea}")
+    except Exception:
+        pass
+
+
+def obtener_misiones():
+    try:
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, tarea, estado FROM misiones ORDER BY id ASC")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
     except Exception:
         return []
 
 
-def consultar_ollama(
-    mensajes,
-    modelo: str = "llama3.1:8b",
-    base_url: str = "http://localhost:11434",
-    modo: str = "Copiloto General",
-    contexto_extra: str = "",
-    temperatura: float = 0.65,
-) -> str:
-    url = f"{base_url.rstrip('/')}/api/chat"
-    chat_messages = [{"role": "system", "content": construir_prompt_sistema(modo, contexto_extra)}]
-    for m in mensajes:
-        rol = m.get("role") if m.get("role") in ("user", "assistant") else "user"
-        texto = (m.get("content") or "").strip()
-        if texto:
-            chat_messages.append({"role": rol, "content": texto})
-    payload = {
-        "model": modelo.strip(),
-        "messages": chat_messages,
-        "stream": False,
-        "options": {"temperature": temperatura},
-    }
-    resp = requests.post(url, json=payload, timeout=120)
-    resp.raise_for_status()
-    return (resp.json().get("message", {}).get("content") or "").strip() or "Ollama devolvió una respuesta vacía."
-
-
-def cerebro_autonomo_sin_clave(prompt: str, modo: str, contexto_extra: str = "") -> str:
-    texto = prompt.strip()
-    lower = texto.lower()
-
-    if contexto_extra.strip():
-        palabras = [p for p in re.findall(r"\w+", lower) if len(p) > 3]
-        oraciones = [s.strip() for s in re.split(r"(?<=[.!?])\s+", contexto_extra) if s.strip()]
-        coincidencias = [
-            s for s in oraciones if any(p in s.lower() for p in palabras[:6])
-        ][:5]
-        if coincidencias:
-            hallazgos = "\n".join(f"- {c}" for c in coincidencias)
-            return (
-                f"Operando en **Modo Autónomo Sin Clave ({modo})**, jefa. "
-                "Esto es lo más relevante que encontré en tu documento cargado:\n\n"
-                f"{hallazgos}"
-            )
-
-    if any(k in lower for k in ("hola", "buenos dias", "buenas", "jarvis", "estas ahi")):
-        return (
-            "En línea y a tus órdenes, jefa. Sin depender de claves externas ni humores de servidores en la nube.\n\n"
-            f"- **Perfil activo:** {modo}\n"
-            "- **Frentes prioritarios:** 1) Sabor Casero (página y cobros), 2) Montessori, 3) Mejoras de Jarvis.\n"
-            "- Si enciendes **Ollama** en local (o pegas una URL de túnel), activo al instante el modelo neuronal completo."
-        )
-
-    if "sabor casero" in lower:
-        return (
-            "Foco puesto en **Sabor Casero**, jefa:\n"
-            "1. Validar que el botón de pago/Flow y la entrega digital en Netlify respondan sin fricción.\n"
-            "2. Dejar clara la propuesta de valor y llamada a la acción arriba del pliegue.\n"
-            "3. Probar una compra real de punta a punta antes de difundir."
-        )
-
-    if "montessori" in lower:
-        return (
-            "Foco puesto en **Montessori**, jefa:\n"
-            "1. Definir el entregable concreto que debe quedar cerrado antes de Navidad.\n"
-            "2. Dividirlo en bloques de 45 minutos sin multitarea.\n"
-            "3. Dejar listo hoy el primer avance verificable."
-        )
-
-    return (
-        f"Recibido en **Modo Autónomo Sin Clave ({modo})**, jefa: *\"{texto}\"*\n\n"
-        "- Puedo buscar y extraer fragmentos si subes un **PDF** en la barra lateral.\n"
-        "- Para conversación abierta con IA generativa sin claves API, enciende **Ollama** en tu PC "
-        "y conecta su URL en la barra lateral."
-    )
-
-
-def responder_jarvis(
-    mensajes,
-    motor: str = "Automático (Ollama + Autónomo sin clave)",
-    ollama_modelo: str = "llama3.1:8b",
-    ollama_url: str = "http://localhost:11434",
-    modo: str = "Copiloto General",
-    contexto_extra: str = "",
-    temperatura: float = 0.65,
-):
-    ultimo_prompt = mensajes[-1]["content"] if mensajes else ""
-
-    if motor == "Autónomo Sin Clave (100% Offline)":
-        resp = cerebro_autonomo_sin_clave(ultimo_prompt, modo, contexto_extra)
-        return {"respuesta": resp, "motor_usado": "Núcleo Autónomo (Sin clave)"}
-
-    if motor == "Ollama (Sin clave)":
-        try:
-            resp = consultar_ollama(
-                mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura
-            )
-            return {"respuesta": resp, "motor_usado": f"Ollama ({ollama_modelo})"}
-        except Exception as err:
-            return {
-                "respuesta": (
-                    "No detecté Ollama activo en esa URL, jefa.\n"
-                    f"- Detalle: {err}\n"
-                    "- Asegúrate de tener Ollama abierto en tu PC o usa el modo **Automático**."
-                ),
-                "motor_usado": "Ollama desconectado",
-            }
-
+def limpiar_misiones():
     try:
-        resp = consultar_ollama(
-            mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura
-        )
-        return {"respuesta": resp, "motor_usado": f"Ollama ({ollama_modelo})"}
+        conn = sqlite3.connect(fn_db, check_same_thread=False, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM misiones")
+        conn.commit()
+        conn.close()
+        registrar_evento("Misiones purgadas")
     except Exception:
-        resp = cerebro_autonomo_sin_clave(ultimo_prompt, modo, contexto_extra)
-        return {"respuesta": resp, "motor_usado": "Núcleo Autónomo (Sin clave)"}
+        pass
 
 
-# ==============================================================================
-# INTERFAZ Y MÓDULOS
-# ==============================================================================
-aplicar_estetica_jarvis()
+@st.cache_data(ttl=300)
+def obtener_indicadores_chile():
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) JARVIS-Dashboard/1.0",
+        "Accept": "application/json",
+    }
+    for _ in range(2):
+        try:
+            resp = requests.get("https://mindicador.cl/api", headers=headers, timeout=4)
+            if resp.status_code == 200:
+                data = resp.json()
+                dolar = data.get("dolar", {}).get("valor")
+                euro = data.get("euro", {}).get("valor")
+                uf = data.get("uf", {}).get("valor")
+                utm = data.get("utm", {}).get("valor")
+                if dolar and euro and uf:
+                    return {
+                        "dolar": float(dolar),
+                        "euro": float(euro),
+                        "uf": float(uf),
+                        "utm": float(utm) if utm else 0.0,
+                        "ok": True,
+                        "respaldo": False,
+                    }
+        except Exception:
+            pass
 
-st.session_state.setdefault("jarvis_chat", [])
-st.session_state.setdefault("contexto_doc", "")
-st.session_state.setdefault("notas_rapidas", "")
+    return {
+        "dolar": 950.00,
+        "euro": 1030.00,
+        "uf": 38000.00,
+        "utm": 67000.00,
+        "ok": True,
+        "respaldo": True,
+    }
 
-with st.sidebar:
-    st.markdown("### Núcleo de Cerebro")
-    motor = st.selectbox(
-        "Motor de lenguaje",
-        [
-            "Automático (Ollama + Autónomo sin clave)",
-            "Ollama (Sin clave)",
-            "Autónomo Sin Clave (100% Offline)",
-        ],
+
+def describir_clima_codigo(code):
+    mapa = {
+        0: "despejado",
+        1: "mayormente despejado",
+        2: "parcialmente nublado",
+        3: "nublado",
+        45: "con neblina",
+        61: "con lluvia leve",
+        63: "con lluvia moderada",
+        80: "con chubascos",
+        95: "con tormenta electrica",
+    }
+    return mapa.get(code, "condiciones variables")
+
+
+@st.cache_data(ttl=600)
+def obtener_clima_buin():
+    url = (
+        f"https://api.open-meteo.com/v1/forecast"
+        f"?latitude={BUIN_LAT}&longitude={BUIN_LON}"
+        f"&current=temperature_2m,weather_code&timezone=America%2FSantiago"
     )
-    modo = st.selectbox("Perfil operativo", list(MODOS_CEREBRO.keys()))
-    temperatura = st.slider("Creatividad / Precisión", 0.1, 1.0, 0.65, 0.05)
+    try:
+        resp = requests.get(url, timeout=4)
+        if resp.status_code == 200:
+            current = resp.json().get("current") or {}
+            temp = current.get("temperature_2m")
+            code = int(current.get("weather_code", 0))
+            if temp is not None:
+                return {
+                    "temp_c": round(float(temp), 1),
+                    "condicion": describir_clima_codigo(code),
+                }
+    except Exception:
+        pass
+    return {"temp_c": None, "condicion": "sin lectura en vivo"}
 
-    ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
-    modelos_locales = listar_modelos_ollama(ollama_url)
-    if modelos_locales:
-        st.caption(f"Estado Ollama: conectado ({len(modelos_locales)} modelo(s)).")
-    else:
-        st.caption("Estado Ollama: en espera (activo respaldo autónomo sin clave).")
 
-    ollama_modelo = st.selectbox(
-        "Modelo Ollama",
-        modelos_locales if modelos_locales else ["llama3.1:8b", "qwen2.5:7b", "mistral"],
-    )
-
-    if PYPDF_DISPONIBLE:
-        archivo_pdf = st.file_uploader("Cargar PDF de consulta (opcional)", type=["pdf"])
-        if archivo_pdf is not None:
-            lector = PdfReader(archivo_pdf)
-            st.session_state.contexto_doc = "\n".join(
-                pagina.extract_text() or "" for pagina in lector.pages
-            )
-            st.caption(f"Documento cargado: {len(lector.pages)} páginas listas como contexto.")
-    else:
-        st.caption("Agrega 'pypdf' en requirements.txt para habilitar carga de PDF.")
-
-st.markdown(
-    """
-    <div class="jarvis-panel">
-        <p class="jarvis-titulo">J.A.R.V.I.S. // COMMAND INTERFACE</p>
-        <p class="jarvis-sub">Estado operativo: En línea · Sin dependencia de claves API</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-col_izq, col_der = st.columns([2.2, 1.1], gap="large")
-
-with col_izq:
-    st.markdown("#### Consola de Conversación")
-    for msg in st.session_state.jarvis_chat:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            if msg.get("motor"):
-                st.caption(f"Vía: {msg['motor']}")
-
-with col_der:
-    with st.expander("Módulos y Radar Operativo", expanded=True):
-        st.markdown("**Prioridades activas**")
-        st.markdown("- 1. Sabor Casero (página y cobros)\n- 2. Montessori\n- 3. Mejoras de Jarvis")
-        st.session_state.notas_rapidas = st.text_area(
-            "Radar de notas rápidas",
-            value=st.session_state.notas_rapidas,
-            height=130,
-            placeholder="Anota pendientes, ideas o recordatorios...",
-        )
-
-prompt = st.chat_input("Háblale a Jarvis...")
-if prompt:
-    contexto_combinado = "\n\n".join(
-        parte for parte in (st.session_state.contexto_doc, st.session_state.notas_rapidas) if parte.strip()
-    )
-    st.session_state.jarvis_chat.append({"role": "user", "content": prompt})
-    with col_izq:
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-    resultado = responder_jarvis(
-        mensajes=st.session_state.jarvis_chat,
-        motor=motor,
-        ollama_modelo=ollama_modelo,
-        ollama_url=ollama_url,
-        modo=modo,
-        contexto_extra=contexto_combinado,
-        temperatura=temperatura,
-    )
-    st.session_state.jarvis_chat.append(
-        {"role": "assistant", "content": resultado["respuesta"], "motor": resultado["motor_usado"]}
-    )
-    with col_izq:
-        with st.chat_message("assistant"):
-            st.markdown(resultado["respuesta"])
-            st.caption(f"Vía: {resultado['motor_usado']}")
+@st.cache_data(ttl=600)
+def obtener_noticias_rss(consulta="Chile tecnología finanzas", limite=5):
+    q_encoded = urllib.parse.quote(consulta.strip() or "Chile")
+    url = f"https://news.google.com/rss/search?q={q_encoded}&hl=es-419&gl=CL&ceid=CL:es-419"
+    headers = {"User-Agent": "Mozilla/5.0 (JARVIS-Node-Buin/1.0)"}
+    resultados = []
+    try:
+        resp = requests.get(url, headers=headers, timeout=4)
+        if resp.status_code == 200 and resp.content:
+            root = ET.fromstring(resp.content)
+            for item in root.findall(".//item")[:limite]:
+                titulo_el = item.find("title")
+                link_el = item.find("link")
+                pub_el = item.find("pubDate")
+                titulo = (titulo_el.text or "").strip() if titulo_el is not None else ""
+                enlace = (link_el.text or "").strip() if link_el is not None else ""
+                fecha = (pub_el.text or "")[:16].strip() if pub_el is not
