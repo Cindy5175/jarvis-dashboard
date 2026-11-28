@@ -81,9 +81,9 @@ TEMAS_VISUALES = {
 OPCIONES_TEMA = list(TEMAS_VISUALES.keys())
 
 MODELOS_RESPALDO_GEMINI = [
-    "gemini-3.8-flash",
-    "gemini-2.5-pro",
+    "gemini-2.5-flash",
     "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
     "gemini-2.0-flash",
 ]
 
@@ -688,7 +688,7 @@ def _llamar_modelo_gemini_unico(mensajes, api_key: str, modelo: str, prompt_sist
     clave = _limpiar_clave(api_key)
     if not clave:
         raise ValueError("Falta la API Key de Gemini.")
-    modelo_limpio = (modelo or "gemini-3.8-flash").strip()
+    modelo_limpio = (modelo or "gemini-2.5-flash").strip()
     if modelo_limpio.startswith("models/"):
         modelo_limpio = modelo_limpio.split("models/", 1)[1]
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo_limpio}:generateContent"
@@ -733,7 +733,7 @@ def consultar_gemini_api(mensajes, api_key: str, modelo: str, prompt_sistema: st
     clave = _limpiar_clave(api_key)
     if not clave:
         raise ValueError("Falta la API Key de Gemini.")
-    principal = (modelo or "gemini-3.8-flash").strip()
+    principal = (modelo or "gemini-2.5-flash").strip()
     candidatos = [principal] + [m for m in MODELOS_RESPALDO_GEMINI if m != principal]
     errores = []
     for mod in candidatos:
@@ -774,10 +774,24 @@ def _respuesta_autonoma_local(texto_usuario: str, nucleo_nombre: str, indicadore
             f"[{nucleo_nombre}] Para **Montessori** antes de Navidad, jefa: partamos por definir el entregable "
             "concreto que quieres cerrar primero y avanzarlo en bloques enfocados sin dispersión."
         )
+    limpio = (texto_usuario or "").strip()
+    if any(w in lower for w in ("hola", "buenas", "qué tal", "que tal", "cómo estás", "como estas", "hey")):
+        return (
+            f"[{nucleo_nombre}] ¡Hola, jefa! Todo andando firme por acá en el Nodo Buin. "
+            f"Hoy tenemos el dólar a {fmt_clp(indicadores['dolar'])} y la UF a {fmt_clp(indicadores['uf'])}. "
+            "¿Qué vamos a resolver o revisar hoy?"
+        )
+    if any(w in lower for w in ("ayuda", "puedes hacer", "funciones", "qué haces", "que haces")):
+        return (
+            f"[{nucleo_nombre}] Aquí estoy para acompañarla, jefa: te entrego dólar, euro, UF y clima en Buin, "
+            "gestiono tus misiones y notas rápidas, reviso noticias por RSS, guardo memoria de sesión y exporto "
+            "reportes en TXT, PDF o JPG. Además, si conectas tu API Key de Gemini (o Groq), abrimos el chat libre completo."
+        )
     return (
-        f"[{nucleo_nombre}] Recibido, jefa. Estoy operando en modo local/autónomo en el Nodo Buin "
-        f"(Dólar {fmt_clp(indicadores['dolar'])}, UF {fmt_clp(indicadores['uf'])}). "
-        "Si quieres respuesta generativa en la nube, asegúrate de tener tu clave de Gemini activa."
+        f"[{nucleo_nombre}] Tomé nota de tu consulta sobre «{limpio[:120]}», jefa. "
+        "En modo local sin clave activa puedo responder al instante sobre indicadores de Chile, clima en Buin, "
+        "Sabor Casero o Montessori; si quieres conversación abierta con IA en la nube, pega tu clave válida de Gemini "
+        "en la barra lateral o en Secrets."
     )
 
 
@@ -788,7 +802,7 @@ def responder_jarvis(
     indicadores: dict,
     clima_buin: dict,
     gemini_api_key: str = "",
-    gemini_modelo: str = "gemini-3.8-flash",
+    gemini_modelo: str = "gemini-2.5-flash",
 ):
     ultimo_texto = mensajes[-1]["content"] if mensajes else ""
     lower = ultimo_texto.lower().strip()
@@ -805,9 +819,8 @@ def responder_jarvis(
             return f"[{nucleo_nombre}] {texto_gem}" if not texto_gem.startswith(f"[{nucleo_nombre}]") else texto_gem
         except Exception as err_gem:
             msg_gem = str(err_gem)
-            if any(cod in msg_gem for cod in ("HTTP 400", "HTTP 401", "HTTP 403")):
-                base_auto = _respuesta_autonoma_local(ultimo_texto, nucleo_nombre, indicadores, clima_buin)
-                return f"{base_auto}\n\n*(Aviso Gemini: {msg_gem})*"
+            base_auto = _respuesta_autonoma_local(ultimo_texto, nucleo_nombre, indicadores, clima_buin)
+            return f"{base_auto}\n\n*(Detalle conexión Gemini: {msg_gem})*"
 
     if client_groq is not None:
         try:
@@ -1175,7 +1188,7 @@ with st.sidebar:
     else:
         st.caption("Gemini Key: no detectada (modo local/autónomo activo).")
 
-    gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash", key="input_gemini_modelo")
+    gemini_modelo = st.text_input("Modelo Gemini", value="gemini-2.5-flash", key="input_gemini_modelo")
 
     st.markdown("---")
     renderizar_globo_orbital(st.session_state["capa_radar"], color_main=color_main)
