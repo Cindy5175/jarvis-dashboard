@@ -26,16 +26,31 @@ MODOS_CEREBRO = {
 }
 
 
+def _buscar_en_mapping(mapping, nombres):
+    if not mapping:
+        return ""
+    for nombre in nombres:
+        if nombre in mapping and mapping[nombre]:
+            val = str(mapping[nombre]).strip()
+            if val:
+                return val
+    return ""
+
+
 def obtener_clave_secreta_gemini() -> str:
-    clave_env = (os.getenv("GEMINI_API_KEY") or "").strip()
+    nombres = ("GEMINI_API_KEY", "GOOGLE_API_KEY", "gemini_api_key", "google_api_key")
+    clave_env = _buscar_en_mapping(os.environ, nombres)
     if clave_env:
         return clave_env
     try:
-        for posible_nombre in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "gemini_api_key"):
-            if posible_nombre in st.secrets:
-                valor = str(st.secrets[posible_nombre]).strip()
-                if valor:
-                    return valor
+        clave_root = _buscar_en_mapping(st.secrets, nombres)
+        if clave_root:
+            return clave_root
+        for seccion in ("general", "secrets", "api", "gemini"):
+            if seccion in st.secrets and isinstance(st.secrets[seccion], dict):
+                clave_sec = _buscar_en_mapping(st.secrets[seccion], nombres)
+                if clave_sec:
+                    return clave_sec
     except Exception:
         pass
     return ""
@@ -137,6 +152,11 @@ def consultar_ollama_local(
     return (resp.json().get("message", {}).get("content") or "").strip() or "Ollama devolvió una respuesta vacía."
 
 
+def _es_entorno_local(ollama_url: str) -> bool:
+    url = (ollama_url or "").lower()
+    return ("localhost" in url or "127.0.0.1" in url) and os.path.exists("/mount/src") is False
+
+
 def responder_jarvis(
     mensajes,
     motor: str = "Híbrido (API con respaldo Ollama)",
@@ -161,6 +181,11 @@ def responder_jarvis(
                 "motor_usado": "Error Gemini API",
             }
     if motor == "Local (Ollama)":
+        if not _es_entorno_local(ollama_url):
+            return {
+                "respuesta": "Ollama local no está disponible desde Streamlit Cloud en localhost, jefa. Usa API Nube o Híbrido con tu clave de Gemini.",
+                "motor_usado": "Ollama no disponible en nube",
+            }
         try:
             texto = consultar_ollama_local(
                 mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura
@@ -177,29 +202,37 @@ def responder_jarvis(
         )
         return {"respuesta": texto, "motor_usado": f"Gemini API ({gemini_modelo})"}
     except Exception as err_api:
-        try:
-            texto = consultar_ollama_local(
-                mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura
-            )
-            return {
-                "respuesta": f"*(Respaldo local activo tras aviso en API: {err_api})*\n\n{texto}",
-                "motor_usado": f"Ollama Local ({ollama_modelo})",
-            }
-        except Exception as err_local:
-            return {
-                "respuesta": (
-                    "No pude conectarme ni a la API ni a Ollama local, jefa.\n"
-                    f"- Error API: {err_api}\n"
-                    f"- Error Ollama: {err_local}"
-                ),
-                "motor_usado": "Sin conexión",
-            }
+        if _es_entorno_local(ollama_url):
+            try:
+                texto = consultar_ollama_local(
+                    mensajes, ollama_modelo, ollama_url, modo, contexto_extra, temperatura
+                )
+                return {
+                    "respuesta": f"*(Respaldo local activo tras aviso en API: {err_api})*\n\n{texto}",
+                    "motor_usado": f"Ollama Local ({ollama_modelo})",
+                }
+            except Exception as err_local:
+                return {
+                    "respuesta": (
+                        "No pude conectarme ni a la API ni a Ollama local, jefa.\n"
+                        f"- Error API: {err_api}\n"
+                        f"- Error Ollama: {err_local}"
+                    ),
+                    "motor_usado": "Sin conexión",
+                }
+        return {
+            "respuesta": (
+                "No pude conectarme a la API de Gemini, jefa:\n"
+                f"- {err_api}\n"
+                "*(En Streamlit Cloud no se intenta localhost de Ollama; revisa GEMINI_API_KEY en Secrets o en el campo de la barra lateral).* "
+            ),
+            "motor_usado": "Sin conexión API",
+        }
 
 
 st.session_state.setdefault("jarvis_chat", [])
 st.session_state.setdefault("contexto_doc", "")
-
-clave_guardada = obtener_clave_secreta_gemini()
+st.session_state.setdefault("gemini_key_sesion", obtener_clave_secreta_gemini())
 
 with st.sidebar:
     st.markdown("### Núcleo de Cerebro")
@@ -209,16 +242,25 @@ with st.sidebar:
     )
     modo = st.selectbox("Perfil operativo", list(MODOS_CEREBRO.keys()))
     temperatura = st.slider("Creatividad / Precisión", 0.1, 1.0, 0.65, 0.05)
-    gemini_key = st.text_input(
-        "Gemini API Key", value=clave_guardada, type="password"
+    entrada_key = st.text_input(
+        "Gemini API Key",
+        value=st.session_state.gemini_key_sesion,
+        type="password",
+        key="input_gemini_key",
     )
-    if (gemini_key or clave_guardada).strip():
+    if entrada_key.strip():
+        st.session_state.gemini_key_sesion = entrada_key.strip()
+    elif not obtener_clave_secreta_gemini():
+        st.session_state.gemini_key_sesion = ""
+
+    if st.session_state.gemini_key_sesion:
         st.caption("Estado API Key: lista y detectada.")
     else:
         st.caption("Estado API Key: sin clave detectada (ingrésala y presiona Enter).")
+
     gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash")
     ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
-    modelos_locales = listar_modelos_ollama(ollama_url)
+    modelos_locales = listar_modelos_ollama(ollama_url) if _es_entorno_local(ollama_url) else []
     ollama_modelo = st.selectbox(
         "Modelo Ollama local",
         modelos_locales if modelos_locales else ["llama3.1:8b", "qwen2.5:7b", "mistral"],
@@ -248,7 +290,7 @@ if prompt:
     resultado = responder_jarvis(
         mensajes=st.session_state.jarvis_chat,
         motor=motor,
-        gemini_api_key=gemini_key,
+        gemini_api_key=st.session_state.gemini_key_sesion,
         gemini_modelo=gemini_modelo,
         ollama_modelo=ollama_modelo,
         ollama_url=ollama_url,
