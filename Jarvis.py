@@ -26,6 +26,18 @@ MODOS_CEREBRO = {
 }
 
 
+def obtener_clave_secreta_gemini() -> str:
+    clave_env = (os.getenv("GEMINI_API_KEY") or "").strip()
+    if clave_env:
+        return clave_env
+    try:
+        if "GEMINI_API_KEY" in st.secrets:
+            return str(st.secrets["GEMINI_API_KEY"]).strip()
+    except Exception:
+        pass
+    return ""
+
+
 def construir_prompt_sistema(modo: str = "Copiloto General", contexto_extra: str = "") -> str:
     instruccion_modo = MODOS_CEREBRO.get(modo, MODOS_CEREBRO["Copiloto General"])
     partes = [JARVIS_SYSTEM_PROMPT, f"Modo activo: {modo}. {instruccion_modo}"]
@@ -57,7 +69,7 @@ def consultar_gemini_api(
     temperatura: float = 0.65,
 ) -> str:
     if not api_key:
-        raise ValueError("Falta la API Key de Gemini (GEMINI_API_KEY o campo en interfaz).")
+        raise ValueError("Falta la API Key de Gemini (st.secrets, GEMINI_API_KEY o campo en interfaz).")
     modelo_limpio = (modelo or "gemini-3.8-flash").strip()
     if modelo_limpio.startswith("models/"):
         modelo_limpio = modelo_limpio.split("models/", 1)[1]
@@ -133,7 +145,7 @@ def responder_jarvis(
     contexto_extra: str = "",
     temperatura: float = 0.65,
 ):
-    clave_efectiva = (gemini_api_key or os.getenv("GEMINI_API_KEY", "")).strip()
+    clave_efectiva = (gemini_api_key or obtener_clave_secreta_gemini()).strip()
     if motor == "API Nube (Gemini)":
         try:
             texto = consultar_gemini_api(
@@ -184,6 +196,8 @@ def responder_jarvis(
 st.session_state.setdefault("jarvis_chat", [])
 st.session_state.setdefault("contexto_doc", "")
 
+clave_guardada = obtener_clave_secreta_gemini()
+
 with st.sidebar:
     st.markdown("### Núcleo de Cerebro")
     motor = st.selectbox(
@@ -193,7 +207,7 @@ with st.sidebar:
     modo = st.selectbox("Perfil operativo", list(MODOS_CEREBRO.keys()))
     temperatura = st.slider("Creatividad / Precisión", 0.1, 1.0, 0.65, 0.05)
     gemini_key = st.text_input(
-        "Gemini API Key", value=os.getenv("GEMINI_API_KEY", ""), type="password"
+        "Gemini API Key", value=clave_guardada, type="password"
     )
     gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash")
     ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
