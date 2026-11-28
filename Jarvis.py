@@ -31,8 +31,11 @@ def obtener_clave_secreta_gemini() -> str:
     if clave_env:
         return clave_env
     try:
-        if "GEMINI_API_KEY" in st.secrets:
-            return str(st.secrets["GEMINI_API_KEY"]).strip()
+        for posible_nombre in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "gemini_api_key"):
+            if posible_nombre in st.secrets:
+                valor = str(st.secrets[posible_nombre]).strip()
+                if valor:
+                    return valor
     except Exception:
         pass
     return ""
@@ -209,6 +212,10 @@ with st.sidebar:
     gemini_key = st.text_input(
         "Gemini API Key", value=clave_guardada, type="password"
     )
+    if (gemini_key or clave_guardada).strip():
+        st.caption("Estado API Key: lista y detectada.")
+    else:
+        st.caption("Estado API Key: sin clave detectada (ingrésala y presiona Enter).")
     gemini_modelo = st.text_input("Modelo Gemini", value="gemini-3.8-flash")
     ollama_url = st.text_input("URL Ollama", value="http://localhost:11434")
     modelos_locales = listar_modelos_ollama(ollama_url)
