@@ -11,6 +11,55 @@ except ImportError:
     PYPDF_DISPONIBLE = False
 
 
+# ==============================================================================
+# ESTÉTICA Y COLORES BASE (AJUSTABLES A TU DISEÑO ORIGINAL)
+# ==============================================================================
+def aplicar_estetica_jarvis():
+    st.set_page_config(
+        page_title="J.A.R.V.I.S. Dashboard",
+        page_icon="⚡",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #0b0f17;
+            color: #e6edf7;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #111827;
+            border-right: 1px solid rgba(56, 189, 248, 0.22);
+        }
+        .jarvis-panel {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .jarvis-titulo {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #38bdf8;
+            margin: 0;
+        }
+        .jarvis-sub {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ==============================================================================
+# CEREBRO J.A.R.V.I.S. (SIN CLAVES API + OLLAMA + NÚCLEO AUTÓNOMO)
+# ==============================================================================
 JARVIS_SYSTEM_PROMPT = """
 Eres J.A.R.V.I.S., el copiloto personal de inteligencia artificial de Cindy.
 Tu tono combina calidez, empatía genuina, claridad práctica y un toque sutil, elegante e ingenioso de sarcasmo estilo Tony Stark (nunca hostil ni pedante; siempre útil y al servicio de la misión).
@@ -164,8 +213,14 @@ def responder_jarvis(
         return {"respuesta": resp, "motor_usado": "Núcleo Autónomo (Sin clave)"}
 
 
+# ==============================================================================
+# INTERFAZ Y MÓDULOS
+# ==============================================================================
+aplicar_estetica_jarvis()
+
 st.session_state.setdefault("jarvis_chat", [])
 st.session_state.setdefault("contexto_doc", "")
+st.session_state.setdefault("notas_rapidas", "")
 
 with st.sidebar:
     st.markdown("### Núcleo de Cerebro")
@@ -203,17 +258,46 @@ with st.sidebar:
     else:
         st.caption("Agrega 'pypdf' en requirements.txt para habilitar carga de PDF.")
 
-for msg in st.session_state.jarvis_chat:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-        if msg.get("motor"):
-            st.caption(f"Vía: {msg['motor']}")
+st.markdown(
+    """
+    <div class="jarvis-panel">
+        <p class="jarvis-titulo">J.A.R.V.I.S. // COMMAND INTERFACE</p>
+        <p class="jarvis-sub">Estado operativo: En línea · Sin dependencia de claves API</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+col_izq, col_der = st.columns([2.2, 1.1], gap="large")
+
+with col_izq:
+    st.markdown("#### Consola de Conversación")
+    for msg in st.session_state.jarvis_chat:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+            if msg.get("motor"):
+                st.caption(f"Vía: {msg['motor']}")
+
+with col_der:
+    with st.expander("Módulos y Radar Operativo", expanded=True):
+        st.markdown("**Prioridades activas**")
+        st.markdown("- 1. Sabor Casero (página y cobros)\n- 2. Montessori\n- 3. Mejoras de Jarvis")
+        st.session_state.notas_rapidas = st.text_area(
+            "Radar de notas rápidas",
+            value=st.session_state.notas_rapidas,
+            height=130,
+            placeholder="Anota pendientes, ideas o recordatorios...",
+        )
 
 prompt = st.chat_input("Háblale a Jarvis...")
 if prompt:
+    contexto_combinado = "\n\n".join(
+        parte for parte in (st.session_state.contexto_doc, st.session_state.notas_rapidas) if parte.strip()
+    )
     st.session_state.jarvis_chat.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    with col_izq:
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
     resultado = responder_jarvis(
         mensajes=st.session_state.jarvis_chat,
@@ -221,12 +305,13 @@ if prompt:
         ollama_modelo=ollama_modelo,
         ollama_url=ollama_url,
         modo=modo,
-        contexto_extra=st.session_state.contexto_doc,
+        contexto_extra=contexto_combinado,
         temperatura=temperatura,
     )
     st.session_state.jarvis_chat.append(
         {"role": "assistant", "content": resultado["respuesta"], "motor": resultado["motor_usado"]}
     )
-    with st.chat_message("assistant"):
-        st.markdown(resultado["respuesta"])
-        st.caption(f"Vía: {resultado['motor_usado']}")
+    with col_izq:
+        with st.chat_message("assistant"):
+            st.markdown(resultado["respuesta"])
+            st.caption(f"Vía: {resultado['motor_usado']}")
