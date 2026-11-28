@@ -48,34 +48,34 @@ TEMAS_VISUALES = {
     "CIAN TÁCTICO": {
         "primary": "#00f3ff",
         "hover": "#0088cc",
-        "bg": "#060913",
-        "card_bg": "rgba(0, 243, 255, 0.06)",
-        "grad_start": "#0a1128",
-        "btn_text": "#060913",
+        "bg": "#0b1936",
+        "card_bg": "rgba(0, 243, 255, 0.08)",
+        "grad_start": "#132954",
+        "btn_text": "#071329",
     },
     "ALERTA ROJA": {
-        "primary": "#ff3b3b",
+        "primary": "#ff4d4d",
         "hover": "#b30000",
-        "bg": "#120507",
-        "card_bg": "rgba(255, 59, 59, 0.08)",
-        "grad_start": "#26080c",
-        "btn_text": "#120507",
+        "bg": "#24090e",
+        "card_bg": "rgba(255, 77, 77, 0.09)",
+        "grad_start": "#3d1018",
+        "btn_text": "#24090e",
     },
     "SIGILO VERDE": {
         "primary": "#39ff14",
         "hover": "#1f9e08",
-        "bg": "#040d06",
-        "card_bg": "rgba(57, 255, 20, 0.06)",
-        "grad_start": "#081c0c",
-        "btn_text": "#040d06",
+        "bg": "#091f10",
+        "card_bg": "rgba(57, 255, 20, 0.08)",
+        "grad_start": "#11361c",
+        "btn_text": "#091f10",
     },
     "ÁMBAR NOCTURNO": {
-        "primary": "#ffb000",
+        "primary": "#ffb703",
         "hover": "#b87d00",
-        "bg": "#120b03",
-        "card_bg": "rgba(255, 176, 0, 0.07)",
-        "grad_start": "#241605",
-        "btn_text": "#120b03",
+        "bg": "#241706",
+        "card_bg": "rgba(255, 183, 3, 0.09)",
+        "grad_start": "#3d270a",
+        "btn_text": "#241706",
     },
 }
 OPCIONES_TEMA = list(TEMAS_VISUALES.keys())
@@ -251,6 +251,18 @@ def aplicar_css_tema():
             padding: 12px 16px;
             margin-bottom: 12px;
             color: {primary};
+        }}
+        [data-testid="stTextInput"] input,
+        [data-testid="stSelectbox"] > div > div,
+        [data-testid="stChatInput"] textarea {{
+            background-color: {card_bg} !important;
+            color: {primary} !important;
+            border-color: {primary}66 !important;
+        }}
+        [data-testid="stChatMessage"] {{
+            background-color: {card_bg};
+            border: 1px solid {primary}33;
+            border-radius: 10px;
         }}
         </style>
         """,
@@ -955,7 +967,15 @@ def generar_tarjeta_jpg(indicadores, clima_buin, color_hex="#00f3ff") -> bytes:
         return b""
     ahora = obtener_hora_chile()
     w, h = 900, 500
-    img = Image.new("RGB", (w, h), (6, 9, 19))
+    hex_limpio = color_hex.lstrip("#")
+    if len(hex_limpio) == 6:
+        r_c = int(hex_limpio[0:2], 16) // 7
+        g_c = int(hex_limpio[2:4], 16) // 7
+        b_c = int(hex_limpio[4:6], 16) // 7
+        bg_rgb = (max(12, r_c), max(18, g_c), max(28, b_c))
+    else:
+        bg_rgb = (14, 28, 56)
+    img = Image.new("RGB", (w, h), bg_rgb)
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([16, 16, w - 16, h - 16], outline=color_hex, width=3)
@@ -996,7 +1016,7 @@ def convertir_imagen_a_jpg(archivo_subido) -> bytes:
     try:
         im = Image.open(archivo_subido)
         if im.mode in ("RGBA", "P", "LA"):
-            fondo = Image.new("RGB", im.size, (6, 9, 19))
+            fondo = Image.new("RGB", im.size, (16, 28, 54))
             if im.mode == "P":
                 im = im.convert("RGBA")
             fondo.paste(im, mask=im.split()[-1] if im.mode == "RGBA" else None)
@@ -1025,7 +1045,7 @@ def construir_emblema_nucleo_svg(color_main="#00f3ff", size=54):
     )
 
 
-def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#0a1128", bg_dark="#060913"):
+def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad_start="#132954", bg_dark="#0b1936"):
     ahora_chile = obtener_hora_chile()
     emblema_svg = construir_emblema_nucleo_svg(color_main=color_main, size=56)
     html_banner = (
@@ -1077,9 +1097,9 @@ def renderizar_banner_vivo(nucleo_activo, capa_radar, color_main="#00f3ff", grad
         )
 
 
-def renderizar_globo_orbital(capa_actual, color_main="#00f3ff"):
+def renderizar_globo_orbital(capa_actual, color_main="#00f3ff", grad_start="#132954", bg_dark="#0b1936"):
     html_globo = (
-        f'<div style="border:1px solid {color_main};background:#040a17;border-radius:6px;padding:6px;font-family:monospace;color:{color_main};text-align:center;box-sizing:border-box;">'
+        f'<div style="border:1px solid {color_main};background:linear-gradient(160deg,{grad_start} 0%,{bg_dark} 100%);border-radius:6px;padding:6px;font-family:monospace;color:{color_main};text-align:center;box-sizing:border-box;">'
         '<canvas id="holo-globe-canvas" width="250" height="106" style="width:100%;height:106px;border-radius:4px;display:block;"></canvas>'
         f'<div style="font-size:0.65rem;line-height:1.25;opacity:0.92;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">ORBITAL LINK • {capa_actual}</div>'
         '<div style="font-size:0.59rem;line-height:1.2;opacity:0.75;margin-top:2px;">TELEMETRÍA ORBITAL • -33.73°S, -70.74°W</div>'
@@ -1191,7 +1211,7 @@ with st.sidebar:
     gemini_modelo = st.text_input("Modelo Gemini", value="gemini-2.5-flash", key="input_gemini_modelo")
 
     st.markdown("---")
-    renderizar_globo_orbital(st.session_state["capa_radar"], color_main=color_main)
+    renderizar_globo_orbital(st.session_state["capa_radar"], color_main=color_main, grad_start=grad_start, bg_dark=bg_dark)
     capa_sel = st.selectbox(
         "Capa de radar",
         ["SATELITAL // BUIN", "METEOROLOGÍA // MAIPO", "TELEMETRÍA // CHILE", "ALERTA // SISTEMA"],
